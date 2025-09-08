@@ -30,7 +30,7 @@ export default function ClientLayoutWrapper({ children }: Props) {
           <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
           <div className={`pt-16 transition-all duration-300 ${isSidebarOpen ? 'ml-[300px]' : 'ml-[90px]'}`}>
             {/* Contenedor de las migas de pan con un padding inferior para separarlo */}
-            <div className="p-4"> 
+            <div className="pt-6"> 
               <Breadcrumbs />
             </div>
             {/* Contenedor del contenido principal con los estilos que deseas */}

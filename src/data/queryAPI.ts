@@ -53,7 +53,7 @@ export interface QueryAnalysis {
 }
 
 export class QueriesAPI extends ExternalAPI {
-  basePath = `${process.env.API_SEGURIDAD_URL}/queries/`;
+  basePath = `${process.env.NEXT_PUBLIC_QUERYAPI_URL}/queries/`;
 
   execute = async (query: Query): Promise<QueryResult> => fetch(
     this.getURL({ path: "execute" }),

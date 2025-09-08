@@ -77,6 +77,18 @@ const DashboardPage = () => {
         link="/ccmm"
         borderColorClass="border-blue"
       />
+       <Card
+        title="INTRANET"
+        icon={BsBarChart}
+        link="/intranet"
+        borderColorClass="border-blue"
+      />
+       <Card
+        title="Capacitaciones"
+        icon={BsBarChart}
+        link="/intranet"
+        borderColorClass="border-blue"
+      />
     </div>
   );
 };
