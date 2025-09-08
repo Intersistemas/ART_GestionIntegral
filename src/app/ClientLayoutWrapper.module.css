@@ -1,0 +1,13 @@
+.mainContentArea {
+  padding: 20px;
+  background-color: #f7f7f7;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin: 0px 25px;
+  min-height: calc(100vh - 4rem - 40px - 40px); /* Ajusta la altura mínima para que ocupe el espacio sin el navbar y el margen */
+  /* El "4rem" es la altura del navbar, el "40px" es el padding superior/inferior (20px*2), y los otros "40px" son el margen superior/inferior (20px*2) */
+}
+
+.contentWithBreadcrumbs {
+  padding-top: 0; /* O ajusta si Breadcrumbs tiene padding propio */
+}

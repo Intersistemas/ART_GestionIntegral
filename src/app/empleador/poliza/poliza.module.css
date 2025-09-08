@@ -1,0 +1,82 @@
+/* components/poliza/poliza.module.css */
+
+.container {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  background-color: #f7f7f7;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.title {
+  background-color: #f0f0f0;
+  color: #333;
+  font-weight: bold;
+  padding: 10px;
+  border-bottom: 2px solid #ccc;
+  /* Aumenta el tamaño para que sea el más grande */
+  font-size: 1.4rem; 
+  margin-bottom: 5px;
+}
+
+.data {
+  font-size: 1rem;
+  color: #555;
+  text-align: center;
+}
+
+.sectionTitle {
+  background-color: #f0f0f0;
+  color: #333;
+  font-weight: bold;
+  padding: 10px;
+  border-bottom: 2px solid #ccc;
+  /* Aumenta el tamaño para que sea notablemente grande */
+  font-size: 1.4rem; 
+  margin-top: 25px;
+}
+
+.dataGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.dataItem {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px;
+}
+
+.label {
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+  /* Ligeramente más grande que el valor del campo */
+  font-size: 1.1rem; 
+}
+
+.value {
+  color: #555;
+  margin: 0;
+  font-size: 1rem;
+}
+
+.smallText {
+  font-size: 0.9rem;
+  color: #777;
+}
+
+@media (max-width: 768px) {
+  .dataGrid {
+    grid-template-columns: 1fr;
+  }
+}

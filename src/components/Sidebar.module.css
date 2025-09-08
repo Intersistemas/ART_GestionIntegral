@@ -1,0 +1,109 @@
+.sidebar {
+  font-size: 1.3rem;
+  width: 90px;
+  height: calc(100vh - 4rem); 
+  position: fixed;
+  top: 5rem; 
+  background-color: #333;
+  color: #fff;
+  transition: width 0.3s ease-in-out, left 0.3s ease-in-out;
+  padding-top: 20px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.open {
+  width: 300px;
+  left: 0;
+}
+
+.nav {
+  overflow-y: auto; /* Permite desplazamiento si el menú es muy largo */
+}
+
+.nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menuItem {
+  /* Estilos para el elemento de la lista */
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  text-decoration: none;
+  color: #fff;
+  transition: background-color 0.2s;
+}
+
+.link:hover {
+  background-color: #555;
+}
+
+.icon {
+  font-size: 1.5rem;
+  margin-right: 1rem;
+  transition: margin-right 0.3s ease-in-out;
+}
+
+/* Ocultar el margen del ícono cuando está colapsado */
+.sidebar:not(.open) .icon {
+  margin-right: 0;
+}
+
+.linkText {
+  margin-left: 0rem;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.sidebar:not(.open) .linkText {
+  opacity: 0;
+}
+
+/* Nuevos estilos para el submenú */
+.submenu {
+  font-size: 1.1rem;
+  list-style: none;
+  height: 0;
+  overflow: hidden;
+  transition: height 0.3s ease-in-out;
+  background-color: #414141; /* Color de fondo para el submenú */
+}
+
+.submenuOpen {
+  height: auto; /* Altura automática al abrir */
+}
+
+.sublink {
+  /* Indentación para los elementos del submenú */
+  padding-left: 30px; 
+}
+
+.collapsibleLink {
+  justify-content: space-between; /* Para empujar el icono de acordeón al final */
+}
+
+.accordionIcon {
+  font-size: 1rem;
+  margin-left: auto; /* Empuja el icono a la derecha */
+}
+
+.toggleButton {
+  background-color: transparent;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  align-self: center;
+  margin-bottom: 20px;
+  font-size: 2rem;
+  transition: transform 0.3s;
+}
