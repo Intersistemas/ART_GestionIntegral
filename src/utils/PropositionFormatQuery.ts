@@ -6,8 +6,16 @@ import type {
   RuleProcessor,
   RuleType,
   ValueProcessorOptions,
+  Field
 } from "react-querybuilder";
 import moment from 'moment';
+
+type CustomFields = Field[] | (() => Field[]);
+
+// 2. Extiende o crea un nuevo tipo de opciones que use CustomFields
+interface CustomFormatQueryOptions extends Omit<FormatQueryOptions, 'fields'> {
+ fields?: CustomFields;
+}
 
 export const ruleGroupProcessor: RuleGroupProcessor = (ruleGroup, options, meta) => {
   const params = ruleGroup.rules.map(processor).filter(r => r != null);
@@ -29,7 +37,16 @@ export const ruleGroupProcessor: RuleGroupProcessor = (ruleGroup, options, meta)
 
 export const ruleProcessor: RuleProcessor = (rule, options, meta) => {
   const { field, operator, valueSource: source } = rule;
-  const fieldInfo = (options?.fields?.find(f => "name" in f && f.name === field)) ?? {};
+
+    // Ahora, TypeScript sabe que options.fields puede ser una función.
+  const fieldsValue = (options as CustomFormatQueryOptions)?.fields;
+  const fieldsArray = typeof fieldsValue === 'function' 
+    ? fieldsValue()
+    : fieldsValue ?? []; 
+
+  const fieldInfo = fieldsArray.find(f => "name" in f && f.name === field) ?? {};
+
+  //const fieldInfo = (options?.fields?.find(f => "name" in f && f.name === field)) ?? {};
   const inputType = ("inputType" in fieldInfo) ? fieldInfo.inputType : undefined;
   const value = rule.value;
   if (value === undefined) return null;

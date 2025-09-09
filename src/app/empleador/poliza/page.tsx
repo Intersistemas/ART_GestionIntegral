@@ -13,7 +13,7 @@ const Poliza = () => {
     return <div className={styles.loading}>Cargando datos de póliza...</div>;
   }
 
-  const { email, nombre, cuit } = session.user as any;
+  const { email, nombre, cuit } = session?.user as any;
 
   return (
     <div>

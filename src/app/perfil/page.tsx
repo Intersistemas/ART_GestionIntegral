@@ -22,15 +22,18 @@ function ProfilePage() {
     );
   }
 
+  const { roles, nombre, cuit } = session?.user as any;
+
   // Solo toma las propiedades que son seguras de serializar
   const sessionData = {
     user: {
       name: session.user?.name,
       email: session.user?.email,
       image: session.user?.image,
-      nombre: session.user?.nombre,
-      cuit: session.user?.cuit,
-      roles: session.user?.roles,
+      
+      nombre: nombre as any ?? "Ejemplo",
+      cuit: cuit as any ?? "Ejemplo",
+      roles: roles as any ?? "Ejemplo",
     },
     expires: session.expires,
   };

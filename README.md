@@ -30,4 +30,12 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
 
 ## INTERSISTEMAS:
-_Para las fuentes utilizamos: https://react-icons.github.io/react-icons/
+**Bando de Iconos utilizamos: https://react-icons.github.io/react-icons/
+
+**Fetching:
+ _desde un Client Component (use client), podemos usar SWR (state while revalidate) pasandole una funcion Fetcher.
+ _desde los Servers, usaremos axios
+
+**Entorno UI: usaremos Material UI
+
+**Estadps Globales: si no tenemos lo necesario en getSession, utilizamos Zustand.
