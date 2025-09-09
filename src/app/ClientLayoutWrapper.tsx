@@ -2,8 +2,8 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import Sidebar from "../components/Sidebar";
-import Breadcrumbs from "../components/Breadcrumbs";
+import Sidebar from "@/components/Sidebar";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import React, { useState } from "react";
 import styles from './ClientLayoutWrapper.module.css';
 

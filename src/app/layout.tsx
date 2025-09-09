@@ -1,5 +1,5 @@
 import Providers from "./Providers";
-import Navbar from "../components/Navbar";
+import Navbar from "@/components/Navbar";
 import ClientLayoutWrapper from "./ClientLayoutWrapper";
 import "./normalize.css";
 import "./globals.css";

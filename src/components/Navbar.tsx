@@ -7,7 +7,7 @@ import SignOutButton from "./SignOutButton";
 import { BsSearch, BsBell } from "react-icons/bs";
 import styles from './Navbar.module.css';
 import Image from 'next/image';
-import logo from '../../public/media/ARTIcon_SVG.svg';
+import logo from '@/utils/media/ARTIcon_SVG.svg';
 
 function Navbar() {
   const { data: session, status } = useSession();
