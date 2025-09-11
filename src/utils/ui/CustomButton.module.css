@@ -1,0 +1,133 @@
+/* utils/ui/CustomButton.module.css */
+
+.customButton {
+  /* Estilos base del botón */
+  width: 100% !important;
+  padding: 16px !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-family: inherit !important; /* Para heredar la fuente global de la app */
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  margin-bottom: 25px !important;
+  position: relative !important;
+  overflow: hidden !important;
+  min-height: 54px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Variantes de color */
+.primary {
+  background: linear-gradient(145deg, var(--naranja) 0%, #d97a0a 100%) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(228, 132, 12, 0.3) !important;
+}
+
+.primary:hover {
+  background: linear-gradient(145deg, var(--verdeClaro) 0%, #6da136 100%) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 18px rgba(127, 177, 66, 0.4) !important;
+}
+
+.secondary {
+  background: linear-gradient(145deg, var(--verdeOscuro) 0%, #3a5a20 100%) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(73, 103, 38, 0.3) !important;
+}
+
+.secondary:hover {
+  background: linear-gradient(145deg, var(--verdeClaro) 0%, #6da136 100%) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 18px rgba(127, 177, 66, 0.4) !important;
+}
+
+/* Estados */
+.customButton:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.disabled {
+  background: #cbd5e0 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Efecto de brillo al pasar el mouse */
+.customButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.customButton:hover::before {
+  left: 100%;
+}
+
+.disabled::before {
+  display: none !important;
+}
+
+/* Texto de carga */
+.loadingText {
+  display: inline-block !important;
+  font-weight: 700 !important;
+}
+
+/* Variantes de Material UI (ajustadas para CSS Modules) */
+.contained {
+  /* No se necesita aquí, ya que los estilos de color lo manejan */
+}
+
+.outlined {
+  background: transparent !important;
+  border: 2px solid !important;
+}
+.outlined.primary {
+  border-color: var(--naranja) !important;
+  color: var(--naranja) !important;
+}
+.outlined.primary:hover {
+  background: var(--naranja) !important;
+  color: white !important;
+}
+
+.outlined.secondary {
+  border-color: var(--verdeOscuro) !important;
+  color: var(--verdeOscuro) !important;
+}
+.outlined.secondary:hover {
+  background: var(--verdeOscuro) !important;
+  color: white !important;
+}
+
+.text {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.text.primary {
+  color: var(--naranja) !important;
+}
+.text.primary:hover {
+  background: rgba(228, 132, 12, 0.1) !important;
+}
+
+.text.secondary {
+  color: var(--verdeOscuro) !important;
+}
+.text.secondary:hover {
+  background: rgba(73, 103, 38, 0.1) !important;
+}

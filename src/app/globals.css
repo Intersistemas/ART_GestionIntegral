@@ -6,16 +6,19 @@
   --primary: lightgray;
   --secondary: gray;
 
+    /*PALETA DE ART*/
+      --naranja: #E4840C; 
+      --verde: #648C34;
+      --verdeOscuro: #496726; 
+      --verdeClaro: #7FB142;
+
+
   /*Colores del logo*/
   --naranjaLogo: #e7800f;
   --verde1Logo: #1b883f;
   --verde2Logo: #629331;
   
   --font: 'Outfit', sans-serif;
-
-  /*colores claros, por ej para un focus*/
-  --verdeClaro: #83bc00;
-  --naranjaClaro: #f8a700;
 }
 
 html {
