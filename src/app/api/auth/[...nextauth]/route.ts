@@ -16,7 +16,7 @@ const handler = NextAuth({
           const url = `${process.env.API_SEGURIDAD_URL}`
           
           //const res = await axios.post(`${url}/Usuario/Login`, {
-          const res = await axios.post(`http://uatretest.intersistemas.net:8800/api/Usuario/loginEmailCuit`, {
+          const res = await axios.post(`http://arttest.intersistemas.ar:8301/api/Usuario/Login`, {
             usuario: credentials?.loginUser,
             password: credentials?.loginPassword,
             rol: null,

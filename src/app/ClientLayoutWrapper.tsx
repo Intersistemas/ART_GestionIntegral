@@ -41,7 +41,7 @@ export default function ClientLayoutWrapper({ children }: Props) {
         </>
       )}
       {!session && (
-        <div className={`container mx-auto pt-16 ${styles.mainContentArea}`}>
+        <div>
           {children}
         </div>
       )}
