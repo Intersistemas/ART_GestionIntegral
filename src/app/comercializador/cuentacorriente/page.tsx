@@ -1,7 +1,7 @@
-function CuentacorrientePage() {
+function CuentaCorrientePage() {
   return (
-    <div>cuentacorriente comercializador</div>
+    <div>Cuenta Corriente Comercializador</div>
   )
 }
 
-export default CuentacorrientePage
+export default CuentaCorrientePage
