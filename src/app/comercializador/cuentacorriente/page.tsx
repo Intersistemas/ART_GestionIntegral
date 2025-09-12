@@ -1,6 +1,6 @@
 function CuentaCorrientePage() {
   return (
-    <div>Cuenta Corriente Cotizador</div>
+    <div>Cuenta Corriente Comercializador</div>
   )
 }
 

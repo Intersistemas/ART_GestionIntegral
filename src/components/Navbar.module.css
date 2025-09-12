@@ -4,89 +4,96 @@
   position: fixed;
   top: 0;
   width: 100%;
-  height: 6rem;
-  background-image: linear-gradient(to bottom, #ffffff, #f0f0f0);
-  color: black;
+  height: 7rem;
+  background-color: var(--blanco);
+  color: var(--negro);
   padding: 1rem;
   z-index: 20;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .container {
-  max-width: 1280px; /* Ancho máximo para el contenedor */
-  margin-left: auto;
-  margin-right: auto;
   display: flex;
   justify-content: space-between;
-  align-items: center; /* Centra los elementos verticalmente */
+  margin: auto 3%;
+}
+
+.logoLink {
   height: 100%;
-}
-
-.logoContainer {
   display: flex;
   align-items: center;
-  gap: 1rem;
-}
-
-.title {
-  font-weight: bold;
-  font-size: 1.25rem;
-}
-
-.menu {
-  display: flex;
-  align-items: center; /* Centra los elementos del menú verticalmente */
-  gap: 0.5rem; /* Espacio entre los elementos del menú */
-  list-style: none; /* Quita los puntos de la lista */
-  margin: 0;
-  padding: 0;
-}
-
-.menuItem {
-  padding: 0.5rem 0.75rem;
-  border-radius: 9999px; /* Para hacer las esquinas redondas como un pill */
-  transition: background-color 0.2s ease-in-out;
-  display: flex; /* Para centrar los iconos dentro del li */
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.menuItem:hover {
-  background-color: rgba(161, 161, 161, 0.5);
-}
-
-.menuLink {
-  color: inherit;
-  text-decoration: none;
-}
-
-.searchInput {
-  background-color: white;
-  color: black;
-  border-radius: 9999px;
-  padding: 0.5rem 1rem 0.5rem 2.5rem; /* Aumenta el padding izquierdo para el ícono */
-  border: none;
-  outline: none;
-  transition: box-shadow 0.2s ease-in-out;
-}
-
-.searchInput:focus {
-  box-shadow: 0 0 0 2px #d1d1d1;
+  justify-self: start;
 }
 
 .searchContainer {
   position: relative;
   display: flex;
   align-items: center;
+  justify-self: center;
+  width: 20%;
+}
+
+.searchInput {
+  background-color: var(--blanco);
+  color: var(--negro);
+  border-radius: 9999px;
+  padding: 0.75rem 1.5rem 0.75rem 3rem;
+  border: 1px solid var(--gris);
+  outline: none;
+  width: 100%;
+  transition: box-shadow 0.2s ease-in-out;
+  font-size: 1rem;
+}
+
+.searchInput:focus {
+  box-shadow: 0 0 0 2px var(--naranja);
 }
 
 .searchIcon {
   position: absolute;
-  left: 0.75rem;
-  color: black;
+  left: 1rem;
+  color: var(--naranja);
+  font-size: 1.8rem;
 }
 
-.bellIcon {
-  font-size: 1.5rem;
+.menu {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  justify-self: end;
+}
+
+.menuItem {
+  padding: 0.75rem;
+  border-radius: 50%;
+  transition: background-color 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.menuItem:hover {
+  background-color: var(--naranjaClaro);
+}
+
+/* CAMBIO CLAVE: Quitamos el hover del iconButton y lo aplicamos al padre */
+.iconButton {
+  font-size: 2.5rem;
+  color: var(--naranja);
+  transition: color 0.2s ease-in-out;
+}
+
+/* CAMBIO CLAVE: Agregamos una nueva regla para cambiar el color del ícono dentro del menuItem en hover */
+.menuItem:hover .iconButton {
+  color: var(--blanco);
+}
+
+.menuLink {
+  color: inherit;
+  text-decoration: none;
+  display: flex;
 }

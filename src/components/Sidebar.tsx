@@ -1,9 +1,13 @@
 "use client";
+import * as React from 'react';
 import Link from 'next/link';
-import styles from './Sidebar.module.css';
 import { useState } from 'react';
-import { BsPenFill, BsWechat, BsFolder, BsHouseGear, BsCalendar2Plus, BsPerson, BsCurrencyDollar, BsList, BsChevronDown, BsChevronRight, BsTerminal, BsFileText , BsCreditCard, BsCardChecklist , BsGraphUpArrow, BsClipboard2Data } from 'react-icons/bs';
+import { BsFillStarFill, BsLayoutSplit, BsBriefcaseFill, BsPenFill, BsPersonFillGear, BsFolder, BsHouseGear, BsCalendar2Plus, BsBarChartLineFill, BsList, BsChevronDown,
+   BsChevronRight, BsTerminal, BsFileText, BsCreditCard, BsCardChecklist, BsGraphUpArrow, BsClipboard2Data } from 'react-icons/bs';
+import { FaFileInvoiceDollar } from "react-icons/fa6";
 import { IconType } from 'react-icons';
+import { Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Collapse } from '@mui/material';
+import styles from './Sidebar.module.css';
 
 // Define la estructura de los datos del menú
 interface MenuItem {
@@ -13,45 +17,54 @@ interface MenuItem {
   children?: MenuItem[];
 }
 
-// Datos de ejemplo para el menú
 const menuItems: MenuItem[] = [
   {
+    name: "Favoritos",
+    icon: BsFillStarFill,
+    link: "/favoritos",
+  },
+  {
+    name: "Dashboard",
+    icon: BsLayoutSplit,
+    link: "/dashboard",
+  },
+  {
     name: "Empleador",
-    icon: BsPerson,
+    icon: BsBriefcaseFill,
     children: [
-      { name: "Póliza", icon: BsFileText , link: "/empleador/poliza" },
-      { name: "Cobertura", icon: BsCardChecklist , link: "/empleador/cobertura" },
+      { name: "Póliza", icon: BsFileText, link: "/empleador/poliza" },
+      { name: "Cobertura", icon: BsCardChecklist, link: "/empleador/cobertura" },
       { name: "Cuenta Corriente", icon: BsGraphUpArrow, link: "/empleador/cuentacorriente" },
-      { name: "Formulario RGRL", icon: BsClipboard2Data , link: "/empleador/formularioRGRL" },
-      { name: "Formulario RAR", icon: BsClipboard2Data , link: "/empleador/formularioRAR" },
-      { name: "Siniestros", icon: BsCalendar2Plus , link: "/empleador/siniestros" },
-      { name: "Avisos de Obra", icon: BsHouseGear , link: "/empleador/avisosdeobra" },
+      { name: "Formulario RGRL", icon: BsClipboard2Data, link: "/empleador/formularioRGRL" },
+      { name: "Formulario RAR", icon: BsClipboard2Data, link: "/empleador/formularioRAR" },
+      { name: "Siniestros", icon: BsCalendar2Plus, link: "/empleador/siniestros" },
+      { name: "Avisos de Obra", icon: BsHouseGear, link: "/empleador/avisosdeobra" },
       { name: "SVCC", icon: BsFolder, link: "/empleador/svcc" },
       { name: "Credenciales", icon: BsCreditCard, link: "/empleador/credenciales" },
     ],
   },
   {
-    name: "Cotizador",
-    icon: BsCurrencyDollar,
+    name: "Comercializador",
+    icon: BsBriefcaseFill,
     children: [
-      { name: "Cuenta Corriente", icon: BsGraphUpArrow, link: "/cotizador/cuentacorriente" },
-      { name: "Carga archivos DDJJ", icon: BsList, link: "/cotizador/cuentas/ddjj" },
+      { name: "Cuenta Corriente", icon: BsGraphUpArrow, link: "/comercializador/cuentacorriente" },
+      { name: "Carga archivos DDJJ", icon: BsList, link: "/comercializador/polizas" },
     ],
   },
   {
-    name: "Consultas",
-    icon: BsWechat ,
-    link: "/consultas",
+    name: "Cotizaciones",
+    icon: FaFileInvoiceDollar,
+    link: "/cotizaciones",
   },
   {
-    name: "Gestiones",
-    icon: BsPenFill ,
-    link: "/gestiones",
+    name: "Informes",
+    icon: BsBarChartLineFill,
+    link: "/informes",
   },
   {
-    name: "Parametrización",
-    icon: BsTerminal,
-    link: "/parametrizacion",
+    name: "Usuarios",
+    icon: BsPersonFillGear,
+    link: "/usuarios",
   },
 ];
 
@@ -77,45 +90,73 @@ const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
     return items.map((item) => {
       const isMenuOpen = openMenus.includes(item.name);
       
+      const listItemButtonClasses = `${styles.menuItemButton} ${isOpen ? styles.menuItemButtonOpen : styles.menuItemButtonClosed} ${isSubmenu ? styles.submenuItem : ''}`;
+      const listItemIconClasses = `${styles.icon} ${isOpen ? styles.iconOpen : styles.iconClosed}`;
+      const listItemTextClasses = `${isOpen ? styles.linkTextVisible : styles.linkTextHidden}`;
+      const arrowIconClasses = `${styles.accordionIcon}`;
+
       return (
-        <li key={item.name} className={styles.menuItem}>
-          {item.children ? (
-            <>
-              <div 
-                onClick={() => handleMenuClick(item.name)} 
-                className={`${styles.link} ${styles.collapsibleLink}`}
+        <React.Fragment key={item.name}>
+          <ListItem disablePadding className={styles.listItem}>
+            {item.children ? (
+              <>
+                <ListItemButton
+                  onClick={() => handleMenuClick(item.name)}
+                  className={listItemButtonClasses}
+                >
+                  <ListItemIcon className={listItemIconClasses}>
+                    <item.icon />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={item.name}
+                    className={listItemTextClasses}
+                  />
+                  {isOpen && (isMenuOpen ? <BsChevronDown className={arrowIconClasses} /> : <BsChevronRight className={arrowIconClasses} />)}
+                </ListItemButton>
+                <Collapse in={isMenuOpen} timeout="auto" unmountOnExit>
+                  <List component="div" disablePadding className={styles.submenu}>
+                    {renderMenuItems(item.children, true)}
+                  </List>
+                </Collapse>
+              </>
+            ) : (
+              <ListItemButton
+                component={Link}
+                href={item.link || "#"}
+                className={listItemButtonClasses}
               >
-                <item.icon className={styles.icon} />
-                {isOpen && <span className={styles.linkText}>{item.name}</span>}
-                {isOpen && (isMenuOpen ? <BsChevronDown className={styles.accordionIcon} /> : <BsChevronRight className={styles.accordionIcon} />)}
-              </div>
-              <ul className={`${styles.submenu} ${isMenuOpen ? styles.submenuOpen : ''}`}>
-                {/* ¡Aquí está el cambio clave! Pasas `true` para la recursión */}
-                {renderMenuItems(item.children, true)}
-              </ul>
-            </>
-          ) : (
-            <Link href={item.link || "#"} className={`${styles.link} ${isSubmenu ? styles.sublink : ''}`}>
-              <item.icon className={styles.icon} />
-              {isOpen && <span className={styles.linkText}>{item.name}</span>}
-            </Link>
-          )}
-        </li>
+                <ListItemIcon className={listItemIconClasses}>
+                  <item.icon />
+                </ListItemIcon>
+                <ListItemText
+                  primary={item.name}
+                  className={listItemTextClasses}
+                />
+              </ListItemButton>
+            )}
+          </ListItem>
+        </React.Fragment>
       );
     });
   };
 
   return (
- <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
-<nav className={styles.nav}>
-        <ul>
-          {renderMenuItems(menuItems)}
-        </ul>
-      </nav>
-      <button onClick={() => setIsOpen(!isOpen)} className={styles.toggleButton}>
-        <BsList />
-      </button>
-    </aside>
+    <Box
+      className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : styles.sidebarClosed}`}
+    >
+      <Box 
+        className={`${styles.header} ${isOpen ? styles.headerOpen : ''}`}
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <button className={styles.toggleButton}>
+          <BsList />
+        </button>
+        {isOpen && <span className={styles.headerText}>ART Gestión</span>}
+      </Box>
+      <List className={styles.listContainer}>
+        {renderMenuItems(menuItems)}
+      </List>
+    </Box>
   );
 };
 
