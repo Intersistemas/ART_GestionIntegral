@@ -1,11 +1,11 @@
-"use client"; // Esta directiva es necesaria para usar hooks del lado del cliente
+"use client";
 
 import { usePathname } from "next/navigation";
 import Providers from "./Providers";
 import Navbar from "@/components/Navbar";
-import ClientLayoutWrapper from "./ClientLayoutWrapper";
+import ClientLayoutWrapper from "./ClientLayoutWrapper"; // Reintegramos el wrapper
 import "./normalize.css";
-import "./globals.css";
+import "@/styles/globals.css";
 
 export const metadata = {
   title: "ART Gestión Integral",
@@ -18,13 +18,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const isSigninPage = pathname === "/login";
+  const isSigninPage = pathname === "/login" || pathname === "/register";
 
   return (
     <html lang="en">
       <body>
         <Providers>
-          {/* Renderiza el Navbar solo si no es la página de inicio de sesión */}
           {!isSigninPage && <Navbar />}
           <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
         </Providers>

@@ -1,4 +1,3 @@
-// app/ClientLayoutWrapper.tsx
 "use client";
 
 import { useSession } from "next-auth/react";
@@ -17,25 +16,26 @@ export default function ClientLayoutWrapper({ children }: Props) {
 
   if (status === "loading") {
     return (
-      <div className="h-[calc(100vh-4rem)] flex items-center justify-center">
-        <p className="text-xl">Cargando...</p>
+      <div className={styles.loadingContainer}>
+        <p className={styles.loadingText}>Cargando...</p>
       </div>
     );
   }
 
+  // La lógica principal del layout ahora vive aquí, dentro del SessionProvider
   return (
     <>
       {session && (
         <>
-          <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-          <div className={`pt-16 transition-all duration-300 ${isSidebarOpen ? 'ml-[300px]' : 'ml-[90px]'}`}>
-            {/* Contenedor de las migas de pan con un padding inferior para separarlo */}
-            <div className="pt-6"> 
+          <div className={styles.mainLayout}>
+            <div className={styles.breadcrumbsContainer}>
               <Breadcrumbs />
             </div>
-            {/* Contenedor del contenido principal con los estilos que deseas */}
-            <div className={`${styles.mainContentArea}`}>
-              {children}
+            <div className={`${styles.contentWrapper} ${isSidebarOpen ? styles.contentOpen : styles.contentClosed}`}>
+              <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+              <div className={styles.mainContentArea}>
+                {children}
+              </div>
             </div>
           </div>
         </>
