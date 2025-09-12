@@ -41,8 +41,8 @@ const APIConfig: APIConfiguration = {
 }
 //#endregion Configuracion de APIs
 
-async function fetcher<APIName extends APINames>(
-  apiName: APIName,
+async function fetcher(
+  apiName: APINames,
   apiEndpoint: APIEndpoints[typeof apiName],
   options?: APIConfigureOptions
 ) {
@@ -67,8 +67,8 @@ async function fetcher<APIName extends APINames>(
  * @param endpoint Nombre del endpoint registrado para api
  * @param options Las opciones para la petición, incluyendo 'data' (body) y 'params'.
  */
-export default function useApiDataFetching<APIName extends APINames, Data>(
-  api: APIName,
+export default function useApiDataFetching<Data>(
+  api: APINames,
   endpoint: APIEndpoints[typeof api],
   options?: APIConfigureOptions
 ) {
