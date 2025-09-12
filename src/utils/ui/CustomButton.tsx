@@ -8,7 +8,8 @@ interface CustomButtonProps extends Omit<ButtonProps, 'classes'> {
   variant?: 'contained' | 'outlined' | 'text';
   color?: 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning';
   isLoading?: boolean;
-  fullWidth?: boolean;
+  fullWidth?: boolean; // Vuelve a agregar la prop fullWidth
+  width?: string;
 }
 
 const CustomButton: React.FC<CustomButtonProps> = ({
@@ -16,7 +17,8 @@ const CustomButton: React.FC<CustomButtonProps> = ({
   variant = 'contained',
   color = 'primary',
   isLoading = false,
-  fullWidth = true,
+  width,
+  fullWidth = true, // Establece el valor por defecto
   className = '',
   disabled = false,
   ...props
@@ -28,11 +30,11 @@ const CustomButton: React.FC<CustomButtonProps> = ({
         root: styles.customButton,
         containedPrimary: styles.primary,
         containedSecondary: styles.secondary,
-        // Puedes agregar más variantes si lo necesitas
       }}
       className={className}
       disabled={disabled || isLoading}
-      fullWidth={fullWidth}
+      // La lógica del ancho ahora es más robusta
+      style={{ width: width || (fullWidth ? '100%' : undefined) }}
       {...props}
     >
       {isLoading ? (

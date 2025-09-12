@@ -48,7 +48,7 @@ const menuItems: MenuItem[] = [
     icon: BsBriefcaseFill,
     children: [
       { name: "Cuenta Corriente", icon: BsGraphUpArrow, link: "/comercializador/cuentacorriente" },
-      { name: "Carga archivos DDJJ", icon: BsList, link: "/comercializador/polizas" },
+      { name: "Polizas", icon: BsList, link: "/comercializador/polizas" },
     ],
   },
   {

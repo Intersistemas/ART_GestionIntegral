@@ -1,15 +1,14 @@
+/* components/Card.module.css */
+
 .card {
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  padding: 20px;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
   transition: transform 0.2s, box-shadow 0.2s;
   cursor: pointer;
   border-left: 5px solid;
+  min-height: 180px;
 }
 
 .card:hover {
@@ -17,56 +16,74 @@
   box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
 }
 
-.title {
-  font-size: 1.25rem;
-  font-weight: bold;
-  margin-bottom: 1rem;
-  color: #333;
+.cardContent {
+  padding: 20px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
 }
 
-.iconWrapper {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
+.titleSection {
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin-bottom: 1rem;
+  margin-bottom: 10px;
 }
 
-.icon {
-  font-size: 2.5rem;
+.titleIcon {
+  font-size: 1.8rem; /* Tamaño del icono */
+  color: #333; /* Color del icono */
+  margin-right: 10px; /* Espacio entre el icono y el título */
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  margin: 0; /* Reinicia el margen por si acaso */
+}
+
+.counterSection {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+
+.quantity {
+  font-size: 3.5rem;
+  font-weight: bold;
+  color: var(--naranja);
+  margin-right: 10px;
+}
+
+.description {
+  font-size: 1.5rem;
+  color: #6c757d;
+  font-weight: bold;
+}
+
+.lastUpdated {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 10px;
 }
 
 .link {
   font-weight: bold;
-  color: #3b82f6;
+  color: #2ECC71;
   text-decoration: none;
-  margin-top: auto;
+  transition: text-decoration 0.2s;
 }
 
 .link:hover {
   text-decoration: underline;
 }
 
-/* Colores dinámicos para los bordes e iconos */
-.border-green { border-color: #22c55e; }
-.icon-green { color: #22c55e; }
-.bg-green { background-color: #d1fae5; }
-
-.border-blue { border-color: #3b82f6; }
-.icon-blue { color: #3b82f6; }
-.bg-blue { background-color: #dbeafe; }
-
-/* Agrega más colores según necesites */
-.border-red { border-color: #ef4444; }
-.icon-red { color: #ef4444; }
-.bg-red { background-color: #fee2e2; }
-
-.border-yellow { border-color: #f59e0b; }
-.icon-yellow { color: #f59e0b; }
-.bg-yellow { background-color: #fffbeb; }
-
-.border-purple { border-color: #8b5cf6; }
-.icon-purple { color: #8b5cf6; }
-.bg-purple { background-color: #f3e8ff; }
+/* Colores dinámicos para los bordes */
+.border-blue { border-color: #3498DB; }
+.border-pink { border-color: #E74C88; }
+.border-purple { border-color: #9B59B6; }
+.border-yellow { border-color: #F1C40F; }
+.border-red { border-color: #E74C3C; }
+.border-green { border-color: #2ECC71; }

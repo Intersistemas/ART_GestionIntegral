@@ -14,83 +14,63 @@ import {
 } from 'react-icons/bs';
 import styles from './page.module.css';
 
-const DashboardPage = () => {
+const InicioPage = () => {
   return (
-    <div className={styles.dashboardGrid}>
-      <Card
-        title="Cuentas Corrientes"
-        icon={BsCash}
-        link="/cuentas-corrientes"
-        borderColorClass="border-blue" // Aquí se especifica la clase del borde
-      />
-      <Card
-        title="Gestión de Contratos"
-        icon={BsFileEarmarkText}
-        link="/gestion-contratos"
-        borderColorClass="border-green"
-      />
-      <Card
-        title="Gestión de Pólizas"
-        icon={BsLock}
-        link="/gestion-polizas"
-        borderColorClass="border-yellow"
-      />
-      <Card
-        title="Siniestros"
-        icon={BsTruck}
-        link="/siniestros"
-        borderColorClass="border-red"
-      />
-      <Card
-        title="Prestaciones Dinerarias"
-        icon={BsCreditCard}
-        link="/prestaciones-dinerarias"
-        borderColorClass="border-purple"
-      />
-      <Card
-        title="Consultas y Reclamos"
-        icon={BsTelephone}
-        link="/consultas-reclamos"
-        borderColorClass="border-blue"
-      />
-      <Card
-        title="Prevención"
-        icon={BsExclamationTriangle}
-        link="/prevencion"
-        borderColorClass="border-yellow"
-      />
-      <Card
-        title="Parametrización"
-        icon={BsGear}
-        link="/parametrizacion"
-        borderColorClass="border-green"
-      />
-      <Card
-        title="Reportes"
-        icon={BsBarChart}
-        link="/reportes"
-        borderColorClass="border-purple"
-      />
-       <Card
-        title="CCMM"
-        icon={BsBarChart}
-        link="/ccmm"
-        borderColorClass="border-blue"
-      />
-       <Card
-        title="INTRANET"
-        icon={BsBarChart}
-        link="/intranet"
-        borderColorClass="border-blue"
-      />
-       <Card
-        title="Capacitaciones"
-        icon={BsBarChart}
-        link="/intranet"
-        borderColorClass="border-blue"
-      />
+    <div className={styles.dashboardContainer}>
+      <div className={styles.header}>
+        <h1 className={styles.mainTitle}>PANEL PRINCIPAL</h1>
+        <h1 className={styles.welcomeText}>Bienvenido, Juan Pérez de las Nieves</h1>
+      </div>
+      
+      <div className={styles.cardsGrid}>
+        <Card
+          quantity={34}
+          description="Cotizaciones activas"
+          borderColorClass="border-blue"
+        />
+        <Card
+          quantity={34}
+          description="Cotizaciones activas"
+          borderColorClass="border-pink"
+        />
+        <Card
+          quantity={34}
+          description="Cotizaciones activas"
+          borderColorClass="border-purple"
+        />
+        <Card
+          quantity={34}
+          description="Cotizaciones activas"
+          borderColorClass="border-yellow"
+        />
+        <Card
+          quantity={34}
+          description="Cotizaciones activas"
+          borderColorClass="border-red"
+        />
+        <Card
+          quantity={34}
+          description="Cotizaciones activas"
+          borderColorClass="border-green"
+        />
+      </div>
+
+      <div className={styles.recentActivity}>
+        <h2 className={styles.activityTitle}>Actividad Reciente</h2>
+        <ul className={styles.activityList}>
+          <li className={styles.activityItem}>
+            <span className={styles.activityDate}>25/09/2025</span> - Nueva cotización creada a la empresa SOLES
+          </li>
+          <li className={styles.activityItem}>
+            <span className={styles.activityDate}>01/09/2025</span> - Póliza emitida
+          </li>
+          <li className={styles.activityItem}>
+            <span className={styles.activityDate}>5/01/2025</span> - Comisión liquidada
+          </li>
+        </ul>
+      </div>
     </div>
   );
 };
 
-export default DashboardPage;
+export default InicioPage;

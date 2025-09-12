@@ -1,25 +1,48 @@
 import Link from 'next/link';
-import { IconType } from 'react-icons';
+import { IconType } from 'react-icons'; // Importamos IconType
 import styles from './Card.module.css';
 
 interface CardProps {
-  title: string;
-  icon: IconType;
-  link: string;
-  borderColorClass: string; // Nueva prop para el color del borde
+  title?: string;
+  icon?: IconType; // Nueva prop para el icono
+  quantity?: number;
+  description?: string;
+  lastUpdated?: string;
+  link?: string;
+  borderColorClass?: string;
 }
 
-const Card: React.FC<CardProps> = ({ title, icon: Icon, link, borderColorClass }) => {
+const Card: React.FC<CardProps> = ({
+  title,
+  icon: Icon, // Renombramos 'icon' a 'Icon' para usarlo como componente
+  quantity,
+  description,
+  lastUpdated,
+  link,
+  borderColorClass = 'border-purple', // Valor por defecto si no se pasa
+}) => {
   return (
-    // Agrega la clase del borde aquí, junto con la clase principal de la tarjeta
     <div className={`${styles.card} ${styles[borderColorClass]}`}>
-      <h3 className={styles.title}>{title}</h3>
-      <div className={styles.iconWrapper}>
-        <Icon className={styles.icon} />
+      <div className={styles.cardContent}>
+        {(title || Icon) && ( // Renderiza si hay título o icono
+          <div className={styles.titleSection}>
+            {Icon && <Icon className={styles.titleIcon} />} {/* Renderiza el icono si existe */}
+            {title && <h3 className={styles.title}>{title}</h3>}
+          </div>
+        )}
+        {quantity !== undefined && (
+          <div className={styles.counterSection}>
+            <span className={styles.quantity}>{quantity}</span>
+            {description && <span className={styles.description}>{description}</span>}
+          </div>
+        )}
+        {lastUpdated && <p className={styles.lastUpdated}>Última actualización : {lastUpdated}</p>}
+        {link && (
+          <Link href={link} className={styles.link}>
+            Ver Detalles →
+          </Link>
+        )}
       </div>
-      <Link href={link} className={styles.link}>
-        Acceder →
-      </Link>
     </div>
   );
 };
