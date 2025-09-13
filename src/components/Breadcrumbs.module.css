@@ -1,9 +1,11 @@
+/* components/Breadcrumbs.module.css */
+
 .breadcrumbs ul {
   display: flex;
   list-style: none;
   padding: 10px 0;
   margin: 0;
-  color: #888;
+  color: var(--grisOscuro); /* Color base de las migas de pan */
 }
 
 .breadcrumbs li {
@@ -13,15 +15,22 @@
 
 .breadcrumbs a {
   text-decoration: none;
-  color: #0070f3;
+  color: var(--grisOscuro); /* Color de los enlaces */
   font-weight: 500;
 }
 
 .breadcrumbs a:hover {
-  text-decoration: underline;
+  color: var(--naranja); /* Color naranja al pasar el cursor */
+  text-decoration: none;
 }
 
 .separator {
   margin: 0 8px;
-  color: #ccc;
+  color: var(--gris); /* Color del separador */
+}
+
+/* Estilo para el último elemento (no un enlace) */
+.breadcrumbs li:last-child span {
+  color: var(--grisOscuro); /* Asegura que el último elemento sea gris oscuro */
+  cursor: default;
 }

@@ -1,109 +1,109 @@
+/* Sidebar.module.css */
+
 .sidebar {
   font-size: 1.3rem;
-  width: 90px;
-  height: calc(100vh - 4rem); 
-  position: fixed;
-  top: 5rem; 
-  background-color: #333;
+  height: calc(100vh - var(--navbar-height) - var(--breadcrumbs-height));
+  background-color: var(--verdeOscuro);
   color: #fff;
-  transition: width 0.3s ease-in-out, left 0.3s ease-in-out;
-  padding-top: 20px;
+  transition: width 0.3s ease-in-out;
   z-index: 10;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
 }
 
-.open {
-  width: 300px;
-  left: 0;
+.sidebarOpen {
+  width: 350px;
 }
 
-.nav {
-  overflow-y: auto; /* Permite desplazamiento si el menú es muy largo */
+.sidebarClosed {
+  width: 100px;
 }
 
-.nav ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.menuItem {
-  /* Estilos para el elemento de la lista */
-}
-
-.link {
+.header {
   display: flex;
   align-items: center;
-  padding: 15px 20px;
-  text-decoration: none;
-  color: #fff;
-  transition: background-color 0.2s;
+  justify-content: flex-start;
+  padding: 10px 20px;
+  gap: 1rem;
+  cursor: pointer;
 }
 
-.link:hover {
-  background-color: #555;
+.headerOpen {
+  background-color: var(--verdeClaro);
+}
+
+.headerText {
+  font-weight: bold;
+  font-size: 1.5rem;
+  white-space: nowrap;
+}
+
+.listContainer {
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.listItem {
+  display: block !important;
+}
+
+.menuItemButton {
+  min-height: 48px !important;
+  padding: 0 20px;
+  justify-content: center;
+}
+
+.menuItemButtonOpen {
+  justify-content: initial;
+  padding-left: 20px;
+}
+
+.menuItemButtonClosed {
+  justify-content: center;
+  padding: 0;
+}
+
+.submenuItem {
+  padding-left: 40px;
 }
 
 .icon {
-  font-size: 1.5rem;
-  margin-right: 1rem;
-  transition: margin-right 0.3s ease-in-out;
+  color: white !important;
+  font-size: 2rem;
+  transition: color 0.2s;
 }
 
-/* Ocultar el margen del ícono cuando está colapsado */
-.sidebar:not(.open) .icon {
-  margin-right: 0;
+.iconOpen {
+  margin-right: 24px;
 }
 
-.linkText {
-  margin-left: 0rem;
-  white-space: nowrap;
-  overflow: hidden;
-  transition: opacity 0.3s ease-in-out;
+.iconClosed {
+  margin: auto;
 }
 
-.sidebar:not(.open) .linkText {
+.linkTextVisible {
+  opacity: 1;
+}
+
+.linkTextHidden {
   opacity: 0;
+  white-space: nowrap;
 }
 
-/* Nuevos estilos para el submenú */
 .submenu {
-  font-size: 1.1rem;
-  list-style: none;
-  height: 0;
-  overflow: hidden;
-  transition: height 0.3s ease-in-out;
-  background-color: #414141; /* Color de fondo para el submenú */
-}
-
-.submenuOpen {
-  height: auto; /* Altura automática al abrir */
-}
-
-.sublink {
-  /* Indentación para los elementos del submenú */
-  padding-left: 30px; 
-}
-
-.collapsibleLink {
-  justify-content: space-between; /* Para empujar el icono de acordeón al final */
-}
-
-.accordionIcon {
-  font-size: 1rem;
-  margin-left: auto; /* Empuja el icono a la derecha */
+  background-color: var(--verde);
 }
 
 .toggleButton {
   background-color: transparent;
-  color: #fff;
+  color: white;
   border: none;
   cursor: pointer;
   padding: 10px;
-  align-self: center;
-  margin-bottom: 20px;
-  font-size: 2rem;
+  font-size: 3rem;
   transition: transform 0.3s;
+}
+
+.menuItemButton:hover {
+  background-color: var(--verdeClaro) !important;
 }
