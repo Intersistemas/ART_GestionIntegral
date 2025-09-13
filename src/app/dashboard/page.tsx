@@ -22,7 +22,7 @@ const DashboardPage = () => {
         <Card
           title="Siniestros Pendientes"
           quantity={34}
-          description="Siniestro"
+          description="Siniestros"
           lastUpdated="15/01/2025"
           link="/siniestros"
           borderColorClass="border-blue"
@@ -32,7 +32,7 @@ const DashboardPage = () => {
         <Card
           title="Pólizas Activas"
           quantity={34}
-          description="póliza"
+          description="Pólizas"
           lastUpdated="15/01/2025"
           link="/polizas"
           borderColorClass="border-pink"
@@ -42,7 +42,7 @@ const DashboardPage = () => {
         <Card
           title="Alertas CCM"
           quantity={34}
-          description="alertas"
+          description="Alertas"
           lastUpdated="15/01/2025"
           link="/alertas-ccm"
           borderColorClass="border-purple"
