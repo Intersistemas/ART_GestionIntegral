@@ -1,3 +1,6 @@
+// src/middleware.ts
 export { default } from "next-auth/middleware";
 
-export const config = { matcher: ["/", "/dashboard/:path*", "/empleador/:path*", "/comercializar/:path*"] };
+export const config = {
+  matcher: ["/dashboard/:path*"],
+};

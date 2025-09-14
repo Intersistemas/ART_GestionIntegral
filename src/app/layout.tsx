@@ -1,9 +1,5 @@
-"use client";
-
-import { usePathname } from "next/navigation";
-import Providers from "./Providers";
-import Navbar from "@/components/Navbar";
-import ClientLayoutWrapper from "./ClientLayoutWrapper"; // Reintegramos el wrapper
+// src/app/layout.tsx
+import Providers from './Providers';
 import "./normalize.css";
 import "@/styles/globals.css";
 
@@ -17,15 +13,11 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
-  const isSigninPage = pathname === "/login" || pathname === "/register";
-
   return (
     <html lang="en">
       <body>
         <Providers>
-          {!isSigninPage && <Navbar />}
-          <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
+          {children}
         </Providers>
       </body>
     </html>
