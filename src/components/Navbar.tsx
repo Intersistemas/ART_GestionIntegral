@@ -38,7 +38,7 @@ function Navbar() {
                 <BsFillBellFill className={styles.iconButton} />
               </li>
               <li className={styles.menuItem}>
-                <Link href="/perfil" className={styles.menuLink}>
+                <Link href="/dashboard/perfil" className={styles.menuLink}>
                   <BsPersonFill className={styles.iconButton} />
                 </Link>
               </li>

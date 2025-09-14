@@ -1,9 +1,7 @@
-// src/app/RootLayout.tsx
-import React from 'react';
-import Providers from './Providers'; // Importa el componente Providers
+// src/app/layout.tsx
+import Providers from './Providers';
 import "./normalize.css";
 import "@/styles/globals.css";
-import ClientSessionWrapper from './ClientSessionWrapper';
 
 export const metadata = {
   title: "ART Gestión Integral",
@@ -19,7 +17,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <Providers>
-          <ClientSessionWrapper>{children}</ClientSessionWrapper>
+          {children}
         </Providers>
       </body>
     </html>

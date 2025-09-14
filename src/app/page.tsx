@@ -1,66 +1,21 @@
-"use client";
 // src/app/page.tsx
-import React from 'react';
-import Card from '@/components/Card';
-import styles from './page.module.css';
+import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
 
-const InicioPage = () => {
+export default async function HomePage() {
+  const session = await getServerSession();
+  if (session) {
+    // Redirige al usuario autenticado al dashboard
+    redirect('/dashboard');
+  }else{
+     redirect('/login');
+  }
+
+  // Muestra la página pública de inicio (landing page)
   return (
-    <div className={styles.dashboardContainer}>
-      <div className={styles.header}>
-        <h1 className={styles.mainTitle}>PANEL PRINCIPAL</h1>
-        <h1 className={styles.welcomeText}>Bienvenido, Juan Pérez de las Nieves</h1>
-      </div>
-      
-      <div className={styles.cardsGrid}>
-        <Card
-          quantity={34}
-          description="Cotizaciones activas"
-          borderColorClass="border-blue"
-        />
-        <Card
-          quantity={34}
-          description="Cotizaciones activas"
-          borderColorClass="border-pink"
-        />
-        <Card
-          quantity={34}
-          description="Cotizaciones activas"
-          borderColorClass="border-purple"
-        />
-        <Card
-          quantity={34}
-          description="Cotizaciones activas"
-          borderColorClass="border-yellow"
-        />
-        <Card
-          quantity={34}
-          description="Cotizaciones activas"
-          borderColorClass="border-red"
-        />
-        <Card
-          quantity={34}
-          description="Cotizaciones activas"
-          borderColorClass="border-green"
-        />
-      </div>
-
-      <div className={styles.recentActivity}>
-        <h2 className={styles.activityTitle}>Actividad Reciente</h2>
-        <ul className={styles.activityList}>
-          <li className={styles.activityItem}>
-            <span className={styles.activityDate}>25/09/2025</span> - Nueva cotización creada a la empresa SOLES
-          </li>
-          <li className={styles.activityItem}>
-            <span className={styles.activityDate}>01/09/2025</span> - Póliza emitida
-          </li>
-          <li className={styles.activityItem}>
-            <span className={styles.activityDate}>5/01/2025</span> - Comisión liquidada
-          </li>
-        </ul>
-      </div>
+    <div>
+      <h1>Bienvenido a la aplicación</h1>
+      <p>Por favor, <a href="/login">inicia sesión</a> para continuar.</p>
     </div>
   );
-};
-
-export default InicioPage;
+}

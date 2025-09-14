@@ -1,20 +1,24 @@
 // components/poliza/poliza.tsx
-"use client";
+"use client"; // Marca el componente como un Componente de Cliente
 
 import React from 'react';
-import { useSession } from "next-auth/react"; // Importa el hook useSession
+import { useSession } from 'next-auth/react';
 import styles from './poliza.module.css';
 
 const Poliza = () => {
+
   const { data: session, status } = useSession();
 
-  // Muestra un estado de carga mientras se verifica la sesión
-  if (status === "loading") {
-    return <div className={styles.loading}>Cargando datos de póliza...</div>;
+  if (status === 'loading') {
+    return <p>Cargando datos...</p>;
   }
 
-  console.log('session?.user',session?.user);
-  const { email, nombre, cuit } = session?.user as any;
+  if (!session || !session.user) {
+    return <p>Error: Sesión no válida o no encontrada.</p>;
+  }
+
+  // Accede a las propiedades de la sesión con seguridad
+  const { email, nombre, cuit } = session.user as any;
 
   return (
     <div>
@@ -23,7 +27,7 @@ const Poliza = () => {
         <h2 className={styles.title}>Razón Social</h2>
         <p className={styles.data}>{nombre}</p>
       </div>
-      
+
       {/* Sección de Datos de la Aseguradora */}
       <h3 className={styles.sectionTitle}>Datos de la Aseguradora</h3>
       <div className={styles.dataGrid}>
@@ -64,7 +68,7 @@ const Poliza = () => {
           <p className={styles.value}>08003336888</p>
         </div>
       </div>
-      
+
       {/* Sección de Canal Comercial */}
       <h3 className={styles.sectionTitle}>Canal Comercial</h3>
       <div className={styles.dataGrid}>
@@ -126,7 +130,7 @@ const Poliza = () => {
           <p className={styles.value}>(011)1550602474</p>
         </div>
       </div>
-      
+
       {/* Sección de Condiciones Comerciales */}
       <h3 className={styles.sectionTitle}>Condiciones Comerciales</h3>
       <div className={styles.dataGrid}>
