@@ -1,17 +1,7 @@
 "use client";
+// src/app/page.tsx
 import React from 'react';
 import Card from '@/components/Card';
-import { 
-  BsCash, 
-  BsFileEarmarkText, 
-  BsLock, 
-  BsTruck, 
-  BsCreditCard, 
-  BsTelephone, 
-  BsExclamationTriangle, 
-  BsGear, 
-  BsBarChart 
-} from 'react-icons/bs';
 import styles from './page.module.css';
 
 const InicioPage = () => {

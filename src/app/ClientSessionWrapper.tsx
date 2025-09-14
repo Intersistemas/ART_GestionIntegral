@@ -3,16 +3,22 @@
 import { useSession } from "next-auth/react";
 import Sidebar from "@/components/Sidebar";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import Navbar from "@/components/Navbar";
+import { usePathname } from "next/navigation";
 import React, { useState } from "react";
-import styles from './ClientLayoutWrapper.module.css';
+import styles from './ClientSessionWrapper.module.css';
+import Providers from "./Providers";
 
 interface Props {
   children: React.ReactNode;
 }
 
-export default function ClientLayoutWrapper({ children }: Props) {
+export default function ClientSessionWrapper({ children }: Props) {
   const { data: session, status } = useSession();
+  const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const isSigninPage = pathname === "/login" || pathname === "/register";
 
   if (status === "loading") {
     return (
@@ -22,9 +28,9 @@ export default function ClientLayoutWrapper({ children }: Props) {
     );
   }
 
-  // La lógica principal del layout ahora vive aquí, dentro del SessionProvider
   return (
-    <>
+    <Providers>
+      {!isSigninPage && <Navbar />}
       {session && (
         <>
           <div className={styles.mainLayout}>
@@ -45,6 +51,6 @@ export default function ClientLayoutWrapper({ children }: Props) {
           {children}
         </div>
       )}
-    </>
+    </Providers>
   );
 }
