@@ -1,11 +1,9 @@
-"use client";
-
-import { usePathname } from "next/navigation";
-import Providers from "./Providers";
-import Navbar from "@/components/Navbar";
-import ClientLayoutWrapper from "./ClientLayoutWrapper"; // Reintegramos el wrapper
+// src/app/RootLayout.tsx
+import React from 'react';
+import Providers from './Providers'; // Importa el componente Providers
 import "./normalize.css";
 import "@/styles/globals.css";
+import ClientSessionWrapper from './ClientSessionWrapper';
 
 export const metadata = {
   title: "ART Gestión Integral",
@@ -17,15 +15,11 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
-  const isSigninPage = pathname === "/login" || pathname === "/register";
-
   return (
     <html lang="en">
       <body>
         <Providers>
-          {!isSigninPage && <Navbar />}
-          <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
+          <ClientSessionWrapper>{children}</ClientSessionWrapper>
         </Providers>
       </body>
     </html>

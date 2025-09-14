@@ -13,6 +13,7 @@ const Poliza = () => {
     return <div className={styles.loading}>Cargando datos de póliza...</div>;
   }
 
+  console.log('session?.user',session?.user);
   const { email, nombre, cuit } = session?.user as any;
 
   return (

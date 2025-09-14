@@ -1,0 +1,101 @@
+.tableContainer {
+  margin-top: var(--main-content-margin);
+  width: 100%;
+}
+
+.paper {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 8px !important;
+}
+
+.table {
+  min-width: 700px;
+}
+
+.tableHead {
+  background-color: var(--verdeOscuro) !important;
+}
+
+.tableHeaderCell {
+  color: var(--blanco) !important;
+  font-family: var(--font) !important;
+  font-weight: 700 !important;
+  font-size: 1rem !important;
+  border-bottom: 2px solid var(--naranja) !important;
+  text-transform: uppercase;
+}
+
+.tableHeaderCell:hover {
+  background-color: var(--verde) !important;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.sortIcon {
+  color: var(--blanco);
+  margin-left: 5px;
+  font-size: 1rem;
+}
+
+.tableRow:nth-of-type(odd) {
+  background-color: var(--grisClaro) !important;
+}
+
+.tableRow:hover {
+  background-color: #e0e0e0 !important;
+}
+
+.tableBodyCell {
+  font-family: var(--font) !important;
+  font-size: 0.9rem !important;
+  color: var(--grisOscuro) !important;
+  border-bottom: 1px solid #e0e0e0 !important;
+}
+
+.noDataCell {
+  text-align: center;
+  padding: 20px;
+  font-size: 1.2rem;
+  color: var(--gris);
+}
+
+.paginationContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  color: var(--grisOscuro);
+  font-family: var(--font);
+}
+
+.paginationContainer button {
+  color: var(--naranja) !important;
+}
+
+.paginationContainer button:disabled {
+  color: var(--gris) !important;
+}
+
+.filterInput {
+  margin-bottom: 20px !important;
+}
+
+.filterInput input {
+  font-family: var(--font) !important;
+  color: var(--grisOscuro) !important;
+}
+
+.filterInput fieldset {
+  border-color: var(--gris) !important;
+}
+
+.filterInput label {
+  color: var(--gris) !important;
+}
+
+.filterInput:hover fieldset {
+  border-color: var(--verde) !important;
+}
+
+.filterInput.Mui-focused fieldset {
+  border-color: var(--verde) !important;
+}
