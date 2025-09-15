@@ -59,7 +59,11 @@ const menuItems: MenuItem[] = [
   {
     name: "Informes",
     icon: BsBarChartLineFill,
-    link: "/dashboard/informes",
+    children: [
+      { name: "Comisiones Médicas", icon: BsGraphUpArrow, link: "/dashboard/informes/comisionesMedicas" },
+      { name: "Siniestros", icon: BsList, link: "/dashboard/informes/siniestros" },
+      { name: "Atención Al Público", icon: BsList, link: "/dashboard/informes/atencionAlPublico" },
+    ],
   },
   {
     name: "Usuarios",
