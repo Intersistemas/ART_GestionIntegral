@@ -27,6 +27,7 @@
   flex-grow: 1;
   height: calc(100vh - var(--navbar-height) - var(--breadcrumbs-height) - (var(--main-content-margin)));
   overflow-y: auto;
+  width: 90vw;
 }
 
 .loadingContainer {

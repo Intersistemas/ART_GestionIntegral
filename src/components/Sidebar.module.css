@@ -12,7 +12,7 @@
 }
 
 .sidebarOpen {
-  width: 350px;
+  width: var(--sidebar-width-open);
 }
 
 .sidebarClosed {
