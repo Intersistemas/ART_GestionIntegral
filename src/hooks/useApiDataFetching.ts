@@ -9,11 +9,11 @@ export type APIEndpoints = {
 
 //#region Declaraciones de tipos privados
 type APINames = keyof APIEndpoints;
-interface APIConfigureOptions {
-  data?: any;
+interface APIConfigureOptions<Data = any> {
+  data?: Data;
   params?: any;
 }
-type APIConfigure = (options?: APIConfigureOptions) => APIConfigureOptions | undefined;
+type APIConfigure = <Data>(options?: APIConfigureOptions<Data>) => APIConfigureOptions<Data> | undefined;
 type APIConfiguration = {
   [APIName in APINames]: {
     baseUrl: string | URL;
@@ -41,9 +41,9 @@ const APIConfig: APIConfiguration = {
 }
 //#endregion Configuracion de APIs
 
-async function fetcher(
-  apiName: APINames,
-  apiEndpoint: APIEndpoints[typeof apiName],
+async function fetcher<API extends APINames>(
+  apiName: API,
+  apiEndpoint: APIEndpoints[API],
   options?: APIConfigureOptions
 ) {
   const api = APIConfig[apiName];
@@ -67,10 +67,10 @@ async function fetcher(
  * @param endpoint Nombre del endpoint registrado para api
  * @param options Las opciones para la petición, incluyendo 'data' (body) y 'params'.
  */
-export default function useApiDataFetching<Data>(
-  api: APINames,
-  endpoint: APIEndpoints[typeof api],
-  options?: APIConfigureOptions
+export default function useApiDataFetching<Data = any, API extends APINames = APINames, OptionsData = any>(
+  api: API,
+  endpoint: APIEndpoints[API],
+  options?: APIConfigureOptions<OptionsData>,
 ) {
   // SWR utiliza el primer parámetro como clave de caché.
   // Es importante que la clave sea única para cada petición.
