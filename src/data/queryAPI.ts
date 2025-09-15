@@ -2,7 +2,6 @@ import useSWR from "swr";
 import axios, { AxiosError } from "axios";
 import { ExternalAPI } from "./api";
 
-//#region Types
 export interface Query {
   select: Select[];
   from: Source[];
@@ -54,7 +53,6 @@ export interface QueryAnalysis {
   pages?: number;
   tables?: Record<string, string[]>;
 }
-//#endregion Types
 
 export class QueriesAPIClass extends ExternalAPI {
   basePath = process.env.NEXT_PUBLIC_QUERYAPI_URL!;

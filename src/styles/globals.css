@@ -39,10 +39,11 @@
   --hover-color-menu: #414141;
 
   /* Variables para el layout */
-   --navbar-height: 7rem;
+  --navbar-height: 7rem;
+  --sidebar-width-open: 350px;
   --breadcrumbs-height: 3.5rem; /* Altura estimada de las migas de pan */
   --content-padding: 20px;
-  --main-content-margin: 25px;
+  --main-content-margin: 5px;
 }
 
 html {
