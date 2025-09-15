@@ -33,9 +33,11 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/deploym
 **Bando de Iconos utilizamos: https://react-icons.github.io/react-icons/
 
 **Fetching:
- _desde un Client Component (use client), podemos usar SWR (state while revalidate) pasandole una funcion Fetcher.
- _desde los Servers, usaremos axios
+    _desde un Client Component (use client), podemos usar SWR (state while revalidate) pasandole una funcion Fetcher.
+    _desde los Servers, usaremos axios
 
-**Entorno UI: usaremos Material UI
+**Entorno UI: 
+    _En general usaremos Material UI
+    _tenemos una carpeta de UTILS/UI que tiene Botones, Forms, DataGrid y Modals que implementan MATERIAL UI y @tanstack/react-table 
 
-**Estadps Globales: si no tenemos lo necesario en getSession, utilizamos Zustand.
+**Estados Globales: si no tenemos lo necesario en getSession, utilizamos Zustand.

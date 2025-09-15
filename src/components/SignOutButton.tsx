@@ -1,16 +1,23 @@
-// components/SignOutButton.tsx
 "use client";
-
 import { signOut } from "next-auth/react";
-import styles from './Navbar.module.css';
+import React from 'react';
 
-export default function SignOutButton() {
+interface SignOutButtonProps {
+  icon: React.ReactNode;
+}
+
+export default function SignOutButton({ icon }: SignOutButtonProps) {
   return (
-    <button
-      onClick={() => signOut()}
-      className={styles.menuLink} // Aplica la clase del enlace para el estilo
-    >
-      Salir
+    <button onClick={() => signOut()} style={{
+      background: 'none',
+      border: 'none',
+      cursor: 'pointer',
+      padding: '0',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}>
+      {icon}
     </button>
   );
 }

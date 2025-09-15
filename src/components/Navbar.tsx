@@ -1,13 +1,12 @@
-// components/Navbar.tsx
 "use client";
 
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import SignOutButton from "./SignOutButton";
-import { BsSearch, BsBell } from "react-icons/bs";
+// Importaciones actualizadas para usar los iconos de relleno (fill)
+import { BsSearch, BsFillBellFill, BsPersonFill, BsBoxArrowRight } from "react-icons/bs";
 import styles from './Navbar.module.css';
 import Image from 'next/image';
-import logo from '@/utils/media/ARTIcon_SVG.svg';
 
 function Navbar() {
   const { data: session, status } = useSession();
@@ -16,42 +15,39 @@ function Navbar() {
   return (
     <nav className={styles.nav}>
       <div className={styles.container}>
-        <Link href="/">
-          <div className={styles.logoContainer}>
-            <Image
-              src={logo}
-              alt="ART Gestión Integral Logo"
-              width={80}
-              height={20}
-            />
-            <h1 className={styles.title}>ART Gestión Integral</h1>
-          </div>
+        <Link href="/" className={styles.logoLink}>
+          <Image
+            src="/icons/LogoTexto.svg" 
+            alt="ART Mutual Rural Logo"
+            width={200}
+            height={60} 
+          />
         </Link>
+        <div className={styles.searchContainer}>
+          <input
+            type="text"
+            placeholder="Buscar..."
+            className={styles.searchInput}
+          />
+          <BsSearch className={styles.searchIcon} />
+        </div>
         <ul className={styles.menu}>
           {session ? (
             <>
-              <div className={styles.searchContainer}>
-                <input
-                  type="text"
-                  placeholder="Buscar..."
-                  className={styles.searchInput}
-                />
-                <BsSearch className={styles.searchIcon} />
-              </div>
               <li className={styles.menuItem}>
-                <BsBell className={styles.bellIcon} />
+                <BsFillBellFill className={styles.iconButton} />
               </li>
               <li className={styles.menuItem}>
-                <Link href="/perfil" className={styles.menuLink}>
-                  Perfil
+                <Link href="/dashboard/perfil" className={styles.menuLink}>
+                  <BsPersonFill className={styles.iconButton} />
                 </Link>
               </li>
               <li className={styles.menuItem}>
-                <SignOutButton />
+                <SignOutButton icon={<BsBoxArrowRight className={styles.iconButton} />} />
               </li>
             </>
           ) : (
-            null // O renderizar un componente de ingreso si es necesario
+            null
           )}
         </ul>
       </div>
