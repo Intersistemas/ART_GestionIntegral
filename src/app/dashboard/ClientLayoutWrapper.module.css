@@ -10,7 +10,7 @@
   background-color: var(--grisClaro);
   z-index: 11;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-top: var(--navbar-height); /* Usa la variable */
+  margin-top: var(--navbar-height);
 }
 
 .contentWrapper {
@@ -23,11 +23,62 @@
   background-color: #fafcf7;
   border: 1px solid #ddd;
   border-radius: 8px;
-  /* margin: 1% 1%; */
+  display: flex; 
+  flex-direction: column;
   flex-grow: 1;
   height: calc(100vh - var(--navbar-height) - var(--breadcrumbs-height) - (var(--main-content-margin)));
   overflow-y: auto;
   width: 90vw;
+}
+
+/* Estilos para el título de la página */
+.pageTitleContainer{
+  display: flex;
+}
+
+.pageTitle {
+  padding-right: 5rem;
+  font-size: 3rem; 
+  font-weight: 700;
+  color: var(--grisOscuro);
+  text-transform: capitalize;
+  position: relative;
+  overflow: hidden; 
+  /* Posición inicial para la animación de entrada */
+  transform: translateY(-100%);
+  opacity: 0;
+  /* Animación de entrada */
+  animation: slideIn 0.8s ease-out forwards;
+  /* Mueve el h1 a la derecha */
+  margin-left: auto;
+}
+
+/* Pseudo-elemento para el subrayado */
+.pageTitle::after {
+  content: '';
+  position: absolute;
+  bottom: 0px; /* Se ajusta para que la línea aparezca visiblemente debajo */
+  right: 0;
+  width: 0; 
+  height: 3px;
+  background-color: var(--naranja);
+  /* La animación se retrasa para aparecer después del título */
+  animation: drawLine 0.3s ease-out 0.7s forwards;
+}
+
+/* Definición de la animación para el título */
+@keyframes slideIn {
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Definición de la animación para el subrayado */
+@keyframes drawLine {
+  to {
+    width: 100%;
+  }
 }
 
 .loadingContainer {

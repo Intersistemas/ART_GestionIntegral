@@ -13,7 +13,6 @@ const DashboardPage = () => {
   return (
     <div className={styles.dashboardContainer}>
       <div className={styles.header}>
-        <h1 className={styles.mainTitle}>DASHBOARD</h1>
         <p className={styles.welcomeText}>Bienvenido Juan. Aquí tienes un resumen de tu actividad reciente.</p>
       </div>
 

@@ -75,9 +75,6 @@ export default function UsuariosPage() {
 
   return (
     <Box className={styles.usuariosPageContainer}>
-      <Typography variant="h4" component="h1" className={styles.pageTitle}>
-        Gestión de Usuarios
-      </Typography>
       <Button
         variant="contained"
         color="primary"

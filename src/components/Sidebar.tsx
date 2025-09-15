@@ -34,11 +34,11 @@ const menuItems: MenuItem[] = [
     children: [
       { name: "Póliza", icon: BsFileText, link: "/dashboard/empleador/poliza" },
       { name: "Cobertura", icon: BsCardChecklist, link: "/dashboard/empleador/cobertura" },
-      { name: "Cuenta Corriente", icon: BsGraphUpArrow, link: "/dashboard/empleador/cuentacorriente" },
+      { name: "Cuenta Corriente", icon: BsGraphUpArrow, link: "/dashboard/empleador/cuentaCorriente" },
       { name: "Formulario RGRL", icon: BsClipboard2Data, link: "/dashboard/empleador/formularioRGRL" },
       { name: "Formulario RAR", icon: BsClipboard2Data, link: "/dashboard/empleador/formularioRAR" },
       { name: "Siniestros", icon: BsCalendar2Plus, link: "/dashboard/empleador/siniestros" },
-      { name: "Avisos de Obra", icon: BsHouseGear, link: "/dashboard/empleador/avisosdeobra" },
+      { name: "Avisos de Obra", icon: BsHouseGear, link: "/dashboard/empleador/avisosDeObra" },
       { name: "SVCC", icon: BsFolder, link: "/dashboard/empleador/svcc" },
       { name: "Credenciales", icon: BsCreditCard, link: "/dashboard/empleador/credenciales" },
     ],
@@ -47,7 +47,7 @@ const menuItems: MenuItem[] = [
     name: "Comercializador",
     icon: BsBriefcaseFill,
     children: [
-      { name: "Cuenta Corriente", icon: BsGraphUpArrow, link: "/dashboard/comercializador/cuentacorriente" },
+      { name: "Cuenta Corriente", icon: BsGraphUpArrow, link: "/dashboard/comercializador/cuentaCorriente" },
       { name: "Polizas", icon: BsList, link: "/dashboard/comercializador/polizas" },
     ],
   },
