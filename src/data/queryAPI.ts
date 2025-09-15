@@ -56,36 +56,36 @@ export interface QueryAnalysis {
 }
 //#endregion Types
 
-export class QueriesAPI extends ExternalAPI {
+export class QueriesAPIClass extends ExternalAPI {
   basePath = process.env.NEXT_PUBLIC_QUERYAPI_URL!;
   //#region execute
-  execute = async (query: Query): Promise<QueryResult> => axios.post(
+  execute = async (query: Query) => axios.post<QueryResult>
+  (
     this.getURL({ path: "/api/queries/execute" }).toString(),
     query
   ).then(
     async (response) => {
-      if (response.status === 200) return { count: 0, ...await response.data };
+      if (response.status === 200) return response.data;
       return Promise.reject(new AxiosError(`Error en la petición: ${response.data}`));
     }
   );
-  public useExecute(query: Query) {
-    const { data, error, isLoading } = useSWR<QueryResult>(query, () => this.execute(query));
-    return { data, error, isLoading };
-  }
+  useExecute = (query: Query) => useSWR<QueryResult>(query, () => this.execute(query));
   //#endregion execute
   //#region analyze
-  analyze = async (query: Query): Promise<QueryAnalysis> => axios.post(
+  analyze = async (query: Query) => axios.post<QueryAnalysis>
+  (
     this.getURL({ path: "/api/queries/analyze" }).toString(),
     query
   ).then(
     async (response) => {
-      if (response.status === 200) return { count: 0, ...await response.data };
+      if (response.status === 200) return response.data;
       return Promise.reject(new AxiosError(`Error en la petición: ${response.data}`));
     }
   );
-  public useAnalyze(query: Query) {
-    const { data, error, isLoading } = useSWR<QueryResult>(query, () => this.analyze(query));
-    return { data, error, isLoading };
-  }
+  useAnalyze = (query: Query) => useSWR<QueryResult>(query, () => this.analyze(query));
   //#endregion analyze
 }
+
+const QueriesAPI = Object.seal(new QueriesAPIClass());
+
+export default QueriesAPI;
