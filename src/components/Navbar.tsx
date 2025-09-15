@@ -11,8 +11,6 @@ import Image from 'next/image';
 
 function Navbar() {
   const { data: session, status } = useSession();
-  console.log("session:", session);
-
   return (
     <nav className={styles.nav}>
       <div className={styles.container}>
