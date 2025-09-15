@@ -9,14 +9,14 @@ export type APIEndpoints = {
 //#endregion Declaraciones de tipos públicos
 
 //#region Declaraciones de tipos privados
-type APINames = keyof typeof APIConfig;
-interface APIConfigureOptions {
-  data?: any;
+type APINames = keyof APIEndpoints;
+interface APIConfigureOptions<Data = any> {
+  data?: Data;
   params?: any;
 }
-type APIConfigure = (options?: APIConfigureOptions) => APIConfigureOptions | undefined;
+type APIConfigure = <Data>(options?: APIConfigureOptions<Data>) => APIConfigureOptions<Data> | undefined;
 type APIConfiguration = {
-  [APIName in keyof APIEndpoints]: {
+  [APIName in APINames]: {
     baseUrl: string | URL;
     endpoints: {
       [APIEndpoint in APIEndpoints[APIName]]: {
@@ -31,7 +31,7 @@ type APIConfiguration = {
 //#endregion Declaraciones de tipos privados
 
 //#region Configuracion de APIs
-export const APIConfig = {
+const APIConfig = {
   QueryAPI: {
     baseUrl: process.env.NEXT_PUBLIC_QUERYAPI_URL!,
     endpoints: {
@@ -50,45 +50,24 @@ export const APIConfig = {
 } as APIConfiguration;
 //#endregion Configuracion de APIs
 
-async function getOptions(
-  apiConfigure?: APIConfigure,
-  endpointConfigure?: APIConfigure,
-  options?: APIConfigureOptions
+export async function fetcher<Data = any, API extends APINames = APINames, OptionsData = any>(
+  apiName: API,
+  apiEndpoint: APIEndpoints[API],
+  options?: APIConfigureOptions<OptionsData>
 ) {
-  let finalOptions = options;
-  if (apiConfigure) {
-    finalOptions = apiConfigure(finalOptions);
-  }
-  if (endpointConfigure) {
-    finalOptions = endpointConfigure(finalOptions);
-  }
-  return finalOptions;
-}
-
-export async function fetcher<T, A extends keyof APIEndpoints, E extends APIEndpoints[A]>(
-  apiName: A,
-  apiEndpoint: E,
-  options?: APIConfigureOptions
-): Promise<T> {
   const api = APIConfig[apiName];
-  const endpoint = api.endpoints[apiEndpoint as keyof typeof api.endpoints];
-
+  const endpoint = api.endpoints[apiEndpoint];
   const method = endpoint.method;
   const url = new URL(endpoint.path ?? "", api.baseUrl).toString();
-  
-  const finalOptions = await getOptions(api.configure, endpoint.configure, options);
-
+  options = getOptions(api.configure);
+  const { data, params } = getOptions(endpoint.configure) ?? {};
   try {
-    const response = await axios({
-      method,
-      url,
-      data: finalOptions?.data,
-      params: finalOptions?.params,
-    });
+    const response = await axios<Data>({ method, url, data, params });
     return response.data;
   } catch (error) {
     throw new AxiosError('Error en la petición: ' + (error as AxiosError).message);
   }
+  function getOptions(configure?: APIConfigure) { return (configure) ? configure(options) : options; }
 };
 
 /**
@@ -97,12 +76,12 @@ export async function fetcher<T, A extends keyof APIEndpoints, E extends APIEndp
  * @param endpoint Nombre del endpoint registrado para api
  * @param options Las opciones para la petición, incluyendo 'data' (body) y 'params'.
  */
-export default function useApiDataFetching<Data, A extends keyof APIEndpoints, E extends APIEndpoints[A]>(
-  api: A,
-  endpoint: E,
-  options?: APIConfigureOptions
+export default function useApiDataFetching<Data = any, API extends APINames = APINames, OptionsData = any>(
+  api: API,
+  endpoint: APIEndpoints[API],
+  options?: APIConfigureOptions<OptionsData>,
 ) {
   const swrKey = options ? [api, endpoint, options.data, options.params] : [api, endpoint];
-  const { data, error, isLoading, mutate } = useSWR<Data>(swrKey, () => fetcher<Data, A, E>(api, endpoint, options));
+  const { data, error, isLoading, mutate } = useSWR<Data>(swrKey, () => fetcher(api, endpoint, options));
   return { data, error, isLoading, mutate };
 };

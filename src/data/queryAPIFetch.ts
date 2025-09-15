@@ -1,6 +1,5 @@
 import useSWR from "swr";
-import axios, { AxiosError } from "axios";
-import { ExternalAPI } from "./api";
+import { ExternalAPI, ExternalAPIError } from "./api";
 
 //#region Types
 export interface Query {
@@ -59,13 +58,18 @@ export interface QueryAnalysis {
 export class QueriesAPI extends ExternalAPI {
   basePath = process.env.NEXT_PUBLIC_QUERYAPI_URL!;
   //#region execute
-  execute = async (query: Query): Promise<QueryResult> => axios.post(
-    this.getURL({ path: "/api/queries/execute" }).toString(),
-    query
+  execute = async (query: Query): Promise<QueryResult> => fetch(
+    this.getURL({ path: "/api/queries/execute" }),
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(query),
+    }
   ).then(
-    async (response) => {
-      if (response.status === 200) return { count: 0, ...await response.data };
-      return Promise.reject(new AxiosError(`Error en la petición: ${response.data}`));
+    async (response: Response) => {
+      if (response.ok) return { count: 0, ...await response.json() };
+      const detail = await response.text();
+      return Promise.reject(new ExternalAPIError({ code: response.status, detail, message: detail }));
     }
   );
   public useExecute(query: Query) {
@@ -74,13 +78,18 @@ export class QueriesAPI extends ExternalAPI {
   }
   //#endregion execute
   //#region analyze
-  analyze = async (query: Query): Promise<QueryAnalysis> => axios.post(
-    this.getURL({ path: "/api/queries/analyze" }).toString(),
-    query
+  analyze = async (query: Query): Promise<QueryAnalysis> => fetch(
+    this.getURL({ path: "/api/queries/analyze" }),
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(query),
+    }
   ).then(
-    async (response) => {
-      if (response.status === 200) return { count: 0, ...await response.data };
-      return Promise.reject(new AxiosError(`Error en la petición: ${response.data}`));
+    async (response: Response) => {
+      if (response.ok) return { count: 0, ...await response.json() };
+      const detail = await response.text();
+      return Promise.reject(new ExternalAPIError({ code: response.status, detail, message: detail }));
     }
   );
   public useAnalyze(query: Query) {
