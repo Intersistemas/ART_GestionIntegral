@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import SignOutButton from "./SignOutButton";
 // Importaciones actualizadas para usar los iconos de relleno (fill)
-import { BsSearch, BsFillBellFill, BsPersonFill, BsBoxArrowRight } from "react-icons/bs";
+import { BsSearch, BsPersonFill, BsBoxArrowRight } from "react-icons/bs";
+import { GoBellFill } from "react-icons/go";
 import styles from './Navbar.module.css';
 import Image from 'next/image';
 
@@ -35,7 +36,7 @@ function Navbar() {
           {session ? (
             <>
               <li className={styles.menuItem}>
-                <BsFillBellFill className={styles.iconButton} />
+                <GoBellFill  className={styles.iconButton} />
               </li>
               <li className={styles.menuItem}>
                 <Link href="/dashboard/perfil" className={styles.menuLink}>
