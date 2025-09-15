@@ -1,22 +1,19 @@
-import useApiDataFetching, { fetcher } from "@/hooks/useApiDataFetching"; // Importa el fetcher
-import UsuarioRow from "./interfaces/UsuarioRow";
-import RolesInterface from "./interfaces/RolesInterface";
 import { AxiosError } from "axios";
+import UsuarioAPI from "@/data/usuarioAPI";
 
-export const useUsuarios = () => {
-  const { data: usuariosData, error: usuariosError, isLoading: usuariosLoading, mutate: mutateUsuarios } = useApiDataFetching<{ data: UsuarioRow[] }, "UsuarioAPI">(
-    "UsuarioAPI", "getAll", { params: { EmpresaId: 1 } }
-);
+const { useGetAll, useGetRoles, registrar } = UsuarioAPI;
 
-  const { data: roles, error: rolesError, isLoading: rolesLoading } = useApiDataFetching<RolesInterface[], "UsuarioAPI">(
-  "UsuarioAPI", "getRoles"
-);
+export { type UsuarioRow } from "@/data/usuarioAPI";
+
+export default function useUsuarios() {
+  const { data: usuariosData, error: usuariosError, isLoading: usuariosLoading, mutate: mutateUsuarios } = useGetAll({ empresaId: 1 });
+  const { data: roles, error: rolesError, isLoading: rolesLoading } = useGetRoles();
 
   const registrarUsuario = async (formData: any) => {
     try {
       // Usa el fetcher importado para la petición POST, especificando los tipos genéricos
-      await fetcher("UsuarioAPI", "registrar", { data: formData });
-      
+      // await fetcher("UsuarioAPI", "registrar", { data: formData });
+      await registrar(formData);
       // Con SWR, usa mutate para revalidar automáticamente los datos.
       await mutateUsuarios();
       return { success: true };

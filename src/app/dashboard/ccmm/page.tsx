@@ -31,7 +31,7 @@ import {
   type GridRowsProp,
   type GridValueFormatter
 } from '@mui/x-data-grid';
-import { QueriesAPI, type Query } from '@/data/queryAPI';
+import QueriesAPI, { type Query } from '@/data/queryAPI';
 import Formato from '@/utils/Formato';
 import { defaultCombinatorsExtended, defaultOperators, defaultTranslations } from "@/utils/QueryBuilderDefaults"
 import propositionFormat from '@/utils/PropositionFormatQuery';
@@ -71,7 +71,7 @@ type FieldDef = {
 }
 const qbClassnames: Partial<Classnames> = { queryBuilder: 'queryBuilder-branches' };
 const defaultQuery: RuleGroupType = { combinator: 'and', rules: [] };
-const queriesApi = new QueriesAPI();
+const { execute, analyze } = QueriesAPI;
 const getRowId = (row: any) => row.CCMMCas_Interno;
 
 export default function CCMM() {
@@ -108,7 +108,7 @@ export default function CCMM() {
     load();
     return () => { active = false };
     async function load() {
-      const options = await queriesApi.execute({
+      const options = await execute({
         select: tables.RefCCMMMotivos.map(f => ({ value: f.name })),
         from: [{ table: "RefCCMMMotivos" }],
         order: { by: [tables.RefCCMMMotivos[0].name] },
@@ -134,7 +134,7 @@ export default function CCMM() {
     load();
     return () => { active = false };
     async function load() {
-      const options = await queriesApi.execute({
+      const options = await execute({
         select: tables.RefCCMMTipos.map(f => ({ value: f.name })),
         from: [{ table: "RefCCMMTipos" }],
         order: { by: [tables.RefCCMMTipos[0].name] },
@@ -208,14 +208,14 @@ export default function CCMM() {
       };
       if (proposition) query.where = proposition;
       async function onConfirm() {
-        await queriesApi.execute(query).then((ok) => {
+        await execute(query).then((ok) => {
           setRows(ok.data ?? []);
           onCloseDialog();
         }).catch((error) => errorDialog(
           { message: error.detail ?? error.message ?? JSON.stringify(error) }
         ));
       }
-      await queriesApi.analyze(query).then(async (ok) => (ok.count > 90)
+      await analyze(query).then(async (ok) => (ok.count > 90)
         ? setDialog(
           <Dialog
             open
