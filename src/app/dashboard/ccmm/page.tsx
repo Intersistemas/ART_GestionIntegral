@@ -1,7 +1,8 @@
 "use client"
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useReducer, useState } from 'react';
 import QueryBuilder, {
   formatQuery,
+  Field,
   type RuleGroupType,
   type ValueEditorType,
   type DefaultOperators,
@@ -25,6 +26,8 @@ import {
 import { MdExpandMore } from "react-icons/md";
 import {
   DataGrid,
+  GridColDef,
+  GridValidRowModel,
   useGridApiRef,
   type GridAutosizeOptions,
   type GridColType,
@@ -71,12 +74,17 @@ type FieldDef = {
 }
 const qbClassnames: Partial<Classnames> = { queryBuilder: 'queryBuilder-branches' };
 const defaultQuery: RuleGroupType = { combinator: 'and', rules: [] };
-const { execute, analyze } = QueriesAPI;
+const { execute, useExecute, analyze } = QueriesAPI;
 const getRowId = (row: any) => row.CCMMCas_Interno;
 
-export default function CCMM() {
-  const [dialog, setDialog] = useState<React.JSX.Element | null>(null);
-
+interface DataContextType {
+  tables: Record<string, FieldDef[]>,
+  columns: GridColDef<GridValidRowModel>[],
+  fields: Field[],
+  rows: { state?: GridRowsProp, setState: React.Dispatch<GridRowsProp> }
+}
+const DataContext = createContext<DataContextType | undefined>(undefined);
+function DataContextProvider({ children }: { children: ReactNode }) {
   const [tables, setTables] = useState<Record<string, FieldDef[]>>({
     RefCCMMMotivos: [{ name: "Codigo" }, { name: "Descripcion" }],
     RefCCMMTipos: [{ name: "Codigo" }, { name: "Descripcion" }],
@@ -102,75 +110,86 @@ export default function CCMM() {
       { name: "CCMMCasTipValDan_AcuHomoPagoFecha", label: "Fecha Pago", type: "date", formatter: fechaFormatter },
     ]
   });
-
+  //#region RefCCMMMotivos
+  const { data: motivos } = useExecute({
+    select: tables.RefCCMMMotivos.map(f => ({ value: f.name })),
+    from: [{ table: "RefCCMMMotivos" }],
+    order: { by: [tables.RefCCMMMotivos[0].name] },
+  });
   useEffect(() => {
-    let active = true;
-    load();
-    return () => { active = false };
-    async function load() {
-      const options = await execute({
-        select: tables.RefCCMMMotivos.map(f => ({ value: f.name })),
-        from: [{ table: "RefCCMMMotivos" }],
-        order: { by: [tables.RefCCMMMotivos[0].name] },
-      }).then((ok) => {
-        if (ok.count === 0) return;
-        return Object.fromEntries(
-          ok.data!.map(e => [`${e[tables.RefCCMMMotivos[0].name]}`, e[tables.RefCCMMMotivos[1].name]])
-        );
-      });
-      if (!active || !options) return;
-      setTables((o) => {
-        const fieldIx = o.View_ConsultaCCMM.findIndex(r => r.name === "CCMMCas_MotivoCodigo");
-        if (fieldIx < 0) return o;
-        const tables = { ...o, View_ConsultaCCMM: [...o.View_ConsultaCCMM] };
-        tables.View_ConsultaCCMM[fieldIx] = { ...tables.View_ConsultaCCMM[fieldIx], ...optionsSelect(options) };
-        return tables;
-      });
-    };
-  }, [tables.RefCCMMMotivos]);
-
+    if (!motivos?.data) return;
+    const options = Object.fromEntries(motivos.data.map(e => [`${e[tables.RefCCMMMotivos[0].name]}`, e[tables.RefCCMMMotivos[1].name]]));
+    setTables((o) => {
+      const fieldIx = o.View_ConsultaCCMM.findIndex(r => r.name === "CCMMCas_MotivoCodigo");
+      if (fieldIx < 0) return o;
+      const tables = { ...o, View_ConsultaCCMM: [...o.View_ConsultaCCMM] };
+      tables.View_ConsultaCCMM[fieldIx] = { ...tables.View_ConsultaCCMM[fieldIx], ...optionsSelect(options) };
+      return tables;
+    });
+  }, [motivos]);
+  //#endregion RefCCMMMotivos
+  //#region RefCCMMTipos
+  const { data: tipos } = useExecute({
+    select: tables.RefCCMMTipos.map(f => ({ value: f.name })),
+    from: [{ table: "RefCCMMTipos" }],
+    order: { by: [tables.RefCCMMTipos[0].name] },
+  });
   useEffect(() => {
-    let active = true;
-    load();
-    return () => { active = false };
-    async function load() {
-      const options = await execute({
-        select: tables.RefCCMMTipos.map(f => ({ value: f.name })),
-        from: [{ table: "RefCCMMTipos" }],
-        order: { by: [tables.RefCCMMTipos[0].name] },
-      }).then((ok) => {
-        if (ok.count === 0) return;
-        return Object.fromEntries(
-          ok.data!.map(e => [`${e[tables.RefCCMMTipos[0].name]}`, e[tables.RefCCMMTipos[1].name]])
-        );
-      });
-      if (!active || !options) return;
-      setTables((o) => {
-        const fieldIx = o.View_ConsultaCCMM.findIndex(r => r.name === "CCMMCas_TipoCodigo");
-        if (fieldIx < 0) return o;
-        const tables = { ...o, View_ConsultaCCMM: [...o.View_ConsultaCCMM] };
-        tables.View_ConsultaCCMM[fieldIx] = { ...tables.View_ConsultaCCMM[fieldIx], ...optionsSelect(options, blankOptionsFormatter) };
-        return tables;
-      });
-    };
-  }, [tables.RefCCMMTipos]);
+    if (!tipos?.data) return;
+    const options = Object.fromEntries(tipos.data.map(e => [`${e[tables.RefCCMMTipos[0].name]}`, e[tables.RefCCMMTipos[1].name]]));
+    setTables((o) => {
+      const fieldIx = o.View_ConsultaCCMM.findIndex(r => r.name === "CCMMCas_TipoCodigo");
+      if (fieldIx < 0) return o;
+      const tables = { ...o, View_ConsultaCCMM: [...o.View_ConsultaCCMM] };
+      tables.View_ConsultaCCMM[fieldIx] = { ...tables.View_ConsultaCCMM[fieldIx], ...optionsSelect(options, blankOptionsFormatter) };
+      return tables;
+    });
+  }, [tipos]);
+  //#endregion RefCCMMTipos
+  const [rows, setRows] = useState<GridRowsProp>([]);
 
-  const { columns, qbFields } = useMemo(() => {
+  const { columns, fields } = useMemo(() => {
     const fields = tables.View_ConsultaCCMM.slice(1);
     return ({
       columns: fields.map(({ name: field, label: headerName, type, formatter: valueFormatter }) => (
         { field, headerName, type, valueFormatter }
       )),
-      qbFields: fields.map((({ name, label, operators, valueEditorType, values, type }) => (
-        { name, label: label ?? name, operators, valueEditorType, values,
+      fields: fields.map((({ name, label, operators, valueEditorType, values, type }) => (
+        {
+          name, label: label ?? name, operators, valueEditorType, values,
           inputType: type ? type === "dateTime" ? "datetime-local" : type : undefined
         }
       ))),
     });
   }, [tables.View_ConsultaCCMM]);
-
-  const [query, setQuery] = useState(defaultQuery);
-  const [rows, setRows] = useState<GridRowsProp>([]);
+  const value = {
+    tables, columns, fields,
+    rows: { state: rows, setState: setRows },
+  };
+  return <DataContext.Provider value={value}>{children}</DataContext.Provider>
+}
+function useData() {
+  const context = useContext(DataContext)
+  if (context === undefined) throw new Error('useTables must be used within a TablesContextProvider');
+  return context
+}
+function ConsultaCCMMQueryBuilder(props: any) {
+  const { fields } = useData();
+  return (
+    <QueryBuilder
+      fields={fields}
+      combinators={defaultCombinatorsExtended}
+      operators={defaultOperators}
+      translations={defaultTranslations}
+      controlClassnames={qbClassnames}
+      showNotToggle
+      listsAsArrays
+      {...props}
+    />
+  );
+}
+function ConsultaCCMMTable() {
+  const { columns, rows: { state: rows } } = useData();
   const apiRef = useGridApiRef();
 
   const autosizeOptions: GridAutosizeOptions = {
@@ -178,6 +197,28 @@ export default function CCMM() {
     includeOutliers: true,
     includeHeaders: true,
   }
+
+  useEffect(() => {
+    apiRef.current?.autosizeColumns(autosizeOptions);
+  }, [rows, columns]);
+
+  return (
+    <DataGrid
+      density="compact"
+      apiRef={apiRef}
+      rows={rows}
+      columns={columns}
+      getRowId={getRowId}
+      autosizeOnMount
+      initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
+      pageSizeOptions={[10, 25, 50, 100, { value: -1, label: "Todos" }]}
+    />
+  );
+}
+function ConsultaCCMQueryTable() {
+  const { tables, fields, rows: { setState: setRows } } = useData();
+  const [dialog, setDialog] = useState<React.JSX.Element | null>(null);
+  const [query, setQuery] = useState(defaultQuery);
 
   const onCloseDialog = () => setDialog(null);
   const errorDialog = (prop: { title?: string, message: any }) => setDialog(
@@ -195,9 +236,9 @@ export default function CCMM() {
       <DialogActions><Button onClick={onCloseDialog}>Cierra</Button></DialogActions>
     </Dialog>
   );
-
+  //#region Handlers
   const onAplicaHandler = () => {
-    const proposition = formatQuery(query, propositionFormat({ fields: qbFields }));
+    const proposition = formatQuery(query, propositionFormat({ fields }));
     return procesar();
     async function procesar() {
       const table = "View_ConsultaCCMM";
@@ -214,7 +255,7 @@ export default function CCMM() {
         }).catch((error) => errorDialog(
           { message: error.detail ?? error.message ?? JSON.stringify(error) }
         ));
-      }
+      };
       await analyze(query).then(async (ok) => (ok.count > 90)
         ? setDialog(
           <Dialog
@@ -240,41 +281,26 @@ export default function CCMM() {
       ).catch((error) => errorDialog(
         { message: error.detail ?? error.message ?? JSON.stringify(error) }
       ));
-    }
+    };
   };
-
   const onLimpiaHandler = () => {
     setQuery(defaultQuery);
     setRows([]);
   };
-
-  useEffect(() => {
-    apiRef.current?.autosizeColumns(autosizeOptions);
-  }, [rows, columns]);
-
+  //#endregion Handlers
   return (
     <Grid container spacing={1} size="grow">
       <Grid size={12}>
         <Accordion defaultExpanded>
           <AccordionSummary
-            expandIcon={<MdExpandMore  />}
+            expandIcon={<MdExpandMore />}
             aria-controls="panel1-content"
             id="panel1-header"
           >
             <Typography component="span">Filtros</Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <QueryBuilder
-              fields={qbFields}
-              query={query}
-              onQueryChange={setQuery}
-              combinators={defaultCombinatorsExtended}
-              operators={defaultOperators}
-              translations={defaultTranslations}
-              controlClassnames={qbClassnames}
-              showNotToggle
-              listsAsArrays
-            />
+            <ConsultaCCMMQueryBuilder query={query} onQueryChange={setQuery} />
           </AccordionDetails>
           <AccordionActions>
             <Button onClick={onAplicaHandler}>Aplica</Button>
@@ -284,20 +310,12 @@ export default function CCMM() {
       </Grid>
       <Grid size={12}>
         <Paper>
-          <DataGrid
-            density="compact"
-            apiRef={apiRef}
-            rows={rows}
-            columns={columns}
-            getRowId={getRowId}
-            autosizeOnMount
-            autosizeOptions={autosizeOptions}
-            initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
-            pageSizeOptions={[10, 25, 50, 100, { value: -1, label: "Todos" }]}
-          />
+          <ConsultaCCMMTable />
         </Paper>
       </Grid>
       {dialog}
     </Grid>
   );
-};
+}
+
+export default function CCMM() { return (<DataContextProvider><ConsultaCCMQueryTable /></DataContextProvider>); };
