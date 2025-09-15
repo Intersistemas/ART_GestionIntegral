@@ -30,16 +30,16 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
 
 ## INTERSISTEMAS:
-**Banco de Iconos: https://react-icons.github.io/react-icons/
-**Styles: aplicamos module.css para cada directorio, el cual se debe basar en las variables creadas en el root de styles/globals.css
 
+**Styles: aplicamos module.css para cada directorio, el cual debe estar basado en las variables creadas en el root de styles/globals.css
+    **Banco de Iconos: https://react-icons.github.io/react-icons/
+    **Todo el material grafico (imagenes, iconos, logos, etc) debe estar en la carpeta "public"
 
 **Fetching:
     _Si necesitamos acceder a los datos del usuario logeado usamos el hook "useSession": 
         import { useSession } from 'next-auth/react';
         const { data: session, status } = useSession();
-    _Si necesitamos consultar nuevos endpoints usaremos el queryAPI el cual implementa SWR de nextsj y AXIOS
-
+    _Si necesitamos consultar nuevos endpoints usaremos el componente de data/queryAPI.ts el cual implementa SWR de nextsj y AXIOS
 
 **Entorno UI: 
     _Usaremos los componentes de UTILS/UI que tiene Botones, Forms, DataGrid y Modals que implementan MATERIAL UI y @tanstack/react-table 
