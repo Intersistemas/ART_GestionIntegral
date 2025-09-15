@@ -16,7 +16,7 @@ interface APIConfigureOptions<Data = any> {
 }
 type APIConfigure = <Data>(options?: APIConfigureOptions<Data>) => APIConfigureOptions<Data> | undefined;
 type APIConfiguration = {
-  [APIName in keyof APIEndpoints]: {
+  [APIName in APINames]: {
     baseUrl: string | URL;
     endpoints: {
       [APIEndpoint in APIEndpoints[APIName]]: {
@@ -50,7 +50,7 @@ const APIConfig = {
 } as APIConfiguration;
 //#endregion Configuracion de APIs
 
-async function fetcher<API extends APINames, OptionsData = any>(
+export async function fetcher<Data = any, API extends APINames = APINames, OptionsData = any>(
   apiName: API,
   apiEndpoint: APIEndpoints[API],
   options?: APIConfigureOptions<OptionsData>
@@ -62,7 +62,7 @@ async function fetcher<API extends APINames, OptionsData = any>(
   options = getOptions(api.configure);
   const { data, params } = getOptions(endpoint.configure) ?? {};
   try {
-    const response = await axios({ method, url, data, params });
+    const response = await axios<Data>({ method, url, data, params });
     return response.data;
   } catch (error) {
     throw new AxiosError('Error en la petición: ' + (error as AxiosError).message);
