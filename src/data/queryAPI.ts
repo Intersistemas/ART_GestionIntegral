@@ -1,4 +1,6 @@
-import { ExternalAPI, ExternalAPIError } from "./api";
+import useSWR from "swr";
+import axios, { AxiosError } from "axios";
+import { ExternalAPI } from "./api";
 
 export interface Query {
   select: Select[];
@@ -52,36 +54,36 @@ export interface QueryAnalysis {
   tables?: Record<string, string[]>;
 }
 
-export class QueriesAPI extends ExternalAPI {
-  basePath = `${process.env.NEXT_PUBLIC_QUERYAPI_URL}/queries/`;
-
-  execute = async (query: Query): Promise<QueryResult> => fetch(
-    this.getURL({ path: "execute" }),
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(query),
-    }
+export class QueriesAPIClass extends ExternalAPI {
+  basePath = process.env.NEXT_PUBLIC_QUERYAPI_URL!;
+  //#region execute
+  execute = async (query: Query) => axios.post<QueryResult>
+  (
+    this.getURL({ path: "/api/queries/execute" }).toString(),
+    query
   ).then(
-    async (response: Response) => {
-      if (response.ok) return { count: 0, ...await response.json() };
-      const detail = await response.text();
-      return Promise.reject(new ExternalAPIError({ code: response.status, detail, message: detail }));
+    async (response) => {
+      if (response.status === 200) return response.data;
+      return Promise.reject(new AxiosError(`Error en la petición: ${response.data}`));
     }
   );
-
-  analyze = async (query: Query): Promise<QueryAnalysis> => fetch(
-    this.getURL({ path: "analyze" }),
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(query),
-    }
+  useExecute = (query: Query) => useSWR(query, () => this.execute(query));
+  //#endregion execute
+  //#region analyze
+  analyze = async (query: Query) => axios.post<QueryAnalysis>
+  (
+    this.getURL({ path: "/api/queries/analyze" }).toString(),
+    query
   ).then(
-    async (response: Response) => {
-      if (response.ok) return { count: 0, ...await response.json() };
-      const detail = await response.text();
-      return Promise.reject(new ExternalAPIError({ code: response.status, detail, message: detail }));
+    async (response) => {
+      if (response.status === 200) return response.data;
+      return Promise.reject(new AxiosError(`Error en la petición: ${response.data}`));
     }
   );
+  useAnalyze = (query: Query) => useSWR(query, () => this.analyze(query));
+  //#endregion analyze
 }
+
+const QueriesAPI = Object.seal(new QueriesAPIClass());
+
+export default QueriesAPI;
