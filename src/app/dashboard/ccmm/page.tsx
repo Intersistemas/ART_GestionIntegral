@@ -1,14 +1,13 @@
 "use client"
-import React, { useEffect } from 'react';
-import QueryBuilder, { type Classnames } from 'react-querybuilder';
-import { Accordion, AccordionActions, AccordionDetails, AccordionSummary, Button, Grid, Paper, Typography } from '@mui/material';
+import React from 'react';
+import QueryBuilder from 'react-querybuilder';
+import { Accordion, AccordionActions, AccordionDetails, AccordionSummary, Grid, Paper, Typography } from '@mui/material';
 import { MdExpandMore } from "react-icons/md";
-import { DataGrid, useGridApiRef, type GridAutosizeOptions, } from '@mui/x-data-grid';
 import { defaultCombinatorsExtended, defaultOperators, defaultTranslations } from "@/utils/QueryBuilderDefaults"
 import { DataContextProvider, useDataContext } from './dataContext';
+import DataTable from '@/utils/ui/table/DataTable';
+import CustomButton from '@/utils/ui/CustomButton';
 
-const qbClassnames: Partial<Classnames> = { queryBuilder: 'queryBuilder-branches' };
-const getRowId = (row: any) => row.CCMMCas_Interno;
 
 function ConsultaCCMMQueryBuilder() {
   const { fields, query: { state: query, setState: setQuery } } = useDataContext();
@@ -18,7 +17,6 @@ function ConsultaCCMMQueryBuilder() {
       combinators={defaultCombinatorsExtended}
       operators={defaultOperators}
       translations={defaultTranslations}
-      controlClassnames={qbClassnames}
       query={query}
       onQueryChange={setQuery}
       showNotToggle
@@ -29,31 +27,7 @@ function ConsultaCCMMQueryBuilder() {
 
 function ConsultaCCMMTable() {
   const { columns, rows } = useDataContext();
-  const apiRef = useGridApiRef();
-
-  const autosizeOptions: GridAutosizeOptions = {
-    columns: columns.map(c => c.field),
-    includeOutliers: true,
-    includeHeaders: true,
-  }
-
-  useEffect(() => {
-    apiRef.current?.autosizeColumns(autosizeOptions);
-  }, [columns, rows]);
-
-  return (
-    <DataGrid
-      density="compact"
-      apiRef={apiRef}
-      rows={rows}
-      columns={columns}
-      getRowId={getRowId}
-      autosizeOptions={autosizeOptions}
-      autosizeOnMount
-      initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
-      pageSizeOptions={[10, 25, 50, 100, { value: -1, label: "Todos" }]}
-    />
-  );
+  return (<DataTable data={rows} columns={columns} />);
 }
 
 function ConsultaCCM() {
@@ -74,8 +48,8 @@ function ConsultaCCM() {
             <ConsultaCCMMQueryBuilder />
           </AccordionDetails>
           <AccordionActions>
-            <Button onClick={onAplica}>Aplica</Button>
-            <Button onClick={onLimpia}>Limpia</Button>
+            <CustomButton width="auto" onClick={onAplica}>Aplica</CustomButton>
+            <CustomButton width="auto" onClick={onLimpia}>Limpia</CustomButton>
           </AccordionActions>
         </Accordion>
       </Grid>

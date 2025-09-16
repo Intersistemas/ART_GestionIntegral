@@ -1,31 +1,34 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Field, formatQuery, type RuleGroupType, type ValueEditorType, type DefaultOperators } from 'react-querybuilder';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
-import { GridColDef, GridValidRowModel, type GridColType, type GridRowsProp, type GridValueFormatter } from '@mui/x-data-grid';
+import { type GridColType } from '@mui/x-data-grid';
 import QueriesAPI, { type Query } from '@/data/queryAPI';
 import Formato from '@/utils/Formato';
 import propositionFormat from '@/utils/PropositionFormatQuery';
 import { defaultOperators } from "@/utils/QueryBuilderDefaults"
+import { ColumnDef } from '@tanstack/react-table';
 
 //#region types
+type Row = Record<string, any>;
+type Formatter = (value: any) => any;
 type TablesName = "RefCCMMMotivos" | "RefCCMMTipos" | "View_ConsultaCCMM";
 interface TablesField {
   name: string;
   label?: string;
   type?: GridColType;
   operators?: DefaultOperators;
-  formatter?: GridValueFormatter;
+  formatter?: Formatter;
   valueEditorType?: ValueEditorType;
   values?: any[];
 }
 type Tables = Record<TablesName, TablesField[]>;
-type OptionsFormatter = (options: any) => GridValueFormatter;
+type OptionsFormatter = (options: any) => Formatter;
 type OptionsValues = (options: any) => { name: string, label: any }[];
 interface DataContextType {
   fields: Field[];
-  columns: GridColDef<GridValidRowModel>[];
-  rows: GridRowsProp;
-  query: { state: RuleGroupType, setState: React.Dispatch<RuleGroupType> };
+  columns: ColumnDef<Row>[];
+  rows: Row[];
+  query: { state: RuleGroupType, setState: React.Dispatch<React.SetStateAction<RuleGroupType>> };
   dialog?: ReactNode;
   onAplica: () => void;
   onLimpia: () => void;
@@ -48,7 +51,7 @@ const optionsValues: OptionsValues = (options: any) => Object.entries<string>(op
 const optionsSelect = (options: any, formatter: OptionsFormatter = valueOptionsFormatter, values: OptionsValues = optionsValues): {
   operators: DefaultOperators,
   valueEditorType: ValueEditorType,
-  formatter: GridValueFormatter,
+  formatter: Formatter,
   values: any[],
 } => ({
   operators: defaultOperators.filter((op) => op.name === '='),
@@ -128,10 +131,10 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
   const { columns, fields } = useMemo(() => {
     const fields = tables.View_ConsultaCCMM.slice(1);
     return ({
-      columns: fields.map(({ name: field, label: headerName, type, formatter: valueFormatter }) => (
-        { field, headerName, type, valueFormatter }
+      columns: fields.map<ColumnDef<Row>>(({ name: accessorKey, label: header, formatter }) => (
+        { accessorKey, header, cell: formatter ? (info) => formatter(info.getValue()) : undefined }
       )),
-      fields: fields.map((({ name, label, operators, valueEditorType, values, type }) => (
+      fields: fields.map<Field>((({ name, label, operators, valueEditorType, values, type }) => (
         {
           name, label: label ?? name, operators, valueEditorType, values,
           inputType: type ? type === "dateTime" ? "datetime-local" : type : undefined
@@ -139,7 +142,7 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
       ))),
     });
   }, [tables.View_ConsultaCCMM]);
-  const [rows, setRows] = useState<GridRowsProp>([]);
+  const [rows, setRows] = useState<Row[]>([]);
   const [query, setQuery] = useState(defaultQuery);
   const [dialog, setDialog] = useState<ReactNode>();
 
@@ -172,7 +175,7 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
       };
       if (proposition) query.where = proposition;
       async function onConfirm() {
-        await execute(query).then((ok) => {
+        await execute<Row>(query).then((ok) => {
           setRows(ok.data ?? []);
           onCloseDialog();
         }).catch((error) => errorDialog(
