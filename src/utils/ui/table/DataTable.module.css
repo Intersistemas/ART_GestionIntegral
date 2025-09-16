@@ -13,7 +13,7 @@
 }
 
 .tableHead {
-  background-color: var(--verdeOscuro) !important;
+  background-color: var(--verde) !important;
 }
 
 .tableHeaderCell {
@@ -26,8 +26,8 @@
 }
 
 .tableHeaderCell:hover {
-  background-color: var(--verde) !important;
-  transition: background-color 0.2s ease-in-out;
+  background-color: var(--verdeClaro) !important;
+  transition: background-color 0.3s ease-in-out;
 }
 
 .sortIcon {
