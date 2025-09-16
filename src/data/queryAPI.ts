@@ -38,9 +38,10 @@ export interface Page {
   index: number;
   size?: number;
 }
-export interface QueryResult {
+export type QueryResultData = Record<string, any>;
+export interface QueryResult<Data = QueryResultData> {
   count: number;
-  data?: Record<string, any>[];
+  data?: Data[];
   page?: QueryResultPage;
 }
 export interface QueryResultPage {
@@ -57,7 +58,7 @@ export interface QueryAnalysis {
 export class QueriesAPIClass extends ExternalAPI {
   basePath = process.env.NEXT_PUBLIC_QUERYAPI_URL!;
   //#region execute
-  execute = async (query: Query) => axios.post<QueryResult>
+  execute = async <Data = QueryResultData>(query: Query) => axios.post<QueryResult<Data>>
   (
     this.getURL({ path: "/api/queries/execute" }).toString(),
     query
@@ -67,7 +68,7 @@ export class QueriesAPIClass extends ExternalAPI {
       return Promise.reject(new AxiosError(`Error en la petición: ${response.data}`));
     }
   );
-  useExecute = (query: Query) => useSWR(query, () => this.execute(query));
+  useExecute = <Data = QueryResultData>(query: Query) => useSWR(query, () => this.execute<Data>(query));
   //#endregion execute
   //#region analyze
   analyze = async (query: Query) => axios.post<QueryAnalysis>
