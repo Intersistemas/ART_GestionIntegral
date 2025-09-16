@@ -8,8 +8,8 @@ import propositionFormat from '@/utils/PropositionFormatQuery';
 import { defaultOperators } from "@/utils/QueryBuilderDefaults"
 
 //#region types
-type TablesNames = "RefCCMMMotivos" | "RefCCMMTipos" | "View_ConsultaCCMM";
-interface TablesFields {
+type TablesName = "RefCCMMMotivos" | "RefCCMMTipos" | "View_ConsultaCCMM";
+interface TablesField {
   name: string;
   label?: string;
   type?: GridColType;
@@ -18,6 +18,7 @@ interface TablesFields {
   valueEditorType?: ValueEditorType;
   values?: any[];
 }
+type Tables = Record<TablesName, TablesField[]>;
 type OptionsFormatter = (options: any) => GridValueFormatter;
 type OptionsValues = (options: any) => { name: string, label: any }[];
 interface DataContextType {
@@ -63,7 +64,7 @@ const DataContext = createContext<DataContextType | undefined>(undefined);
 //#endregion globales
 
 export function DataContextProvider({ children }: { children: ReactNode }) {
-  const [tables, setTables] = useState<Record<TablesNames, TablesFields[]>>({
+  const [tables, setTables] = useState<Tables>({
     RefCCMMMotivos: [{ name: "Codigo" }, { name: "Descripcion" }],
     RefCCMMTipos: [{ name: "Codigo" }, { name: "Descripcion" }],
     View_ConsultaCCMM: [
