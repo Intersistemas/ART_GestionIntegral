@@ -1,14 +1,47 @@
-import React, { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
-import { Field, type RuleGroupType, type ValueEditorType, type DefaultOperators, type Classnames, } from 'react-querybuilder';
+import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { Field, formatQuery, type RuleGroupType, type ValueEditorType, type DefaultOperators } from 'react-querybuilder';
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { GridColDef, GridValidRowModel, type GridColType, type GridRowsProp, type GridValueFormatter } from '@mui/x-data-grid';
 import QueriesAPI, { type Query } from '@/data/queryAPI';
 import Formato from '@/utils/Formato';
+import propositionFormat from '@/utils/PropositionFormatQuery';
 import { defaultOperators } from "@/utils/QueryBuilderDefaults"
 
-type OptionsFormatter = { (options: any): GridValueFormatter };
-type OptionsValues = { (options: any): { name: string, label: any }[] };
+//#region types
+type OptionsFormatter = (options: any) => GridValueFormatter;
+type OptionsValues = (options: any) => { name: string, label: any }[];
+interface FieldDef {
+  name: string;
+  label?: string;
+  type?: GridColType;
+  operators?: DefaultOperators;
+  formatter?: GridValueFormatter;
+  valueEditorType?: ValueEditorType;
+  values?: any[];
+}
+interface DataContextType {
+  fields: Field[];
+  columns: GridColDef<GridValidRowModel>[];
+  rows: GridRowsProp;
+  query: { state: RuleGroupType, setState: React.Dispatch<RuleGroupType> };
+  dialog?: ReactNode;
+  onAplica: () => void;
+  onLimpia: () => void;
+}
+//#endregion types
+
+//#region globales
+const { execute, useExecute, analyze } = QueriesAPI;
+const defaultQuery: RuleGroupType = { combinator: 'and', rules: [] };
+
+const numeroSiniestroFormatter = (v: any) => Formato.Mascara(v, "####-######-##");
+const fechaHoraFormatter = (v: any) => Formato.FechaHora(v);
+const fechaFormatter = (v: any) => Formato.Fecha(v);
+const numeroFormatter = (v: any) => Formato.Numero(v);
+const cuipFormatter = (v: any) => Formato.CUIP(v);
 const valueOptionsFormatter: OptionsFormatter = (options: any) => ((v: string) => (options[v] ?? v));
 const blankOptionsFormatter: OptionsFormatter = (options: any) => ((v: string) => (options[v] ?? ""));
+
 const optionsValues: OptionsValues = (options: any) => Object.entries<string>(options).map(([name, label]) => ({ name, label }))
 const optionsSelect = (options: any, formatter: OptionsFormatter = valueOptionsFormatter, values: OptionsValues = optionsValues): {
   operators: DefaultOperators,
@@ -24,31 +57,10 @@ const optionsSelect = (options: any, formatter: OptionsFormatter = valueOptionsF
 const SNOptions = { S: "Si", N: "No" };
 const tipoSiniestroOptions = { T: "Accidente Trabajo", P: "Enfermedad Profesional", I: "Accidente In-Itinere", R: "Reingreso" };
 const estadoOptions = { 1: "Pendiente", 2: "En gestión", 3: "Archivado" };
-const numeroSiniestroFormatter = (v: any) => Formato.Mascara(v, "####-######-##");
-const fechaHoraFormatter = (v: any) => Formato.FechaHora(v);
-const fechaFormatter = (v: any) => Formato.Fecha(v);
-const numeroFormatter = (v: any) => Formato.Numero(v);
-const cuipFormatter = (v: any) => Formato.CUIP(v);
-type FieldDef = {
-  name: string,
-  label?: string,
-  type?: GridColType,
-  operators?: DefaultOperators,
-  formatter?: GridValueFormatter,
-  valueEditorType?: ValueEditorType,
-  values?: any[],
-}
-const { useExecute } = QueriesAPI;
-const defaultQuery: RuleGroupType = { combinator: 'and', rules: [] };
 
-interface DataContextType {
-  tables: Record<string, FieldDef[]>,
-  columns: GridColDef<GridValidRowModel>[],
-  fields: Field[],
-  rows: { state: GridRowsProp, setState: React.Dispatch<GridRowsProp> }
-  query: { state: RuleGroupType, setState: React.Dispatch<RuleGroupType>, default: RuleGroupType }
-}
 const DataContext = createContext<DataContextType | undefined>(undefined);
+//#endregion globales
+
 export function DataContextProvider({ children }: { children: ReactNode }) {
   const [tables, setTables] = useState<Record<string, FieldDef[]>>({
     RefCCMMMotivos: [{ name: "Codigo" }, { name: "Descripcion" }],
@@ -75,8 +87,6 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
       { name: "CCMMCasTipValDan_AcuHomoPagoFecha", label: "Fecha Pago", type: "date", formatter: fechaFormatter },
     ]
   });
-  const [rows, setRows] = useState<GridRowsProp>([]);
-  const [query, setQuery] = useState(defaultQuery);
   //#region RefCCMMMotivos
   const { data: motivos } = useExecute({
     select: tables.RefCCMMMotivos.map(f => ({ value: f.name })),
@@ -113,7 +123,6 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
     });
   }, [tipos]);
   //#endregion RefCCMMTipos
-
   const { columns, fields } = useMemo(() => {
     const fields = tables.View_ConsultaCCMM.slice(1);
     return ({
@@ -128,13 +137,87 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
       ))),
     });
   }, [tables.View_ConsultaCCMM]);
+  const [rows, setRows] = useState<GridRowsProp>([]);
+  const [query, setQuery] = useState(defaultQuery);
+  const [dialog, setDialog] = useState<ReactNode>();
+
+  const onCloseDialog = () => setDialog(null);
+  const errorDialog = (prop: { title?: string, message: any }) => setDialog(
+    <Dialog
+      open
+      scroll="paper"
+      onClose={onCloseDialog}
+      aria-labelledby="scroll-dialog-title"
+      aria-describedby="scroll-dialog-description"
+    >
+      {prop.title === undefined ? (null) : (<DialogTitle id="scroll-dialog-title">{prop.title}</DialogTitle>)}
+      <DialogContent dividers>
+        <DialogContentText id="scroll-dialog-description" tabIndex={-1}>{prop.message}</DialogContentText>
+      </DialogContent>
+      <DialogActions><Button onClick={onCloseDialog}>Cierra</Button></DialogActions>
+    </Dialog>
+  );
+
+  const onAplica = useCallback(() => {
+    const proposition = formatQuery(query, propositionFormat({ fields }));
+    return procesar();
+    async function procesar() {
+      const table = "View_ConsultaCCMM";
+      const query: Query = {
+        select: tables[table].map(c => ({ value: c.name })),
+        from: [{ table }],
+        order: { by: [tables[table][0].name] }
+      };
+      if (proposition) query.where = proposition;
+      async function onConfirm() {
+        await execute(query).then((ok) => {
+          setRows(ok.data ?? []);
+          onCloseDialog();
+        }).catch((error) => errorDialog(
+          { message: typeof error === "string" ? error : error.detail ?? error.message ?? JSON.stringify(error) }
+        ));
+      };
+      await analyze(query).then(async (ok) => (ok.count > 90)
+        ? setDialog(
+          <Dialog
+            open
+            scroll="paper"
+            onClose={onCloseDialog}
+            aria-labelledby="scroll-dialog-title"
+            aria-describedby="scroll-dialog-description"
+          >
+            <DialogTitle id="scroll-dialog-title">Consulta con muchos registros.</DialogTitle>
+            <DialogContent dividers>
+              <DialogContentText id="scroll-dialog-description" tabIndex={-1}>
+                La consulta generará {ok.count} registros.
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={onCloseDialog}>Cancela</Button>
+              <Button onClick={onConfirm}>Continúa</Button>
+            </DialogActions>
+          </Dialog>
+        )
+        : onConfirm()
+      ).catch((error) => errorDialog(
+        { message: typeof error === "string" ? error : error.detail ?? error.message ?? JSON.stringify(error) }
+      ));
+    };
+  }, [query, fields]);
+
+  const onLimpia = useCallback(() => {
+    setQuery(defaultQuery);
+    setRows([]);
+  }, []);
+
   const value = {
-    tables, columns, fields,
-    rows: { state: rows, setState: setRows },
-    query: { state: query, setState: setQuery, default: defaultQuery },
+    fields, columns, rows, dialog,
+    query: { state: query, setState: setQuery },
+    onAplica, onLimpia,
   };
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>
 }
+
 export function useDataContext() {
   const context = useContext(DataContext)
   if (context === undefined) throw new Error('useTables must be used within a TablesContextProvider');
