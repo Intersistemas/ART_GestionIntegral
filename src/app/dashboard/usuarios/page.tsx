@@ -4,8 +4,7 @@ import { useState } from "react";
 import { Box, Button, Typography } from "@mui/material";
 import UsuarioForm, { UsuarioFormFields } from "./UsuarioForm";
 import UsuarioTable from "./UsuarioTable";
-import { useUsuarios } from "./useUsuarios";
-import UsuarioRow from "./interfaces/UsuarioRow";
+import useUsuarios, { UsuarioRow } from "./useUsuarios";
 import styles from './Usuario.module.css';
 import CustomButton from "@/utils/ui/CustomButton";
 
