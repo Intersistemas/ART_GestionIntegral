@@ -67,7 +67,7 @@ export class QueriesAPIClass extends ExternalAPI {
       return Promise.reject(new AxiosError(`Error en la petición: ${response.data}`));
     }
   );
-  useExecute = (query: Query) => useSWR<QueryResult>(query, () => this.execute(query));
+  useExecute = (query: Query) => useSWR(query, () => this.execute(query));
   //#endregion execute
   //#region analyze
   analyze = async (query: Query) => axios.post<QueryAnalysis>
@@ -80,7 +80,7 @@ export class QueriesAPIClass extends ExternalAPI {
       return Promise.reject(new AxiosError(`Error en la petición: ${response.data}`));
     }
   );
-  useAnalyze = (query: Query) => useSWR<QueryResult>(query, () => this.analyze(query));
+  useAnalyze = (query: Query) => useSWR(query, () => this.analyze(query));
   //#endregion analyze
 }
 
