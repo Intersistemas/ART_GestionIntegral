@@ -6,6 +6,7 @@ import UsuarioForm, { UsuarioFormFields } from "./UsuarioForm";
 import UsuarioTable from "./UsuarioTable";
 import useUsuarios, { UsuarioRow } from "./useUsuarios";
 import styles from './Usuario.module.css';
+import CustomButton from "@/utils/ui/CustomButton";
 
 const initialForm = {
   cuit: "",
@@ -74,14 +75,15 @@ export default function UsuariosPage() {
 
   return (
     <Box className={styles.usuariosPageContainer}>
-      <Button
+      <CustomButton
         variant="contained"
         color="primary"
         onClick={() => handleOpenModal()}
         sx={{ mb: 2 }}
+        width="20%"
       >
         Crear usuario
-      </Button>
+      </CustomButton>
       <UsuarioTable data={usuarios} onEdit={handleOpenModal} />
       <UsuarioForm
         open={showModal}
