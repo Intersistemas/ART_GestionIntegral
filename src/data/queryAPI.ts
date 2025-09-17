@@ -1,6 +1,7 @@
 import useSWR from "swr";
 import axios, { AxiosError } from "axios";
 import { ExternalAPI } from "./api";
+import { camelCaseKeys } from "@/utils/utils";
 
 //#region Types
 export interface Query {
@@ -55,15 +56,17 @@ export interface QueryAnalysis {
   pages?: number;
   tables?: Record<string, string[]>;
 }
-export interface APIError {
-  Code: number;
-  Message: string;
-  Details?: Record<string, any>;
+export interface APIError<T = Record<string, any>> {
+  code: number;
+  message: string;
+  details?: T;
 }
 //#endregion Types
 
-function reject<T>({ response, status: Code, message: Message }: AxiosError<APIError, T>) {
-  return Promise.reject<T>(response?.data ?? ({ Code, Message } as APIError));
+function reject<T>(error: AxiosError) {
+  return Promise.reject<T>(camelCaseKeys<APIError>(error.response?.data)
+    ?? { code: error.status ?? 0, message: error.message, details: error } as APIError<AxiosError>
+  );
 }
 
 export class QueriesAPIClass extends ExternalAPI {
