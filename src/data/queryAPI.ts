@@ -2,6 +2,7 @@ import useSWR from "swr";
 import axios, { AxiosError } from "axios";
 import { ExternalAPI } from "./api";
 
+//#region Types
 export interface Query {
   select: Select[];
   from: Source[];
@@ -54,34 +55,34 @@ export interface QueryAnalysis {
   pages?: number;
   tables?: Record<string, string[]>;
 }
+export interface APIError {
+  Code: number;
+  Message: string;
+  Details?: Record<string, any>;
+}
+//#endregion Types
+
+function reject<T>({ response, status: Code, message: Message }: AxiosError<APIError, T>) {
+  return Promise.reject<T>(response?.data ?? ({ Code, Message } as APIError));
+}
 
 export class QueriesAPIClass extends ExternalAPI {
   basePath = process.env.NEXT_PUBLIC_QUERYAPI_URL!;
   //#region execute
-  execute = async <Data = QueryResultData>(query: Query) => axios.post<QueryResult<Data>>
-  (
-    this.getURL({ path: "/api/queries/execute" }).toString(),
-    query
-  ).then(
-    async (response) => {
-      if (response.status === 200) return response.data;
-      return Promise.reject(new AxiosError(`Error en la petición: ${response.data}`));
-    }
+  execute = async <Data = QueryResultData>(query: Query) => axios.post<QueryResult<Data>>(
+    this.getURL({ path: "/api/queries/execute" }).toString(), query
+  ).then(({ data }) => data, (error) => reject<QueryResult<Data>>(error));
+  useExecute = <Data = QueryResultData>(query: Query) => useSWR<QueryResult<Data>, APIError>(
+    query, () => this.execute<Data>(query)
   );
-  useExecute = <Data = QueryResultData>(query: Query) => useSWR(query, () => this.execute<Data>(query));
   //#endregion execute
   //#region analyze
-  analyze = async (query: Query) => axios.post<QueryAnalysis>
-  (
-    this.getURL({ path: "/api/queries/analyze" }).toString(),
-    query
-  ).then(
-    async (response) => {
-      if (response.status === 200) return response.data;
-      return Promise.reject(new AxiosError(`Error en la petición: ${response.data}`));
-    }
+  analyze = async (query: Query) => axios.post<QueryAnalysis>(
+    this.getURL({ path: "/api/queries/analyze" }).toString(), query
+  ).then(({ data }) => data, (error) => reject<QueryAnalysis>(error));
+  useAnalyze = (query: Query) => useSWR<QueryAnalysis, AxiosError<APIError>>(
+    query, () => this.analyze(query)
   );
-  useAnalyze = (query: Query) => useSWR(query, () => this.analyze(query));
   //#endregion analyze
 }
 
