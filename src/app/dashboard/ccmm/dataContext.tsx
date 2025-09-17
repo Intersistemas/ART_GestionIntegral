@@ -225,6 +225,6 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
 
 export function useDataContext() {
   const context = useContext(DataContext)
-  if (context === undefined) throw new Error('useTables must be used within a TablesContextProvider');
+  if (context === undefined) throw new Error('useDataContext must be used within a DataContextProvider');
   return context
 }
