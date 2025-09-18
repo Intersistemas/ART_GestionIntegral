@@ -13,7 +13,7 @@ import {
   ColumnFiltersState,
   VisibilityState,
 } from "@tanstack/react-table";
-import { Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Paper, Box, IconButton, TextField } from "@mui/material";
+import { Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Paper, Box, IconButton, TextField, CircularProgress } from "@mui/material";
 import {
   ArrowDownward,
   ArrowUpward,
@@ -30,19 +30,46 @@ interface DataTableProps<TData extends object> {
   pageSizeOptions?: number[];
   enableSorting?: boolean;
   enableFiltering?: boolean;
+  variant?: 'default' | 'compact';
+  isLoading?: boolean;
+  onRowClick?: (rowData: TData) => void;
 }
 
 export function DataTable<TData extends object>({
   data,
   columns,
-  pageSizeOptions = [10, 20, 30, 40, 50],
-  enableSorting = true,
-  enableFiltering = true,
+  pageSizeOptions,
+  enableSorting,
+  enableFiltering,
+  variant = 'default',
+  isLoading = false,
+  onRowClick,
 }: DataTableProps<TData>) {
+  const defaultProps = {
+    default: {
+      pageSizeOptions: [10, 20, 30, 40, 50],
+      enableSorting: true,
+      enableFiltering: true,
+    },
+    compact: {
+      pageSizeOptions: [5, 10, 15],
+      enableSorting: true,
+      enableFiltering: true,
+    }
+  };
+
+  const resolvedProps = {
+    ...defaultProps[variant],
+    pageSizeOptions: pageSizeOptions ?? defaultProps[variant].pageSizeOptions,
+    enableSorting: enableSorting ?? defaultProps[variant].enableSorting,
+    enableFiltering: enableFiltering ?? defaultProps[variant].enableFiltering,
+  };
+
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [globalFilter, setGlobalFilter] = useState('');
+  const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
 
   const table = useReactTable({
     data,
@@ -61,11 +88,19 @@ export function DataTable<TData extends object>({
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    initialState: {
+      pagination: {
+        pageSize: resolvedProps.pageSizeOptions?.[0] ?? 10
+      }
+    }
   });
 
+  const cellPaddingClass = variant === 'compact' ? styles.compactCell : styles.normalCell;
+  const headerPaddingClass = variant === 'compact' ? styles.compactHeader : styles.normalHeader;
+  
   return (
     <Box className={styles.tableContainer}>
-      {enableFiltering && (
+      {resolvedProps.enableFiltering && (
         <TextField
           label="Buscar en la tabla..."
           variant="outlined"
@@ -76,22 +111,27 @@ export function DataTable<TData extends object>({
       )}
       <TableContainer component={Paper} className={styles.paper}>
         <Table className={styles.table}>
-          <TableHead className={styles.tableHead}>
+          <TableHead className={`${styles.tableHead}`}>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <TableCell
                     key={header.id}
                     colSpan={header.colSpan}
-                    className={styles.tableHeaderCell}
-                    onClick={enableSorting ? header.column.getToggleSortingHandler() : undefined}
-                    sx={{ cursor: enableSorting ? 'pointer' : 'default' }}
+                    className={`${styles.tableHeaderCell} ${headerPaddingClass}`}
+                    onClick={resolvedProps.enableSorting ? header.column.getToggleSortingHandler() : undefined}
+                    sx={{
+                      cursor: resolvedProps.enableSorting ? 'pointer' : 'default',
+                      width: header.getSize() === 150 ? 'auto' : header.getSize(),
+                      minWidth: header.column.columnDef.minSize,
+                      maxWidth: header.column.columnDef.maxSize,
+                    }}
                   >
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       {header.isPlaceholder ? null : (
                         flexRender(header.column.columnDef.header, header.getContext())
                       )}
-                      {enableSorting && header.column.getIsSorted() && (
+                      {resolvedProps.enableSorting && header.column.getIsSorted() && (
                         header.column.getIsSorted() === 'asc' ? <ArrowUpward className={styles.sortIcon} /> : <ArrowDownward className={styles.sortIcon} />
                       )}
                     </Box>
@@ -101,11 +141,35 @@ export function DataTable<TData extends object>({
             ))}
           </TableHead>
           <TableBody>
-            {table.getRowModel().rows.length ? (
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} className={styles.loadingCell}>
+                  <CircularProgress color="primary" />
+                  <Box mt={2}>Cargando...</Box>
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} className={styles.tableRow}>
+                <TableRow
+                  key={row.id}
+                  className={styles.tableRow}
+                  onClick={() => {
+                    onRowClick?.(row.original);
+                    setSelectedRowId(row.id);
+                  }}
+                  sx={{ cursor: onRowClick ? 'pointer' : 'default' }}
+                >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className={styles.tableBodyCell}>
+                    <TableCell
+                      key={cell.id}
+                      // Aplica la clase `selectedCell` a cada celda si la fila está seleccionada.
+                      className={`${styles.tableBodyCell} ${cellPaddingClass} ${row.id === selectedRowId ? styles.selectedCell : ''}`}
+                      sx={{
+                        width: cell.column.getSize() === 150 ? 'auto' : cell.column.getSize(),
+                        minWidth: cell.column.columnDef.minSize,
+                        maxWidth: cell.column.columnDef.maxSize,
+                      }}
+                    >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
