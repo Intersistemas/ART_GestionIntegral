@@ -41,5 +41,5 @@ export default function UsuarioTable({ data, onEdit, isLoading }: Props) {
     [onEdit]
   );
 
-  return <DataTable data={data} columns={columns}/>;
+  return <DataTable data={data} columns={columns} variant="compact"/>;
 }

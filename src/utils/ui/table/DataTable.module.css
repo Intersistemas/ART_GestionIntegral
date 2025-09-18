@@ -127,5 +127,5 @@
 /* La nueva clase para las celdas seleccionadas */
 .selectedCell {
   font-weight: bold !important;
-  background-color: var(--grisOscuro) !important;
+  background-color: var(--verdeClaroClaro) !important;
 }
