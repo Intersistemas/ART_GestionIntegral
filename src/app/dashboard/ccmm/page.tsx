@@ -31,30 +31,39 @@ function ConsultaCCMMTable() {
 }
 
 function ConsultaCCM() {
-  const { dialog, rows: { length: habilita }, onAplica, onLimpia, onExport } = useDataContext();
+  const {
+    dialog,
+    rows: { length: habilita },
+    onAplicaFiltro,
+    onLimpiaFiltro,
+    onLimpiaTabla,
+    onExport
+  } = useDataContext();
 
   return (
     <Grid container spacing={1} size="grow">
       <Grid size={12}>
         <Accordion defaultExpanded>
-          <AccordionSummary
-            expandIcon={<MdExpandMore />}
-            aria-controls="panel1-content"
-            id="panel1-header"
-          >
+          <AccordionSummary expandIcon={<MdExpandMore />} aria-controls="panel1-content" id="panel1-header">
             <Typography component="span">Filtros</Typography>
           </AccordionSummary>
           <AccordionDetails>
             <ConsultaCCMMQueryBuilder />
           </AccordionDetails>
           <AccordionActions>
-            <CustomButton width="auto" onClick={onAplica}>Aplica</CustomButton>
-            <CustomButton width="auto" onClick={onLimpia}>Limpia</CustomButton>
-            <CustomButton width="auto" onClick={onExport} disabled={!habilita}>Exportar a Excel</CustomButton>
+            <CustomButton width="auto" onClick={onAplicaFiltro}>Aplica</CustomButton>
+            <CustomButton width="auto" onClick={onLimpiaFiltro}>Limpia</CustomButton>
           </AccordionActions>
         </Accordion>
-      </Grid>
-      <Grid size={12}>
+        <Accordion>
+          <AccordionSummary expandIcon={<MdExpandMore />} aria-controls="panel1-content" id="panel1-header">
+            <Typography component="span">Resultados</Typography>
+          </AccordionSummary>
+          <AccordionActions>
+            <CustomButton width="auto" onClick={onExport} disabled={!habilita}>Exportar a Excel</CustomButton>
+            <CustomButton width="auto" onClick={onLimpiaTabla}>Limpia</CustomButton>
+          </AccordionActions>
+        </Accordion>
         <Paper>
           <ConsultaCCMMTable />
         </Paper>

@@ -34,8 +34,9 @@ interface DataContextType {
   rows: Row[];
   query: { state: RuleGroupType, setState: React.Dispatch<React.SetStateAction<RuleGroupType>> };
   dialog?: ReactNode;
-  onAplica: () => void;
-  onLimpia: () => void;
+  onAplicaFiltro: () => void;
+  onLimpiaFiltro: () => void;
+  onLimpiaTabla: () => void;
   onExport: () => void;
 }
 //#endregion types
@@ -173,7 +174,7 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
     </Dialog>
   ), []);
 
-  const onAplica = useCallback(() => {
+  const onAplicaFiltro = useCallback(() => {
     const proposition = formatQuery(query, propositionFormat({ fields }));
     return procesar();
     async function procesar() {
@@ -220,19 +221,17 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
     };
   }, [query, fields, onCloseDialog, errorDialog]);
 
-  const onLimpia = useCallback(() => {
-    setQuery(defaultQuery);
-    setRows([]);
-  }, []);
+  const onLimpiaFiltro = useCallback(() => setQuery(defaultQuery), []);
+
+  const onLimpiaTabla = useCallback(() => setRows([]), []);
 
   const onExport = useCallback(async () => {
     const now = moment();
     const name = "Comisiones Medicas";
     const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet(`${name} (${now.format("DD-MM-YYYY_hh-mm-ss.SSS")})`);
+    const sheet = workbook.addWorksheet(`${name} (${now.format("DD-MM-YYYY")})`);
     const columns = { ...headers };
-    const keys = Object.keys(columns);
-    const lines = rows.map((row) => Object.fromEntries(Object.entries(pick(row, keys)).map(([key, value]) => {
+    const lines = rows.map((row) => Object.fromEntries(Object.entries(pick(row, columns)).map(([key, value]) => {
       value = columns[key].formatter ? columns[key].formatter(value) : value;
       const width = `${value}`.length + 5;
       if (width > columns[key].width) columns[key].width = width;
@@ -244,11 +243,7 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
     // Estilos para encabezado
     sheet.getRow(1).eachCell((cell) => {
       cell.font = { bold: true };
-      cell.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'A8D08D' },
-      };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'A8D08D' } };
       cell.alignment = { horizontal: 'center', vertical: 'middle' };
     });
 
@@ -282,7 +277,7 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
   const value = {
     fields, columns, rows, dialog,
     query: { state: query, setState: setQuery },
-    onAplica, onLimpia, onExport
+    onAplicaFiltro, onLimpiaFiltro, onLimpiaTabla, onExport
   };
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>
 }
