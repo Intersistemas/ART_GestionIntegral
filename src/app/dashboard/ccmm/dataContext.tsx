@@ -8,9 +8,8 @@ import propositionFormat from '@/utils/PropositionFormatQuery';
 import { defaultOperators } from "@/utils/QueryBuilderDefaults"
 import { ColumnDef } from '@tanstack/react-table';
 import ExcelJS from 'exceljs';
-import { saveAs } from 'file-saver';
 import moment from 'moment';
-import { pick } from '@/utils/utils';
+import { saveXlsx, addTable, type TableOptions } from '@/utils/excelUtils';
 
 //#region types
 type Row = Record<string, any>;
@@ -54,7 +53,7 @@ const valueOptionsFormatter: OptionsFormatter = (options: any) => ((v: string) =
 const blankOptionsFormatter: OptionsFormatter = (options: any) => ((v: string) => (options[v] ?? ""));
 
 const optionsValues: OptionsValues = (options: any) => Object.entries<string>(options).map(([name, label]) => ({ name, label }))
-const optionsSelect = (options: any, formatter: OptionsFormatter = valueOptionsFormatter, values: OptionsValues = optionsValues): {
+const optionsSelect = (options: any, formatter = valueOptionsFormatter, values = optionsValues): {
   operators: DefaultOperators,
   valueEditorType: ValueEditorType,
   formatter: Formatter,
@@ -106,7 +105,7 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
   });
   useEffect(() => {
     if (!motivos?.data) return;
-    const options = Object.fromEntries(motivos.data.map(e => [`${e[tables.RefCCMMMotivos[0].name]}`, e[tables.RefCCMMMotivos[1].name]]));
+    const options = Object.fromEntries(motivos.data.map(e => [e[tables.RefCCMMMotivos[0].name], e[tables.RefCCMMMotivos[1].name]]));
     setTables((o) => {
       const fieldIx = o.View_ConsultaCCMM.findIndex(r => r.name === "CCMMCas_MotivoCodigo");
       if (fieldIx < 0) return o;
@@ -124,7 +123,7 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
   });
   useEffect(() => {
     if (!tipos?.data) return;
-    const options = Object.fromEntries(tipos.data.map(e => [`${e[tables.RefCCMMTipos[0].name]}`, e[tables.RefCCMMTipos[1].name]]));
+    const options = Object.fromEntries(tipos.data.map(e => [e[tables.RefCCMMTipos[0].name], e[tables.RefCCMMTipos[1].name]]));
     setTables((o) => {
       const fieldIx = o.View_ConsultaCCMM.findIndex(r => r.name === "CCMMCas_TipoCodigo");
       if (fieldIx < 0) return o;
@@ -135,23 +134,24 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
   }, [tipos]);
   //#endregion RefCCMMTipos
   const { columns, fields, headers } = useMemo(() => {
-    const fields = tables.View_ConsultaCCMM.slice(1);
-    return ({
-      columns: fields.map<ColumnDef<Row>>(({ name: accessorKey, label: header, formatter }) => (
-        { accessorKey, header, cell: formatter ? (info) => formatter(info.getValue()) : undefined }
-      )),
-      fields: fields.map<Field>((({ name, label, operators, valueEditorType, values, type }) => (
-        {
-          name, label: label ?? name, operators, valueEditorType, values,
-          inputType: type ? type === "dateTime" ? "datetime-local" : type : undefined
-        }
-      ))),
-      headers: Object.fromEntries(fields.map(field => {
-        const { name, label, formatter } = field
-        const header = label ?? name;
-        return [name, { header, formatter, width: header.length + 5 }];
-      })),
+    const columns: ColumnDef<Row>[] = [];
+    const options: TableOptions = { rowFormatters: {} };
+    const xl: Record<string, Partial<ExcelJS.Column>> = {}
+    const fields: Field[] = tables.View_ConsultaCCMM.slice(1).map(column => {
+      const { name, label, formatter, operators, valueEditorType, values, type } = column;
+      columns.push({
+        accessorKey: name,
+        header: label ?? name,
+        cell: formatter ? (info) => formatter(info.getValue()) : undefined
+      });
+      xl[name] = { key: name, header: label ?? name };
+      if (formatter) options.rowFormatters![name] = (value) => formatter(value);
+      return ({
+        name, label: label ?? name, operators, valueEditorType, values,
+        inputType: type ? type === "dateTime" ? "datetime-local" : type : undefined
+      });
     });
+    return ({ columns, fields, headers: { columns: xl, options } });
   }, [tables.View_ConsultaCCMM]);
   const [rows, setRows] = useState<Row[]>([]);
   const [query, setQuery] = useState(defaultQuery);
@@ -229,25 +229,8 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
     const now = moment();
     const name = "Comisiones Medicas";
     const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet(`${name} (${now.format("DD-MM-YYYY")})`);
-    const columns = { ...headers };
-    const lines = rows.map((row) => Object.fromEntries(Object.entries(pick(row, columns)).map(([key, value]) => {
-      value = columns[key].formatter ? columns[key].formatter(value) : value;
-      const width = `${value}`.length + 5;
-      if (width > columns[key].width) columns[key].width = width;
-      return [key, value];
-    })));
 
-    sheet.columns = Object.entries(columns).map(([key, { header, width }]) => ({ key, header, width }));
-
-    // Estilos para encabezado
-    sheet.getRow(1).eachCell((cell) => {
-      cell.font = { bold: true };
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'A8D08D' } };
-      cell.alignment = { horizontal: 'center', vertical: 'middle' };
-    });
-
-    sheet.addRows(lines);
+    addTable(workbook.addWorksheet(`${name} (${now.format("DD-MM-YYYY")})`), headers.columns, rows, headers.options);
 
     setDialog(
       <Dialog
@@ -261,17 +244,13 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
       </Dialog>
     );
 
-    await workbook.xlsx.writeBuffer().then(
-      (buffer) => {
-        saveAs(new Blob([buffer], {
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        }), `${name.replaceAll(" ", "_")}-${now.format("YYYYMMDDhhmmssSSS")}.xlsx`);
-        onCloseDialog();
-      },
+    await saveXlsx(workbook, `${name.replaceAll(" ", "_")}-${now.format("YYYYMMDDhhmmssSSS")}.xlsx`).then(
+      onCloseDialog,
       (e) => errorDialog({
         title: "Error al generar excel",
         message: e?.message ?? "Ocurrió un error desconocido al generar excel"
-      }));
+      })
+    );
   }, [headers, rows, onCloseDialog, errorDialog]);
 
   const value = {
