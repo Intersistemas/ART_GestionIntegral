@@ -1,109 +1,137 @@
 /* Sidebar.module.css */
 
 .sidebar {
-  font-size: 1.3rem;
-  height: calc(100vh - var(--navbar-height) - var(--breadcrumbs-height));
-  background-color: var(--verdeOscuro);
-  color: #fff;
-  transition: width 0.3s ease-in-out;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
+    font-size: 1.3rem;
+    height: calc(100vh - var(--navbar-height) - var(--breadcrumbs-height));
+    /* Antes: background-color: var(--verdeOscuro); */
+    
+    /* === Gradiente de izquierda a derecha para el Sidebar === */
+    background: linear-gradient(to left, var(--verde), var(--verdeOscuro));
+    
+    color: #fff;
+    transition: width 0.3s ease-in-out;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
 }
 
 .sidebarOpen {
-  width: var(--sidebar-width-open);
+    width: var(--sidebar-width-open);
 }
 
 .sidebarClosed {
-  width: 100px;
+    width: 80px;
 }
 
 .header {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 10px 20px;
-  gap: 1rem;
-  cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 10px 0px;
+    gap: 1rem;
+    cursor: pointer;
 }
 
 .headerOpen {
-  background-color: var(--verdeClaro);
+    /*background-color: var(--verdeClaro);*/
+}
+
+/* Nuevo estilo para el header cuando está bloqueado */
+.headerLocked {
+    border-bottom: 3px solid var(--naranja); /* Puedes ajustar el grosor y el color */
 }
 
 .headerText {
-  font-weight: bold;
-  font-size: 1.5rem;
-  white-space: nowrap;
+    font-weight: bold;
+    font-size: 1.8rem;
+    white-space: nowrap;
 }
 
 .listContainer {
-  flex-grow: 1;
-  overflow-y: auto;
+    flex-grow: 1;
+    overflow-y: auto;
+    /* Estilos para ocultar y estilizar la barra de desplazamiento */
+    -ms-overflow-style: none; /* Para Internet Explorer, Edge heredado */
+    scrollbar-width: none; /* Para Firefox */
+}
+
+/* Estilos de la barra de desplazamiento para navegadores WebKit (Chrome, Safari) */
+.listContainer::-webkit-scrollbar {
+    display: none; /* Oculta la barra de desplazamiento por completo */
+    width: 0.5rem; /* Ancho de la barra de desplazamiento (opcional si display: none) */
+}
+
+/* Estilo del "pulgar" de la barra de desplazamiento (opcional, si no la ocultas) */
+.listContainer::-webkit-scrollbar-thumb {
+    background-color: var(--naranja); /* Color del "pulgar" */
+    border-radius: 10px; /* Borde redondeado */
 }
 
 .listItem {
-  display: block !important;
+    display: block !important;
+    padding-top: inherit;
 }
 
 .menuItemButton {
-  min-height: 48px !important;
-  padding: 0 20px;
-  justify-content: center;
+    min-height: 48px !important;
+    padding: 0 20px;
+    justify-content: center;
+    
 }
 
 .menuItemButtonOpen {
-  justify-content: initial;
-  padding-left: 20px;
+    justify-content: initial;
+    padding-left: 20px;
 }
 
 .menuItemButtonClosed {
-  justify-content: center;
-  padding: 0;
+    justify-content: center;
+    padding: 0;
 }
 
 .submenuItem {
-  padding-left: 40px;
+    padding-left: 8% !important;
 }
 
 .icon {
-  color: white !important;
-  font-size: 2rem;
-  transition: color 0.2s;
+    color: white !important;
+    font-size: 2rem;
+    transition: color 0.2s;
+    margin-right: 4%;
+    padding-left: 4%;
 }
 
 .iconOpen {
-  margin-right: 24px;
+    /*estilos para los iconos cuando el sidebar esta abierto*/
 }
 
 .iconClosed {
-  margin: auto;
+    margin: auto;
 }
 
 .linkTextVisible {
-  opacity: 1;
+    opacity: 1;
 }
 
 .linkTextHidden {
-  opacity: 0;
-  white-space: nowrap;
+    opacity: 0;
+    white-space: nowrap;
 }
 
 .submenu {
-  background-color: var(--verde);
+    background-color: var(--verde);
 }
 
 .toggleButton {
-  background-color: transparent;
-  color: white;
-  border: none;
-  cursor: pointer;
-  padding: 10px;
-  font-size: 3rem;
-  transition: transform 0.3s;
+    background-color: transparent;
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    font-size: 3rem;
+    transition: transform 0.3s;
 }
 
 .menuItemButton:hover {
-  background-color: var(--verdeClaro) !important;
+    background-color: var(--verdeClaro) !important;
 }

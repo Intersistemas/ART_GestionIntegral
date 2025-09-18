@@ -10,9 +10,10 @@ import UsuarioRow from "./interfaces/UsuarioRow";
 interface Props {
   data: UsuarioRow[];
   onEdit: (row: UsuarioRow) => void;
+  isLoading: boolean;
 }
 
-export default function UsuarioTable({ data, onEdit }: Props) {
+export default function UsuarioTable({ data, onEdit, isLoading }: Props) {
   const columns = useMemo<ColumnDef<UsuarioRow>[]>(
     () => [
       { accessorKey: "id", header: "ID" },
@@ -40,5 +41,5 @@ export default function UsuarioTable({ data, onEdit }: Props) {
     [onEdit]
   );
 
-  return <DataTable data={data} columns={columns} />;
+  return <DataTable data={data} columns={columns} variant="compact"/>;
 }

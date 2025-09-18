@@ -1,6 +1,8 @@
+/* src/utils/ui/table/DataTable.module.css */
+
+/* Reutilización de variables CSS globales */
 .tableContainer {
   margin-top: var(--main-content-margin);
-  width: 100%;
 }
 
 .paper {
@@ -9,7 +11,7 @@
 }
 
 .table {
-  min-width: 700px;
+  min-width: max-content;
 }
 
 .tableHead {
@@ -20,20 +22,19 @@
   color: var(--blanco) !important;
   font-family: var(--font) !important;
   font-weight: 700 !important;
-  font-size: 1rem !important;
   border-bottom: 2px solid var(--naranja) !important;
   text-transform: uppercase;
+  transition: background-color 0.3s ease-in-out;
 }
 
 .tableHeaderCell:hover {
   background-color: var(--verdeClaro) !important;
-  transition: background-color 0.3s ease-in-out;
 }
 
 .sortIcon {
+  font-size: 1rem;
   color: var(--blanco);
   margin-left: 5px;
-  font-size: 1rem;
 }
 
 .tableRow:nth-of-type(odd) {
@@ -46,7 +47,6 @@
 
 .tableBodyCell {
   font-family: var(--font) !important;
-  font-size: 0.9rem !important;
   color: var(--grisOscuro) !important;
   border-bottom: 1px solid #e0e0e0 !important;
 }
@@ -54,11 +54,12 @@
 .noDataCell {
   text-align: center;
   padding: 20px;
-  font-size: 1.2rem;
   color: var(--gris);
+  font-size: 1.2rem;
 }
 
 .paginationContainer {
+  font-size: 1.2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -98,4 +99,33 @@
 
 .filterInput.Mui-focused fieldset {
   border-color: var(--verde) !important;
+}
+
+.loadingCell {
+  text-align: center;
+  padding: 20px;
+}
+
+/* Estilos de altura de fila y padding de celda/encabezado */
+.compactCell { 
+  padding: 2px 6px !important;
+  font-size: 1.1rem !important;
+}
+.normalCell { 
+  padding: 10px !important; 
+  font-size: 1.4rem !important;
+}
+.compactHeader { 
+  padding: 12px 8px !important;
+  font-size: 1.3rem !important;
+}
+.normalHeader { 
+  padding: 18px !important;
+  font-size: 1.6rem !important;   
+}
+
+/* La nueva clase para las celdas seleccionadas */
+.selectedCell {
+  font-weight: bold !important;
+  background-color: var(--verdeClaroClaro) !important;
 }

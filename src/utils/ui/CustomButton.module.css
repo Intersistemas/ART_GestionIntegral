@@ -30,7 +30,7 @@
 }
 
 .primary:hover {
-  background: linear-gradient(145deg, var(--verdeClaro) 0%, #6da136 100%) !important;
+  background: linear-gradient(145deg, var(--verdeClaroClaro) 0%, #6da136 100%) !important;
   transform: translateY(-2px) !important;
   box-shadow: 0 6px 18px rgba(127, 177, 66, 0.4) !important;
 }
@@ -42,7 +42,7 @@
 }
 
 .secondary:hover {
-  background: linear-gradient(145deg, var(--verdeClaro) 0%, #6da136 100%) !important;
+  background: linear-gradient(145deg, var(--verdeClaroClaro) 0%, #6da136 100%) !important;
   transform: translateY(-2px) !important;
   box-shadow: 0 6px 18px rgba(127, 177, 66, 0.4) !important;
 }
