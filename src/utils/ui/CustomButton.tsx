@@ -33,7 +33,6 @@ const CustomButton: React.FC<CustomButtonProps> = ({
       }}
       className={className}
       disabled={disabled || isLoading}
-      // La lógica del ancho ahora es más robusta
       style={{ width: width || (fullWidth ? '100%' : undefined) }}
       {...props}
     >

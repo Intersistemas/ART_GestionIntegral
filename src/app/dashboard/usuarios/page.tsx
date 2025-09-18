@@ -84,7 +84,7 @@ export default function UsuariosPage() {
       >
         Crear usuario
       </CustomButton>
-      <UsuarioTable data={usuarios} onEdit={handleOpenModal} />
+      <UsuarioTable data={usuarios} onEdit={handleOpenModal} isLoading={loading}/>
       <UsuarioForm
         open={showModal}
         onClose={handleCloseModal}
