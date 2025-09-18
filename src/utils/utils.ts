@@ -5,3 +5,25 @@ export function camelCaseKeys<Out = any>(o: any): Out {
     camelCaseKeys(v)
   ])) as Out;
 }
+
+/**
+ * Selecciona de `source` propiedades presentes en `select`
+ * @param source Objeto desde el que obtener las propiedades
+ * @param select Propiedades a obtener de `source`
+ * @param keep Mantener propiedades presentes en `select`
+ */
+export function pick(source: any, select: any, keep = false) {
+	if (select == null) return Array.isArray(source) ? [] : {};
+  const type = typeof select;
+	if (type === "function") return pick(source, select(), keep);
+	const keys = type === "object"
+    ? Array.isArray(select) ? select : Object.keys(select)
+    : [["number", "symbol"].includes(type) ? select : `${select}`];
+  return Array.isArray(source)
+    ? keep ? load(new Array(Math.max(...keys) + 1)) : load([])
+    : load({});
+  function load(d: any): any {
+    keys.filter(k =>  keep || k in source).forEach(k => d[k] = source[k]);
+    return d;
+  }
+};

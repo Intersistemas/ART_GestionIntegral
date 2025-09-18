@@ -31,7 +31,7 @@ function ConsultaCCMMTable() {
 }
 
 function ConsultaCCM() {
-  const { dialog, onAplica, onLimpia } = useDataContext();
+  const { dialog, rows: { length: habilita }, onAplica, onLimpia, onExport } = useDataContext();
 
   return (
     <Grid container spacing={1} size="grow">
@@ -50,6 +50,7 @@ function ConsultaCCM() {
           <AccordionActions>
             <CustomButton width="auto" onClick={onAplica}>Aplica</CustomButton>
             <CustomButton width="auto" onClick={onLimpia}>Limpia</CustomButton>
+            <CustomButton width="auto" onClick={onExport} disabled={!habilita}>Exportar a Excel</CustomButton>
           </AccordionActions>
         </Accordion>
       </Grid>

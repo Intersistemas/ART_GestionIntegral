@@ -7,6 +7,10 @@ import Formato from '@/utils/Formato';
 import propositionFormat from '@/utils/PropositionFormatQuery';
 import { defaultOperators } from "@/utils/QueryBuilderDefaults"
 import { ColumnDef } from '@tanstack/react-table';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
+import moment from 'moment';
+import { pick } from '@/utils/utils';
 
 //#region types
 type Row = Record<string, any>;
@@ -32,6 +36,7 @@ interface DataContextType {
   dialog?: ReactNode;
   onAplica: () => void;
   onLimpia: () => void;
+  onExport: () => void;
 }
 //#endregion types
 
@@ -128,7 +133,7 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
     });
   }, [tipos]);
   //#endregion RefCCMMTipos
-  const { columns, fields } = useMemo(() => {
+  const { columns, fields, headers } = useMemo(() => {
     const fields = tables.View_ConsultaCCMM.slice(1);
     return ({
       columns: fields.map<ColumnDef<Row>>(({ name: accessorKey, label: header, formatter }) => (
@@ -140,14 +145,19 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
           inputType: type ? type === "dateTime" ? "datetime-local" : type : undefined
         }
       ))),
+      headers: Object.fromEntries(fields.map(field => {
+        const { name, label, formatter } = field
+        const header = label ?? name;
+        return [name, { header, formatter, width: header.length + 5 }];
+      })),
     });
   }, [tables.View_ConsultaCCMM]);
   const [rows, setRows] = useState<Row[]>([]);
   const [query, setQuery] = useState(defaultQuery);
   const [dialog, setDialog] = useState<ReactNode>();
 
-  const onCloseDialog = () => setDialog(null);
-  const errorDialog = (prop: { title?: string, message: any }) => setDialog(
+  const onCloseDialog = useCallback(() => setDialog(null), []);
+  const errorDialog = useCallback((prop: { title?: string, message: any }) => setDialog(
     <Dialog
       open
       scroll="paper"
@@ -161,7 +171,7 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
       </DialogContent>
       <DialogActions><Button onClick={onCloseDialog}>Cierra</Button></DialogActions>
     </Dialog>
-  );
+  ), []);
 
   const onAplica = useCallback(() => {
     const proposition = formatQuery(query, propositionFormat({ fields }));
@@ -208,17 +218,71 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
         { message: typeof error === "string" ? error : error.detail ?? error.message ?? JSON.stringify(error) }
       ));
     };
-  }, [query, fields]);
+  }, [query, fields, onCloseDialog, errorDialog]);
 
   const onLimpia = useCallback(() => {
     setQuery(defaultQuery);
     setRows([]);
   }, []);
 
+  const onExport = useCallback(async () => {
+    const now = moment();
+    const name = "Comisiones Medicas";
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet(`${name} (${now.format("DD-MM-YYYY_hh-mm-ss.SSS")})`);
+    const columns = { ...headers };
+    const keys = Object.keys(columns);
+    const lines = rows.map((row) => Object.fromEntries(Object.entries(pick(row, keys)).map(([key, value]) => {
+      value = columns[key].formatter ? columns[key].formatter(value) : value;
+      const width = `${value}`.length + 5;
+      if (width > columns[key].width) columns[key].width = width;
+      return [key, value];
+    })));
+
+    sheet.columns = Object.entries(columns).map(([key, { header, width }]) => ({ key, header, width }));
+
+    // Estilos para encabezado
+    sheet.getRow(1).eachCell((cell) => {
+      cell.font = { bold: true };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'A8D08D' },
+      };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+    });
+
+    sheet.addRows(lines);
+
+    setDialog(
+      <Dialog
+        open
+        scroll="paper"
+        onClose={onCloseDialog}
+        aria-labelledby="scroll-dialog-title"
+        aria-describedby="scroll-dialog-description"
+      >
+        <DialogTitle id="scroll-dialog-title">Exportando a excel.</DialogTitle>
+      </Dialog>
+    );
+
+    await workbook.xlsx.writeBuffer().then(
+      (buffer) => {
+        saveAs(new Blob([buffer], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        }), `${name.replaceAll(" ", "_")}-${now.format("YYYYMMDDhhmmssSSS")}.xlsx`);
+        onCloseDialog();
+      },
+      (e) => errorDialog({
+        title: "Error al generar excel",
+        message: e?.message ?? "Ocurrió un error desconocido al generar excel"
+      }));
+  }, [headers, rows, onCloseDialog, errorDialog]);
+
   const value = {
     fields, columns, rows, dialog,
     query: { state: query, setState: setQuery },
-    onAplica, onLimpia,
+    onAplica, onLimpia, onExport
   };
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>
 }
