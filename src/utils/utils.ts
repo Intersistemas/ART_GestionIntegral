@@ -20,7 +20,7 @@ export function pick(source: any, select: any, keep = false) {
     ? Array.isArray(select) ? select : Object.keys(select)
     : [["number", "symbol"].includes(type) ? select : `${select}`];
   return Array.isArray(source)
-    ? keep ? load(new Array(Math.max(...keys) + 1)) : load([])
+    ? keep && keys.length ? load(new Array(Math.max(...keys) + 1)) : load([])
     : load({});
   function load(d: any): any {
     keys.filter(k =>  keep || k in source).forEach(k => d[k] = source[k]);
