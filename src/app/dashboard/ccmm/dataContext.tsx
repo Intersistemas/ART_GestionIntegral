@@ -7,9 +7,8 @@ import Formato from '@/utils/Formato';
 import propositionFormat from '@/utils/PropositionFormatQuery';
 import { defaultOperators } from "@/utils/QueryBuilderDefaults"
 import { ColumnDef } from '@tanstack/react-table';
-import ExcelJS from 'exceljs';
 import moment from 'moment';
-import { saveXlsx, addTable, type TableOptions } from '@/utils/excelUtils';
+import { saveTable, TableColumn, type AddTableOptions } from '@/utils/excelUtils';
 
 //#region types
 type Row = Record<string, any>;
@@ -38,6 +37,7 @@ interface DataContextType {
   onLimpiaTabla: () => void;
   onExport: () => void;
 }
+type Headers = { columns: Record<string, TableColumn>, options: AddTableOptions };
 //#endregion types
 
 //#region globales
@@ -135,8 +135,7 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
   //#endregion RefCCMMTipos
   const { columns, fields, headers } = useMemo(() => {
     const columns: ColumnDef<Row>[] = [];
-    const options: TableOptions = { rowFormatters: {} };
-    const xl: Record<string, Partial<ExcelJS.Column>> = {}
+    const headers: Headers = { columns: {}, options: { formatters: { row: {} } } };
     const fields: Field[] = tables.View_ConsultaCCMM.slice(1).map(column => {
       const { name, label, formatter, operators, valueEditorType, values, type } = column;
       columns.push({
@@ -144,14 +143,14 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
         header: label ?? name,
         cell: formatter ? (info) => formatter(info.getValue()) : undefined
       });
-      xl[name] = { key: name, header: label ?? name };
-      if (formatter) options.rowFormatters![name] = (value) => formatter(value);
+      headers.columns[name] = { key: name, header: label ?? name };
+      if (formatter) headers.options.formatters!.row![name] = formatter;
       return ({
         name, label: label ?? name, operators, valueEditorType, values,
         inputType: type ? type === "dateTime" ? "datetime-local" : type : undefined
       });
     });
-    return ({ columns, fields, headers: { columns: xl, options } });
+    return ({ columns, fields, headers });
   }, [tables.View_ConsultaCCMM]);
   const [rows, setRows] = useState<Row[]>([]);
   const [query, setQuery] = useState(defaultQuery);
@@ -174,51 +173,48 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
     </Dialog>
   ), []);
 
-  const onAplicaFiltro = useCallback(() => {
+  const onAplicaFiltro = useCallback(async () => {
     const proposition = formatQuery(query, propositionFormat({ fields }));
-    return procesar();
-    async function procesar() {
-      const table = "View_ConsultaCCMM";
-      const query: Query = {
-        select: tables[table].map(c => ({ value: c.name })),
-        from: [{ table }],
-        order: { by: [tables[table][0].name] }
-      };
-      if (proposition) query.where = proposition;
-      async function onConfirm() {
-        await execute<Row>(query).then((ok) => {
-          setRows(ok.data ?? []);
-          onCloseDialog();
-        }).catch((error) => errorDialog(
-          { message: typeof error === "string" ? error : error.detail ?? error.message ?? JSON.stringify(error) }
-        ));
-      };
-      await analyze(query).then(async (ok) => (ok.count > 90)
-        ? setDialog(
-          <Dialog
-            open
-            scroll="paper"
-            onClose={onCloseDialog}
-            aria-labelledby="scroll-dialog-title"
-            aria-describedby="scroll-dialog-description"
-          >
-            <DialogTitle id="scroll-dialog-title">Consulta con muchos registros.</DialogTitle>
-            <DialogContent dividers>
-              <DialogContentText id="scroll-dialog-description" tabIndex={-1}>
-                La consulta generará {ok.count} registros.
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={onCloseDialog}>Cancela</Button>
-              <Button onClick={onConfirm}>Continúa</Button>
-            </DialogActions>
-          </Dialog>
-        )
-        : onConfirm()
-      ).catch((error) => errorDialog(
+    const table = "View_ConsultaCCMM";
+    const apiQuery: Query = {
+      select: tables[table].map(c => ({ value: c.name })),
+      from: [{ table }],
+      order: { by: [tables[table][0].name] }
+    };
+    if (proposition) apiQuery.where = proposition;
+    async function onConfirm() {
+      await execute<Row>(apiQuery).then((ok) => {
+        setRows(ok.data ?? []);
+        onCloseDialog();
+      }).catch((error) => errorDialog(
         { message: typeof error === "string" ? error : error.detail ?? error.message ?? JSON.stringify(error) }
       ));
     };
+    await analyze(apiQuery).then(async (ok) => (ok.count > 90)
+      ? setDialog(
+        <Dialog
+          open
+          scroll="paper"
+          onClose={onCloseDialog}
+          aria-labelledby="scroll-dialog-title"
+          aria-describedby="scroll-dialog-description"
+        >
+          <DialogTitle id="scroll-dialog-title">Consulta con muchos registros.</DialogTitle>
+          <DialogContent dividers>
+            <DialogContentText id="scroll-dialog-description" tabIndex={-1}>
+              La consulta generará {ok.count} registros.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={onCloseDialog}>Cancela</Button>
+            <Button onClick={onConfirm}>Continúa</Button>
+          </DialogActions>
+        </Dialog>
+      )
+      : onConfirm()
+    ).catch((error) => errorDialog(
+      { message: typeof error === "string" ? error : error.detail ?? error.message ?? JSON.stringify(error) }
+    ));
   }, [query, fields, onCloseDialog, errorDialog]);
 
   const onLimpiaFiltro = useCallback(() => setQuery(defaultQuery), []);
@@ -227,10 +223,9 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
 
   const onExport = useCallback(async () => {
     const now = moment();
-    const name = "Comisiones Medicas";
-    const workbook = new ExcelJS.Workbook();
-
-    addTable(workbook.addWorksheet(`${name} (${now.format("DD-MM-YYYY")})`), headers.columns, rows, headers.options);
+    const options = { sheet: { name: "Comisiones Medicas" }, table: headers.options };
+    const fileName = `${options.sheet.name.replaceAll(" ", "_")}-${now.format("YYYYMMDDhhmmssSSS")}.xlsx`;
+    options.sheet.name += ` (${now.format("DD-MM-YYYY")})`;
 
     setDialog(
       <Dialog
@@ -244,7 +239,7 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
       </Dialog>
     );
 
-    await saveXlsx(workbook, `${name.replaceAll(" ", "_")}-${now.format("YYYYMMDDhhmmssSSS")}.xlsx`).then(
+    await saveTable(headers.columns, rows, fileName, options).then(
       onCloseDialog,
       (e) => errorDialog({
         title: "Error al generar excel",

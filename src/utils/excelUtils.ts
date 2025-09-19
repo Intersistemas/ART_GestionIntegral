@@ -3,53 +3,66 @@ import { saveAs } from 'file-saver';
 import { pick } from './utils';
 
 //#region types
-export type TableColumnFormatter = (key: string, column: Partial<ExcelJS.Column>, row?: any) => void;
+export type TableRow = Record<string, any>;
+export type TableColumn = Partial<ExcelJS.Column>;
 export type TableRowFormatter = (value: any) => any;
-export type TableRowFormatters = Record<string, TableRowFormatter>;
-export type TableOptions = { columnFormatter?: TableColumnFormatter, rowFormatters?: TableRowFormatters }
+export type TableColumnFormatter = (column: TableColumn, rowValue?: any) => any;
+export type AddTableOptions = {
+  formatters?: {
+    column?: Record<string, TableColumnFormatter>,
+    row?: Record<string, TableRowFormatter>,
+  }
+};
+export type Sheet = ExcelJS.Worksheet;
+export type SheetOptions = Partial<ExcelJS.AddWorksheetOptions>;
+export type SaveTableOptions = {
+  format?: "xlsx" | "csv",
+  sheet?: {
+    name?: string,
+    options?: SheetOptions,
+  },
+  table?: AddTableOptions,
+}
 //#endregion types
 //#region defaults
-export const defaultTableColumnFormatter: TableColumnFormatter = (key, column, row) => {
-  if (column.width == null) {
-    let columnText = (Array.isArray(column.header))
-      ? column.header.reduce((p, h) => h.length > p.length ? h : p)
-      : column.header ?? "";
-    column.width = clacWidth(columnText);
-  }
-  if (row == null || row[key] == null) return;
-  let width = clacWidth(row[key]);
+export const defaultTableColumnFormatter: TableColumnFormatter = Object.freeze((column, rowValue) => {
+  if (column.width == null)
+    column.width = calcWidth((Array.isArray(column.header))
+      ? column.header.reduce((p, c) => c.length > p.length ? c : p)
+      : column.header ?? "");
+  if (rowValue == null) return rowValue;
+  let width = calcWidth(rowValue);
   if (column.width < width) column.width = width;
-  function clacWidth(value: string) { return value.length + 5 };
-};
-export const defaultTableRowFormatter: TableRowFormatter = (value) => value;
-export const defaultTableRowFormatters: TableRowFormatters = Object.freeze({ "": defaultTableRowFormatter });
-export const defaultTableOptions: TableOptions = Object.freeze({
-  columnFormatter: defaultTableColumnFormatter,
-  rowFormatters: defaultTableRowFormatters
+  return rowValue;
+  function calcWidth(value: string) { return value.length + 3 };
+});
+export const defaultTableRowFormatter: TableRowFormatter = Object.freeze((value) => value);
+export const defaultKey = Object.freeze("");
+export const defaultTableColumnFormatters: Record<string, TableColumnFormatter> = Object.freeze({ [defaultKey]: defaultTableColumnFormatter });
+export const defaultTableRowFormatters: Record<string, TableRowFormatter> = Object.freeze({ [defaultKey]: defaultTableRowFormatter });
+export const defaultTableOptions: AddTableOptions = Object.freeze({
+  formatters: Object.freeze({ column: defaultTableColumnFormatters, row: defaultTableRowFormatters })
 });
 //#endregion defaults
 
 export function addTable(
-  sheet: ExcelJS.Worksheet,
-  columns: Record<string, Partial<ExcelJS.Column>>,
-  rows: any[],
-  options: TableOptions = defaultTableOptions,
+  sheet: Sheet,
+  columns: Record<string, TableColumn>,
+  rows: TableRow[],
+  options?: AddTableOptions,
 ) {
-  let { columnFormatter = defaultTableColumnFormatter, rowFormatters } = options;
-  rowFormatters = { ...defaultTableRowFormatters, ...rowFormatters };
+  options = { ...defaultTableOptions, ...options };
+  const formatters = {
+    column: { ...defaultTableColumnFormatters, ...options.formatters?.column },
+    row: { ...defaultTableRowFormatters, ...options.formatters?.row },
+  };
 
-  const headers = Object.fromEntries(Object.entries(columns).map(([key, v]) => {
-    const column: Partial<ExcelJS.Column> = { ...v };
-    columnFormatter(key, column);
-    return [key, column]
-  }));
+  const headers = Object.fromEntries(Object.entries(columns).map(([key, value]) => [key, { ...value }]));
   const lines = rows.map((row) => Object.fromEntries(Object.entries(pick(row, headers)).map(([key, value]) => {
-    const rowFormatter = rowFormatters[key] ?? rowFormatters[""];
-    const result = (rowFormatter)(value);
-    columnFormatter(key, headers[key], result);
-    return [key, result];
+    const columnFormatter = formatters.column[key] ?? formatters.column[defaultKey];
+    const rowFormatter = formatters.row[key] ?? formatters.row[defaultKey];
+    return [key, columnFormatter(headers[key], rowFormatter(value))];
   })));
-
   sheet.columns = Object.values(headers);
 
   // Estilos para encabezado
@@ -74,4 +87,23 @@ export async function saveCsv(workbook: ExcelJS.Workbook, fileName: string) {
     new Blob([buffer], { type: 'application/text' }),
     fileName
   ));
+}
+
+export async function saveTable(
+  columns: Record<string, TableColumn>,
+  rows: TableRow[],
+  fileName: string,
+  options?: SaveTableOptions,
+) {
+  options ??= {};
+  options.sheet ??= {};
+
+  const workbook = new ExcelJS.Workbook();
+
+  addTable(workbook.addWorksheet(options.sheet.name, options.sheet.options), columns, rows, options.table);
+
+  switch (options.format ?? "xlsx") {
+    case "xlsx": return await saveXlsx(workbook, fileName);
+    case "csv": return await saveCsv(workbook, fileName);
+  }
 }
