@@ -2,6 +2,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useState } from 'react';
+import { usePathname } from 'next/navigation'; // Importa usePathname
 import { BsFillStarFill, BsLayoutSplit, BsBriefcaseFill, BsPenFill, BsPersonFillGear, BsFolder, BsHouseGear, BsCalendar2Plus, BsBarChartLineFill, BsList, BsChevronDown,
     BsChevronRight, BsTerminal, BsFileText, BsCreditCard, BsCardChecklist, BsGraphUpArrow, BsClipboard2Data } from 'react-icons/bs';
 import { FaFileInvoiceDollar } from "react-icons/fa6";
@@ -80,6 +81,7 @@ const Sidebar = ({}: SidebarProps) => {
     // Nuevo estado para el bloqueo (abierto con clic)
     const [isLocked, setIsLocked] = useState(false);
     const [openMenus, setOpenMenus] = useState<string[]>([]);
+    const pathname = usePathname(); // Obtiene la ruta actual
 
     const handleMenuClick = (menuName: string) => {
       setOpenMenus(prevOpenMenus => {
@@ -118,8 +120,9 @@ const Sidebar = ({}: SidebarProps) => {
     const renderMenuItems = (items: MenuItem[], isSubmenu: boolean = false) => {
         return items.map((item) => {
             const isMenuOpen = openMenus.includes(item.name);
+            const isActive = item.link === pathname; // Verifica si el ítem está activo
             
-            const listItemButtonClasses = `${styles.menuItemButton} ${isOpen ? styles.menuItemButtonOpen : styles.menuItemButtonClosed} ${isSubmenu ? styles.submenuItem : ''}`;
+            const listItemButtonClasses = `${styles.menuItemButton} ${isOpen ? styles.menuItemButtonOpen : styles.menuItemButtonClosed} ${isSubmenu ? styles.submenuItem : ''} ${isActive ? styles.activeLink : ''}`;
             const listItemIconClasses = `${styles.icon} ${isOpen ? styles.iconOpen : styles.iconClosed}`;
             const listItemTextClasses = `${isOpen ? styles.linkTextVisible : styles.linkTextHidden}`;
             const arrowIconClasses = `${styles.accordionIcon}`;

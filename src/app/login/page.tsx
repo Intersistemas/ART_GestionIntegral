@@ -14,7 +14,7 @@ import {
   InputAdornment,
 } from "@mui/material";
 import { Person, Lock } from "@mui/icons-material";
-import CustomButton from "@/utils/ui/CustomButton";
+import CustomButton from "@/utils/ui/button/CustomButton";
 import styles from "./Signin.module.css";
 
 export default function Signin() {
