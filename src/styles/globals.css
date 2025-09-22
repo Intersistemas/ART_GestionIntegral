@@ -3,6 +3,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import "react-querybuilder/dist/query-builder.css";
 
 :root {
   --primary: lightgray;
@@ -47,6 +48,21 @@
   --breadcrumbs-height: 3.5rem; /* Altura estimada de las migas de pan */
   --content-padding: 20px;
   --main-content-margin: 5px;
+
+  /* React-QueryBuilder */
+  --rqb-spacing: 0.5rem;
+  --rqb-border-width: 1px;
+  --rqb-base-color: var(--verdeClaroClaro);
+  --rqb-background-color: var(--naranjaClaro);
+  --rqb-border-color: var(--naranjaOscuro);
+  --rqb-border-style: solid;
+  --rqb-border-radius: 0.25rem;
+
+  --rqb-branch-indent: var(--rqb-spacing);
+  --rqb-branch-width: var(--rqb-border-width);
+  --rqb-branch-color: var(--rqb-border-color);
+  --rqb-branch-radius: var(--rqb-border-radius);
+  --rqb-branch-style: var(--rqb-border-style);
 }
 
 html {

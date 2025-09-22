@@ -1,11 +1,11 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { Field, formatQuery, type RuleGroupType, type ValueEditorType, type DefaultOperators } from 'react-querybuilder';
+import { Field, formatQuery, type RuleGroupType, type ValueEditorType, type DefaultOperators, defaultOperators } from 'react-querybuilder';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { type GridColType } from '@mui/x-data-grid';
 import QueriesAPI, { type Query } from '@/data/queryAPI';
 import Formato from '@/utils/Formato';
 import propositionFormat from '@/utils/PropositionFormatQuery';
-import { defaultOperators } from "@/utils/QueryBuilderDefaults"
+import * as rtl from "@/utils/QueryBuilderDefaults"
 import { ColumnDef } from '@tanstack/react-table';
 import moment from 'moment';
 import { saveTable, TableColumn, type AddTableOptions } from '@/utils/excelUtils';
