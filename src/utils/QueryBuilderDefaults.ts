@@ -1,33 +1,38 @@
 import {
-  defaultPlaceholderFieldGroupLabel,
-  defaultPlaceholderFieldLabel,
-  defaultPlaceholderFieldName,
-  defaultPlaceholderOperatorGroupLabel,
-  defaultPlaceholderOperatorLabel,
-  defaultPlaceholderOperatorName,
-  defaultPlaceholderValueGroupLabel,
-  defaultPlaceholderValueLabel,
-  defaultPlaceholderValueName,
-  type DefaultCombinators,
-  type DefaultCombinatorsExtended,
-  type DefaultOperators,
-  type TranslationsFull
+  Classnames,
+  Combinator,
+  // defaultPlaceholderFieldGroupLabel,
+  // defaultPlaceholderFieldLabel,
+  // defaultPlaceholderFieldName,
+  // defaultPlaceholderOperatorGroupLabel,
+  // defaultPlaceholderOperatorLabel,
+  // defaultPlaceholderOperatorName,
+  // defaultPlaceholderValueGroupLabel,
+  // defaultPlaceholderValueLabel,
+  // defaultPlaceholderValueName,
+  Operator,
+  Translations,
+  // type TranslationsFull
 } from "react-querybuilder";
 
-export const defaultCombinators: DefaultCombinators = [
-  { name: 'and', value: 'and', label: 'Todos' } as const,
-  { name: 'or', value: 'or', label: 'Alguno' } as const,
+export const classnames: Partial<Classnames> = {
+  queryBuilder: 'queryBuilder-branches',
+}
+
+export const combinators: Combinator[] = [
+  { name: 'and', label: 'Todos' } as const,
+  { name: 'or', label: 'Alguno' } as const,
 ];
 
-export const defaultCombinatorsExtended: DefaultCombinatorsExtended = [
-  ...defaultCombinators,
-  { name: 'xor', value: 'xor', label: 'Alguno, pero no todos' } as const,
+export const combinatorsExtended: Combinator[] = [
+  ...combinators,
+  { name: 'xor', label: 'Alguno, pero no todos' } as const,
 ];
 
-export const defaultOperators: DefaultOperators = [
-  { name: '=', value: '=', label: '=' },
+export const operators: Operator[] = [
+  { name: '=', value: '=', label: '=' } as const,
   { name: '!=', value: '!=', label: '!=' },
-  { name: '<', value: '<', label: '<' },
+  { name: '<', value: '<', label: '<' } as const,
   { name: '>', value: '>', label: '>' },
   { name: '<=', value: '<=', label: '<=' },
   { name: '>=', value: '>=', label: '>=' },
@@ -45,24 +50,24 @@ export const defaultOperators: DefaultOperators = [
   { name: 'notBetween', value: 'notBetween', label: 'fuera' },
 ];
 
-export const defaultTranslations: TranslationsFull = {
+export const translations: Partial<Translations> = {
   fields: {
     title: 'Campos',
-    placeholderName: defaultPlaceholderFieldName,
-    placeholderLabel: defaultPlaceholderFieldLabel,
-    placeholderGroupLabel: defaultPlaceholderFieldGroupLabel,
+    // placeholderName: defaultPlaceholderFieldName,
+    // placeholderLabel: defaultPlaceholderFieldLabel,
+    // placeholderGroupLabel: defaultPlaceholderFieldGroupLabel,
   } as const,
   operators: {
     title: 'Operadores',
-    placeholderName: defaultPlaceholderOperatorName,
-    placeholderLabel: defaultPlaceholderOperatorLabel,
-    placeholderGroupLabel: defaultPlaceholderOperatorGroupLabel,
+    // placeholderName: defaultPlaceholderOperatorName,
+    // placeholderLabel: defaultPlaceholderOperatorLabel,
+    // placeholderGroupLabel: defaultPlaceholderOperatorGroupLabel,
   } as const,
   values: {
     title: 'Valores',
-    placeholderName: defaultPlaceholderValueName,
-    placeholderLabel: defaultPlaceholderValueLabel,
-    placeholderGroupLabel: defaultPlaceholderValueGroupLabel,
+    // placeholderName: defaultPlaceholderValueName,
+    // placeholderLabel: defaultPlaceholderValueLabel,
+    // placeholderGroupLabel: defaultPlaceholderValueGroupLabel,
   } as const,
   matchMode: {
     title: 'Modo de conicidencia',
@@ -135,4 +140,4 @@ export const defaultTranslations: TranslationsFull = {
   valueSourceSelector: {
     title: 'Origen de valor',
   } as const,
-} satisfies TranslationsFull;
+};
