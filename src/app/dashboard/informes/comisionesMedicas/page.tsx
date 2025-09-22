@@ -1,34 +1,15 @@
 "use client"
 import React from 'react';
-import QueryBuilder from 'react-querybuilder';
-import { Accordion, AccordionActions, AccordionDetails, AccordionSummary, Grid, Paper, ThemeProvider, Typography } from '@mui/material';
-import { QueryBuilderMaterial } from '@react-querybuilder/material';
+import { Accordion, AccordionActions, AccordionDetails, AccordionSummary, Grid, Paper, Typography } from '@mui/material';
 import { MdExpandMore } from "react-icons/md";
-import * as rtl from "@/utils/QueryBuilderDefaults"
 import { DataContextProvider, useDataContext } from './dataContext';
 import DataTable from '@/utils/ui/table/DataTable';
 import CustomButton from '@/utils/ui/button/CustomButton';
-import theme from '@/styles/theme';
+import QueryBuilder from '@/utils/ui/QueryBuilder';
 
 function CCMMQueryBuilder() {
   const { fields, query: { state: query, setState: setQuery } } = useDataContext();
-  return (
-    <ThemeProvider theme={theme}>
-      <QueryBuilderMaterial>
-        <QueryBuilder
-          fields={fields}
-          combinators={rtl.combinatorsExtended}
-          operators={rtl.operators}
-          translations={rtl.translations}
-          controlClassnames={rtl.classnames}
-          query={query}
-          onQueryChange={setQuery}
-          showNotToggle
-          listsAsArrays
-        />
-      </QueryBuilderMaterial>
-    </ThemeProvider>
-  );
+  return <QueryBuilder fields={fields} query={query} onQueryChange={setQuery} />
 }
 
 function CCMMTable() {

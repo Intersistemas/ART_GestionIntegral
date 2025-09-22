@@ -1,73 +1,49 @@
-import {
-  Classnames,
-  Combinator,
-  // defaultPlaceholderFieldGroupLabel,
-  // defaultPlaceholderFieldLabel,
-  // defaultPlaceholderFieldName,
-  // defaultPlaceholderOperatorGroupLabel,
-  // defaultPlaceholderOperatorLabel,
-  // defaultPlaceholderOperatorName,
-  // defaultPlaceholderValueGroupLabel,
-  // defaultPlaceholderValueLabel,
-  // defaultPlaceholderValueName,
-  Operator,
-  Translations,
-  // type TranslationsFull
-} from "react-querybuilder";
+import type { Classnames, FlexibleOptionListProp, FullCombinator, FullOperator, Translations } from "react-querybuilder";
 
 export const classnames: Partial<Classnames> = {
   queryBuilder: 'queryBuilder-branches',
 }
 
-export const combinators: Combinator[] = [
+export const combinators: FlexibleOptionListProp<FullCombinator> = [
   { name: 'and', label: 'Todos' } as const,
   { name: 'or', label: 'Alguno' } as const,
 ];
 
-export const combinatorsExtended: Combinator[] = [
+export const combinatorsExtended: FlexibleOptionListProp<FullCombinator> = [
   ...combinators,
   { name: 'xor', label: 'Alguno, pero no todos' } as const,
 ];
 
-export const operators: Operator[] = [
-  { name: '=', value: '=', label: '=' } as const,
-  { name: '!=', value: '!=', label: '!=' },
-  { name: '<', value: '<', label: '<' } as const,
-  { name: '>', value: '>', label: '>' },
-  { name: '<=', value: '<=', label: '<=' },
-  { name: '>=', value: '>=', label: '>=' },
-  { name: 'contains', value: 'contains', label: 'contiene' },
-  { name: 'beginsWith', value: 'beginsWith', label: 'empieza con' },
-  { name: 'endsWith', value: 'endsWith', label: 'termina con' },
-  { name: 'doesNotContain', value: 'doesNotContain', label: 'no contiene' },
-  { name: 'doesNotBeginWith', value: 'doesNotBeginWith', label: 'no empieza con' },
-  { name: 'doesNotEndWith', value: 'doesNotEndWith', label: 'no termina con' },
-  { name: 'null', value: 'null', label: 'es null' },
-  { name: 'notNull', value: 'notNull', label: 'no es null' },
-  { name: 'in', value: 'in', label: 'presente en' },
-  { name: 'notIn', value: 'notIn', label: 'ausente en' },
-  { name: 'between', value: 'between', label: 'entre' },
-  { name: 'notBetween', value: 'notBetween', label: 'fuera' },
+export const operators: FlexibleOptionListProp<FullOperator> = [
+  { name: '=', label: '=' } as const,
+  { name: '!=', label: '!=' },
+  { name: '<', label: '<' } as const,
+  { name: '>', label: '>' },
+  { name: '<=', label: '<=' },
+  { name: '>=', label: '>=' },
+  { name: 'contains', label: 'contiene' },
+  { name: 'beginsWith', label: 'empieza con' },
+  { name: 'endsWith', label: 'termina con' },
+  { name: 'doesNotContain', label: 'no contiene' },
+  { name: 'doesNotBeginWith', label: 'no empieza con' },
+  { name: 'doesNotEndWith', label: 'no termina con' },
+  { name: 'null', label: 'es vacío' },
+  { name: 'notNull', label: 'no es vacío' },
+  { name: 'in', label: 'presente en' },
+  { name: 'notIn', label: 'ausente en' },
+  { name: 'between', label: 'entre' },
+  { name: 'notBetween', label: 'fuera' },
 ];
 
 export const translations: Partial<Translations> = {
   fields: {
     title: 'Campos',
-    // placeholderName: defaultPlaceholderFieldName,
-    // placeholderLabel: defaultPlaceholderFieldLabel,
-    // placeholderGroupLabel: defaultPlaceholderFieldGroupLabel,
   } as const,
   operators: {
     title: 'Operadores',
-    // placeholderName: defaultPlaceholderOperatorName,
-    // placeholderLabel: defaultPlaceholderOperatorLabel,
-    // placeholderGroupLabel: defaultPlaceholderOperatorGroupLabel,
   } as const,
   values: {
     title: 'Valores',
-    // placeholderName: defaultPlaceholderValueName,
-    // placeholderLabel: defaultPlaceholderValueLabel,
-    // placeholderGroupLabel: defaultPlaceholderValueGroupLabel,
   } as const,
   matchMode: {
     title: 'Modo de conicidencia',
