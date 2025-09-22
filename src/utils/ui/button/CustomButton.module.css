@@ -1,8 +1,7 @@
-/* utils/ui/CustomButton.module.css */
+/* utils/ui/button/CustomButton.module.css */
 
 .customButton {
   /* Estilos base del botón */
-  /* Elimina la línea 'width: 100% !important;' de aquí */
   padding: 16px !important;
   border: none !important;
   border-radius: 8px !important;
@@ -22,42 +21,47 @@
   justify-content: center !important;
 }
 
+/* Contenedor del ícono y texto */
+.contentWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconWrapper {
+  display: flex;
+  align-items: center;
+  margin-right: 8px; /* Espacio entre el ícono y el texto */
+}
+
 /* Variantes de color */
 .primary {
-  background: linear-gradient(145deg, var(--naranja) 0%, #d97a0a 100%) !important;
+  background: linear-gradient(145deg, var(--naranjaClaro) 0%, var(--naranja) 100%) !important;
   color: white !important;
-  box-shadow: 0 4px 12px rgba(228, 132, 12, 0.3) !important;
 }
 
 .primary:hover {
-  background: linear-gradient(145deg, var(--verdeClaroClaro) 0%, #6da136 100%) !important;
+  background: linear-gradient(145deg, var(--verde) 0%, var(--verdeClaro) 100%) !important;
   transform: translateY(-2px) !important;
-  box-shadow: 0 6px 18px rgba(127, 177, 66, 0.4) !important;
+  box-shadow: 0 4px 18px var(--verdeClaro)!important;
 }
 
-.secondary {
-  background: linear-gradient(145deg, var(--verdeOscuro) 0%, #3a5a20 100%) !important;
-  color: white !important;
-  box-shadow: 0 4px 12px rgba(73, 103, 38, 0.3) !important;
+/* Nueva clase para el estado 'exit' */
+.exit.primary{
+    background: linear-gradient(145deg, var(--verdeClaro) 0%, var(--verde) 100%) !important;
+    color: white !important;
 }
 
-.secondary:hover {
-  background: linear-gradient(145deg, var(--verdeClaroClaro) 0%, #6da136 100%) !important;
-  transform: translateY(-2px) !important;
-  box-shadow: 0 6px 18px rgba(127, 177, 66, 0.4) !important;
+.exit.primary:hover{
+    background: linear-gradient(145deg, var(--naranja) 0%, var(--naranjaClaro) 100%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 18px var(--naranjaClaro) !important;
 }
 
 /* Estados */
 .customButton:active {
   transform: translateY(0) !important;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2) !important;
-}
-
-.disabled {
-  background: #cbd5e0 !important;
-  cursor: not-allowed !important;
-  transform: none !important;
-  box-shadow: none !important;
 }
 
 /* Efecto de brillo al pasar el mouse */
@@ -86,11 +90,6 @@
   font-weight: 700 !important;
 }
 
-/* Variantes de Material UI (ajustadas para CSS Modules) */
-.contained {
-  /* No se necesita aquí, ya que los estilos de color lo manejan */
-}
-
 .outlined {
   background: transparent !important;
   border: 2px solid !important;
@@ -104,15 +103,6 @@
   color: white !important;
 }
 
-.outlined.secondary {
-  border-color: var(--verdeOscuro) !important;
-  color: var(--verdeOscuro) !important;
-}
-.outlined.secondary:hover {
-  background: var(--verdeOscuro) !important;
-  color: white !important;
-}
-
 .text {
   background: transparent !important;
   box-shadow: none !important;
@@ -121,13 +111,30 @@
 .text.primary {
   color: var(--naranja) !important;
 }
-.text.primary:hover {
-  background: rgba(228, 132, 12, 0.1) !important;
+
+
+/* DISABLED */
+
+.customButton.disabled {
+  background: var(--gris) !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
-.text.secondary {
-  color: var(--verdeOscuro) !important;
+.disabled.primary {
+  background: var(--gris) !important;
+  box-shadow: none !important;
+  color: var(--grisOscuro) !important;
 }
-.text.secondary:hover {
-  background: rgba(73, 103, 38, 0.1) !important;
+
+/* anula los efectos de hover, focus y active */
+.customButton.disabled:hover,
+.customButton.disabled:active {
+  transform: none !important;
+  background: var(--gris) !important;
+  box-shadow: none !important;
+}
+.disabled::before {
+    display: none !important; /* Oculta el efecto de brillo */
 }
