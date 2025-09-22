@@ -76,13 +76,8 @@ export default function UsuariosPage() {
   return (
     <Box className={styles.usuariosPageContainer}>
       <CustomButton
-        variant="contained"
-        color="primary"
         onClick={() => handleOpenModal()}
-        sx={{ mb: 2 }}
         width="20%"
-        disabled
-        exit
       >
         Crear usuario
       </CustomButton>

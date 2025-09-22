@@ -106,7 +106,7 @@
     right: 3%;
     width: 350px; /* Ancho aumentado */
     background-color: var(--blanco);
-    border-bottom: 5px solid var(--naranja);
+    border-bottom: 6px solid var(--naranja);
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     z-index: 10;
