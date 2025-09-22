@@ -32,7 +32,7 @@ export default function UsuarioTable({ data, onEdit, isLoading }: Props) {
         id: "actions",
         header: "Acciones",
         cell: ({ row }) => (
-          <IconButton onClick={() => onEdit(row.original)} color="primary">
+          <IconButton onClick={() => onEdit(row.original)} color="warning">
             <EditIcon />
           </IconButton>
         ),
