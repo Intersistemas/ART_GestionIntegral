@@ -81,8 +81,6 @@ export default function UsuariosPage() {
         onClick={() => handleOpenModal()}
         sx={{ mb: 2 }}
         width="20%"
-        disabled
-        exit
       >
         Crear usuario
       </CustomButton>
