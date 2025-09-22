@@ -6,7 +6,7 @@ import UsuarioForm, { UsuarioFormFields } from "./UsuarioForm";
 import UsuarioTable from "./UsuarioTable";
 import useUsuarios, { UsuarioRow } from "./useUsuarios";
 import styles from './Usuario.module.css';
-import CustomButton from "@/utils/ui/CustomButton";
+import CustomButton from "@/utils/ui/button/CustomButton";
 
 const initialForm = {
   cuit: "",
@@ -81,6 +81,8 @@ export default function UsuariosPage() {
         onClick={() => handleOpenModal()}
         sx={{ mb: 2 }}
         width="20%"
+        disabled
+        exit
       >
         Crear usuario
       </CustomButton>

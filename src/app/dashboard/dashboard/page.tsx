@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 import Card from '@/components/Card';
-import CustomButton from '@/utils/ui/CustomButton'; // Asegúrate de que esta es la ruta correcta
+import CustomButton from '@/utils/ui/button/CustomButton'; // Asegúrate de que esta es la ruta correcta
 import { 
   BsBellFill,
   BsFileEarmarkLock,

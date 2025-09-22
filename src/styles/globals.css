@@ -21,8 +21,8 @@
       --verdeClaroClaro: #cee9b3;
 
       --gris: gray;
-      --grisClaro: #f7f7f7;
-      --grisOscuro: rgb(71, 71, 71);
+      --grisClaro: #f7f7f7; /*#d1d1d1 !important*/
+      --grisOscuro: #474747;
       
       --blanco: white;
       --negro: black;

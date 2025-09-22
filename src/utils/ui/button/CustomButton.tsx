@@ -1,3 +1,5 @@
+// src/utils/ui/button/CustomButton.tsx
+
 "use client";
 import React from 'react';
 import { Button, ButtonProps } from '@mui/material';
@@ -6,10 +8,12 @@ import styles from './CustomButton.module.css';
 interface CustomButtonProps extends Omit<ButtonProps, 'classes'> {
   children: React.ReactNode;
   variant?: 'contained' | 'outlined' | 'text';
-  color?: 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning';
+  color?: 'primary' | 'success' | 'error' | 'info' | 'warning';
   isLoading?: boolean;
-  fullWidth?: boolean; // Vuelve a agregar la prop fullWidth
+  fullWidth?: boolean;
   width?: string;
+  icon?: React.ReactNode;
+  exit?: boolean;
 }
 
 const CustomButton: React.FC<CustomButtonProps> = ({
@@ -18,18 +22,19 @@ const CustomButton: React.FC<CustomButtonProps> = ({
   color = 'primary',
   isLoading = false,
   width,
-  fullWidth = true, // Establece el valor por defecto
+  fullWidth = true,
   className = '',
   disabled = false,
+  icon,
+  exit = false,
   ...props
 }) => {
   return (
     <Button
       variant={variant}
       classes={{
-        root: styles.customButton,
+        root: `${styles.customButton} ${exit ? styles.exit : ''} ${disabled || isLoading ? styles.disabled : ''}`, 
         containedPrimary: styles.primary,
-        containedSecondary: styles.secondary,
       }}
       className={className}
       disabled={disabled || isLoading}
@@ -39,7 +44,10 @@ const CustomButton: React.FC<CustomButtonProps> = ({
       {isLoading ? (
         <span className={styles.loadingText}>CARGANDO...</span>
       ) : (
-        children
+        <div className={styles.contentWrapper}>
+          {icon && <span className={styles.iconWrapper}>{icon}</span>}
+          {children}
+        </div>
       )}
     </Button>
   );

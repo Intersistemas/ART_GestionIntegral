@@ -6,7 +6,7 @@ import { MdExpandMore } from "react-icons/md";
 import { defaultCombinatorsExtended, defaultOperators, defaultTranslations } from "@/utils/QueryBuilderDefaults"
 import { DataContextProvider, useDataContext } from './dataContext';
 import DataTable from '@/utils/ui/table/DataTable';
-import CustomButton from '@/utils/ui/CustomButton';
+import CustomButton from '@/utils/ui/button/CustomButton';
 
 
 function ConsultaCCMMQueryBuilder() {
