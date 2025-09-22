@@ -62,7 +62,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border-left: 5px solid var(--verdeClaro);
+  border-left: 6px solid var(--verdeClaro);
 }
 
 .pre {
