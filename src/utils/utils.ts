@@ -27,3 +27,17 @@ export function pick(source: any, select: any, keep = false) {
     return d;
   }
 };
+
+export function parseNumber<T = any>(value: T) {
+  if (value == null) return undefined;
+  const result = Number(value);
+  return isNaN(result) ? undefined : result;
+}
+
+export type TryParseNumberParam<T = any> = { in: T, out?: number };
+export function tryParseNumber<T = any>(param: TryParseNumberParam<T>) {
+  const result = parseNumber(param.in);
+  if (result === undefined) return false;
+  param.out = result;
+  return true;
+}
