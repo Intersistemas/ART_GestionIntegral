@@ -1,0 +1,8 @@
+.shiftActions > button {
+  min-width: 25px;
+}
+
+.rule-remove,
+.ruleGroup-remove {
+  min-width: 25px !important;
+}

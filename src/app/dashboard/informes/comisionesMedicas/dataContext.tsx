@@ -5,7 +5,6 @@ import { type GridColType } from '@mui/x-data-grid';
 import QueriesAPI, { type Query } from '@/data/queryAPI';
 import Formato from '@/utils/Formato';
 import propositionFormat from '@/utils/PropositionFormatQuery';
-import * as rtl from "@/utils/QueryBuilderDefaults"
 import { ColumnDef } from '@tanstack/react-table';
 import moment from 'moment';
 import { saveTable, TableColumn, type AddTableOptions } from '@/utils/excelUtils';
@@ -78,9 +77,9 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
     View_ConsultaCCMM: [
       { name: "CCMMCas_Interno", label: "Interno", type: "number" },
       { name: "Den_SiniestroNro", label: "Siniestro", type: "number", formatter: numeroSiniestroFormatter },
-      { name: "CCMMCas_MotivoCodigo", label: "Motivo Expediente" },
-      { name: "CCMMCas_TipoCodigo", label: "Tipo Expediente" },
-      { name: "CCMMCas_Estado", label: "Estado Actual", ...optionsSelect(estadoOptions, blankOptionsFormatter) },
+      { name: "CCMMCas_MotivoCodigo", label: "Motivo Expediente", type: "number" },
+      { name: "CCMMCas_TipoCodigo", label: "Tipo Expediente", type: "number" },
+      { name: "CCMMCas_Estado", label: "Estado Actual", type: "number", ...optionsSelect(estadoOptions, blankOptionsFormatter) },
       { name: "SiniestroTipo", label: "Tipo Siniestro", ...optionsSelect(tipoSiniestroOptions) },
       { name: "SiniestroFechaHora", label: "Fecha denuncia", type: "dateTime", formatter: fechaHoraFormatter },
       { name: "Den_AfiCUIL", label: "Cuil", type: "number", formatter: cuipFormatter },
