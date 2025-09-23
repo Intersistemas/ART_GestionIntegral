@@ -19,6 +19,7 @@ const initialForm = {
   nombre: "",
   userName: "",
   empresaId: 1,
+  cargo: "",
 };
 
 export default function UsuariosPage() {
@@ -39,6 +40,7 @@ export default function UsuariosPage() {
         nombre: row.nombre,
         userName: row.userName,
         empresaId: initialForm.empresaId, // <-- Aseguramos que la propiedad empresaId esté presente
+        cargo: row.cargo,
     } : initialForm;
 
     setFormData(dataToForm);

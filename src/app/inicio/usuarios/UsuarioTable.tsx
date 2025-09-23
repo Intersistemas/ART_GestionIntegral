@@ -21,6 +21,7 @@ export default function UsuarioTable({ data, onEdit, isLoading }: Props) {
       { accessorKey: "tipo", header: "Tipo" },
       { accessorKey: "userName", header: "Usuario" },
       { accessorKey: "email", header: "Email" },
+      { accessorKey: "cargo", header: "Cargo/Funcion" },
       {
         accessorKey: "emailConfirmed",
         header: "Email Confirmado",
@@ -29,7 +30,7 @@ export default function UsuarioTable({ data, onEdit, isLoading }: Props) {
       { accessorKey: "phoneNumber", header: "Número de Teléfono" },
       {
         id: "actions",
-        header: "Acciones",
+        header: "",
         cell: ({ row }) => (
           <IconButton onClick={() => onEdit(row.original)} color="warning">
             <EditIcon />
