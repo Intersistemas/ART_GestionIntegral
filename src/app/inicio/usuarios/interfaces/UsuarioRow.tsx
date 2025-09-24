@@ -9,6 +9,7 @@ interface UsuarioRow {
   phoneNumber: string;
   phoneNumberConfirmed: boolean;
   cargo: string;
+  rol: string;
   // Add other fields if needed
 }
 export default UsuarioRow;

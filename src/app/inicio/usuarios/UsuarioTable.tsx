@@ -21,6 +21,7 @@ export default function UsuarioTable({ data, onEdit, isLoading }: Props) {
       { accessorKey: "tipo", header: "Tipo" },
       { accessorKey: "userName", header: "Usuario" },
       { accessorKey: "email", header: "Email" },
+      { accessorKey: "rol", header: "Rol" },
       { accessorKey: "cargo", header: "Cargo/Funcion" },
       {
         accessorKey: "emailConfirmed",

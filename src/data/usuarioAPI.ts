@@ -25,6 +25,7 @@ export interface UsuarioRow {
   phoneNumber: string;
   phoneNumberConfirmed: boolean;
   cargo: string;
+  rol: string;
   // Add other fields if needed
 }
 //#region /api/Usuario/Login types
