@@ -3,8 +3,9 @@ import React from 'react';
 import { ThemeProvider } from '@mui/material';
 import QueryBuilderComponent, { FullCombinator, FullField, FullOperator, QueryBuilderProps, RuleGroupTypeAny } from 'react-querybuilder';
 import { QueryBuilderMaterial } from '@react-querybuilder/material';
-import * as rtl from "@/utils/QueryBuilderDefaults"
+import * as rtl from "@/utils/ui/QueryBuilderDefaults"
 import theme from '@/styles/theme';
+import "./QueryBuilder.css"
 
 export interface QueryBuilderProperties<RG extends RuleGroupTypeAny, F extends FullField, O extends FullOperator, C extends FullCombinator> {
 
@@ -18,7 +19,7 @@ export interface QueryBuilderProperties<RG extends RuleGroupTypeAny, F extends F
 */
 export default function QueryBuilder(
   {
-    combinators = rtl.combinatorsExtended,
+    combinators = rtl.combinators,
     operators = rtl.operators,
     translations = rtl.translations,
     controlClassnames = rtl.classnames,
@@ -35,6 +36,7 @@ export default function QueryBuilder(
           controlClassnames={controlClassnames}
           showNotToggle
           listsAsArrays
+          showShiftActions
           {...rest}
         />
       </QueryBuilderMaterial>

@@ -1,14 +1,13 @@
-import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { Field, formatQuery, type RuleGroupType, type ValueEditorType, type DefaultOperators, defaultOperators } from 'react-querybuilder';
+import React, { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { type Field, formatQuery, type RuleGroupType, type ValueEditorType, type DefaultOperators, defaultOperators } from 'react-querybuilder';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { type GridColType } from '@mui/x-data-grid';
 import QueriesAPI, { type Query } from '@/data/queryAPI';
 import Formato from '@/utils/Formato';
 import propositionFormat from '@/utils/PropositionFormatQuery';
-import * as rtl from "@/utils/QueryBuilderDefaults"
-import { ColumnDef } from '@tanstack/react-table';
+import { type ColumnDef } from '@tanstack/react-table';
 import moment from 'moment';
-import { saveTable, TableColumn, type AddTableOptions } from '@/utils/excelUtils';
+import { saveTable, type TableColumn, type AddTableOptions } from '@/utils/excelUtils';
 
 //#region types
 type Row = Record<string, any>;
@@ -26,6 +25,7 @@ interface TablesField {
 type Tables = Record<TablesName, TablesField[]>;
 type OptionsFormatter = (options: any) => Formatter;
 type OptionsValues = (options: any) => { name: string, label: any }[];
+type Headers = { columns: Record<string, TableColumn>, options: AddTableOptions };
 interface DataContextType {
   fields: Field[];
   columns: ColumnDef<Row>[];
@@ -37,22 +37,21 @@ interface DataContextType {
   onLimpiaTabla: () => void;
   onExport: () => void;
 }
-type Headers = { columns: Record<string, TableColumn>, options: AddTableOptions };
 //#endregion types
 
 //#region globales
 const { execute, useExecute, analyze } = QueriesAPI;
 const defaultQuery: RuleGroupType = { combinator: 'and', rules: [] };
 
-const numeroSiniestroFormatter = (v: any) => Formato.Mascara(v, "####-######-##");
-const fechaHoraFormatter = (v: any) => Formato.FechaHora(v);
-const fechaFormatter = (v: any) => Formato.Fecha(v);
-const numeroFormatter = (v: any) => Formato.Numero(v);
-const cuipFormatter = (v: any) => Formato.CUIP(v);
-const valueOptionsFormatter: OptionsFormatter = (options: any) => ((v: string) => (options[v] ?? v));
-const blankOptionsFormatter: OptionsFormatter = (options: any) => ((v: string) => (options[v] ?? ""));
+const numeroSiniestroFormatter: Formatter = (v) => Formato.Mascara(v, "####-######-##");
+const fechaHoraFormatter: Formatter = (v) => Formato.FechaHora(v);
+const fechaFormatter: Formatter = (v) => Formato.Fecha(v);
+const numeroFormatter: Formatter = (v) => Formato.Numero(v);
+const cuipFormatter: Formatter = (v) => Formato.CUIP(v);
+const valueOptionsFormatter: OptionsFormatter = (options) => ((v: string) => (options[v] ?? v));
+const blankOptionsFormatter: OptionsFormatter = (options) => ((v: string) => (options[v] ?? ""));
 
-const optionsValues: OptionsValues = (options: any) => Object.entries<string>(options).map(([name, label]) => ({ name, label }))
+const optionsValues: OptionsValues = (options) => Object.entries<string>(options).map(([name, label]) => ({ name, label }))
 const optionsSelect = (options: any, formatter = valueOptionsFormatter, values = optionsValues): {
   operators: DefaultOperators,
   valueEditorType: ValueEditorType,
@@ -68,19 +67,19 @@ const SNOptions = { S: "Si", N: "No" };
 const tipoSiniestroOptions = { T: "Accidente Trabajo", P: "Enfermedad Profesional", I: "Accidente In-Itinere", R: "Reingreso" };
 const estadoOptions = { 1: "Pendiente", 2: "En gestión", 3: "Archivado" };
 
-const DataContext = createContext<DataContextType | undefined>(undefined);
+const CCMMContext = createContext<DataContextType | undefined>(undefined);
 //#endregion globales
 
-export function DataContextProvider({ children }: { children: ReactNode }) {
+export function CCMMContextProvider({ children }: { children: ReactNode }) {
   const [tables, setTables] = useState<Tables>({
     RefCCMMMotivos: [{ name: "Codigo" }, { name: "Descripcion" }],
     RefCCMMTipos: [{ name: "Codigo" }, { name: "Descripcion" }],
     View_ConsultaCCMM: [
       { name: "CCMMCas_Interno", label: "Interno", type: "number" },
       { name: "Den_SiniestroNro", label: "Siniestro", type: "number", formatter: numeroSiniestroFormatter },
-      { name: "CCMMCas_MotivoCodigo", label: "Motivo Expediente" },
-      { name: "CCMMCas_TipoCodigo", label: "Tipo Expediente" },
-      { name: "CCMMCas_Estado", label: "Estado Actual", ...optionsSelect(estadoOptions, blankOptionsFormatter) },
+      { name: "CCMMCas_MotivoCodigo", label: "Motivo Expediente", type: "number" },
+      { name: "CCMMCas_TipoCodigo", label: "Tipo Expediente", type: "number" },
+      { name: "CCMMCas_Estado", label: "Estado Actual", type: "number", ...optionsSelect(estadoOptions, blankOptionsFormatter) },
       { name: "SiniestroTipo", label: "Tipo Siniestro", ...optionsSelect(tipoSiniestroOptions) },
       { name: "SiniestroFechaHora", label: "Fecha denuncia", type: "dateTime", formatter: fechaHoraFormatter },
       { name: "Den_AfiCUIL", label: "Cuil", type: "number", formatter: cuipFormatter },
@@ -248,16 +247,16 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
     );
   }, [headers, rows, onCloseDialog, errorDialog]);
 
-  const value = {
+  const value: DataContextType = {
     fields, columns, rows, dialog,
     query: { state: query, setState: setQuery },
     onAplicaFiltro, onLimpiaFiltro, onLimpiaTabla, onExport
   };
-  return <DataContext.Provider value={value}>{children}</DataContext.Provider>
+  return <CCMMContext.Provider value={value}>{children}</CCMMContext.Provider>
 }
 
-export function useDataContext() {
-  const context = useContext(DataContext)
-  if (context === undefined) throw new Error('useDataContext must be used within a DataContextProvider');
+export function useCCMMContext() {
+  const context = useContext(CCMMContext)
+  if (context === undefined) throw new Error('useCCMMContext must be used within a CCMMContextProvider');
   return context
 }

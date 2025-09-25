@@ -9,6 +9,7 @@ import type {
   Field
 } from "react-querybuilder";
 import moment from 'moment';
+import { parseNumber } from "./utils";
 
 type CustomFields = Field[] | (() => Field[]);
 
@@ -46,7 +47,6 @@ export const ruleProcessor: RuleProcessor = (rule, options, meta) => {
 
   const fieldInfo = fieldsArray.find(f => "name" in f && f.name === field) ?? {};
 
-  //const fieldInfo = (options?.fields?.find(f => "name" in f && f.name === field)) ?? {};
   const inputType = ("inputType" in fieldInfo) ? fieldInfo.inputType : undefined;
   const value = rule.value;
   if (value === undefined) return null;
@@ -90,6 +90,7 @@ export const ruleProcessor: RuleProcessor = (rule, options, meta) => {
       switch (typeof inputType === "string" ? inputType.toLowerCase() : "") {
         case "date": return moment(v).format("YYYY-MM-DD");
         case "time": return moment(v).format("HH:mm:ss.SS");
+        case "number": return options?.parseNumbers ? parseNumber(v) ?? v : v;
         case "datetime":
         case "datetime-local": return moment(v).format("YYYY-MM-DDTHH:mm:ss.SS");
         default: return v;
@@ -120,7 +121,7 @@ export const ruleProcessor: RuleProcessor = (rule, options, meta) => {
   }
 }
 
-export const propositionFormatOptions: FormatQueryOptions = { ruleProcessor, ruleGroupProcessor }
+export const propositionFormatOptions: FormatQueryOptions = { ruleProcessor, ruleGroupProcessor, parseNumbers: true }
 
 export default function propositionFormat(options?: FormatQueryOptions): FormatQueryOptions {
   return { ...options, ...propositionFormatOptions }

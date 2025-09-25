@@ -5,13 +5,14 @@ export const classnames: Partial<Classnames> = {
 }
 
 export const combinators: FlexibleOptionListProp<FullCombinator> = [
-  { name: 'and', label: 'Todos' } as const,
-  { name: 'or', label: 'Alguno' } as const,
+  { name: 'and', label: 'Y' } as const,
+  { name: 'or', label: 'O' } as const,
 ];
 
+// No soportado por sql
 export const combinatorsExtended: FlexibleOptionListProp<FullCombinator> = [
   ...combinators,
-  { name: 'xor', label: 'Alguno, pero no todos' } as const,
+  { name: 'xor', label: 'X' } as const,
 ];
 
 export const operators: FlexibleOptionListProp<FullOperator> = [

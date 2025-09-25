@@ -2,19 +2,19 @@
 import React from 'react';
 import { Accordion, AccordionActions, AccordionDetails, AccordionSummary, Grid, Paper, Typography } from '@mui/material';
 import { MdExpandMore } from "react-icons/md";
-import { DataContextProvider, useDataContext } from './dataContext';
+import { CCMMContextProvider, useCCMMContext } from './context';
 import DataTable from '@/utils/ui/table/DataTable';
 import CustomButton from '@/utils/ui/button/CustomButton';
 import QueryBuilder from '@/utils/ui/QueryBuilder';
 
 function CCMMQueryBuilder() {
-  const { fields, query: { state: query, setState: setQuery } } = useDataContext();
+  const { fields, query: { state: query, setState: setQuery } } = useCCMMContext();
   return <QueryBuilder fields={fields} query={query} onQueryChange={setQuery} />
 }
 
 function CCMMTable() {
-  const { columns, rows } = useDataContext();
-  return (<DataTable data={rows} columns={columns}/>);
+  const { columns, rows } = useCCMMContext();
+  return (<DataTable data={rows} columns={columns} />);
 }
 
 function Informe() {
@@ -25,7 +25,7 @@ function Informe() {
     onLimpiaFiltro,
     onLimpiaTabla,
     onExport
-  } = useDataContext();
+  } = useCCMMContext();
 
   return (
     <Grid container spacing={1} size="grow">
@@ -60,4 +60,4 @@ function Informe() {
   );
 }
 
-export default function ComisionesMedicas() { return (<DataContextProvider><Informe /></DataContextProvider>); };
+export default function ComisionesMedicas() { return (<CCMMContextProvider><Informe /></CCMMContextProvider>); };
