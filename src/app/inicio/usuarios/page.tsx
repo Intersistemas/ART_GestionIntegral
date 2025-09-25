@@ -75,12 +75,16 @@ export default function UsuariosPage() {
 
   return (
     <Box className={styles.usuariosPageContainer}>
+
+      
       <CustomButton
         onClick={() => handleOpenModal()}
         width="20%"
       >
         Crear usuario
       </CustomButton>
+
+
       <UsuarioTable data={usuarios} onEdit={handleOpenModal} isLoading={loading}/>
       <UsuarioForm
         open={showModal}

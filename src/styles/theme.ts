@@ -1,65 +1,135 @@
-import { createTheme, ThemeOptions } from '@mui/material/styles';
+// src/themes.ts
+import { createTheme } from '@mui/material/styles';
 
+// Función para obtener variables CSS de forma segura, con valores de respaldo para SSR
+const getCssVariable = (name: string, fallback: string) => {
+  if (typeof window !== 'undefined') {
+    const root = getComputedStyle(document.documentElement);
+    const value = root.getPropertyValue(name).trim();
+    return value || fallback;
+  }
+  return fallback;
+};
+
+// Se necesitan valores de respaldo para el SSR
+const naranjaClaro = getCssVariable('--naranjaClaro', '#ffaf4c');
+const naranja = getCssVariable('--naranja', '#E4840C');
+const naranjaOscuro = getCssVariable('--naranjaOscuro', '#b66400');
+
+const verdeOscuro = getCssVariable('--verdeOscuro', '#45661f');
+const verdeClaro = getCssVariable('--verdeClaro', '#92bd68');
+const verdeClaroClaro = getCssVariable('--verdeClaroClaro', '#f7f7f7');
+const verde = getCssVariable('--verde', '#648C34');
+
+const gris = getCssVariable('--gris', '#808080');
+const grisOscuro = getCssVariable('--grisOscuro', '#474747');
+const blanco = getCssVariable('--blanco', 'white');
+
+const font = getCssVariable('--font', 'Outfit, sans-serif');
+const fontSize = "2rem";
+
+const fontSizeMenu = getCssVariable('--font-size-sidebar', '1.5rem');
+const fontWeightMenu = getCssVariable('--font-weight-sidebar', '700');
+const colorMenu = getCssVariable('--color-menu', 'white');
+const hoverColorMenu = getCssVariable('--hover-color-menu', '#414141');
+
+// Tipado para la paleta de colores personalizada
 declare module '@mui/material/styles' {
   interface Palette {
-    verde: string;
+    verdeClaroClaro: string;
     verdeClaro: string;
+    verde: string;
     verdeOscuro: string;
+    naranjaClaro: string;
     naranja: string;
+    naranjaOscuro: string;
   }
   interface PaletteOptions {
-    verde: string;
+    verdeClaroClaro: string;
     verdeClaro: string;
+    verde: string;
     verdeOscuro: string;
+    naranjaClaro: string;
     naranja: string;
+    naranjaOscuro: string;
   }
 }
 
-const getCssVariable = (name: string): string => {
-  if (typeof window === 'undefined') {
-    return '';
-  }
-  const root = getComputedStyle(document.documentElement);
-  return root.getPropertyValue(name).trim();
-};
-
-const commonOptions: ThemeOptions = {
+const theme = createTheme({
   palette: {
     primary: {
-      main: getCssVariable('--naranja') || '#E4840C',
+      main: naranja,
     },
     secondary: {
-      main: getCssVariable('--verdeOscuro') || '#496726',
+      main: verdeOscuro,
     },
-    verde: getCssVariable('--verde') || '#648C34',
-    verdeClaro: getCssVariable('--verdeClaro') || '#7FB142',
-    verdeOscuro: getCssVariable('--verdeOscuro') || '#496726',
-    naranja: getCssVariable('--naranja') || '#E4840C',
+    verdeClaroClaro: verdeClaroClaro,
+    verdeClaro: verdeClaro,
+    verde: verde,
+    verdeOscuro: verdeOscuro,
+    naranjaClaro: naranjaClaro,
+    naranja: naranja,
+    naranjaOscuro: naranjaOscuro,
   },
   typography: {
-    fontFamily: getCssVariable('--font') || 'Roboto, Arial, sans-serif',
+    fontFamily: font,
   },
   components: {
-    MuiTableHead: {
+    MuiFormControl: {
       styleOverrides: {
         root: {
-          backgroundColor: getCssVariable('--verdeOscuro'),
+          padding: '5px 0px',
+          '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+              borderColor: verdeOscuro,
+            },
+            '& .MuiInputBase-input': {
+              fontFamily: font,
+              color: grisOscuro,
+              fontSize: '1.5rem',
+              height: '1rem',
+              minHeight: 'auto',
+            },
+            '&:hover fieldset': {
+              borderColor: naranjaOscuro,
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: naranja,
+            },
+          },
+           '& .MuiInputLabel-root': {
+            left: '-3px',
+            top: '5px',
+            color: verdeOscuro,
+            fontSize: '1.2rem',
+          },
+          '& .MuiInputLabel-root.Mui-focused': {
+            color: naranjaOscuro,
+            fontSize: '1.2rem',
+          },
         },
       },
     },
-    MuiTableCell: {
+    MuiTableHead: { /* Data Table HEADER */
+      styleOverrides: {
+        root: {
+          backgroundColor: verdeOscuro, /* Si en el module.css del DataTable tiene !IMPORTANT, entonces tomará esa definicion que es mas especifica*/
+        },
+      },
+    },
+    MuiTableCell: { /* Data Table CELL */
       styleOverrides: {
         head: {
-          color: getCssVariable('--blanco'),
-          fontFamily: getCssVariable('--font'),
+          color: blanco,
+          fontFamily: font,
           fontWeight: 700,
-          fontSize: '1rem',
-          borderBottom: `2px solid ${getCssVariable('--naranja')}`,
+          fontSize: '2rem',
+          borderBottom: `2px solid ${naranja}`,
         },
         body: {
-          fontFamily: getCssVariable('--font'),
-          fontSize: '0.9rem',
-          color: getCssVariable('--grisOscuro'),
+          fontFamily: font,
+          fontSize: '1.3rem',
+          color: gris,
           borderBottom: `1px solid #e0e0e0`,
         },
       },
@@ -67,57 +137,88 @@ const commonOptions: ThemeOptions = {
     MuiIconButton: {
       styleOverrides: {
         root: {
-          color: getCssVariable('--naranja'),
+          color: naranja,
         },
       },
     },
     MuiTextField: {
       styleOverrides: {
         root: {
-          '& .MuiInputBase-input': {
-            fontFamily: getCssVariable('--font'),
-            color: getCssVariable('--grisOscuro'),
-          },
           '& .MuiOutlinedInput-root': {
             '& fieldset': {
-              borderColor: getCssVariable('--gris'),
+              borderColor: verdeOscuro,
             },
             '&:hover fieldset': {
-              borderColor: getCssVariable('--verde'),
+              borderColor: naranjaOscuro,
             },
             '&.Mui-focused fieldset': {
-              borderColor: getCssVariable('--verde'),
+              borderColor: naranja,
             },
           },
-          '& .MuiInputLabel-root': {
-            color: getCssVariable('--gris'),
+        },
+      },
+    },
+    MuiSelect: {
+      styleOverrides: {
+        root: {
+          '& .MuiSelect-select': {
+          },
+          '& .MuiSvgIcon-root': {
+            color: naranjaOscuro,
           },
         },
+      },
+    },
+    
+    /*MuiPaper-root-MuiPopover-paper-MuiMenu-paper*/
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          '&.MuiPopover-paper': {
+            marginTop: '2%',
+          }, 
+      },
+    },
+    },
+
+    MuiMenuItem: {
+      styleOverrides: {
+        root: {
+          '&.Mui-selected': {
+              color: blanco,
+              fontWeight: 'bold',
+              backgroundColor: naranja,
+               '&:hover': {
+                  backgroundColor: naranjaClaro,
+                },
+            },
+            '&:hover': {
+              backgroundColor: naranjaClaro,
+            },
+            fontSize: '1.2rem',
+        }, 
       },
     },
     MuiListItemText: {
       styleOverrides: {
-        root: {
-          '& .MuiTypography-root': {
-            fontSize: getCssVariable('--font-size-menu') || '1.1rem',
-            fontWeight: getCssVariable('--font-weight-menu') || 700,
-            color: getCssVariable('--color-menu') || 'white',
-          },
+        primary: {
+          fontSize: fontSizeMenu,
+          fontWeight: fontWeightMenu,
+          color: colorMenu,
         },
       },
     },
+    
     MuiListItemButton: {
       styleOverrides: {
         root: {
           '&:hover': {
-            backgroundColor: getCssVariable('--hover-color-menu') || '#414141',
+            backgroundColor: hoverColorMenu,
           },
         },
       },
     },
   },
-};
-
-const theme = createTheme(commonOptions);
+});
 
 export default theme;

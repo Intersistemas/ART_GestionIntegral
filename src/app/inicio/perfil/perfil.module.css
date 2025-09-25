@@ -1,4 +1,4 @@
-/* src/app/dashboard/profile/perfil.module.css */
+/* src/app/inicio/profile/perfil.module.css */
 
 .title {
   text-align: center;
@@ -66,7 +66,7 @@
 }
 
 .pre {
-  background-color: var(--grisClaro);
+  background-color: var(--grisClaroClaro);
   padding: 1rem;
   border-radius: 8px;
   overflow-x: auto;
@@ -82,7 +82,7 @@
 .label {
   font-weight: 700;
   color: var(--grisOscuro);
-  font-size: var(--font-size-menu);
+  font-size: var(--font-size-sidebar);
   margin-right: 5px;
 }
 

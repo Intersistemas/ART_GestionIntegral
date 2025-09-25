@@ -2,10 +2,10 @@
 
 .breadcrumbs ul {
   display: flex;
-  list-style: none;
-  padding: 10px 0;
-  margin: 0;
-  color: var(--grisOscuro); /* Color base de las migas de pan */
+  padding: 8px 0;
+  color: var(--gris); /* Color base de las migas de pan */
+  font-weight: 600;
+  font-size: 1.7rem;
 }
 
 .breadcrumbs li {
@@ -14,9 +14,6 @@
 }
 
 .breadcrumbs a {
-  text-decoration: none;
-  color: var(--grisOscuro); /* Color de los enlaces */
-  font-weight: 500;
 }
 
 .breadcrumbs a:hover {

@@ -2,23 +2,38 @@
 
 .customButton {
   /* Estilos base del botón */
-  padding: 16px !important;
   border: none !important;
   border-radius: 8px !important;
   font-family: inherit !important;
-  font-size: 20px !important;
   font-weight: 700 !important;
   cursor: pointer !important;
   transition: all 0.3s ease !important;
   text-transform: uppercase !important;
   letter-spacing: 0.5px !important;
-  margin-bottom: 25px !important;
   position: relative !important;
   overflow: hidden !important;
-  min-height: 54px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+}
+
+/* ✅ Nuevos estilos para los tamaños */
+.small {
+  padding: 6px 16px !important;
+  font-size: 10px !important;
+  min-height: 30px !important;
+}
+
+.mid {
+  padding: 8px 22px !important;
+  font-size: 14px !important;
+  min-height: 40px !important;
+}
+
+.large {
+  padding: 10px 24px !important;
+  font-size: 18px !important;
+  min-height: 60px !important;
 }
 
 /* Contenedor del ícono y texto */
@@ -34,21 +49,20 @@
   margin-right: 8px; /* Espacio entre el ícono y el texto */
 }
 
-/* Variantes de color */
+
 .primary {
-  background: linear-gradient(145deg, var(--naranja), var(--naranja)) !important;
-  color: white !important;
+  background: linear-gradient(145deg, var(--naranja), var(--naranjaOscuro)) !important;
+  color: var(--blanco) !important;
 }
 
 .primary:hover {
-  background: linear-gradient(145deg, var(--verde) 40%, var(--verdeClaro) 100%) !important;
+  background: linear-gradient(145deg, var(--verde) 30%, var(--verdeClaro) 100%) !important;
   transform: translateY(-2px) !important;
   box-shadow: 0 4px 18px var(--verdeClaro)!important;
 }
 
-/* Nueva clase para el estado 'exit' */
 .exit.primary{
-    background: linear-gradient(145deg, var(--verde) var(--verde)) !important;
+    background: linear-gradient(145deg, var(--verde), var(--verdeOscuro)) !important;
     color: white !important;
 }
 
@@ -114,16 +128,15 @@
 
 
 /* DISABLED */
-
 .customButton.disabled {
-  background: var(--gris) !important;
+  background: var(--grisClaro) !important;
   cursor: not-allowed !important;
   transform: none !important;
   box-shadow: none !important;
 }
 
 .disabled.primary {
-  background: var(--gris) !important;
+  background: var(--grisClaro) !important;
   box-shadow: none !important;
   color: var(--grisOscuro) !important;
 }
@@ -132,7 +145,7 @@
 .customButton.disabled:hover,
 .customButton.disabled:active {
   transform: none !important;
-  background: var(--gris) !important;
+  background: var(--grisClaro) !important;
   box-shadow: none !important;
 }
 .disabled::before {

@@ -1,4 +1,4 @@
-// src/app/dashboard/profile/page.tsx
+// src/app/inicio/profile/page.tsx
 "use client";
 
 import { useSession, signOut } from "next-auth/react";

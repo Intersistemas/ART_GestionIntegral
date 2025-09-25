@@ -34,7 +34,7 @@ function Navbar() {
           <Image
             src="/icons/LogoTexto.svg" 
             alt="ART Mutual Rural Logo"
-            width={200}
+            width={170}
             height={60} 
           />
         </Link>
@@ -99,7 +99,7 @@ function Navbar() {
                 <p className={styles.userCuit}>CUIT/CUIL: {cuit || 'N/A'}</p> 
               </div>
 
-              <Link href="/dashboard/perfil" className={styles.profileButtonWrapper}>
+              <Link href="/inicio/perfil" className={styles.profileButtonWrapper}>
                 <CustomButton onClick={closeAndNavigate} fullWidth>
                   Ver Perfil
                 </CustomButton>

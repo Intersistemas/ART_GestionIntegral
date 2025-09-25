@@ -5,7 +5,7 @@ import React from 'react';
 import { Button, ButtonProps } from '@mui/material';
 import styles from './CustomButton.module.css';
 
-interface CustomButtonProps extends Omit<ButtonProps, 'classes'> {
+interface CustomButtonProps extends Omit<ButtonProps, 'classes' | 'size'> {
   children: React.ReactNode;
   variant?: 'contained' | 'outlined' | 'text';
   color?: 'primary' | 'success' | 'error' | 'info' | 'warning';
@@ -14,6 +14,7 @@ interface CustomButtonProps extends Omit<ButtonProps, 'classes'> {
   width?: string;
   icon?: React.ReactNode;
   exit?: boolean;
+  size?: 'small' | 'mid' | 'large'; // ✅ Agregada la prop de tamaño
 }
 
 const CustomButton: React.FC<CustomButtonProps> = ({
@@ -27,13 +28,21 @@ const CustomButton: React.FC<CustomButtonProps> = ({
   disabled = false,
   icon,
   exit = false,
+  size = 'mid', // ✅ Valor por defecto 'mid'
   ...props
 }) => {
+  const sizeClass = {
+    small: styles.small,
+    mid: styles.mid,
+    large: styles.large,
+  };
+  
   return (
     <Button
       variant={variant}
       classes={{
-        root: `${styles.customButton} ${exit ? styles.exit : ''} ${disabled || isLoading ? styles.disabled : ''}`, 
+        // ✅ Agregada la clase de tamaño al root del botón
+        root: `${styles.customButton} ${exit ? styles.exit : ''} ${disabled || isLoading ? styles.disabled : ''} ${sizeClass[size]}`,
         containedPrimary: styles.primary,
       }}
       className={className}

@@ -1,10 +1,10 @@
-// src/app/dashboard/layout.tsx
+// src/app/inicio/layout.tsx
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import ClientLayoutWrapper from './ClientLayoutWrapper';
 import { authOptions } from '../api/auth/[...nextauth]/auth';
 
-export default async function DashboardLayout({
+export default async function InicioLayout({
  children,
 }: {
  children: React.ReactNode;
@@ -14,5 +14,5 @@ export default async function DashboardLayout({
   redirect('/login');
  }
 
- return <ClientLayoutWrapper session={session} status="authenticated">{children}</ClientLayoutWrapper>;
+ return <ClientLayoutWrapper>{children}</ClientLayoutWrapper>;
 }

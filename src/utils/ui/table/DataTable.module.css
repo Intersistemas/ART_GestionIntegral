@@ -15,12 +15,11 @@
 }
 
 .tableHead {
-  background-color: var(--verde) !important;
+  background-color: var(--verdeOscuro) !important;
 }
 
 .tableHeaderCell {
   color: var(--blanco) !important;
-  font-family: var(--font) !important;
   font-weight: 700 !important;
   border-bottom: 2px solid var(--naranja) !important;
   text-transform: uppercase;
@@ -38,7 +37,7 @@
 }
 
 .tableRow:nth-of-type(odd) {
-  background-color: var(--grisClaro) !important;
+  background-color: var(--grisClaroClaro) !important;
 }
 
 .tableRow:hover {
@@ -76,51 +75,27 @@
   color: var(--gris) !important;
 }
 
-.filterInput {
-  margin-bottom: 20px !important;
-}
-
-.filterInput input {
-  font-family: var(--font) !important;
-  color: var(--grisOscuro) !important;
-}
-
-.filterInput fieldset {
-  border-color: var(--gris) !important;
-}
-
-.filterInput label {
-  color: var(--gris) !important;
-}
-
-.filterInput:hover fieldset {
-  border-color: var(--verde) !important;
-}
-
-.filterInput.Mui-focused fieldset {
-  border-color: var(--verde) !important;
-}
-
 .loadingCell {
   text-align: center;
   padding: 20px;
 }
 
 /* Estilos de altura de fila y padding de celda/encabezado */
-.compactCell { 
-  padding: 2px 6px !important;
-  font-size: 1.1rem !important;
+.smallCell { 
+  padding: 0 4px !important;
+  font-size: 1.2rem !important;
 }
-.normalCell { 
-  padding: 10px !important; 
-  font-size: 1.4rem !important;
-}
-.compactHeader { 
-  padding: 12px 8px !important;
+.smallHeader { 
+  padding: 10px 6px !important;
   font-size: 1.3rem !important;
 }
-.normalHeader { 
-  padding: 18px !important;
+
+.midCell { 
+  padding: 1px 6px !important; 
+  font-size: 1.4rem !important;
+}
+.midHeader { 
+  padding: 12px 14px !important;
   font-size: 1.6rem !important;   
 }
 
