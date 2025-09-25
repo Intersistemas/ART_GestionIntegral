@@ -1,13 +1,16 @@
 import { AxiosError } from "axios";
 import UsuarioAPI from "@/data/usuarioAPI";
+import ArtAPI from "@/data/artAPI";
 
 const { useGetAll, useGetRoles, registrar } = UsuarioAPI;
+const { useGetRefEmpleadores } = ArtAPI;
 
-export { type UsuarioRow } from "@/data/usuarioAPI";
+// import UsuarioRow from "@/app/dashboard/usuarios/interfaces/UsuarioRow";
 
 export default function useUsuarios() {
   const { data: usuariosData, error: usuariosError, isLoading: usuariosLoading, mutate: mutateUsuarios } = useGetAll({ empresaId: 1 });
   const { data: roles, error: rolesError, isLoading: rolesLoading } = useGetRoles();
+  const { data: refEmpleadores } = useGetRefEmpleadores();
 
   const registrarUsuario = async (formData: any) => {
     try {
@@ -27,6 +30,7 @@ export default function useUsuarios() {
   return {
     usuarios: usuariosData?.data || [],
     roles: roles || [],
+    refEmpleadores: refEmpleadores || [],
     loading: usuariosLoading || rolesLoading,
     error: usuariosError || rolesError,
     registrarUsuario,

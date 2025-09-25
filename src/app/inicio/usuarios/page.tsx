@@ -4,9 +4,10 @@ import { useState } from "react";
 import { Box, Button, Typography } from "@mui/material";
 import UsuarioForm, { UsuarioFormFields } from "./UsuarioForm";
 import UsuarioTable from "./UsuarioTable";
-import useUsuarios, { UsuarioRow } from "./useUsuarios";
+import useUsuarios from "./useUsuarios";
 import styles from './Usuario.module.css';
 import CustomButton from "@/utils/ui/button/CustomButton";
+import UsuarioRow from "./interfaces/UsuarioRow";
 
 const initialForm = {
   cuit: "",
@@ -18,12 +19,12 @@ const initialForm = {
   phoneNumber: "",
   nombre: "",
   userName: "",
-  empresaId: 1,
+  empresaId: 0,
   cargo: "",
 };
 
 export default function UsuariosPage() {
-  const { usuarios, roles, loading, error, registrarUsuario } = useUsuarios();
+  const { usuarios, roles, refEmpleadores, loading, error, registrarUsuario } = useUsuarios();
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState(initialForm);
   const [formError, setFormError] = useState<string | null>(null);
@@ -39,7 +40,7 @@ export default function UsuariosPage() {
         phoneNumber: row.phoneNumber,
         nombre: row.nombre,
         userName: row.userName,
-        empresaId: initialForm.empresaId, // <-- Aseguramos que la propiedad empresaId esté presente
+        empresaId: row.empresaId, // debe venir de l dato del usuari logueado
         cargo: row.cargo,
     } : initialForm;
 
@@ -74,7 +75,7 @@ export default function UsuariosPage() {
   if (error) {
     return <Typography color="error">Error: {error instanceof Error ? error.message : "Un error inesperado ha ocurrido."}</Typography>;
   }
-
+  console.log("UsuariosPage render - refEmpleadores:", refEmpleadores);
   return (
     <Box className={styles.usuariosPageContainer}>
 
@@ -93,6 +94,7 @@ export default function UsuariosPage() {
         onClose={handleCloseModal}
         onSubmit={handleSubmit}
         roles={roles}
+        refEmpleadores={refEmpleadores}
         initialData={formData}
         errorMsg={formError}
       />

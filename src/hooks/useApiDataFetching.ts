@@ -5,6 +5,7 @@ import axios, { AxiosError, Method } from 'axios';
 export type APIEndpoints = {
   QueryAPI: "execute" | "analyze",
   UsuarioAPI: "getAll" | "getRoles" | "registrar",
+  ArtAPI: "getRefEmpleadores",
 };
 //#endregion Declaraciones de tipos públicos
 
@@ -47,6 +48,12 @@ const APIConfig = {
       registrar: { method: "POST", path: "/api/Usuario/Registrar" },
     },
   },
+  ArtAPI: {
+    baseUrl: "http://localhost:5005/api", //debo agregarlo al env.
+    endpoints: {
+      getRefEmpleadores: { method: "GET", path: "/api/RefEmpleadores" },
+    },
+  }
 } as APIConfiguration;
 //#endregion Configuracion de APIs
 
