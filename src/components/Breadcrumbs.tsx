@@ -11,7 +11,7 @@ const Breadcrumbs = () => {
     <nav aria-label="Breadcrumb" className={styles.breadcrumbs}>
       <ul>
         <li>
-          <Link href="/">Inicio</Link>
+          <Link href="/"></Link>
         </li>
         {pathnames.map((value, index) => {
           const to = `/${pathnames.slice(0, index + 1).join('/')}`;

@@ -6,17 +6,6 @@
   /* Este margen deja espacio para el navbar (7rem) y las migas de pan (3rem) */
 }
 
-.breadcrumbsContainer {
-  position: fixed;
-  top: 7rem;
-  left: 0;
-  width: 100vw;
-  padding: 0.8rem 3%;
-  background-color: var(--blanco);
-  z-index: 11;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
 .contentContainer {
   transition: margin-left 0.3s ease-in-out;
   flex-grow: 1; /* Ocupa el espacio restante */
@@ -28,16 +17,6 @@
 
 .contentClosed {
   margin-left: 100px;
-}
-
-.mainContentArea {
-  padding: 20px;
-  background-color: #f7f7f7;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  margin: 0px 25px;
-  height: calc(100vh - 10rem - 40px);
-  overflow-y: auto;
 }
 
 .loadingContainer {

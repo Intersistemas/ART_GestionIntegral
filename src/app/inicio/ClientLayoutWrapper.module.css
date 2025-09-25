@@ -6,8 +6,9 @@
 }
 
 .breadcrumbsContainer {
+  height: 4rem;
   padding: 0% 3%;
-  background-color: var(--grisClaro);
+  background-color: var(--grisClaroClaro);
   z-index: 11;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-top: var(--navbar-height);
@@ -19,6 +20,7 @@
 }
 
 .mainContentArea {
+  width: min-content;
   padding: var(--content-padding);
   background-color: #fafcf7;
   border: 1px solid #ddd;
@@ -28,7 +30,6 @@
   flex-grow: 1;
   height: calc(100vh - var(--navbar-height) - var(--breadcrumbs-height) - (var(--main-content-margin)));
   overflow-y: auto;
-  width: 90vw;
 }
 
 /* Estilos para el título de la página */

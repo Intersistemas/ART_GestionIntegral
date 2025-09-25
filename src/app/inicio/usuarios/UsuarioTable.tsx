@@ -16,7 +16,6 @@ interface Props {
 export default function UsuarioTable({ data, onEdit, isLoading }: Props) {
   const columns = useMemo<ColumnDef<UsuarioRow>[]>(
     () => [
-      { accessorKey: "id", header: "ID" },
       { accessorKey: "cuit", header: "CUIT" },
       { accessorKey: "nombre", header: "Nombre" },
       { accessorKey: "tipo", header: "Tipo" },
@@ -41,5 +40,5 @@ export default function UsuarioTable({ data, onEdit, isLoading }: Props) {
     [onEdit]
   );
 
-  return <DataTable data={data} columns={columns} variant="compact"/>;
+  return <DataTable data={data} columns={columns} size="mid"/>;
 }

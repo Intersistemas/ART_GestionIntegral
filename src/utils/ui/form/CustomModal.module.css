@@ -1,0 +1,98 @@
+/* src/components/CustomModal.module.css */
+
+.modalContainer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: var(--blanco);
+    border-radius: 12px; /* Mantener el radio para el contenedor general */
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    /* padding: 1.5rem; <--- ELIMINAMOS ESTE PADDING GENERAL */
+    outline: none;
+    display: flex;
+    flex-direction: column;
+    /* gap: 1.5rem; <--- ELIMINAMOS ESTE GAP, lo manejaremos con padding */
+    max-height: 90vh;
+    overflow-y: auto;
+    color: var(--negro);
+    font-family: var(--font);
+}
+
+/* Clases para los diferentes tamaños */
+.small {
+    width: 350px;
+}
+
+.mid {
+    width: 700px;
+}
+
+.large {
+    width: 1100px;
+}
+
+/* === NUEVA SECCIÓN: Encabezado del Modal === */
+.modalHeader {
+    background-color: var(--verdeOscuro); /* Fondo para todo el encabezado */
+    padding: 1.5rem 2rem; /* Padding interno del encabezado */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative; /* Necesario para posicionar el botón de cierre */
+    border-top-left-radius: 12px; /* Coincide con el radio del contenedor */
+    border-top-right-radius: 12px; /* Coincide con el radio del contenedor */
+}
+
+.modalTitle {
+    font-size: 3rem !important;
+    font-weight: 700 !important;
+    color: var(--blanco) !important; /* Color blanco para el título */
+    /* text-align: center; <--- Esto ahora se puede manejar con flexbox en modalHeader si es necesario */
+    margin: 0; /* Eliminar margen para que no afecte el padding */
+    flex-grow: 1; /* Para que el título ocupe el espacio restante */
+    text-align: center; /* Centrar el texto del título */
+}
+
+.closeButton {
+    position: absolute; /* Posicionamiento absoluto relativo al modalHeader */
+    top: 50%;
+    right: 1.5rem;
+    transform: translateY(-50%); /* Centrar verticalmente */
+    background: transparent;
+    border: none;
+    font-size: 2.5rem;
+    cursor: pointer;
+    color: var(--blanco); /* Color blanco para el botón de cierre */
+    transition: color 0.2s ease;
+    padding: 0; /* Eliminar padding por si lo tuviera por defecto */
+    line-height: 1; /* Asegurar que el tamaño de la fuente sea el tamaño del botón */
+}
+
+.closeButton:hover {
+    color: var(--naranja);
+}
+
+/* === Cuerpo del Modal === */
+.modalBody {
+    flex-grow: 1;
+    padding: 1.5rem 2rem; /* Añadir padding al cuerpo para los lados y arriba */
+    /* El padding-bottom se añade al final de los elementos del formulario si es necesario */
+}
+
+
+/* Nueva clase para el grid dentro del modal */
+.formGrid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(2, 1fr); /* Dos columnas para los campos */
+    padding-bottom: 1.5rem; /* Añadir padding inferior para separar de los botones */
+}
+
+/* Estilos de los botones del modal */
+.formActions {
+  display: flex;
+  justify-content: flex-end; /* Alinea los botones a la derecha */
+  gap: 1rem;
+  padding: 0 2rem 1.5rem 2rem; /* Padding para los botones, incluyendo el de abajo */
+}

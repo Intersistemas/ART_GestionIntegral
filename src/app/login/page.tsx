@@ -58,8 +58,8 @@ export default function Signin() {
           <Image
             src="/icons/LogoTexto.svg"
             alt="Logo ART Mutual Rural"
-            width={500}
-            height={500}
+            width={350}
+            height={350}
             className={styles.logo}
             priority
           />
@@ -113,19 +113,6 @@ export default function Signin() {
                 ),
               }}
               variant="outlined"
-              size="small"
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: '6px',
-                  '& fieldset': {
-                    borderColor: 'var(--verde)',
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: 'var(--verde)',
-                    borderWidth: '2px',
-                  },
-                },
-              }}
             />
 
             <label className={styles.fieldLabel}>Contraseña</label>
@@ -145,19 +132,6 @@ export default function Signin() {
                 ),
               }}
               variant="outlined"
-              size="small"
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: '6px',
-                  '& fieldset': {
-                    borderColor: 'var(--verde)',
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: 'var(--verde)',
-                    borderWidth: '2px',
-                  },
-                },
-              }}
             />
 
             <FormControlLabel
@@ -181,6 +155,7 @@ export default function Signin() {
               isLoading={isLoading}
               disabled={isLoading}
               fullWidth
+              size="mid"
             >
               INGRESAR AL SISTEMA
             </CustomButton>

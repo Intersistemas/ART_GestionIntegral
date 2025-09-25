@@ -30,7 +30,7 @@ interface DataTableProps<TData extends object> {
   pageSizeOptions?: number[];
   enableSorting?: boolean;
   enableFiltering?: boolean;
-  variant?: 'default' | 'compact';
+  size?: 'mid' | 'small';
   isLoading?: boolean;
   onRowClick?: (rowData: TData) => void;
 }
@@ -41,17 +41,17 @@ export function DataTable<TData extends object>({
   pageSizeOptions,
   enableSorting,
   enableFiltering,
-  variant = 'default',
+  size = 'mid',
   isLoading = false,
   onRowClick,
 }: DataTableProps<TData>) {
   const defaultProps = {
-    default: {
+    mid: {
       pageSizeOptions: [10, 20, 30, 40, 50],
       enableSorting: true,
       enableFiltering: true,
     },
-    compact: {
+    small: {
       pageSizeOptions: [5, 10, 15],
       enableSorting: true,
       enableFiltering: true,
@@ -59,10 +59,10 @@ export function DataTable<TData extends object>({
   };
 
   const resolvedProps = {
-    ...defaultProps[variant],
-    pageSizeOptions: pageSizeOptions ?? defaultProps[variant].pageSizeOptions,
-    enableSorting: enableSorting ?? defaultProps[variant].enableSorting,
-    enableFiltering: enableFiltering ?? defaultProps[variant].enableFiltering,
+    ...defaultProps[size],
+    pageSizeOptions: pageSizeOptions ?? defaultProps[size].pageSizeOptions,
+    enableSorting: enableSorting ?? defaultProps[size].enableSorting,
+    enableFiltering: enableFiltering ?? defaultProps[size].enableFiltering,
   };
 
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -95,8 +95,8 @@ export function DataTable<TData extends object>({
     }
   });
 
-  const cellPaddingClass = variant === 'compact' ? styles.compactCell : styles.normalCell;
-  const headerPaddingClass = variant === 'compact' ? styles.compactHeader : styles.normalHeader;
+  const cellPaddingClass = size === 'small' ? styles.smallCell : styles.midCell;
+  const headerPaddingClass = size === 'small' ? styles.smallHeader : styles.midHeader;
   
   return (
     <Box className={styles.tableContainer}>

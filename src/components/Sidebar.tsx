@@ -1,87 +1,98 @@
 "use client";
 import * as React from 'react';
 import Link from 'next/link';
-import { useState } from 'react';
-import { usePathname } from 'next/navigation'; // Importa usePathname
-import { BsFillStarFill, BsLayoutSplit, BsBriefcaseFill, BsPenFill, BsPersonFillGear, BsFolder, BsHouseGear, BsCalendar2Plus, BsBarChartLineFill, BsList, BsChevronDown,
-    BsChevronRight, BsTerminal, BsFileText, BsCreditCard, BsCardChecklist, BsGraphUpArrow, BsClipboard2Data } from 'react-icons/bs';
+import { useState, Dispatch, SetStateAction } from 'react';
+import { usePathname } from 'next/navigation';
+import { BsFillStarFill, BsLayoutSplit, BsBriefcaseFill, BsPenFill, BsPersonFillGear, BsFolder, BsHouseGear, BsCalendar2Plus, BsBarChartLineFill, BsList, BsChevronDown, BsChevronRight, BsTerminal, BsFileText, BsCreditCard, BsCardChecklist, BsGraphUpArrow, BsClipboard2Data } from 'react-icons/bs';
 import { FaFileInvoiceDollar } from "react-icons/fa6";
 import { IconType } from 'react-icons';
 import { Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Collapse } from '@mui/material';
 import styles from './Sidebar.module.css';
+import { useAuth } from '@/data/AuthContext';
 
 // Define la estructura de los datos del menú
-interface MenuItem {
+export interface MenuItem {
     name: string;
     icon: IconType;
     link?: string;
     children?: MenuItem[];
+    permissionTask?: string;
 }
 
 const menuItems: MenuItem[] = [
     {
-      name: "Favoritos",
-      icon: BsFillStarFill,
-      link: "/dashboard/favoritos",
+        name: "Favoritos",
+        icon: BsFillStarFill,
+        link: "/inicio/favoritos",
+        permissionTask: "Favoritos",
     },
     {
-      name: "Dashboard",
-      icon: BsLayoutSplit,
-      link: "/dashboard/dashboard",
+        name: "inicio",
+        icon: BsLayoutSplit,
+        link: "/inicio",
+        permissionTask: "inicio",
     },
     {
-      name: "Empleador",
-      icon: BsBriefcaseFill,
-      children: [
-        { name: "Póliza", icon: BsFileText, link: "/dashboard/empleador/poliza" },
-        { name: "Cobertura", icon: BsCardChecklist, link: "/dashboard/empleador/cobertura" },
-        { name: "Cuenta Corriente", icon: BsGraphUpArrow, link: "/dashboard/empleador/cuentaCorriente" },
-        { name: "Formulario RGRL", icon: BsClipboard2Data, link: "/dashboard/empleador/formularioRGRL" },
-        { name: "Formulario RAR", icon: BsClipboard2Data, link: "/dashboard/empleador/formularioRAR" },
-        { name: "Siniestros", icon: BsCalendar2Plus, link: "/dashboard/empleador/siniestros" },
-        { name: "Avisos de Obra", icon: BsHouseGear, link: "/dashboard/empleador/avisosDeObra" },
-        { name: "SVCC", icon: BsFolder, link: "/dashboard/empleador/svcc" },
-        { name: "Credenciales", icon: BsCreditCard, link: "/dashboard/empleador/credenciales" },
-      ],
+        name: "Empleador",
+        icon: BsBriefcaseFill,
+        permissionTask: "Empleador",
+        children: [
+            { name: "Póliza", icon: BsFileText, link: "/inicio/empleador/poliza"},
+            { name: "Cobertura", icon: BsCardChecklist, link: "/inicio/empleador/cobertura", permissionTask: "empleador_Cobertura"},
+            { name: "Cuenta Corriente", icon: BsGraphUpArrow, link: "/inicio/empleador/cuentaCorriente", permissionTask: "empleador_CuentaCorriente" },
+            { name: "Formulario RGRL", icon: BsClipboard2Data, link: "/inicio/empleador/formularioRGRL", permissionTask: "empleador_FormularioRGRL" },
+            { name: "Formulario RAR", icon: BsClipboard2Data, link: "/inicio/empleador/formularioRAR", permissionTask: "empleador_FormularioRAR" },
+            { name: "Siniestros", icon: BsCalendar2Plus, link: "/inicio/empleador/siniestros", permissionTask: "empleador_Siniestros" },
+            { name: "Avisos de Obra", icon: BsHouseGear, link: "/inicio/empleador/avisosDeObra", permissionTask: "empleador_AvisoDeObra" },
+            { name: "SVCC", icon: BsFolder, link: "/inicio/empleador/svcc", permissionTask: "empleador_SVCC" },
+            { name: "Credenciales", icon: BsCreditCard, link: "/inicio/empleador/credenciales", permissionTask: "empleador_Credenciales"},
+        ],
     },
     {
-      name: "Comercializador",
-      icon: BsBriefcaseFill,
-      children: [
-        { name: "Cuenta Corriente", icon: BsGraphUpArrow, link: "/dashboard/comercializador/cuentaCorriente" },
-        { name: "Polizas", icon: BsList, link: "/dashboard/comercializador/polizas" },
-      ],
+        name: "Comercializador",
+        icon: BsBriefcaseFill,
+        permissionTask: "Comercializador",
+        children: [
+            { name: "Cuenta Corriente", icon: BsGraphUpArrow, link: "/inicio/comercializador/cuentaCorriente", permissionTask: "Comercializador_CuentaCorriente" },
+            { name: "Polizas", icon: BsList, link: "/inicio/comercializador/polizas",permissionTask: "Comercializador_Polizas" },
+        ],
     },
     {
-      name: "Cotizaciones",
-      icon: FaFileInvoiceDollar,
-      link: "/dashboard/cotizaciones",
+        name: "Cotizaciones",
+        icon: FaFileInvoiceDollar,
+        link: "/inicio/cotizaciones",
+        permissionTask: "Cotizaciones",
     },
     {
-      name: "Informes",
-      icon: BsBarChartLineFill,
-      children: [
-        { name: "Comisiones Médicas", icon: BsGraphUpArrow, link: "/dashboard/informes/comisionesMedicas" },
-        { name: "Siniestros", icon: BsList, link: "/dashboard/informes/siniestros" },
-        { name: "Atención Al Público", icon: BsList, link: "/dashboard/informes/atencionAlPublico" },
-      ],
+        name: "Informes",
+        icon: BsBarChartLineFill,
+        permissionTask: "Informes",
+        children: [
+            { name: "Comisiones Médicas", icon: BsGraphUpArrow, link: "/inicio/informes/comisionesMedicas", permissionTask: "Informes_ComisionesMedicas" },
+            { name: "Siniestros", icon: BsList, link: "/inicio/informes/siniestros", permissionTask: "Informes_Siniestros" },
+            { name: "Atención Al Público", icon: BsList, link: "/inicio/informes/atencionAlPublico", permissionTask: "Informes_AtencionAlPublico" },
+        ],
     },
     {
-      name: "Usuarios",
-      icon: BsPersonFillGear,
-      link: "/dashboard/usuarios",
+        name: "Usuarios",
+        icon: BsPersonFillGear,
+        link: "/inicio/usuarios",
+        permissionTask: "Usuarios",
     },
 ];
 
-interface SidebarProps {}
 
-const Sidebar = ({}: SidebarProps) => {
-    // Estado para la visualización (abierto/cerrado)
-    const [isOpen, setIsOpen] = useState(false);
-    // Nuevo estado para el bloqueo (abierto con clic)
+export interface SidebarProps {
+    isOpen: boolean;
+    setIsOpen: Dispatch<SetStateAction<boolean>>;
+}
+
+
+const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
     const [isLocked, setIsLocked] = useState(false);
     const [openMenus, setOpenMenus] = useState<string[]>([]);
-    const pathname = usePathname(); // Obtiene la ruta actual
+    const pathname = usePathname();
+    const { hasTask } = useAuth();
 
     const handleMenuClick = (menuName: string) => {
       setOpenMenus(prevOpenMenus => {
@@ -94,67 +105,50 @@ const Sidebar = ({}: SidebarProps) => {
     };
 
     const handleToggleLock = () => {
-      // Si ya está bloqueado, lo desbloquea y minimiza el sidebar.
-      if (isLocked) {
-        setIsLocked(false);
-        setIsOpen(false);
-      } else {
-        // Si no está bloqueado, lo bloquea y lo expande
-        setIsLocked(true);
-        setIsOpen(true);
-      }
+        if (isLocked) {
+            setIsLocked(false);
+            setIsOpen(false);
+        } else {
+            setIsLocked(true);
+            setIsOpen(true);
+        }
     };
 
     const handleMouseEnter = () => {
-      // El sidebar siempre se abre al pasar el cursor
-      setIsOpen(true);
+        setIsOpen(true);
     };
 
     const handleMouseLeave = () => {
-      // El sidebar solo se cierra si no está bloqueado
-      if (!isLocked) {
-        setIsOpen(false);
-      }
+        if (!isLocked) {
+            setIsOpen(false);
+        }
     };
 
     const renderMenuItems = (items: MenuItem[], isSubmenu: boolean = false) => {
         return items.map((item) => {
-            const isMenuOpen = openMenus.includes(item.name);
-            const isActive = item.link === pathname; // Verifica si el ítem está activo
-            
-            const listItemButtonClasses = `${styles.menuItemButton} ${isOpen ? styles.menuItemButtonOpen : styles.menuItemButtonClosed} ${isSubmenu ? styles.submenuItem : ''} ${isActive ? styles.activeLink : ''}`;
-            const listItemIconClasses = `${styles.icon} ${isOpen ? styles.iconOpen : styles.iconClosed}`;
-            const listItemTextClasses = `${isOpen ? styles.linkTextVisible : styles.linkTextHidden}`;
-            const arrowIconClasses = `${styles.accordionIcon}`;
+            if (item.permissionTask && !hasTask(item.permissionTask)) {
+                return null;
+            }
 
-            return (
-                <React.Fragment key={item.name}>
-                    <ListItem disablePadding className={styles.listItem}>
-                        {item.children ? (
-                            <>
-                                <ListItemButton
-                                    onClick={() => handleMenuClick(item.name)}
-                                    className={listItemButtonClasses}
-                                >
-                                    <ListItemIcon className={listItemIconClasses}>
-                                        <item.icon />
-                                    </ListItemIcon>
-                                    <ListItemText
-                                        primary={item.name}
-                                        className={listItemTextClasses}
-                                    />
-                                    {isOpen && (isMenuOpen ? <BsChevronDown className={arrowIconClasses} /> : <BsChevronRight className={arrowIconClasses} />)}
-                                </ListItemButton>
-                                <Collapse in={isMenuOpen} timeout="auto" unmountOnExit>
-                                    <List component="div" disablePadding className={styles.submenu}>
-                                        {renderMenuItems(item.children, true)}
-                                    </List>
-                                </Collapse>
-                            </>
-                        ) : (
+            if (item.children) {
+                const renderedChildren = renderMenuItems(item.children, true);
+                const filteredChildren = renderedChildren.filter(child => child !== null);
+                
+                if (filteredChildren.length === 0) {
+                    return null;
+                }
+
+                const isMenuOpen = openMenus.includes(item.name);
+                const listItemButtonClasses = `${styles.menuItemButton} ${isOpen ? styles.menuItemButtonOpen : styles.menuItemButtonClosed} ${isSubmenu ? styles.submenuItem : ''}`;
+                const listItemIconClasses = `${styles.icon} ${isOpen ? styles.iconOpen : styles.iconClosed}`;
+                const listItemTextClasses = `${isOpen ? styles.linkTextVisible : styles.linkTextHidden}`;
+                const arrowIconClasses = `${styles.accordionIcon}`;
+
+                return (
+                    <React.Fragment key={item.name}>
+                        <ListItem disablePadding className={styles.listItem}>
                             <ListItemButton
-                                component={Link}
-                                href={item.link || "#"}
+                                onClick={() => handleMenuClick(item.name)}
                                 className={listItemButtonClasses}
                             >
                                 <ListItemIcon className={listItemIconClasses}>
@@ -164,8 +158,39 @@ const Sidebar = ({}: SidebarProps) => {
                                     primary={item.name}
                                     className={listItemTextClasses}
                                 />
+                                {isOpen && (isMenuOpen ? <BsChevronDown className={arrowIconClasses} /> : <BsChevronRight className={arrowIconClasses} />)}
                             </ListItemButton>
-                        )}
+                            <Collapse in={isMenuOpen} timeout="auto" unmountOnExit>
+                                <List component="div" disablePadding className={styles.submenu}>
+                                    {filteredChildren}
+                                </List>
+                            </Collapse>
+                        </ListItem>
+                    </React.Fragment>
+                );
+            }
+            
+            const isActive = item.link === pathname;
+            const listItemButtonClasses = `${styles.menuItemButton} ${isOpen ? styles.menuItemButtonOpen : styles.menuItemButtonClosed} ${isSubmenu ? styles.submenuItem : ''} ${isActive ? styles.activeLink : ''}`;
+            const listItemIconClasses = `${styles.icon} ${isOpen ? styles.iconOpen : styles.iconClosed}`;
+            const listItemTextClasses = `${isOpen ? styles.linkTextVisible : styles.linkTextHidden}`;
+
+            return (
+                <React.Fragment key={item.name}>
+                    <ListItem disablePadding className={styles.listItem}>
+                        <ListItemButton
+                            component={Link}
+                            href={item.link || "#"}
+                            className={listItemButtonClasses}
+                        >
+                            <ListItemIcon className={listItemIconClasses}>
+                                <item.icon />
+                            </ListItemIcon>
+                            <ListItemText
+                                primary={item.name}
+                                className={listItemTextClasses}
+                            />
+                        </ListItemButton>
                     </ListItem>
                 </React.Fragment>
             );

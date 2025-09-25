@@ -4,7 +4,6 @@
     position: fixed;
     top: 0;
     width: 100%;
-    height: 7rem;
     background-color: var(--blanco);
     color: var(--negro);
     padding: 1rem;
@@ -37,12 +36,12 @@
     background-color: var(--blanco);
     color: var(--negro);
     border-radius: 9999px;
-    padding: 0.75rem 1.5rem 0.75rem 3rem;
+    padding: 0.75rem 1.5rem 0.75rem 3.5rem;
     border: 1px solid var(--gris);
     outline: none;
     width: 100%;
     transition: box-shadow 0.2s ease-in-out;
-    font-size: 1rem;
+    font-size: 1.2rem;
 }
 
 .searchInput:focus {
@@ -82,7 +81,7 @@
 
 /* CAMBIO CLAVE: Quitamos el hover del iconButton y lo aplicamos al padre */
 .iconButton {
-    font-size: 2.5rem;
+    font-size: 3.2rem;
     color: var(--naranja);
     transition: color 0.2s ease-in-out;
 }
@@ -104,7 +103,7 @@
     position: absolute;
     top: 100%;
     right: 3%;
-    width: 350px; /* Ancho aumentado */
+    width: 290px; /* Ancho aumentado */
     background-color: var(--blanco);
     border-bottom: 6px solid var(--naranja);
     border-radius: 8px;
@@ -149,7 +148,7 @@
 }
 
 .largeIcon {
-    font-size: 80px;
+    font-size: 70px;
     color: var(--grisOscuro);
 }
 
@@ -160,7 +159,7 @@
 }
 
 .userName {
-    font-size: 1.8rem;
+    font-size: 2rem;
     font-weight: 700;
     color: var(--grisOscuro);
     margin: 0 0 0.5rem 0;
@@ -168,7 +167,7 @@
 
 .userEmail, .userCuit {
     font-weight: bold;
-    font-size: 1.1rem;
+    font-size: 1.3rem;
     color: var(--gris);
     margin: 0;
 }

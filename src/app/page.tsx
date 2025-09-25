@@ -5,8 +5,8 @@ import { redirect } from "next/navigation";
 export default async function HomePage() {
   const session = await getServerSession();
   if (session) {
-    // Redirige al usuario autenticado al dashboard
-    redirect('/dashboard');
+    // Redirige al usuario autenticado al inicio
+    redirect('/inicio');
   }else{
      redirect('/login');
   }

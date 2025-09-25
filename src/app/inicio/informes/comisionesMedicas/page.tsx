@@ -14,7 +14,7 @@ function CCMMQueryBuilder() {
 
 function CCMMTable() {
   const { columns, rows } = useCCMMContext();
-  return (<DataTable data={rows} columns={columns} variant="compact" />);
+  return (<DataTable data={rows} columns={columns} />);
 }
 
 function Informe() {

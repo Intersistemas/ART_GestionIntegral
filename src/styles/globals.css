@@ -9,25 +9,23 @@
   --primary: lightgray;
   --secondary: gray;
 
-    /*PALETA DE ART*/
-      --naranja: #E4840C; 
-      --verde: #648C34;
+  /*PALETA DE ART*/
+  --naranjaClaro: #ffaf4c;
+  --naranja: #E4840C; 
+  --naranjaOscuro: #b66400; 
 
-      --naranjaOscuro: #9c5906; 
-      --verdeOscuro: #496726; 
+  --verdeClaroClaro: #cee9b3;
+  --verdeClaro: #92bd68;
+  --verde: #648C34;
+  --verdeOscuro: #45661f; 
 
-      --naranjaClaro: #ffaf4c;
-      --verdeClaro: #89ae65;
-      
-      --verdeClaroClaro: #cee9b3;
-
-      --gris: #808080;
-      --grisClaro: #f7f7f7; /*#d1d1d1*/
-      --grisOscuro: #474747;
-      
-      --blanco: white;
-      --negro: black;
-
+  --grisClaroClaro: #f7f7f7;
+  --grisClaro: #c2c2c2;
+  --gris: #808080;
+  --grisOscuro: #474747;
+  
+  --blanco: white;
+  --negro: black;
 
   /*Colores del logo*/
   --naranjaLogo: #e7800f;
@@ -35,17 +33,18 @@
   --verde2Logo: #629331;
   
   --font: 'Outfit', sans-serif;
+  --font-size: large;
 
   /* Estilos específicos del menú */
-  --font-size-menu: 1.1rem;
-  --font-weight-menu: 700;
+  --font-size-sidebar: 1.6rem;
+  --font-weight-sidebar: 700;
   --color-menu: white;
   --hover-color-menu: #414141;
 
   /* Variables para el layout */
-  --navbar-height: 7rem;
-  --sidebar-width-open: 350px;
-  --breadcrumbs-height: 3.5rem; /* Altura estimada de las migas de pan */
+  --navbar-height: 10rem;
+  --sidebar-width-open: 280px;
+  --breadcrumbs-height: 4rem;
   --content-padding: 20px;
   --main-content-margin: 5px;
 
@@ -57,7 +56,6 @@
   --rqb-border-color: var(--naranjaOscuro);
   --rqb-border-style: solid;
   --rqb-border-radius: 0.25rem;
-
   --rqb-branch-indent: var(--rqb-spacing);
   --rqb-branch-width: var(--rqb-border-width);
   --rqb-branch-color: var(--rqb-border-color);
@@ -66,7 +64,7 @@
 }
 
 html {
-  font-size: 62,5%;
+  font-size: 62.5%;
   box-sizing: border-box;
 }
 
@@ -89,6 +87,7 @@ img {
   margin: 0 auto;
   width: 95%;
 }
+
 [class*="heading"] {
   font-size: 4rem;
   text-align: center;
@@ -97,13 +96,18 @@ img {
   margin: 5rem 0;
 }
 
-
-/*
-* Estas reglas CSS anulan los estilos predeterminados de Material-UI
-* para asegurar que tus estilos de fuente y color se apliquen correctamente.
-*/
-.MuiListItemText-root .MuiTypography-root {
-  font-size: 1.3rem !important;
-  font-weight: 700 !important;
-  color: white !important;
+/* Estilos para el autocompletado del navegador */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--grisOscuro) !important;
+  -webkit-box-shadow: 0 0 0px 1000px var(--verdeClaroClaro) inset !important;
+  box-shadow: 0 0 0px 1000px var(--verdeClaroClaro) inset !important;
+  transition: background-color 5000s ease-in-out 0s !important;
 }
