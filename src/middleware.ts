@@ -40,7 +40,7 @@ export async function middleware(req: NextRequest) {
 
   // 2. Control de Roles
   const userRoles = (token as any)?.user?.roles || [];
-  console.log("userRoles",userRoles)
+
   if (userRoles.includes('Administrador')) {
         return NextResponse.next();
     }
