@@ -2,6 +2,7 @@
 "use client";
 
 import { createContext, useContext, ReactNode } from 'react';
+import { Usuario } from '@/data/usuarioAPI';
 import { useSession } from 'next-auth/react'; // O tu método para obtener la sesión
 
 interface AuthContextType {
@@ -19,12 +20,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         /*Si el usuario es Administrador*/
         if (status === 'authenticated' && session?.user) {
-            const userRoles = (session.user as any)?.roles || [];
+            const userRoles = (session.user as Usuario)?.roles || [];
             return userRoles.includes("Administrador");
         }
 
         if (status === 'authenticated' && session?.user) {
-            const userTasks = (session.user as any)?.tareas || [];
+            const userTasks = (session.user as Usuario)?.tareas || [];
             return userTasks.includes(taskName);
         }
 

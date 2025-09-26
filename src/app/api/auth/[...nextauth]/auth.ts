@@ -1,6 +1,8 @@
 import type { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from "next-auth/providers/credentials";
-import axios, { AxiosError } from "axios";
+import UsuarioAPI, { TokenDTO, Usuario, UsuarioVm } from '@/data/usuarioAPI';
+
+const { login } = UsuarioAPI;
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -12,28 +14,10 @@ export const authOptions: NextAuthOptions = {
         loginPassword: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        try {
-          const url = `${process.env.API_SEGURIDAD_URL}`
-          const res = await axios.post(`http://arttest.intersistemas.ar:8301/api/Usuario/Login`, {
-            usuario: credentials?.loginUser,
-            password: credentials?.loginPassword,
-            rol: null,
-          });
-          const user = res.data;
-          if (user) {
-            return user;
-          }
-          return null;
-        } catch (error) {
-          if (axios.isAxiosError(error)) {
-            console.error("Authentication failed:", error.response?.data || error.message);
-          } else if (error instanceof Error) {
-            console.error("An unexpected error occurred:", error.message);
-          } else {
-            console.error("An unexpected error occurred:", error);
-          }
-          return null;
-        }
+        return await login({
+          usuario: credentials?.loginUser,
+          password: credentials?.loginPassword
+        }).then();
       },
     }),
   ],
@@ -46,12 +30,19 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.user = user;
+        const { token: tkn, ...usr } = user as UsuarioVm;
+        token.user = usr;
+        token.data = tkn;
       }
       return token;
     },
     async session({ session, token }) {
-      session.user = token.user as any;
+      session.user = token.user as Usuario;
+      const tokenData = token.data as TokenDTO;
+      if (tokenData) {
+        session.expires = tokenData.validTo;
+        session.accessToken = tokenData.tokenId;
+      }
       return session;
     },
   },

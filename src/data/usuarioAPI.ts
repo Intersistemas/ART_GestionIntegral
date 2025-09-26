@@ -1,8 +1,19 @@
 import useSWR from "swr";
 import axios, { AxiosError } from "axios";
 import { ExternalAPI, ExternalAPIGetURLParams } from "./api";
+import { getSession } from "next-auth/react";
 
 //#region Types
+export interface Auditable {
+  createdDate?: string;
+  createdBy?: string;
+  lastModifiedDate?: string;
+  lastModifiedBy?: string;
+  deletedDate?: string;
+  deletedBy?: string;
+  deletedObs?: string;
+  guid?: string;
+}
 export interface UsuarioRow {
   id: number;
   cuit: string;
@@ -15,6 +26,61 @@ export interface UsuarioRow {
   phoneNumberConfirmed: boolean;
   // Add other fields if needed
 }
+//#region /api/Usuario/Login types
+export interface LoginCommand {
+  usuario?: string;
+  password?: string;
+}
+export interface TokenDTO {
+  tokenId?: string;
+  validTo: string;
+}
+export interface UsuarioTareaVm extends Auditable {
+  id: number;
+  usuarioId?: string;
+  tareaId: number;
+  rolId?: string;
+  rolNombre?: string;
+  denegado: boolean;
+};
+export interface UsuarioExclusionVm {
+  id: number;
+  createdDate?: string;
+  createdBy?: string;
+  lastModifiedDate?: string;
+  lastModifiedBy?: string;
+  deletedDate?: string;
+  deletedBy?: string;
+  deletedObs?: string;
+  guid?: string;
+  tablaId: number;
+  tablaDescripcion?: string;
+  campoId: number;
+  campoDescripcion?: string;
+};
+export interface UsuarioVm {
+  id?: string;
+  cuit: number;
+  nombre?: string;
+  tipo?: string;
+  userName?: string;
+  normalizedUserName?: string;
+  email?: string;
+  normalizedEmail?: string;
+  emailConfirmed: boolean;
+  phoneNumber?: string;
+  phoneNumberConfirmed: boolean;
+  twoFactorEnabled: boolean;
+  lockoutEnd?: string;
+  lockoutEnabled: boolean;
+  accessFailedCount: number;
+  token: TokenDTO;
+  roles?: string[];
+  tareas?: Array<UsuarioTareaVm | string>;  //ToDo: verificar el tipo de arreglo
+  exclusiones?: UsuarioExclusionVm[];
+};
+export type Usuario = Omit<UsuarioVm, "token">;
+//#endregion /api/Usuario/Login types
 //#region /api/Usuario/GetAll types
 export interface UsuarioGetAllParams {
   empresaId?: number;
@@ -33,10 +99,42 @@ export interface RolesInterface {
   nombreNormalizado: string
 }
 //#endregion /api/Roles types
+//#region /api/Tablas types
+export interface Campo extends Auditable {
+  id: number;
+  nombre?: string;
+  descripcion?: string;
+}
+export interface Tabla extends Auditable {
+  id: number;
+  nombre?: string;
+  descripcion?: string;
+  campos?: Campo[];
+}
+//#endregion /api/Tablas types
 //#endregion Types
 
 export class UsuarioAPIClass extends ExternalAPI {
   basePath = "http://arttest.intersistemas.ar:8301"; ///ToDo: debo agregarlo al env.
+  //#region login
+  login = async (login: LoginCommand) => axios.post<UsuarioVm>(
+    this.getURL({ path: "/api/Usuario/Login" }).toString(),
+    login
+  ).then(
+    ({ data }) => data,
+    (error) => {
+      if (axios.isAxiosError(error)) {
+        console.error("Authentication failed:", error.response?.data || error.message);
+      } else if (error instanceof Error) {
+        console.error("An unexpected error occurred:", error.message);
+      } else {
+        console.error("An unexpected error occurred:", error);
+      }
+      return null;
+    }
+  );
+  useLogin = (login: LoginCommand) => useSWR(login, () => this.login(login));
+  //#endregion login
   //#region getAll
   getAll = async ({ empresaId, sort, pageIndex, pageSize }: UsuarioGetAllParams = {}) => {
     const getURL: ExternalAPIGetURLParams = { path: "/api/Usuario/GetAll" };
@@ -86,6 +184,15 @@ export class UsuarioAPIClass extends ExternalAPI {
   );
   useRegistrar = (data: any) => useSWR(data, () => this.registrar(data));
   //#endregion registrar
+  //#region tablas
+  tablas = async () => axios.get<Tabla[]>(
+    this.getURL({ path: "/api/Tablas" }).toString(),
+    { headers: { Authorization: `Bearer ${(await getSession())?.accessToken}` } }
+  ).then(
+    ({ data }) => data
+  );
+  useTablas = () => useSWR({}, () => this.tablas());
+  //#endregion tablas
 }
 
 const UsuarioAPI = Object.seal(new UsuarioAPIClass());
