@@ -4,28 +4,34 @@ import { useState } from "react";
 import { Box, Button, Typography } from "@mui/material";
 import UsuarioForm, { UsuarioFormFields } from "./UsuarioForm";
 import UsuarioTable from "./UsuarioTable";
-import useUsuarios, { UsuarioRow } from "./useUsuarios";
+import useUsuarios from "./useUsuarios";
 import styles from './Usuario.module.css';
 import CustomButton from "@/utils/ui/button/CustomButton";
+import UsuarioRow from "./interfaces/UsuarioRow";
+import { useAuth } from "@/data/AuthContext";
 
-const initialForm = {
-  cuit: "",
-  email: "",
-  password: "",
-  confirmPassword: "",
-  rol: "",
-  tipo: "",
-  phoneNumber: "",
-  nombre: "",
-  userName: "",
-  empresaId: 1,
-};
 
 export default function UsuariosPage() {
-  const { usuarios, roles, loading, error, registrarUsuario } = useUsuarios();
+  const { user } = useAuth();
+
+  const initialForm = {
+    cuit: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    rol: "",
+    tipo: "",
+    phoneNumber: "",
+    nombre: "",
+    userName: "",
+    empresaId: user?.empresaId || 1,
+    cargo: "",
+  };
+
+  const { usuarios, roles, refEmpleadores, loading, error, registrarUsuario } = useUsuarios();
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState(initialForm);
-  const [formError, setFormError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);  
 
   const handleOpenModal = (row?: UsuarioRow) => {
     const dataToForm = row ? {
@@ -38,7 +44,8 @@ export default function UsuariosPage() {
         phoneNumber: row.phoneNumber,
         nombre: row.nombre,
         userName: row.userName,
-        empresaId: initialForm.empresaId, // <-- Aseguramos que la propiedad empresaId esté presente
+        empresaId: user?.empresaId || 1,
+        cargo: row.cargo,
     } : initialForm;
 
     setFormData(dataToForm);
@@ -72,7 +79,7 @@ export default function UsuariosPage() {
   if (error) {
     return <Typography color="error">Error: {error instanceof Error ? error.message : "Un error inesperado ha ocurrido."}</Typography>;
   }
-
+  console.log("UsuariosPage render - refEmpleadores:", refEmpleadores);
   return (
     <Box className={styles.usuariosPageContainer}>
 
@@ -91,6 +98,7 @@ export default function UsuariosPage() {
         onClose={handleCloseModal}
         onSubmit={handleSubmit}
         roles={roles}
+        refEmpleadores={refEmpleadores}
         initialData={formData}
         errorMsg={formError}
       />

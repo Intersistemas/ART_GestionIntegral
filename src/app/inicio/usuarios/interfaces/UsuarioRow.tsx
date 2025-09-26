@@ -1,4 +1,4 @@
-interface UsuarioRow {
+export default interface UsuarioRow {
   id: number;
   cuit: string;
   nombre: string;
@@ -8,6 +8,8 @@ interface UsuarioRow {
   emailConfirmed: boolean;
   phoneNumber: string;
   phoneNumberConfirmed: boolean;
+  cargo: string;
+  rol: string;
+  empresaId: number;
   // Add other fields if needed
 }
-export default UsuarioRow;
