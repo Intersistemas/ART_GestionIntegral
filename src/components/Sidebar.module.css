@@ -15,7 +15,7 @@
 
 .sidebarOpen {
     width: var(--sidebar-width-open);
-    min-width: var(--sidebar-width-open);
+    transition: width 0.3s ease-in-out;
 }
 
 .sidebarClosed {
