@@ -4,26 +4,21 @@ import { ExternalAPI } from "./api";
 import RefEmpleador from "@/app/inicio/usuarios/interfaces/RefEmpleador";
 
 export class ArtAPIClass extends ExternalAPI {
-  basePath = "http://localhost:5005"; ///ToDo: debo agregarlo al env.
+  basePath = "http://arttest.intersistemas.ar:8302"; ///ToDo: debo agregarlo al env.
 
   //#region RefEmpleadores
+  private refEmpleadoresBase = this.getURL({ path: "/api/RefEmpleadores" }).toString();
   getRefEmpleadores = async () =>
     axios
       .get<RefEmpleador[]>(
-        this.getURL({ path: "/api/RefEmpleadores" }).toString()
+        this.refEmpleadoresBase
       )
       .then(({ data }) => data);
-      
+
   useGetRefEmpleadores = () => {
-    return useSWR("/api/RefEmpleadores", () =>
-      axios
-        .get<RefEmpleador[]>(this.getURL({ path: "/api/RefEmpleadores" }).toString())
-        .then(({ data }) => data)
-    );
-  };
-  
-    // useSWR({}, () => this.getRefEmpleadores());
-    
+    return useSWR({ path: this.refEmpleadoresBase }, () => this.getRefEmpleadores());
+  };  
+
   //#endregion
 }
 

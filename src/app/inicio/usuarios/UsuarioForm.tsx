@@ -6,6 +6,7 @@ import RolesInterface from "./interfaces/RolesInterface";
 import styles from './Usuario.module.css';
 import { SelectChangeEvent } from '@mui/material/Select';
 import RefEmpleador from "./interfaces/RefEmpleador";
+import CustomModal from "@/utils/ui/form/CustomModal";
 
 export interface UsuarioFormFields {
   cuit: string;
@@ -262,7 +263,12 @@ export default function UsuarioForm({ open, onClose, onSubmit, roles, refEmplead
   };
 
   return (
-    <Modal open={open} onClose={onClose} aria-labelledby="form-modal-title">
+    <CustomModal
+      open={open}
+      onClose={onClose}
+      title="Agregar Usuario"
+      size="mid"
+    >
       <Box
         component="form"
         className={styles.formContainer}
@@ -412,6 +418,7 @@ export default function UsuarioForm({ open, onClose, onSubmit, roles, refEmplead
               label="Empresa"
               onChange={handleEmpresaChange}
               onBlur={() => handleBlur("empresaId")}
+              disabled={form.empresaId !== 0}
             >
               {refEmpleadores.map((refEmpleador) => (
                 <MenuItem key={refEmpleador.interno} value={refEmpleador.interno}>
@@ -439,6 +446,6 @@ export default function UsuarioForm({ open, onClose, onSubmit, roles, refEmplead
           </Button>
         </div>
       </Box>
-    </Modal>
+    </CustomModal>
   );
 }

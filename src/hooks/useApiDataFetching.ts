@@ -49,11 +49,11 @@ const APIConfig = {
     },
   },
   ArtAPI: {
-    baseUrl: "http://localhost:5005/api", //debo agregarlo al env.
+    baseUrl: "http://arttest.intersistemas.ar:8302/api", //debo agregarlo al env.
     endpoints: {
       getRefEmpleadores: { method: "GET", path: "/api/RefEmpleadores" },
     },
-  }
+  },
 } as APIConfiguration;
 //#endregion Configuracion de APIs
 

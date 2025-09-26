@@ -106,24 +106,30 @@ export interface Tabla extends Auditable {
 //#endregion Types
 
 export class UsuarioAPIClass extends ExternalAPI {
-  basePath = "http://localhost:7166"; ///ToDo: debo agregarlo al env.
+  basePath = "http://arttest.intersistemas.ar:8301"; ///ToDo: debo agregarlo al env.
   //#region login
-  login = async (login: LoginCommand) => axios.post<UsuarioVm>(
-    this.getURL({ path: "/api/Usuario/Login" }).toString(),
-    login
-  ).then(
-    ({ data }) => data,
-    (error) => {
-      if (axios.isAxiosError(error)) {
-        console.error("Authentication failed:", error.response?.data || error.message);
-      } else if (error instanceof Error) {
-        console.error("An unexpected error occurred:", error.message);
-      } else {
-        console.error("An unexpected error occurred:", error);
-      }
-      return null;
-    }
-  );
+  login = async (login: LoginCommand) =>
+    axios
+      .post<UsuarioVm>(
+        this.getURL({ path: "/api/Usuario/Login" }).toString(),
+        login
+      )
+      .then(
+        ({ data }) => data,
+        (error) => {
+          if (axios.isAxiosError(error)) {
+            console.error(
+              "Authentication failed:",
+              error.response?.data || error.message
+            );
+          } else if (error instanceof Error) {
+            console.error("An unexpected error occurred:", error.message);
+          } else {
+            console.error("An unexpected error occurred:", error);
+          }
+          return null;
+        }
+      );
   useLogin = (login: LoginCommand) => useSWR(login, () => this.login(login));
   //#endregion login
   //#region getAll
@@ -182,12 +188,14 @@ export class UsuarioAPIClass extends ExternalAPI {
   useRegistrar = (data: any) => useSWR(data, () => this.registrar(data));
   //#endregion registrar
   //#region tablas
-  tablas = async () => axios.get<Tabla[]>(
-    this.getURL({ path: "/api/Tablas" }).toString(),
-    { headers: { Authorization: `Bearer ${(await getSession())?.accessToken}` } }
-  ).then(
-    ({ data }) => data
-  );
+  tablas = async () =>
+    axios
+      .get<Tabla[]>(this.getURL({ path: "/api/Tablas" }).toString(), {
+        headers: {
+          Authorization: `Bearer ${(await getSession())?.accessToken}`,
+        },
+      })
+      .then(({ data }) => data);
   useTablas = () => useSWR({}, () => this.tablas());
   //#endregion tablas
 }
