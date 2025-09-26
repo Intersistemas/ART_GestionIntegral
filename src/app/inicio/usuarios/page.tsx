@@ -8,26 +8,30 @@ import useUsuarios from "./useUsuarios";
 import styles from './Usuario.module.css';
 import CustomButton from "@/utils/ui/button/CustomButton";
 import UsuarioRow from "./interfaces/UsuarioRow";
+import { useAuth } from "@/data/AuthContext";
 
-const initialForm = {
-  cuit: "",
-  email: "",
-  password: "",
-  confirmPassword: "",
-  rol: "",
-  tipo: "",
-  phoneNumber: "",
-  nombre: "",
-  userName: "",
-  empresaId: 0,
-  cargo: "",
-};
 
 export default function UsuariosPage() {
+  const { user } = useAuth();
+
+  const initialForm = {
+    cuit: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    rol: "",
+    tipo: "",
+    phoneNumber: "",
+    nombre: "",
+    userName: "",
+    empresaId: user?.empresaId || 1,
+    cargo: "",
+  };
+
   const { usuarios, roles, refEmpleadores, loading, error, registrarUsuario } = useUsuarios();
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState(initialForm);
-  const [formError, setFormError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);  
 
   const handleOpenModal = (row?: UsuarioRow) => {
     const dataToForm = row ? {
@@ -40,7 +44,7 @@ export default function UsuariosPage() {
         phoneNumber: row.phoneNumber,
         nombre: row.nombre,
         userName: row.userName,
-        empresaId: row.empresaId, // debe venir de l dato del usuari logueado
+        empresaId: user?.empresaId || 1,
         cargo: row.cargo,
     } : initialForm;
 

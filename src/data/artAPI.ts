@@ -1,7 +1,7 @@
 import useSWR from "swr";
 import axios, { AxiosError } from "axios";
-import { ExternalAPI, ExternalAPIGetURLParams } from "./api";
-import RefEmpleador from "@/app/dashboard/usuarios/interfaces/RefEmpleador";
+import { ExternalAPI } from "./api";
+import RefEmpleador from "@/app/inicio/usuarios/interfaces/RefEmpleador";
 
 export class ArtAPIClass extends ExternalAPI {
   basePath = "http://localhost:5005"; ///ToDo: debo agregarlo al env.

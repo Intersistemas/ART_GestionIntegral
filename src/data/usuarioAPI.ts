@@ -15,6 +15,7 @@ export interface Auditable {
   deletedObs?: string;
   guid?: string;
 }
+
 //#region /api/Usuario/Login types
 export interface LoginCommand {
   usuario?: string;
@@ -65,6 +66,7 @@ export interface UsuarioVm {
   accessFailedCount: number;
   token: TokenDTO;
   roles?: string[];
+  empresaId?: number;
   tareas?: Array<UsuarioTareaVm | string>;  //ToDo: verificar el tipo de arreglo
   exclusiones?: UsuarioExclusionVm[];
 };
@@ -104,7 +106,7 @@ export interface Tabla extends Auditable {
 //#endregion Types
 
 export class UsuarioAPIClass extends ExternalAPI {
-  basePath = "http://arttest.intersistemas.ar:8301"; ///ToDo: debo agregarlo al env.
+  basePath = "http://localhost:7166"; ///ToDo: debo agregarlo al env.
   //#region login
   login = async (login: LoginCommand) => axios.post<UsuarioVm>(
     this.getURL({ path: "/api/Usuario/Login" }).toString(),
