@@ -5,8 +5,6 @@ import ArtAPI from "@/data/artAPI";
 const { useGetAll, useGetRoles, registrar } = UsuarioAPI;
 const { useGetRefEmpleadores } = ArtAPI;
 
-// import UsuarioRow from "@/app/dashboard/usuarios/interfaces/UsuarioRow";
-
 export default function useUsuarios() {
   const { data: usuariosData, error: usuariosError, isLoading: usuariosLoading, mutate: mutateUsuarios } = useGetAll({ empresaId: 1 });
   const { data: roles, error: rolesError, isLoading: rolesLoading } = useGetRoles();
