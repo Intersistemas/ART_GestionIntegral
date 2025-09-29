@@ -1,10 +1,10 @@
 import { AxiosError } from "axios";
 import UsuarioAPI from "@/data/usuarioAPI";
 import { useAuth } from '@/data/AuthContext';
+import ArtAPI from "@/data/artAPI";
 
 const { useGetAll, useGetRoles, registrar } = UsuarioAPI;
-
-export { type UsuarioRow } from "@/data/usuarioAPI";
+const { useGetRefEmpleadores } = ArtAPI;
 
 export default function useUsuarios() {
   const { data: usuariosData, error: usuariosError, isLoading: usuariosLoading, mutate: mutateUsuarios } = useGetAll({ empresaId: 1 });
@@ -13,6 +13,7 @@ export default function useUsuarios() {
 
   console.log("user**",user)
 
+  const { data: refEmpleadores } = useGetRefEmpleadores();
 
   const registrarUsuario = async (formData: any) => {
     try {
@@ -32,6 +33,7 @@ export default function useUsuarios() {
   return {
     usuarios: usuariosData?.data || [],
     roles: roles || [],
+    refEmpleadores: refEmpleadores || [],
     loading: usuariosLoading || rolesLoading,
     error: usuariosError || rolesError,
     registrarUsuario,
