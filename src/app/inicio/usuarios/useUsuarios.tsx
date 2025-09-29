@@ -1,5 +1,6 @@
 import { AxiosError } from "axios";
 import UsuarioAPI from "@/data/usuarioAPI";
+import { useAuth } from '@/data/AuthContext';
 
 const { useGetAll, useGetRoles, registrar } = UsuarioAPI;
 
@@ -8,6 +9,10 @@ export { type UsuarioRow } from "@/data/usuarioAPI";
 export default function useUsuarios() {
   const { data: usuariosData, error: usuariosError, isLoading: usuariosLoading, mutate: mutateUsuarios } = useGetAll({ empresaId: 1 });
   const { data: roles, error: rolesError, isLoading: rolesLoading } = useGetRoles();
+  const { user, status } = useAuth();   
+
+  console.log("user**",user)
+
 
   const registrarUsuario = async (formData: any) => {
     try {

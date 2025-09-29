@@ -14,7 +14,7 @@ interface CustomButtonProps extends Omit<ButtonProps, 'classes' | 'size'> {
   width?: string;
   icon?: React.ReactNode;
   exit?: boolean;
-  size?: 'small' | 'mid' | 'large'; // ✅ Agregada la prop de tamaño
+  size?: 'small' | 'mid' | 'large'; 
 }
 
 const CustomButton: React.FC<CustomButtonProps> = ({
@@ -41,7 +41,6 @@ const CustomButton: React.FC<CustomButtonProps> = ({
     <Button
       variant={variant}
       classes={{
-        // ✅ Agregada la clase de tamaño al root del botón
         root: `${styles.customButton} ${exit ? styles.exit : ''} ${disabled || isLoading ? styles.disabled : ''} ${sizeClass[size]}`,
         containedPrimary: styles.primary,
       }}

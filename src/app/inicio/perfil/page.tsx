@@ -41,7 +41,7 @@ function ProfilePage() {
     );
   }
 
-  const { roles, nombre, cuit } = session.user as any;
+  const { rol, nombre, cuit } = session.user as any;
 
   return (
     <Box className={styles.pagePadding}>
@@ -88,7 +88,7 @@ function ProfilePage() {
                 <Box className={styles.dataItem}>
                   <CodeIcon className={styles.icon} />
                   <Typography variant="body1" component="span">
-                    <span className={styles.label}>Roles:</span> {roles ?? "N/A"}
+                    <span className={styles.label}>Rol:</span> {rol ?? "N/A"}
                   </Typography>
                 </Box>
               </CardContent>

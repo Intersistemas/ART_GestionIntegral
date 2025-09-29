@@ -39,9 +39,10 @@ export async function middleware(req: NextRequest) {
   }
 
   // 2. Control de Roles
-  const userRoles = (token as any)?.user?.roles || [];
+  const userRol = (token as any)?.user?.rol || [];
+ 
 
-  if (userRoles.includes('Administrador')) {
+  if (userRol == 'Administrador') {
         return NextResponse.next();
     }
 

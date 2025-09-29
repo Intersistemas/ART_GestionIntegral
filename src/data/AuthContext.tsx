@@ -1,4 +1,4 @@
-// src/data/AuthProvider.tsx
+// src/data/AuthContext.tsx
 "use client";
 
 import { createContext, useContext, ReactNode, useMemo } from 'react';
@@ -25,11 +25,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const isAuthenticated = status === 'authenticated';
 
     const hasTask = (taskName: string): boolean => {
-        if (isAuthenticated && user) {
-            const userRoles = user.roles || [];
+
             
+        if (isAuthenticated && user) {
+            const userRol = user.rol || '';
             // Si tiene el rol "Administrador", siempre permite el acceso.
-            if (userRoles.includes("Administrador")) {
+            if (userRol == "Administrador") {
                 return true;
             }
 

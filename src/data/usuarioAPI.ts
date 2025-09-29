@@ -75,7 +75,7 @@ export interface UsuarioVm {
   lockoutEnabled: boolean;
   accessFailedCount: number;
   token: TokenDTO;
-  roles?: string[];
+  rol?: string;
   tareas?: Array<UsuarioTareaVm | string>;  //ToDo: verificar el tipo de arreglo
   exclusiones?: UsuarioExclusionVm[];
 };
