@@ -16,16 +16,16 @@ import CustomButton from "@/utils/ui/button/CustomButton";
 type RequestMethod = 'create' | 'edit' | 'view' | 'delete';
 
 export interface UsuarioFormFields {
-  cuit: string;
+  nombre: string;
   email: string;
+  cuit: string;
+  phoneNumber: string;
+  cargo: string;
   password?: string;
   confirmPassword?: string;
   rol: string;
   tipo: string;
-  phoneNumber: string;
-  nombre: string;
   userName: string;
-  cargo: string;
   empresaId: number;
   id?: string;
 }
@@ -43,46 +43,46 @@ interface Props {
 }
 
 const initialFormState: UsuarioFormFields = {
-  cuit: "",
+  nombre: "",
   email: "",
+  cuit: "",
+  phoneNumber: "",
+  cargo: "",
   password: "",
   confirmPassword: "",
   rol: "",
   tipo: "",
-  phoneNumber: "",
-  nombre: "",
   userName: "",
-  cargo: "",
   empresaId: 0,
 };
 
 // Interfaces completas para errores y campos tocados
 interface ValidationErrors {
-  cuit?: string;
+  nombre?: string;
   email?: string;
+  cuit?: string;
+  phoneNumber?: string;
+  cargo?: string;
   password?: string;
   confirmPassword?: string;
   rol?: string;
   tipo?: string;
-  phoneNumber?: string;
-  nombre?: string;
   userName?: string;
-  cargo?: string;
   empresaId?: string;
   id?: string;
 }
 
 interface TouchedFields {
-  cuit?: boolean;
+  nombre?: boolean;
   email?: boolean;
+  cuit?: boolean;
+  phoneNumber?: boolean;
+  cargo?: boolean;
   password?: boolean;
   confirmPassword?: boolean;
   rol?: boolean;
   tipo?: boolean;
-  phoneNumber?: boolean;
-  nombre?: boolean;
   userName?: boolean;
-  cargo?: boolean;
   empresaId?: boolean;
   id?: boolean;
 }
@@ -309,7 +309,16 @@ export default function UsuarioForm({
       return;
     }
     
-    // Marcar campos como tocados y validar
+    // Set default values for hidden fields
+    const formDataWithDefaults = {
+      ...form,
+      userName: form.email, // Use email as username
+      tipo: form.tipo || "Usuario", // Default type
+      rol: form.rol || (roles.length > 0 ? roles[0].nombre : ""), // Default to first role
+      empresaId: form.empresaId || (refEmpleadores.length > 0 ? refEmpleadores[0].interno : 0),
+    };
+    
+    // Mark all fields as touched
     const allTouched: TouchedFields = Object.keys(form).reduce((acc, key) => {
       acc[key as keyof TouchedFields] = true;
       return acc;
@@ -318,7 +327,7 @@ export default function UsuarioForm({
     
     if (validateAllFields()) {
       // Limpiamos los campos de password/confirmPassword si están vacíos al editar
-      const dataToSubmit = { ...form };
+      const dataToSubmit = { ...formDataWithDefaults };
       if (isEditing && !dataToSubmit.password) {
           delete dataToSubmit.password;
           delete dataToSubmit.confirmPassword;
@@ -334,213 +343,254 @@ export default function UsuarioForm({
       open={open}
       onClose={onClose}
       title={modalTitle}
-      size="mid"
+      size="large"
     >
       <Box
         component="form"
         className={styles.formContainer}
         onSubmit={handleSubmit}
       >
-  
         {errorMsg && (
           <Typography className={styles.errorMessage}>
             {errorMsg}
           </Typography>
         )}
-        <div className={styles.formGrid}>
-          
-          {/* CUIT */}
-          <TextField
-            label="CUIT"
-            name="cuit"
-            value={form.cuit}
-            onChange={handleTextFieldChange}
-            onBlur={() => handleBlur("cuit")}
-            error={touched.cuit && !!errors.cuit}
-            helperText={touched.cuit && errors.cuit}
-            fullWidth
-            required={!isDisabled}
-            disabled={isDisabled}
-          />
-          {/* Email */}
-          <TextField
-            label="Email"
-            name="email"
-            type="email"
-            value={form.email}
-            onChange={handleTextFieldChange}
-            onBlur={() => handleBlur("email")}
-            error={touched.email && !!errors.email}
-            helperText={touched.email && errors.email}
-            fullWidth
-            required={!isDisabled}
-            disabled={isDisabled}
-          />
-          
-          {/* Contraseñas (Ocultas en View) */}
-          {(!isViewing && !isDeleting) && (
-            <>
-              <TextField
-                label="Password"
-                name="password"
-                type="password"
-                value={form.password}
-                onChange={handleTextFieldChange}
-                onBlur={() => handleBlur("password")}
-                error={touched.password && !!errors.password}
-                helperText={touched.password && errors.password}
-                fullWidth
-                required={isCreating} 
-                disabled={isDisabled}
-              />
-              <TextField
-                label="Confirmar Password"
-                name="confirmPassword"
-                type="password"
-                value={form.confirmPassword}
-                onChange={handleTextFieldChange}
-                onBlur={() => handleBlur("confirmPassword")}
-                error={touched.confirmPassword && !!errors.confirmPassword}
-                helperText={touched.confirmPassword && errors.confirmPassword}
-                fullWidth
-                required={isCreating}
-                disabled={isDisabled}
-              />
-            </>
-          )}
-          
-          {/* Nombre */}
-          <TextField
-            label="Nombre"
-            name="nombre"
-            value={form.nombre}
-            onChange={handleTextFieldChange}
-            onBlur={() => handleBlur("nombre")}
-            error={touched.nombre && !!errors.nombre}
-            helperText={touched.nombre && errors.nombre}
-            fullWidth
-            required={!isDisabled}
-            disabled={isDisabled}
-          />
-          {/* Usuario */}
-          <TextField
-            label="Usuario"
-            name="userName"
-            value={form.userName}
-            onChange={handleTextFieldChange}
-            onBlur={() => handleBlur("userName")}
-            error={touched.userName && !!errors.userName}
-            helperText={touched.userName && errors.userName}
-            fullWidth
-            required={!isDisabled}
-            disabled={isDisabled}
-          />
-          {/* Teléfono */}
-          <TextField
-            label="Teléfono"
-            name="phoneNumber"
-            value={form.phoneNumber}
-            onChange={handleTextFieldChange}
-            onBlur={() => handleBlur("phoneNumber")}
-            error={touched.phoneNumber && !!errors.phoneNumber}
-            helperText={touched.phoneNumber && errors.phoneNumber}
-            fullWidth
-            required={!isDisabled}
-            disabled={isDisabled}
-          />
-          {/* Tipo */}
-          <TextField
-            label="Tipo"
-            name="tipo"
-            value={form.tipo}
-            onChange={handleTextFieldChange}
-            onBlur={() => handleBlur("tipo")}
-            error={touched.tipo && !!errors.tipo}
-            helperText={touched.tipo && errors.tipo}
-            fullWidth
-            required={!isDisabled}
-            disabled={isDisabled}
-          />
-          
-          {/* Rol (Select) */}
-          <FormControl fullWidth required={!isDisabled} error={touched.rol && !!errors.rol} disabled={isDisabled}>
-            <InputLabel>Rol</InputLabel>
-            <Select
-              name="rol"
-              value={form.rol}
-              label="Rol"
-              onChange={handleSelectChange}
-              onBlur={() => handleBlur("rol")}
-            >
-              {roles.map((rol) => (
-                <MenuItem key={rol.id} value={rol.nombre}>
-                  {rol.nombre}
-                </MenuItem>
-              ))}
-            </Select>
-            {touched.rol && errors.rol && (
-              <Typography variant="caption" color="error" sx={{ ml: 2, mt: 0.5 }}>
-                {errors.rol}
+        <div className={styles.formLayout}>
+          <div className={styles.formContent}>
+            {/* Datos del Usuario */}
+            <div className={styles.formSection}>
+              <Typography variant="h6" className={styles.sectionTitle}>
+                Datos del Usuario
               </Typography>
-            )}
-          </FormControl>
-          
-          {/* Cargo */}
-          <TextField
-            label="Cargo"
-            name="cargo"
-            value={form.cargo}
-            onChange={handleTextFieldChange}
-            onBlur={() => handleBlur("cargo")}
-            error={touched.cargo && !!errors.cargo}
-            helperText={touched.cargo && errors.cargo}
-            fullWidth
-            required={!isDisabled}
-            disabled={isDisabled}
-          />
-          
-          {/* Empresa (Select) */}
-          <FormControl fullWidth required={!isDisabled} error={touched.empresaId && !!errors.empresaId} disabled={isDisabled}>
-            <InputLabel>Empresa</InputLabel>
-            <Select
-              name="empresaId"
-              value={form.empresaId}
-              label="Empresa"
-              onChange={handleEmpresaChange}
-              onBlur={() => handleBlur("empresaId")}
-              disabled={isDisabled || form.empresaId !== 0} 
-            >
-              {refEmpleadores.map((refEmpleador) => (
-                <MenuItem key={refEmpleador.interno} value={refEmpleador.interno}>
-                  {refEmpleador.nombre1}
-                </MenuItem>
-              ))}
-            </Select>
-            {touched.empresaId && errors.empresaId && (
-              <Typography variant="caption" color="error" sx={{ ml: 2, mt: 0.5 }}>
-                {errors.empresaId}
-              </Typography>
-            )}
-          </FormControl>
-          
-        </div>
-        <div className={styles.formActions}>
-          
-          
-          {/* Botón de acción principal (Oculto en 'view') */}
-          {!isViewing && (
-            <CustomButton type="submit"  disabled={isSubmitting}>
-              {isSubmitting 
-                ? <CircularProgress size={24} color="inherit" /> 
-                : (isEditing ? 'Guardar Cambios' : (isDeleting ? 'Eliminar Usuario' : 'Registrar Usuario'))
-              }
-            </CustomButton>
-          )}
 
-          <CustomButton onClick={onClose} color="secondary" disabled={isSubmitting}>
-            {isViewing ? 'Cerrar' : 'Cancelar'}
-          </CustomButton>
+              <div className={styles.formRow}>
+                <TextField
+                  label="Nombre"
+                  name="nombre"
+                  value={form.nombre}
+                  onChange={handleTextFieldChange}
+                  onBlur={() => handleBlur("nombre")}
+                  error={touched.nombre && !!errors.nombre}
+                  helperText={touched.nombre && errors.nombre}
+                  fullWidth
+                  required={!isDisabled}
+                  disabled={isDisabled}
+                  placeholder="Ingrese nombre"
+                />                
+              </div>
 
+              <div className={styles.formRow}>
+                <TextField
+                  label="Usuario"
+                  name="usuario"
+                  type="text"
+                  value={form.userName}
+                  onChange={handleTextFieldChange}
+                  onBlur={() => handleBlur("userName")}
+                  error={touched.userName && !!errors.userName}
+                  helperText={touched.userName && errors.userName}
+                  fullWidth
+                  required={!isDisabled}
+                  disabled={isDisabled}
+                  placeholder="ejemplo@empresa.com"
+                  className={styles.fullRowField}
+                />
+              </div>
+
+              <div className={styles.formRow}>
+                <TextField
+                  label="Email"
+                  name="email"
+                  type="email"
+                  value={form.email}
+                  onChange={handleTextFieldChange}
+                  onBlur={() => handleBlur("email")}
+                  error={touched.email && !!errors.email}
+                  helperText={touched.email && errors.email}
+                  fullWidth
+                  required={!isDisabled}
+                  disabled={isDisabled}
+                  placeholder="ejemplo@empresa.com"
+                  className={styles.fullRowField}
+                />
+              </div>
+
+              <div className={styles.formRow}>
+                <TextField
+                  label="Documento de Identidad"
+                  name="cuit"
+                  value={form.cuit}
+                  onChange={handleTextFieldChange}
+                  onBlur={() => handleBlur("cuit")}
+                  error={touched.cuit && !!errors.cuit}
+                  helperText={touched.cuit && errors.cuit}
+                  fullWidth
+                  required={!isDisabled}
+                  disabled={isDisabled}
+                  placeholder="Ingrese documento"
+                />
+                <TextField
+                  label="Teléfono"
+                  name="phoneNumber"
+                  value={form.phoneNumber}
+                  onChange={handleTextFieldChange}
+                  onBlur={() => handleBlur("phoneNumber")}
+                  error={touched.phoneNumber && !!errors.phoneNumber}
+                  helperText={touched.phoneNumber && errors.phoneNumber}
+                  fullWidth
+                  required={!isDisabled}
+                  disabled={isDisabled}
+                  placeholder="Ingrese teléfono"
+                />
+              </div>
+
+              <div className={styles.formRow}>
+                <TextField
+                  label="Cargo/Posición"
+                  name="cargo"
+                  value={form.cargo}
+                  onChange={handleTextFieldChange}
+                  onBlur={() => handleBlur("cargo")}
+                  error={touched.cargo && !!errors.cargo}
+                  helperText={touched.cargo && errors.cargo}
+                  fullWidth
+                  required={!isDisabled}
+                  disabled={isDisabled}
+                  placeholder="Ingrese cargo o posición"
+                  className={styles.fullRowField}
+                />
+              </div>
+
+              <div className={styles.formRow}>
+                {/* Rol (Select) */}
+                <FormControl fullWidth required={!isDisabled} error={touched.rol && !!errors.rol} disabled={isDisabled}>
+                  <InputLabel>Rol</InputLabel>
+                  <Select
+                    name="rol"
+                    value={form.rol}
+                    label="Rol"
+                    onChange={handleSelectChange}
+                    onBlur={() => handleBlur("rol")}
+                  >
+                    {roles.map((rol) => (
+                      <MenuItem key={rol.id} value={rol.nombre}>
+                        {rol.nombre}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {touched.rol && errors.rol && (
+                    <Typography variant="caption" color="error" sx={{ ml: 2, mt: 0.5 }}>
+                      {errors.rol}
+                    </Typography>
+                  )}
+                </FormControl>
+
+                {/* Empresa (Select) */}
+                <FormControl fullWidth required={!isDisabled} error={touched.empresaId && !!errors.empresaId} disabled={isDisabled}>
+                  <InputLabel>Empresa</InputLabel>
+                  <Select
+                    name="empresaId"
+                    value={form.empresaId}
+                    label="Empresa"
+                    onChange={handleEmpresaChange}
+                    onBlur={() => handleBlur("empresaId")}
+                    disabled={isDisabled || form.empresaId !== 0} 
+                  >
+                    {refEmpleadores.map((refEmpleador) => (
+                      <MenuItem key={refEmpleador.interno} value={refEmpleador.interno}>
+                        {refEmpleador.nombre1}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {touched.empresaId && errors.empresaId && (
+                    <Typography variant="caption" color="error" sx={{ ml: 2, mt: 0.5 }}>
+                      {errors.empresaId}
+                    </Typography>
+                  )}
+                </FormControl>
+              </div>
+            </div>
+
+            {/* Credenciales de Acceso (Ocultas en View y Deleted)*/}
+            {(!isViewing && !isDeleting) && (
+              <div className={styles.formSection}>
+                <Typography variant="h6" className={styles.sectionTitle}>
+                  Credenciales de Acceso
+                </Typography>
+
+                <div className={styles.formRow}>
+                  <TextField
+                    label="Contraseña temporal"
+                    name="password"
+                    type="password"
+                    value={form.password}
+                    onChange={handleTextFieldChange}
+                    onBlur={() => handleBlur("password")}
+                    error={touched.password && !!errors.password}
+                    helperText={touched.password && errors.password}
+                    fullWidth
+                    required={!isDisabled}
+                    disabled={isDisabled}
+                    placeholder="••••••••"
+                  />
+                  <TextField
+                    label="Confirmar contraseña"
+                    name="confirmPassword"
+                    type="password"
+                    value={form.confirmPassword}
+                    onChange={handleTextFieldChange}
+                    onBlur={() => handleBlur("confirmPassword")}
+                    error={touched.confirmPassword && !!errors.confirmPassword}
+                    helperText={touched.confirmPassword && errors.confirmPassword}
+                    fullWidth
+                    required={!isDisabled}
+                    disabled={isDisabled}
+                    placeholder="••••••••"
+                  />
+                </div>
+
+                <Typography variant="body2" className={styles.passwordHelp}>
+                  La contraseña debe tener al menos 8 caracteres, incluir
+                  mayúsculas, minúsculas y números.
+                </Typography>
+              </div>
+              )}
+
+          
+          
+
+
+
+
+
+            <div className={styles.formActions}>
+                {/* Botón de acción principal (Oculto en 'view') */}
+                {!isViewing && (
+                  <CustomButton type="submit"  disabled={isSubmitting}>
+                    {isSubmitting 
+                      ? <CircularProgress size={24} color="inherit" /> 
+                      : (isEditing ? 'Guardar Cambios' : (isDeleting ? 'Eliminar Usuario' : 'Registrar Usuario'))
+                    }
+                  </CustomButton>
+                 )}
+
+                <CustomButton onClick={onClose} color="secondary" disabled={isSubmitting}>
+                  {isViewing ? 'Cerrar' : 'Cancelar'}
+                </CustomButton>             
+            </div>
+          </div>
+
+          <div className={styles.infoPanel}>
+            <Typography variant="h6" className={styles.infoPanelTitle}>
+              Información Importante
+            </Typography>
+            <ul className={styles.infoList}>
+              <li>El usuario recibirá un email para activar su cuenta</li>
+              <li>La contraseña temporal deberá ser cambiada</li>
+              <li>Posteriormente se podrán configurar los permisos</li>
+              <li>Los campos marcados con * son obligatorios</li>
+            </ul>
+          </div>
         </div>
       </Box>
     </CustomModal>
