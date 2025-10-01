@@ -343,7 +343,7 @@ export default function UsuarioForm({
       open={open}
       onClose={onClose}
       title={modalTitle}
-      size="large"
+      size={isCreating ? "large" : "mid"}
     >
       <Box
         component="form"
@@ -555,14 +555,6 @@ export default function UsuarioForm({
                 </Typography>
               </div>
               )}
-
-          
-          
-
-
-
-
-
             <div className={styles.formActions}>
                 {/* Botón de acción principal (Oculto en 'view') */}
                 {!isViewing && (
@@ -579,18 +571,19 @@ export default function UsuarioForm({
                 </CustomButton>             
             </div>
           </div>
-
-          <div className={styles.infoPanel}>
-            <Typography variant="h6" className={styles.infoPanelTitle}>
-              Información Importante
-            </Typography>
-            <ul className={styles.infoList}>
-              <li>El usuario recibirá un email para activar su cuenta</li>
-              <li>La contraseña temporal deberá ser cambiada</li>
-              <li>Posteriormente se podrán configurar los permisos</li>
-              <li>Los campos marcados con * son obligatorios</li>
-            </ul>
-          </div>
+          {isCreating && (       
+            <div className={styles.infoPanel}>
+              <Typography variant="h6" className={styles.infoPanelTitle}>
+                Información Importante
+              </Typography>
+              <ul className={styles.infoList}>
+                <li>El usuario recibirá un email para activar su cuenta</li>
+                <li>La contraseña temporal deberá ser cambiada</li>
+                <li>Posteriormente se podrán configurar los permisos</li>
+                <li>Los campos marcados con * son obligatorios</li>
+              </ul>
+            </div>
+          )}
         </div>
       </Box>
     </CustomModal>
