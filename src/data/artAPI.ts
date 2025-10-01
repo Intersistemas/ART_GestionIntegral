@@ -7,7 +7,7 @@ export class ArtAPIClass extends ExternalAPI {
   basePath = "http://arttest.intersistemas.ar:8302"; ///ToDo: debo agregarlo al env.
 
   //#region RefEmpleadores
-  private refEmpleadoresBase = this.getURL({ path: "/api/RefEmpleadores" }).toString();
+  private refEmpleadoresBase = this.getURL({ path: "/api/Empresas" }).toString();
   getRefEmpleadores = async () =>
     axios
       .get<RefEmpleador[]>(
