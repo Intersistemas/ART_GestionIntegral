@@ -8,7 +8,7 @@ import styles from './CustomModal.module.css';
 interface CustomModalProps {
   open: boolean;
   onClose: () => void;
-  title: string;
+  title?: string;
   size?: 'small' | 'mid' | 'large';
   children: React.ReactNode;
 }

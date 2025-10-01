@@ -23,7 +23,7 @@
   font-weight: 700 !important;
   border-bottom: 2px solid var(--naranja) !important;
   text-transform: uppercase;
-  transition: background-color 0.3s ease-in-out;
+  transition: background-color 0.2s ease-in-out;
 }
 
 .tableHeaderCell:hover {
@@ -37,7 +37,7 @@
 }
 
 .tableRow:nth-of-type(odd) {
-  background-color: var(--grisClaroClaro) !important;
+  background-color: rgba(215, 233, 198, 0.2) !important;
 }
 
 .tableRow:hover {
@@ -67,6 +67,10 @@
   font-family: var(--font);
 }
 
+.paginationIcons {
+  display: flex;
+}
+
 .paginationContainer button {
   color: var(--naranja) !important;
 }
@@ -82,20 +86,20 @@
 
 /* Estilos de altura de fila y padding de celda/encabezado */
 .smallCell { 
-  padding: 0 4px !important;
+  padding: 3px 3px !important;
   font-size: 1.2rem !important;
 }
 .smallHeader { 
-  padding: 10px 6px !important;
+  padding: 9px 9px 6px 9px!important;
   font-size: 1.3rem !important;
 }
 
 .midCell { 
-  padding: 1px 6px !important; 
+  padding: 6px 6px !important; 
   font-size: 1.4rem !important;
 }
 .midHeader { 
-  padding: 12px 14px !important;
+  padding: 12px 12px 6px 12px !important;
   font-size: 1.6rem !important;   
 }
 

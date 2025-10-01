@@ -108,10 +108,10 @@ const InicioPage = () => {
           <h2 className={styles.accessTitle}>Accesos Rápidos</h2>
           <div className={styles.accessButtons}>
             {/* Uso del componente CustomButton */}
-            <CustomButton >Consultar Siniestro</CustomButton>
-            <CustomButton >DDJJ</CustomButton>
-            <CustomButton >Informes</CustomButton>
-            <CustomButton >Denuncia</CustomButton>
+            <CustomButton width="60%" >Consultar Siniestro</CustomButton>
+            <CustomButton width="60%">DDJJ</CustomButton>
+            <CustomButton width="60%">Informes</CustomButton>
+            <CustomButton width="60%">Denuncia</CustomButton>
           </div>
         </div>
       </div>

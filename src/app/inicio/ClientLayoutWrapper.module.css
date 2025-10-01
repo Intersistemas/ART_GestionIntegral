@@ -29,6 +29,7 @@
   flex-direction: column;
   flex-grow: 1;
   height: calc(100vh - var(--navbar-height) - var(--breadcrumbs-height) - (var(--main-content-margin)));
+  width: calc(100% - var(--sidebar-current-width)); 
   overflow-y: auto;
 }
 
@@ -49,7 +50,7 @@
   transform: translateY(-100%);
   opacity: 0;
   /* Animación de entrada */
-  animation: slideIn 0.8s ease-out forwards;
+  animation: slideIn 0.6s ease-out forwards;
   /* Mueve el h1 a la derecha */
   margin-left: auto;
 }
@@ -64,7 +65,7 @@
   height: 3px;
   background-color: var(--naranja);
   /* La animación se retrasa para aparecer después del título */
-  animation: drawLine 0.3s ease-out 0.7s forwards;
+  animation: drawLine 0.2s ease-out 0.7s forwards;
 }
 
 /* Definición de la animación para el título */

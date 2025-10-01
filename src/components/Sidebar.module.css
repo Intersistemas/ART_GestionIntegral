@@ -16,10 +16,12 @@
 .sidebarOpen {
     width: var(--sidebar-width-open);
     transition: width 0.3s ease-in-out;
+    --sidebar-current-width: var(--sidebar-width-open);/* ACTUALIZO LA VARIABLE DINÁMICA cuando está abierto */
 }
 
 .sidebarClosed {
-    width: 80px;
+     --sidebar-current-width: var(--sidebar-width-closed);
+    width: var(--sidebar-width-closed);
 }
 
 .header {
@@ -100,8 +102,8 @@
     color: white !important;
     font-size: 2.6rem;
     transition: color 0.2s;
-    margin-right: 4%;
-    padding-left: 4%;
+    margin-right: 2%;
+    padding-left: 2%;
     min-width: 45px !important;
 }
 

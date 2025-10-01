@@ -100,7 +100,7 @@ function Navbar() {
               </div>
 
               <Link href="/inicio/perfil" className={styles.profileButtonWrapper}>
-                <CustomButton onClick={closeAndNavigate} fullWidth>
+                <CustomButton onClick={closeAndNavigate}>
                   Ver Perfil
                 </CustomButton>
               </Link>

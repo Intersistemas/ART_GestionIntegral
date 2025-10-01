@@ -187,7 +187,7 @@ export function DataTable<TData extends object>({
       </TableContainer>
 
       <Box className={styles.paginationContainer}>
-        <Box>
+        <Box className={styles.paginationIcons}>
           <IconButton onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()} aria-label="primera-página">
             <FirstPage />
           </IconButton>

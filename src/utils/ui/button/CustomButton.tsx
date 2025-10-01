@@ -5,15 +5,13 @@ import React from 'react';
 import { Button, ButtonProps } from '@mui/material';
 import styles from './CustomButton.module.css';
 
-interface CustomButtonProps extends Omit<ButtonProps, 'classes' | 'size'> {
+interface CustomButtonProps extends Omit<ButtonProps, 'classes' | 'size' | 'fullWidth'> {
   children: React.ReactNode;
   variant?: 'contained' | 'outlined' | 'text';
-  color?: 'primary' | 'success' | 'error' | 'info' | 'warning';
+  color?: 'primary' | 'secondary' | 'error';
   isLoading?: boolean;
-  fullWidth?: boolean;
   width?: string;
   icon?: React.ReactNode;
-  exit?: boolean;
   size?: 'small' | 'mid' | 'large'; 
 }
 
@@ -23,12 +21,10 @@ const CustomButton: React.FC<CustomButtonProps> = ({
   color = 'primary',
   isLoading = false,
   width,
-  fullWidth = true,
   className = '',
   disabled = false,
   icon,
-  exit = false,
-  size = 'mid', // ✅ Valor por defecto 'mid'
+  size = 'mid',
   ...props
 }) => {
   const sizeClass = {
@@ -37,16 +33,18 @@ const CustomButton: React.FC<CustomButtonProps> = ({
     large: styles.large,
   };
   
+  const isSecondaryStyle = color === 'secondary';
+
   return (
     <Button
       variant={variant}
       classes={{
-        root: `${styles.customButton} ${exit ? styles.exit : ''} ${disabled || isLoading ? styles.disabled : ''} ${sizeClass[size]}`,
+        root: `${styles.customButton} ${isSecondaryStyle ? styles.secondary : ''} ${disabled || isLoading ? styles.disabled : ''} ${sizeClass[size]}`,
         containedPrimary: styles.primary,
       }}
       className={className}
       disabled={disabled || isLoading}
-      style={{ width: width || (fullWidth ? '100%' : undefined) }}
+      style={{ width: width || 'fit-content' }}
       {...props}
     >
       {isLoading ? (
