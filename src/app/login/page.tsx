@@ -154,7 +154,6 @@ export default function Signin() {
               type="submit"
               isLoading={isLoading}
               disabled={isLoading}
-              fullWidth
               size="mid"
             >
               INGRESAR AL SISTEMA

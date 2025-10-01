@@ -78,7 +78,7 @@ const theme = createTheme({
     MuiFormControl: {
       styleOverrides: {
         root: {
-          padding: '5px 0px',
+          padding: '0px 0px',
           '& .MuiOutlinedInput-root': {
             '& fieldset': {
               borderColor: verdeOscuro,
@@ -98,14 +98,18 @@ const theme = createTheme({
             },
           },
            '& .MuiInputLabel-root': {
-            left: '-3px',
-            top: '5px',
             color: verdeOscuro,
             fontSize: '1.2rem',
+            backgroundColor: blanco,
+            padding: '0% 2%',
           },
           '& .MuiInputLabel-root.Mui-focused': {
             color: naranjaOscuro,
             fontSize: '1.2rem',
+          },
+          '& .MuiFormHelperText-root': {
+            fontSize: '1rem',
+            lineHeight: '1',
           },
         },
       },
@@ -117,6 +121,7 @@ const theme = createTheme({
         },
       },
     },
+    
     MuiTableCell: { /* Data Table CELL */
       styleOverrides: {
         head: {
@@ -137,6 +142,7 @@ const theme = createTheme({
     MuiIconButton: {
       styleOverrides: {
         root: {
+          padding: '0% 3%', //esto afecta a los iconos del Grid Table, los que aparecen en el cell.
           color: naranja,
         },
       },

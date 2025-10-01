@@ -14,7 +14,7 @@
   --naranja: #E4840C; 
   --naranjaOscuro: #b66400; 
 
-  --verdeClaroClaro: #cee9b3;
+  --verdeClaroClaro: #d7e9c6;
   --verdeClaro: #92bd68;
   --verde: #648C34;
   --verdeOscuro: #45661f; 
@@ -43,7 +43,11 @@
 
   /* Variables para el layout */
   --navbar-height: 10rem;
-  --sidebar-width-open: 280px;
+
+  --sidebar-width-open: 300px;
+  --sidebar-width-closed: 80px;
+  --sidebar-current-width: var(--sidebar-width-closed);
+
   --breadcrumbs-height: 4rem;
   --content-padding: 20px;
   --main-content-margin: 5px;
