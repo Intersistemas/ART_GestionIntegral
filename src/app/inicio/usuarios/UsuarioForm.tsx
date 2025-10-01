@@ -382,7 +382,7 @@ export default function UsuarioForm({
               <div className={styles.formRow}>
                 <TextField
                   label="Usuario"
-                  name="usuario"
+                  name="userName"
                   type="text"
                   value={form.userName}
                   onChange={handleTextFieldChange}

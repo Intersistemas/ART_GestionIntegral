@@ -99,13 +99,13 @@ const theme = createTheme({
           },
            '& .MuiInputLabel-root': {
             color: verdeOscuro,
-            fontSize: '1.2rem',
+            fontSize: '1.4rem',
             backgroundColor: blanco,
             padding: '0% 2%',
           },
           '& .MuiInputLabel-root.Mui-focused': {
             color: naranjaOscuro,
-            fontSize: '1.2rem',
+            fontSize: '1.4rem',
           },
           '& .MuiFormHelperText-root': {
             fontSize: '1rem',
