@@ -14,14 +14,13 @@ type RequestMethod = 'create' | 'edit' | 'view' | 'delete';
 
 interface RequestState {
     method: RequestMethod | null;
-    // CORRECCIÓN 1: userData solo debe ser UsuarioFormFields (datos limpios para el formulario)
     userData: UsuarioFormFields | null; 
 }
 
 export default function UsuariosPage() {
   const { user } = useAuth();
 
-  const initialForm: UsuarioFormFields = { // Añadimos el tipo explícito aquí
+  const initialForm: UsuarioFormFields = { 
     cuit: "",
     email: "",
     password: "",
@@ -37,7 +36,6 @@ export default function UsuariosPage() {
   };
 
   const { usuarios, roles, refEmpleadores, loading, error, registrarUsuario } = useUsuarios();
-  // Eliminamos formData y usamos requestState.userData
   const [formError, setFormError] = useState<string | null>(null);  
 
   const [requestState, setRequestState] = useState<RequestState>({

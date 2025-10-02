@@ -36,12 +36,19 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/deploym
     **Todo el material grafico (imagenes, iconos, logos, etc) debe estar en la carpeta "public"
 
 **Fetching:
-    _Si necesitamos acceder a los datos del usuario logeado usamos el hook "useSession": 
-        import { useSession } from 'next-auth/react';
-        const { data: session, status } = useSession();
-    _Si necesitamos consultar nuevos endpoints usaremos el componente de data/queryAPI.ts el cual implementa SWR de nextsj y AXIOS
+    _Para Acceder a los datos del USUARIO logeado usamos AuthContext.
+        import { useAuth } from '@/data/AuthContext';
+        const { user } = useAuth();  
+
+    _Para nuevos fetching de datos, agregamos una NUEVA CLASE en la carpeta DATA, declarando los nuevos endpoints que usaremos (los types que declaramos deben ser lo mas parecido a los campos en swagger/backend) mediante SWR de nextsj y AXIOS
 
 **Entorno UI: 
-    _Usaremos los componentes de UTILS/UI que tiene Botones, Forms, DataGrid y Modals que implementan MATERIAL UI y @tanstack/react-table 
+    _Usaremos los componentes de UTILS/UI que tiene Botones, Forms, DataGrid y Modals que implementan MATERIAL UI y @tanstack/react-table
+
+**Otros:     
+    _Dayjs: la usamos para datos de Fechas y horas. DateTable, etc... https://www.npmjs.com/package/dayjs
+https://github.com/iamkun/dayjs/blob/HEAD/docs/es-es/README-es-es.md
+    _PDF: para la generacion de PDFs usaremos import jsPDF from "jspdf" y import html2canvas from "html2canvas"
+    _EXCEL:
 
 **Estados Globales: si no tenemos lo necesario en useSession, utilizamos Zustand.
