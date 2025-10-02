@@ -106,97 +106,102 @@ export interface Tabla extends Auditable {
 //#endregion Types
 
 export class UsuarioAPIClass extends ExternalAPI {
-  basePath = "http://arttest.intersistemas.ar:8301"; ///ToDo: debo agregarlo al env.
+  readonly basePath = "http://arttest.intersistemas.ar:8301"; ///ToDo: debo agregarlo al env.
   //#region login
-  login = async (login: LoginCommand) =>
-    axios
-      .post<UsuarioVm>(
-        this.getURL({ path: "/api/Usuario/Login" }).toString(),
-        login
-      )
-      .then(
-        ({ data }) => data,
-        (error) => {
-          if (axios.isAxiosError(error)) {
-            console.error(
-              "Authentication failed:",
-              error.response?.data || error.message
-            );
-          } else if (error instanceof Error) {
-            console.error("An unexpected error occurred:", error.message);
-          } else {
-            console.error("An unexpected error occurred:", error);
-          }
-          return null;
-        }
-      );
-  useLogin = (login: LoginCommand) => useSWR(login, () => this.login(login));
+  readonly loginPath = "/api/Usuario/Login";
+  login = async (login: LoginCommand) => axios.post<UsuarioVm>(
+    this.getURL({ path: this.loginPath }).toString(),
+    login
+  ).then(
+    ({ data }) => data,
+    (error) => {
+      if (axios.isAxiosError(error)) {
+        console.error(
+          "Authentication failed:",
+          error.response?.data || error.message
+        );
+      } else if (error instanceof Error) {
+        console.error("An unexpected error occurred:", error.message);
+      } else {
+        console.error("An unexpected error occurred:", error);
+      }
+      return null;
+    }
+  );
+  useLogin = (login: LoginCommand) => useSWR(
+    [this.basePath, this.loginPath, JSON.stringify(login)], () => this.login(login)
+  );
   //#endregion login
   //#region getAll
-  getAll = async ({
-    empresaId,
-    sort,
-    pageIndex,
-    pageSize,
-  }: UsuarioGetAllParams = {}) => {
-    const getURL: ExternalAPIGetURLParams = { path: "/api/Usuario/GetAll" };
+  readonly getAllPath = "/api/Usuario/GetAll";
+  getAll = async ({ empresaId, sort, pageIndex, pageSize }: UsuarioGetAllParams = {}) => {
+    const getURL: ExternalAPIGetURLParams = { path: this.getAllPath };
     const search: Record<string, string> = {};
     if (empresaId !== undefined) setSearch({ empresaId });
     if (sort !== undefined) setSearch({ sort });
     if (pageIndex !== undefined) setSearch({ pageIndex });
     if (pageSize !== undefined) setSearch({ pageSize });
-    return axios
-      .get<UsuarioGetAllResult>(this.getURL(getURL).toString())
-      .then(async (response) => {
-        if (response.status === 200) return response.data;
-        return Promise.reject(
-          new AxiosError(`Error en la petición: ${response.data}`)
-        );
-      });
+    return axios.get<UsuarioGetAllResult>(
+      this.getURL(getURL).toString()
+    ).then(async (response) => {
+      if (response.status === 200) return response.data;
+      return Promise.reject(
+        new AxiosError(`Error en la petición: ${response.data}`)
+      );
+    });
     function setSearch(props: Record<string, any>) {
       getURL.search ??= search;
       Object.entries(props).forEach(([k, v]) => (search[k] = `${v}`));
     }
   };
-  useGetAll = (params: UsuarioGetAllParams = {}) =>
-    useSWR(params, () => this.getAll(params));
+  useGetAll = (params: UsuarioGetAllParams = {}) => useSWR(
+    [this.basePath, this.getAllPath, JSON.stringify(params)], () => this.getAll(params)
+  );
   //#endregion getAll
   //#region getRoles
-  getRoles = async (query: any = {}) =>
-    axios
-      .get<RolesInterface[]>(this.getURL({ path: "/api/Roles" }).toString(), {
-        data: query,
-      })
-      .then(async (response) => {
-        if (response.status === 200) return response.data;
-        return Promise.reject(
-          new AxiosError(`Error en la petición: ${response.data}`)
-        );
-      });
-  useGetRoles = (query: any = {}) => useSWR(query, () => this.getRoles(query));
+  readonly getRolesPath = "/api/Roles";
+  getRoles = async (query: any = {}) => axios.get<RolesInterface[]>(
+    this.getURL({ path: this.getRolesPath }).toString(),
+    { data: query }
+  ).then(async (response) => {
+    if (response.status === 200) return response.data;
+    return Promise.reject(
+      new AxiosError(`Error en la petición: ${response.data}`)
+    );
+  });
+  useGetRoles = (query: any = {}) => useSWR(
+    [this.basePath, this.getRolesPath, JSON.stringify(query)], () => this.getRoles(query)
+  );
   //#endregion getRoles
   //#region registrar
-  registrar = async (data: any) =>
-    axios
-      .post(this.getURL({ path: "/api/Usuario/Registrar" }).toString(), data)
-      .then(async (response) => {
-        if (response.status === 200) return response.data;
-        return Promise.reject(
-          new AxiosError(`Error en la petición: ${response.data}`)
-        );
-      });
-  useRegistrar = (data: any) => useSWR(data, () => this.registrar(data));
+  readonly registrarPath = "/api/Usuario/Registrar";
+  registrar = async (data: any) => axios.post(
+    this.getURL({ path: this.registrarPath }).toString(),
+    data
+  ).then(async (response) => {
+    if (response.status === 200) return response.data;
+    return Promise.reject(
+      new AxiosError(`Error en la petición: ${response.data}`)
+    );
+  });
+  useRegistrar = (data: any) => useSWR(
+    [this.basePath, this.registrarPath, JSON.stringify(data)], () => this.registrar(data)
+  );
   //#endregion registrar
   //#region tablas
-  tablas = async () =>
-    axios
-      .get<Tabla[]>(this.getURL({ path: "/api/Tablas" }).toString(), {
-        headers: {
-          Authorization: `Bearer ${(await getSession())?.accessToken}`,
-        },
-      })
-      .then(({ data }) => data);
-  useTablas = () => useSWR({}, () => this.tablas());
+  readonly tablasPath = "/api/Tablas";
+  private tablasToken = "";
+  tablas = async () => {
+    const token = (await getSession())?.accessToken ?? "";
+    if (token !== this.tablasToken) this.tablasToken = token;
+    return axios.get<Tabla[]>(
+      this.getURL({ path: this.tablasPath }).toString(),
+      { headers: { Authorization: `Bearer ${token}` } }
+    ).then(({ data }) => data);
+  }
+  useTablas = () => useSWR(
+    [this.basePath, this.tablasPath, this.tablasToken], () => this.tablas()
+  );
   //#endregion tablas
 }
 

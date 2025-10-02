@@ -1,30 +1,23 @@
 import useSWR from "swr";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import { ExternalAPI } from "./api";
-import Personal from "@/app/inicio/empleador/cobertura/types/persona";
+import Personal, { Parameters as GetPersonalParams} from "@/app/inicio/empleador/cobertura/types/persona";
 import dayjs from "dayjs";
 
-const getCurrentPeriodo = (): string => {
-    return dayjs().format('YYYYMM');
-};
+const getCurrentPeriodo = (): number => Number(dayjs().format('YYYYMM'));
 
 export class GestionEmpleadorAPIClass extends ExternalAPI {
-  basePath = "http://arttest.intersistemas.ar:8670"; ///ToDo: debo agregarlo al env.
-
-  private currentPeriodo = getCurrentPeriodo();
+  readonly basePath = "http://arttest.intersistemas.ar:8670"; ///ToDo: debo agregarlo al env.
   //#region RefEmpleadores
-  private personalBase = this.getURL({ path: `/api/AfiliadoCuentaCorriente/?Periodo=${this.currentPeriodo}&Page=1,1` }).toString();
-  getPersonal = async () =>
-    axios
-      .get<Personal[]>(
-        this.personalBase
-      )
-      .then(({ data }) => data);
-
-  useGetRefEmpleadores = () => {
-    return useSWR({ path: this.personalBase }, () => this.getPersonal());
-  };  
-
+  readonly getPersonalPath = "/api/AfiliadoCuentaCorriente/";
+  getPersonal = async (
+    { periodo: p = getCurrentPeriodo(), page = "1,1" }: GetPersonalParams = {}
+  ) => axios.get<Personal[]>(
+    this.getURL({ path: this.getPersonalPath, search: { periodo: `${p}`, page } }).toString(),
+  ).then(({ data }) => data);
+  useGetRefEmpleadores = (params: GetPersonalParams = {}) => useSWR(
+    [this.basePath, this.getPersonalPath, JSON.stringify(params)], () => this.getPersonal(params)
+  );
   //#endregion
 }
 
