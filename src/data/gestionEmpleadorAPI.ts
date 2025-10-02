@@ -9,14 +9,14 @@ const getCurrentPeriodo = (): number => Number(dayjs().format('YYYYMM'));
 
 export class GestionEmpleadorAPIClass extends ExternalAPI {
   readonly basePath = "http://arttest.intersistemas.ar:8670"; ///ToDo: debo agregarlo al env.
-  //#region RefEmpleadores
+  //#region Personal
   readonly getPersonalPath = "/api/AfiliadoCuentaCorriente/";
   // getPersonal = async ({ cuit: c, periodo: p = getCurrentPeriodo(), page = "1,1", ...rest }: GetPersonalParams = {}
   getPersonal = async (params: GetPersonalParams = {}
   ) => axios.get<Personal[]>(
     this.getURL({ path: this.getPersonalPath, search: stringifyValues(params) }).toString(),
   ).then(({ data }) => data);
-  useGetRefEmpleadores = (params: GetPersonalParams = {}) => useSWR(
+  useGetPersonal = (params: GetPersonalParams = {}) => useSWR(
     [this.basePath, this.getPersonalPath, JSON.stringify(params)], () => this.getPersonal(params)
   );
   //#endregion
