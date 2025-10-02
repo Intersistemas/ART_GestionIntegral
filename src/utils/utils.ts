@@ -41,3 +41,7 @@ export function tryParseNumber<T = any>(param: TryParseNumberParam<T>) {
   param.out = result;
   return true;
 }
+
+export function stringifyValues(o: Record<string, any>) {
+  return Object.fromEntries(Object.entries(o).map(([k, v]) => [k, `${v}`]));
+}
