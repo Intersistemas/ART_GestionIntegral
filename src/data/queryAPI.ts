@@ -70,21 +70,23 @@ function reject<T>(error: AxiosError) {
 }
 
 export class QueriesAPIClass extends ExternalAPI {
-  basePath = process.env.NEXT_PUBLIC_QUERYAPI_URL!;
+  readonly basePath = process.env.NEXT_PUBLIC_QUERYAPI_URL!;
   //#region execute
+  readonly executePath = "/api/queries/execute";
   execute = async <Data = QueryResultData>(query: Query) => axios.post<QueryResult<Data>>(
-    this.getURL({ path: "/api/queries/execute" }).toString(), query
+    this.getURL({ path: this.executePath }).toString(), query
   ).then(({ data }) => data, (error) => reject<QueryResult<Data>>(error));
   useExecute = <Data = QueryResultData>(query: Query) => useSWR<QueryResult<Data>, APIError>(
-    query, () => this.execute<Data>(query)
+    [this.basePath, this.executePath, JSON.stringify(query)], () => this.execute<Data>(query)
   );
   //#endregion execute
   //#region analyze
+  readonly analyzePath = "/api/queries/analyze";
   analyze = async (query: Query) => axios.post<QueryAnalysis>(
-    this.getURL({ path: "/api/queries/analyze" }).toString(), query
+    this.getURL({ path: this.analyzePath }).toString(), query
   ).then(({ data }) => data, (error) => reject<QueryAnalysis>(error));
   useAnalyze = (query: Query) => useSWR<QueryAnalysis, AxiosError<APIError>>(
-    query, () => this.analyze(query)
+    [this.basePath, this.analyzePath, JSON.stringify(query)], () => this.analyze(query)
   );
   //#endregion analyze
 }
