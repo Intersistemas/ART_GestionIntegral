@@ -3,7 +3,7 @@ import UsuarioAPI from "@/data/usuarioAPI";
 import { useAuth } from '@/data/AuthContext';
 import ArtAPI from "@/data/artAPI";
 
-const { useGetAll, useGetRoles, registrar } = UsuarioAPI;
+const { useGetAll, useGetRoles, registrar, tareasUpdate } = UsuarioAPI;
 const { useGetRefEmpleadores } = ArtAPI;
 
 export default function useUsuarios() {
@@ -30,6 +30,19 @@ export default function useUsuarios() {
     }
   };
 
+  const actualizarPermisosUsuario = async (usuarioId: string, permisos: Array<{tareaId: number, habilitada: boolean}>) => {
+    try {
+      await tareasUpdate(usuarioId, permisos);
+      // Revalidar los datos de usuarios para obtener los permisos actualizados
+      await mutateUsuarios();
+      return { success: true };
+    } catch (err) {
+      const error = (err instanceof AxiosError) ? err : new AxiosError("Error desconocido al actualizar permisos");
+      console.error("Error al actualizar permisos:", error.message);
+      return { success: false, error: "Ocurrió un error al actualizar los permisos." };
+    }
+  };
+
   return {
     usuarios: usuariosData?.data || [],
     roles: roles || [],
@@ -37,5 +50,6 @@ export default function useUsuarios() {
     loading: usuariosLoading || rolesLoading,
     error: usuariosError || rolesError,
     registrarUsuario,
+    actualizarPermisosUsuario,
   };
 };
