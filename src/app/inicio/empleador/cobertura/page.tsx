@@ -2,17 +2,23 @@
 
 import { useAuth } from '@/data/AuthContext';
 import gestionEmpleadorAPI from "@/data/gestionEmpleadorAPI";
+import Persona from './types/persona';
 
-//const { useGetAll, useGetRoles, registrar } = UsuarioAPI;
-const { getPersonal } = gestionEmpleadorAPI;
+
+const { useGetPersonal } = gestionEmpleadorAPI;
 
 export default function CoberturaPage() {
 
-  //const { data: roles, error: rolesError, isLoading: rolesLoading } = useGetRoles();
+  const { data: personal} = useGetPersonal();
   const { user, status } = useAuth();   
 
+  console.log("personal",personal)
 
-  return ( <div>a</div> );
+  return ( 
+  <div>a</div> 
+
+    
+  );
    /* roles: roles || [],
     loading: rolesLoading,
     error: rolesError,*/
