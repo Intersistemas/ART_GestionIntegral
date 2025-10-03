@@ -205,7 +205,7 @@ export class UsuarioAPIClass extends ExternalAPI {
     );
   });
   useTareasUpdate = (usuarioId: string, data: Array<{ tareaId: number; habilitada: boolean }>) => useSWR(
-    [this.tareasUpdateURL(usuarioId), JSON.stringify(data)],
+    [this.tareasUpdateURL(usuarioId), token.getToken(), JSON.stringify(data)],
     () => this.tareasUpdate(usuarioId, data)
   );
   //#endregion actualizarTareas
