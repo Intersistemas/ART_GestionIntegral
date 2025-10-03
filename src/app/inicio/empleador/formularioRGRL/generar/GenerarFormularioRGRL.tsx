@@ -2,7 +2,6 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-<<<<<<< HEAD
 import CustomButton from '@/utils/ui/button/CustomButton';
 import CustomModal from '@/utils/ui/form/CustomModal';
 import dayjs from 'dayjs';
@@ -30,96 +29,6 @@ const toIsoOrNull = (v?: string | Date | null) => {
 const addRow = <T,>(setter: React.Dispatch<React.SetStateAction<T[]>>, empty: T) =>
   setter((rows) => [...rows, empty]);
 // Helpers para manipular arrays de estado (add/remove/change)
-=======
-import CustomButton from '../../../../../utils/ui/button/CustomButton';
-import CustomModal from '../../../../../utils/ui/form/CustomModal';
-
-const API_BASE = 'http://arttest.intersistemas.ar:8302/api';
-
-/* ===== Tipos ===== */
-type Establecimiento = {
-  interno: number;
-  cuit: number;
-  nroSucursal: number;
-  nombre: string;
-  domicilioCalle: string | null;
-  domicilioNro: string | null;
-  superficie: number | null;
-  cantTrabajadores: number | null;
-  localidad?: string | null;
-  provincia?: string | null;
-  numero?: number | null;
-  ciiu?: number | null;
-};
-
-type TipoFormulario = {
-  interno: number;
-  descripcion: string;
-  secciones?: Array<{
-    interno: number;
-    orden: number;
-    descripcion: string;
-    tieneNoAplica: number; 
-    comentario?: string;
-    cuestionarios?: Array<{
-      internoSeccion: number;
-      orden: number;
-      codigo: number;  
-      pregunta: string;
-      comentario: string;
-    }>;
-  }>;
-};
-
-type RespuestaCuestionarioVm = {
-  interno?: number;
-  internoCuestionario?: number;
-  internoRespuestaFormulario?: number;
-  respuesta?: string;
-  fechaRegularizacion?: number | null;
-  observaciones?: string | null;
-  estadoAccion?: string | null;
-  estadoFecha?: number | null;
-  estadoSituacion?: string | null;
-  bajaMotivo?: number | null;
-};
-
-type FormularioVm = {
-  interno: number;
-  creacionFechaHora: string;
-  completadoFechaHora?: string | null;
-  notificacionFecha?: string | null;
-  internoFormulario: number;
-  internoEstablecimiento: number;
-  respuestasCuestionario: RespuestaCuestionarioVm[];
-  respuestasGremio: any[];
-  respuestasContratista: any[];
-  respuestasResponsable: any[];
-  internoPresentacion?: number;
-  fechaSRT?: string | null;
-};
-
-type GremioUI = { legajo?: number; nombre?: string };
-type ContratistaUI = { cuit?: number; contratista?: string };
-type ResponsableUI = {
-  cuit?: number;
-  responsable?: string;
-  cargo?: string;
-  representacion?: number;
-  esContratado?: number; // 0/1
-  tituloHabilitante?: string;
-  matricula?: string;
-  entidadOtorganteTitulo?: string;
-};
-
-const toIsoOrNull = (v?: string | Date | null) => {
-  if (!v) return null;
-  const d = typeof v === 'string' ? new Date(v) : v;
-  return isNaN(d.getTime()) ? null : d.toISOString();
-};
-const addRow = <T,>(setter: React.Dispatch<React.SetStateAction<T[]>>, empty: T) =>
-  setter((rows) => [...rows, empty]);
->>>>>>> ecfa284 (Se sube el trabajo del formulario RGRL ya trae los datos se puede editar un formulario y se puede crear.)
 const removeRow = <T,>(setter: React.Dispatch<React.SetStateAction<T[]>>, idx: number) =>
   setter((rows) => rows.filter((_, i) => i !== idx));
 const changeRow = <T extends object>(
@@ -129,10 +38,7 @@ const changeRow = <T extends object>(
   value: any
 ) => setter((rows) => rows.map((r, i) => (i === idx ? { ...r, [field]: value } as T : r)));
 
-<<<<<<< HEAD
 // Llamadas a la API para obtener datos (razón social, establecimientos, tipos, formulario)
-=======
->>>>>>> ecfa284 (Se sube el trabajo del formulario RGRL ya trae los datos se puede editar un formulario y se puede crear.)
 const fetchRazonSocial = async (cuit: number): Promise<string> => {
   const url = `${API_BASE}/FormulariosRGRL/CUIT/${encodeURIComponent(cuit)}`;
   const res = await fetch(url, { cache: 'no-store', headers: { Accept: 'application/json, text/json' } });
@@ -145,10 +51,7 @@ const fetchRazonSocial = async (cuit: number): Promise<string> => {
 const fetchEstablecimientos = async (cuit: number): Promise<Establecimiento[]> => {
   const url = `${API_BASE}/Establecimientos/Empresa/${encodeURIComponent(cuit)}`;
   const res = await fetch(url, { cache: 'no-store', headers: { Accept: 'application/json, text/json' } });
-<<<<<<< HEAD
   if (res.status === 404) return [];
-=======
->>>>>>> ecfa284 (Se sube el trabajo del formulario RGRL ya trae los datos se puede editar un formulario y se puede crear.)
   if (!res.ok) throw new Error(`GET ${url} -> ${res.status}`);
   return (await res.json()) as Establecimiento[];
 };
@@ -156,10 +59,7 @@ const fetchEstablecimientos = async (cuit: number): Promise<Establecimiento[]> =
 const fetchTipos = async (): Promise<TipoFormulario[]> => {
   const url = `${API_BASE}/TiposFormulariosRGRL`;
   const res = await fetch(url, { cache: 'no-store', headers: { Accept: 'application/json, text/json' } });
-<<<<<<< HEAD
   if (res.status === 404) return [];
-=======
->>>>>>> ecfa284 (Se sube el trabajo del formulario RGRL ya trae los datos se puede editar un formulario y se puede crear.)
   if (!res.ok) throw new Error(`GET ${url} -> ${res.status}`);
   return (await res.json()) as TipoFormulario[];
 };
@@ -171,7 +71,6 @@ const fetchFormularioById = async (id: number): Promise<FormularioVm> => {
   return (await res.json()) as FormularioVm;
 };
 
-<<<<<<< HEAD
 // Componente principal: crea, edita o replica formularios RGRL
 const GenerarFormularioRGRL: React.FC<{
   initialCuit?: number;
@@ -205,21 +104,6 @@ const GenerarFormularioRGRL: React.FC<{
   const [original, setOriginal] = useState<FormularioVm | null>(null);
 
   const esReplica = Boolean(replicaDe || replicaDeQuery || original);
-=======
-const GenerarFormularioRGRL: React.FC<{ initialCuit?: number }> = ({ initialCuit }) => {
-  const router = useRouter();
-  const search = useSearchParams();
-
-  const cuitFromQuery = useMemo(() => {
-    const v = search?.get('cuit');
-    return v ? Number(v) : undefined;
-  }, [search]);
-
-  const idFromQuery = useMemo(() => {
-    const v = search?.get('id');
-    return v ? Number(v) : undefined;
-  }, [search]);
->>>>>>> ecfa284 (Se sube el trabajo del formulario RGRL ya trae los datos se puede editar un formulario y se puede crear.)
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
