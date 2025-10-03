@@ -2,8 +2,9 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import CustomButton from '../../../../../utils/ui/button/CustomButton';
-import CustomModal from '../../../../../utils/ui/form/CustomModal';
+import CustomButton from '@/utils/ui/button/CustomButton';
+import CustomModal from '@/utils/ui/form/CustomModal';
+import dayjs from 'dayjs';
 
 const API_BASE = 'http://arttest.intersistemas.ar:8302/api';
 
@@ -30,12 +31,12 @@ type TipoFormulario = {
     interno: number;
     orden: number;
     descripcion: string;
-    tieneNoAplica: number; 
+    tieneNoAplica: number;
     comentario?: string;
     cuestionarios?: Array<{
       internoSeccion: number;
       orden: number;
-      codigo: number;  
+      codigo: number;
       pregunta: string;
       comentario: string;
     }>;
@@ -77,17 +78,20 @@ type ResponsableUI = {
   responsable?: string;
   cargo?: string;
   representacion?: number;
-  esContratado?: number; // 0/1
+  esContratado?: number;
   tituloHabilitante?: string;
   matricula?: string;
   entidadOtorganteTitulo?: string;
 };
 
+
 const toIsoOrNull = (v?: string | Date | null) => {
   if (!v) return null;
-  const d = typeof v === 'string' ? new Date(v) : v;
-  return isNaN(d.getTime()) ? null : d.toISOString();
+  const d = dayjs(v);
+  return d.isValid() ? d.toISOString() : null;
 };
+
+
 const addRow = <T,>(setter: React.Dispatch<React.SetStateAction<T[]>>, empty: T) =>
   setter((rows) => [...rows, empty]);
 const removeRow = <T,>(setter: React.Dispatch<React.SetStateAction<T[]>>, idx: number) =>
@@ -129,19 +133,43 @@ const fetchFormularioById = async (id: number): Promise<FormularioVm> => {
   return (await res.json()) as FormularioVm;
 };
 
-const GenerarFormularioRGRL: React.FC<{ initialCuit?: number }> = ({ initialCuit }) => {
+
+const GenerarFormularioRGRL: React.FC<{
+  initialCuit?: number;
+  replicaDe?: number;
+  onDone?: (nuevoId: number) => void;
+}> = ({ initialCuit, replicaDe, onDone }) => {
+
   const router = useRouter();
   const search = useSearchParams();
 
+  const isModal = Boolean(onDone);
+
   const cuitFromQuery = useMemo(() => {
+    if (isModal) return undefined;
     const v = search?.get('cuit');
     return v ? Number(v) : undefined;
-  }, [search]);
+  }, [search, isModal]);
+
 
   const idFromQuery = useMemo(() => {
+    if (isModal) return undefined;
     const v = search?.get('id');
     return v ? Number(v) : undefined;
-  }, [search]);
+  }, [search, isModal]);
+
+
+  const replicaDeQuery = useMemo(() => {
+    if (isModal) return undefined;
+    const v = search?.get('replicaDe');
+    return v ? Number(v) : undefined;
+  }, [search, isModal]);
+
+  const [original, setOriginal] = useState<FormularioVm | null>(null);
+  /* ------------------------------------------------------------- */
+
+  const esReplica = Boolean(replicaDe || replicaDeQuery || original);
+
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -189,8 +217,49 @@ const GenerarFormularioRGRL: React.FC<{ initialCuit?: number }> = ({ initialCuit
   }, [cuit, canBuscar]);
 
   useEffect(() => {
-    if (!idFromQuery && cuit) cargarTodoPaso1();
-  }, [cuit, idFromQuery, cargarTodoPaso1]);
+    if (!idFromQuery && cuit && !(replicaDe || replicaDeQuery)) cargarTodoPaso1();
+  }, [cuit, idFromQuery, replicaDe, replicaDeQuery, cargarTodoPaso1]);
+
+  const cargarReplicaDe = useCallback(async () => {
+    const replId = typeof replicaDe === 'number' ? replicaDe : replicaDeQuery;
+    if (!replId) return;
+
+    setLoading(true);
+    setError('');
+    try {
+      const frm = await fetchFormularioById(replId);
+      setOriginal(frm);
+
+      const c = Number((frm as any).cuit ?? 0) || undefined;
+      if (c) setCuit(c);
+
+      const [rs, ests, tfs] = await Promise.all([
+        c ? fetchRazonSocial(c) : Promise.resolve(''),
+        c ? fetchEstablecimientos(c) : Promise.resolve([] as Establecimiento[]),
+        fetchTipos(),
+      ]);
+      setRazonSocial(rs);
+      setEstablecimientos(ests);
+      setTipos(tfs);
+
+      setEstablecimientoSel(frm.internoEstablecimiento);
+      setTipoSel(frm.internoFormulario);
+
+      const d = new Date();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      setNotificacionFecha(`${d.getFullYear()}-${mm}-${dd}`);
+    } catch (e: any) {
+      setError(e?.message ?? 'Error al cargar datos para replicar.');
+    } finally {
+      setLoading(false);
+    }
+  }, [replicaDe, replicaDeQuery]);
+
+
+  useEffect(() => {
+    if (!idFromQuery && (replicaDe || replicaDeQuery)) cargarReplicaDe();
+  }, [idFromQuery, replicaDe, replicaDeQuery, cargarReplicaDe]);
 
   const crearFormulario = async () => {
     if (!cuit || !establecimientoSel || !tipoSel) {
@@ -219,8 +288,100 @@ const GenerarFormularioRGRL: React.FC<{ initialCuit?: number }> = ({ initialCuit
       const data = await res.json().catch(() => null);
       if (!res.ok) throw new Error(`POST /FormulariosRGRL -> ${res.status}`);
 
-      const nuevoId = data?.interno;
-      router.push(`/inicio/empleador/formularioRGRL/generar?cuit=${cuit}&id=${nuevoId ?? ''}`);
+      const nuevoId = Number(data?.interno ?? 0);
+      if (!nuevoId) throw new Error('No se obtuvo el ID del nuevo formulario.');
+
+
+      if (original) {
+        const fullCuest = (original.respuestasCuestionario || []).map((r) => ({
+          interno: 0,
+          internoCuestionario: r.internoCuestionario ?? 0,
+          internoRespuestaFormulario: nuevoId,
+          respuesta: r.respuesta ?? '',
+          fechaRegularizacion: r.fechaRegularizacion ?? 0,
+          observaciones: r.observaciones ?? '',
+
+          estadoAccion: 'A',
+          estadoFecha: 0,
+          estadoSituacion: '',
+          bajaMotivo: 0,
+        }));
+
+        const gremiosFull = (original.respuestasGremio || []).map((g: any, i: number) => ({
+          interno: 0,
+          internoRespuestaFormulario: nuevoId,
+          legajo: g?.legajo ?? 0,
+          nombre: g?.nombre ?? '',
+          estadoAccion: 'A',
+          estadoFecha: 0,
+          estadoSituacion: '',
+          bajaMotivo: 0,
+          renglon: i,
+        }));
+
+        const contratistasFull = (original.respuestasContratista || []).map((c: any, i: number) => ({
+          interno: 0,
+          internoRespuestaFormulario: nuevoId,
+          cuit: c?.cuit ?? 0,
+          contratista: c?.contratista ?? c?.nombre ?? '',
+          estadoAccion: 'A',
+          estadoFecha: 0,
+          estadoSituacion: '',
+          bajaMotivo: 0,
+          renglon: i,
+        }));
+
+        const responsablesFull = (original.respuestasResponsable || []).map((r: any, i: number) => ({
+          interno: 0,
+          internoRespuestaFormulario: nuevoId,
+          cuit: r?.cuit ?? 0,
+          responsable: r?.responsable ?? '',
+          cargo: r?.cargo ?? '',
+          representacion: r?.representacion ?? 0,
+          esContratado: r?.esContratado ?? 0,
+          tituloHabilitante: r?.tituloHabilitante ?? '',
+          matricula: r?.matricula ?? '',
+          entidadOtorganteTitulo: r?.entidadOtorganteTitulo ?? '',
+          estadoAccion: 'A',
+          estadoFecha: 0,
+          estadoSituacion: '',
+          bajaMotivo: 0,
+          renglon: i,
+        }));
+
+        const payloadPUT = {
+          internoFormulario: tipoSel!,
+          internoEstablecimiento: establecimientoSel!,
+          creacionFechaHora: payload.creacionFechaHora,
+          completadoFechaHora: payload.completadoFechaHora,
+          notificacionFecha: payload.notificacionFecha,
+          respuestasCuestionario: fullCuest,
+          respuestasGremio: gremiosFull,
+          respuestasContratista: contratistasFull,
+          respuestasResponsable: responsablesFull,
+          internoPresentacion: 0,
+          fechaSRT: payload.fechaSRT,
+        };
+
+        const resPut = await fetch(`${API_BASE}/FormulariosRGRL/${nuevoId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payloadPUT),
+        });
+
+        await resPut.json().catch(() => null);
+        if (!resPut.ok) throw new Error(`PUT /FormulariosRGRL/${nuevoId} -> ${resPut.status}`);
+
+
+
+
+        onDone?.(nuevoId);
+        router.push(`/inicio/empleador/formularioRGRL/editar?id=${nuevoId}`);
+        return;
+      }
+      /* ----------------------------------------------------------------------------- */
+      onDone?.(nuevoId);
+      router.push(`/inicio/empleador/formularioRGRL/editar?id=${nuevoId}`);
     } catch (e: any) {
       setError(e?.message ?? 'Error al crear el formulario.');
     } finally {
@@ -279,8 +440,8 @@ const GenerarFormularioRGRL: React.FC<{ initialCuit?: number }> = ({ initialCuit
   }, [idFromQuery]);
 
   useEffect(() => {
-    if (idFromQuery) cargarPaso2();
-  }, [idFromQuery, cargarPaso2]);
+    if (idFromQuery && !isModal) cargarPaso2();
+  }, [idFromQuery, isModal, cargarPaso2]);
 
   const tipoDeEsteFormulario = useMemo(() => {
     if (!form || !tipos?.length) return undefined;
@@ -392,7 +553,8 @@ const GenerarFormularioRGRL: React.FC<{ initialCuit?: number }> = ({ initialCuit
       await res.json().catch(() => null);
       if (!res.ok) throw new Error(`PUT /FormulariosRGRL/${form.interno} -> ${res.status}`);
 
-      alert('Formulario guardado correctamente.');
+
+      router.replace('/inicio/empleador/formularioRGRL');
     } catch (e: any) {
       setError(e?.message ?? 'Error al finalizar.');
     } finally {
@@ -400,7 +562,7 @@ const GenerarFormularioRGRL: React.FC<{ initialCuit?: number }> = ({ initialCuit
     }
   };
 
-  if (idFromQuery && form && tipoDeEsteFormulario) {
+  if (!isModal && idFromQuery && form && tipoDeEsteFormulario) {
     const secActual = secciones[secIdx];
     const preguntas = (secActual?.cuestionarios ?? []).slice().sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
     const tieneNA = secActual?.tieneNoAplica === 1;
@@ -559,7 +721,7 @@ const GenerarFormularioRGRL: React.FC<{ initialCuit?: number }> = ({ initialCuit
               <tbody>
                 {gremiosUI.map((g, i) => (
                   <tr key={i}>
-                    <td style={{ border: '1px solid #eee', padding: 4 }}>
+                    <td style={{ border: '1px solid #eee,', padding: 4 }}>
                       <input
                         type="number"
                         value={g.legajo ?? 0}
@@ -729,7 +891,7 @@ const GenerarFormularioRGRL: React.FC<{ initialCuit?: number }> = ({ initialCuit
                   })
                 }
               >
-               AGREGAR
+                AGREGAR
               </CustomButton>
             </div>
           </div>
@@ -830,6 +992,8 @@ const GenerarFormularioRGRL: React.FC<{ initialCuit?: number }> = ({ initialCuit
         <select
           value={tipoSel ?? ''}
           onChange={(e) => setTipoSel(Number(e.target.value) || undefined)}
+          disabled={esReplica}
+          title={esReplica ? 'Tipo fijado por replicación' : undefined}
           style={{ flex: 1, height: 36, padding: '6px 10px', border: '1px solid #c7c7c7', borderRadius: 6 }}
         >
           <option value="" disabled>Seleccioná...</option>

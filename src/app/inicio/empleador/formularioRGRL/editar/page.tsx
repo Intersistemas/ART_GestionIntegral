@@ -2,7 +2,9 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import CustomButton from '../../../../../utils/ui/button/CustomButton';
+import CustomButton from '@/utils/ui/button/CustomButton';
+import dayjs from 'dayjs';
+
 
 const API_BASE = 'http://arttest.intersistemas.ar:8302/api';
 
@@ -55,8 +57,8 @@ type TipoFormulario = {
 
 const toIsoOrNull = (v?: string | Date | null) => {
     if (!v) return null;
-    const d = typeof v === 'string' ? new Date(v) : v;
-    return isNaN(d.getTime()) ? null : d.toISOString();
+    const d = dayjs(v);
+    return d.isValid() ? d.toISOString() : null;
 };
 
 const fetchFormularioById = async (id: number): Promise<FormularioVm> => {
@@ -224,7 +226,9 @@ export default function Page() {
             if (!res.ok) throw new Error(`PUT /FormulariosRGRL/${form.interno} -> ${res.status}`);
 
             setForm(data as FormularioVm);
-            alert('Formulario guardado correctamente.');
+            //alert('Formulario guardado correctamente.');
+            router.replace('/inicio/empleador/formularioRGRL');
+
         } catch (e: any) {
             setError(e?.message ?? 'Error al guardar.');
         } finally {
@@ -252,9 +256,6 @@ export default function Page() {
 
 
 
-            <h2 style={{ margin: 0 }}>
-                Editar Formulario RGRL — #{form.interno}
-            </h2>
             <div style={{ marginTop: 6, opacity: 0.95, fontWeight: 700 }}>
                 Sección {secIdx + 1} de {totalSecs} — {secActual.descripcion}
             </div>
