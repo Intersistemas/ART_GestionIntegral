@@ -1,19 +1,23 @@
 import useSWR from "swr";
 import axios from "axios";
 import { ExternalAPI } from "./api";
-import Personal, { Parameters as GetPersonalParams} from "@/app/inicio/empleador/cobertura/types/persona";
+import Personal, { Parameters} from "@/app/inicio/empleador/cobertura/types/persona";
 import dayjs from "dayjs";
 import { stringifyValues } from "@/utils/utils";
 import { getSession } from "next-auth/react";
 
-const getCurrentPeriodo = (): number => Number(dayjs().format('YYYYMM'));
+//const getCurrentPeriodo = (): number => Number(dayjs().format('YYYYMM'));
+
+const getCurrentPeriodo = (): number => {
+    return Number(dayjs().subtract(2, 'month').format('YYYYMM'));
+};
 
 export class GestionEmpleadorAPIClass extends ExternalAPI {
   readonly basePath = "http://arttest.intersistemas.ar:8670"; ///ToDo: debo agregarlo al env.
   //#region Personal
   readonly getPersonalPath = "/api/AfiliadoCuentaCorriente/";
   private getPersonalToken = "";
-  getPersonal = async (params: GetPersonalParams = {}) => {
+  getPersonal = async (params: Parameters = {}) => {
     params.periodo ??= getCurrentPeriodo();
     params.page ??= "1,1";
     const token = (await getSession())?.accessToken ?? "";
@@ -23,7 +27,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
       { headers: { Authorization: `Bearer ${token}` } }
     ).then(({ data }) => data);
   }
-  useGetPersonal = (params: GetPersonalParams = {}) => useSWR(
+  useGetPersonal = (params: Parameters = {}) => useSWR(
     [this.basePath, this.getPersonalPath, this.getPersonalToken, JSON.stringify(params)], () => this.getPersonal(params)
   );
   //#endregion

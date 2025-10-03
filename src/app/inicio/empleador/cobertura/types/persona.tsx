@@ -4,7 +4,7 @@ export type Persona = {
   nombre: string;
 }
 
-export interface Parameters {
+export type Parameters = {
   cuit?: number;
   periodo?: number;
   page?: string;
