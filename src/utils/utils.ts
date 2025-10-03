@@ -42,6 +42,27 @@ export function tryParseNumber<T = any>(param: TryParseNumberParam<T>) {
   return true;
 }
 
-export function stringifyValues(o: Record<string, any>) {
-  return Object.fromEntries(Object.entries(o).map(([k, v]) => [k, `${v}`]));
+export function toURLSearch(o: any, execute = false): URLSearchParams | undefined {
+  const s = new URLSearchParams();
+  if (typeof o === "object") {
+    if (Array.isArray(o)) o.filter(v => typeof v !== "function" || execute).forEach((v, i) => load(`${i}`, v));
+    else Object.entries(o).filter(([,v]) => typeof v !== "function" || execute).forEach(([k, v]) => load(k, v));
+  } else {
+    load("", value(o));
+  }
+  if (s.size > 0) return s;
+  return undefined;
+  function value(v: any): string | undefined {
+    switch (typeof v) {
+      case "undefined": return undefined;
+      case "function": return execute ? value(v()) : undefined;
+      case "object": return JSON.stringify(v);
+      default: return `${v}`;
+    }
+  }
+  function load(k: string, v: any) {
+    v = value(v);
+    if (v === undefined) return;
+    s.append(k, v);
+  }
 }

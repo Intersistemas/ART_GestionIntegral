@@ -1,5 +1,7 @@
 import useSWR from "swr";
-import axios, { AxiosError } from "axios";
+import useSWRMutation from "swr/mutation";
+import { AxiosError } from "axios";
+import { token } from "./usuarioAPI";
 import { ExternalAPI } from "./api";
 import { camelCaseKeys } from "@/utils/utils";
 
@@ -63,6 +65,8 @@ export interface APIError<T = Record<string, any>> {
 }
 //#endregion Types
 
+const tokenizable = token.configure();
+
 function reject<T>(error: AxiosError) {
   return Promise.reject<T>(camelCaseKeys<APIError>(error.response?.data)
     ?? { code: error.status ?? 0, message: error.message, details: error } as APIError<AxiosError>
@@ -72,21 +76,21 @@ function reject<T>(error: AxiosError) {
 export class QueriesAPIClass extends ExternalAPI {
   readonly basePath = process.env.NEXT_PUBLIC_QUERYAPI_URL!;
   //#region execute
-  readonly executePath = "/api/queries/execute";
-  execute = async <Data = QueryResultData>(query: Query) => axios.post<QueryResult<Data>>(
-    this.getURL({ path: this.executePath }).toString(), query
+  readonly executeURL = () => this.getURL({ path: "/api/queries/execute" }).toString();
+  execute = async <Data = QueryResultData>(query: Query) => tokenizable.post<QueryResult<Data>>(
+    this.executeURL(), query
   ).then(({ data }) => data, (error) => reject<QueryResult<Data>>(error));
   useExecute = <Data = QueryResultData>(query: Query) => useSWR<QueryResult<Data>, APIError>(
-    [this.basePath, this.executePath, JSON.stringify(query)], () => this.execute<Data>(query)
+    [this.executeURL(), token.getToken(), JSON.stringify(query)], () => this.execute<Data>(query)
   );
   //#endregion execute
   //#region analyze
-  readonly analyzePath = "/api/queries/analyze";
-  analyze = async (query: Query) => axios.post<QueryAnalysis>(
-    this.getURL({ path: this.analyzePath }).toString(), query
+  readonly analyzeURL = () => this.getURL({ path: "/api/queries/analyze" }).toString();
+  analyze = async (query: Query) => tokenizable.post<QueryAnalysis>(
+    this.analyzeURL(), query
   ).then(({ data }) => data, (error) => reject<QueryAnalysis>(error));
   useAnalyze = (query: Query) => useSWR<QueryAnalysis, AxiosError<APIError>>(
-    [this.basePath, this.analyzePath, JSON.stringify(query)], () => this.analyze(query)
+    [this.analyzeURL(), token.getToken(), JSON.stringify(query)], () => this.analyze(query)
   );
   //#endregion analyze
 }
