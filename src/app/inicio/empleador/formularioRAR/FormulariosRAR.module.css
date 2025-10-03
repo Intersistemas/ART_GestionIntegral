@@ -1,0 +1,181 @@
+/* Utilidades de layout */
+.wrapperCol { display: flex; flex-direction: column; gap: 12px; }
+.row { display: flex; flex-direction: row; gap: 12px; }
+.row20 { display: flex; flex-direction: row; gap: 20px; }
+.col { display: flex; flex-direction: column; gap: 20px; }
+
+.flex { display: flex; }
+.flex1 { flex: 1; }
+.justifyCenter { justify-content: center; }
+.alignCenter { align-items: center; }
+.spaceBetween { justify-content: space-between; }
+
+.gap8 { gap: 8px; }
+.gap12 { gap: 12px; }
+.gap20 { gap: 20px; }
+
+.mb16 { margin-bottom: 16px; }
+.mb20 { margin-bottom: 20px; }
+.mt20 { margin-top: 20px; }
+.mt40 { margin-top: 40px; }
+.mt60 { margin-top: 60px; }
+
+.w100 { width: 100%; }
+.bold { font-weight: bold; }
+.fs20 { font-size: 20px; }
+.center { text-align: center; }
+.p24 { padding: 24px; }
+
+/* Centrado del texto del input de MUI */
+.centeredInput :global(.MuiInputBase-input) {
+  text-align: center;
+}
+
+/* Resumen configurado (gris claro con borde) */
+.summaryBox {
+  padding: 16px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  margin-top: 20px;
+  border: 1px solid #ddd;
+}
+
+/* Contenedor botón centrado */
+.btnCenter { display: flex; justify-content: center; }
+
+/* Botón chiquito (ej. “Modificar”) */
+.btnSmall {
+  font-size: 12px !important;
+  padding: 6px 12px !important;
+}
+
+/* Botón chico de tabla (Imprimir) */
+.tableBtnSmall {
+  font-size: 10px !important;
+  padding: 4px 8px !important;
+}
+
+/* Contenedor de tabla con título */
+.tableBlock { margin-top: 60px; width: 100%; }
+
+/* Compactar tabla (antes estaba en <style jsx>) */
+.compactTable :global(table) {
+  font-size: 12px;
+}
+.compactTable :global(th),
+.compactTable :global(td) {
+  padding: 6px 8px;
+  line-height: 1.1;
+}
+.compactTable :global(thead th) {
+  font-weight: 600;
+  white-space: nowrap;
+}
+.compactTable :global(tbody td) {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 320px;
+}
+/* Ocultar buscadores del datatable */
+.compactTable :global(input[type="search"]),
+.compactTable :global(.table-search),
+.compactTable :global(.dataTableSearch) {
+  display: none !important;
+}
+
+/* Spinner */
+.spinner { padding: 24px; display: flex; justify-content: center; }
+
+/* Bloque explicativo del modal de cantidades */
+.modalTextBlock { text-align: center; margin-bottom: 10px; }
+.modalTextGray { margin: 0; color: #666; }
+.modalTextBold { margin: 8px 0; font-weight: bold; }
+
+/* Total (azulado) */
+.totalBox {
+  padding: 12px;
+  background-color: #f0f8ff;
+  border-radius: 4px;
+  text-align: center;
+  border: 1px solid #e0e8f0;
+}
+
+/* Grillas de inputs del modal de trabajador */
+.modalGridCol { display: flex; flex-direction: column; gap: 20px; }
+.modalRow { display: flex; flex-direction: row; gap: 20px; }
+
+/* Botonera centrada en modales */
+.modalButtons { display: flex; gap: 12px; justify-content: center; margin-top: 20px; }
+
+/* Estilos para la tabla de detalles del interno */
+.detallesTable {
+  margin-top: 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  background-color: #fafafa;
+}
+
+.detallesInfo {
+  margin: 0 0 12px 0;
+  padding: 8px;
+  background-color: #e3f2fd;
+  border-radius: 4px;
+  text-align: center;
+  border: 1px solid #bbdefb;
+}
+
+.loadingMessage {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+.errorMessage {
+  padding: 20px;
+  text-align: center;
+  color: #d32f2f;
+  background-color: #ffebee;
+  border: 1px solid #ffcdd2;
+  border-radius: 4px;
+  margin: 10px 0;
+}
+
+.noDataMessage {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  background-color: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  margin: 10px 0;
+}
+
+/* Compactar también la tabla de detalles */
+.detallesTable :global(table) {
+  font-size: 11px;
+}
+.detallesTable :global(th),
+.detallesTable :global(td) {
+  padding: 4px 6px;
+  line-height: 1.1;
+}
+.detallesTable :global(thead th) {
+  font-weight: 600;
+  white-space: nowrap;
+  background-color: #f0f0f0;
+}
+.detallesTable :global(tbody td) {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 150px;
+}
+.detallesTable :global(input[type="search"]),
+.detallesTable :global(.table-search),
+.detallesTable :global(.dataTableSearch) {
+  display: none !important;
+}
