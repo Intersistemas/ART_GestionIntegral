@@ -13,7 +13,7 @@ import { saveTable, type TableColumn, type AddTableOptions } from '@/utils/excel
 //#region types
 type Row = Record<string, any>;
 type Formatter = (value: any) => any;
-type TablesName = "vSiniestrosWeb230925";
+type TablesName = "vSiniestrosWeb";
 interface TablesField {
   name: string;
   label?: string;
@@ -46,13 +46,33 @@ const defaultQuery: RuleGroupType = { combinator: 'and', rules: [] };
 
 const numeroSiniestroFormatter: Formatter = (v) => Formato.Mascara(v, "####-######-##");
 const fechaHoraFormatter: Formatter = (v) => Formato.FechaHora(v);
-const fechaFormatter: Formatter = (v) => Formato.Fecha(v);
+
+
+const fechaFormatter: Formatter = (v) => {
+  if (v === null || v === undefined) return "";
+
+  const n1 = Formato.Fecha(v);
+  if (n1 && String(n1).trim()) return n1;
+
+  try {
+    const d = new Date(v);
+    if (!isNaN(d.getTime())) {
+
+      const dd = String(d.getDate()).padStart(2, "0");
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const yyyy = d.getFullYear();
+      return `${dd}/${mm}/${yyyy}`;
+    }
+  } catch {}
+
+  return typeof v === "string" ? v.trim() : String(v);
+};
+
+
 const numeroFormatter: Formatter = (v) => Formato.Numero(v);
 const cuipFormatter: Formatter = (v) => Formato.CUIP(v);
 
 const valueOptionsFormatter: OptionsFormatter = (options) => ((v: string) => (options?.[v] ?? v));
-// const blankOptionsFormatter: OptionsFormatter = (options) => ((v: string) => (options?.[v] ?? ""));
-
 const optionsValues: OptionsValues = (options) => Object.entries<string>(options ?? {}).map(([name, label]) => ({ name, label }));
 const optionsSelect = (options: any, formatter = valueOptionsFormatter, values = optionsValues): {
   operators: DefaultOperators,
@@ -89,8 +109,7 @@ const display = (v: any) => (typeof v === "string" ? v.trim() : v);
 
 export function CCMMContextProvider({ children }: { children: ReactNode }) {
   const [tables] = useState<Tables>({
-    vSiniestrosWeb230925: [
-      { name: "Siniestro", label: "Siniestro", type: "number", formatter: numeroSiniestroFormatter },
+    vSiniestrosWeb: [
       { name: "Siniestro", label: "Siniestro", type: "number", formatter: numeroSiniestroFormatter },
 
       { name: "Reingreso", label: "Reingreso", type: "dateTime", formatter: fechaHoraFormatter },
@@ -166,28 +185,13 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
       { name: "PorcentajeIncapacidad", label: "% Incapacidad", type: "number", formatter: numeroFormatter },
     ],
   });
-  //#region (opcional) lookups con useExecute (mismo estilo que CCMM)
-  // const { useExecute } = QueriesAPI;
-  // const { data: algunCatalogo } = useExecute({ ... });
-  // useEffect(() => {
-  //   if (!algunCatalogo?.data) return;
-  //   const options = Object.fromEntries(algunCatalogo.data.map(...));
-  //   setTables((o) => {
-  //     const ix = o.vSiniestrosWeb230925.findIndex(r => r.name === "CampoConLookup");
-  //     if (ix < 0) return o;
-  //     const tables = { ...o, vSiniestrosWeb230925: [...o.vSiniestrosWeb230925] };
-  //     tables.vSiniestrosWeb230925[ix] = { ...tables.vSiniestrosWeb230925[ix], ...optionsSelect(options) };
-  //     return tables;
-  //   });
-  // }, [algunCatalogo]);
-  //#endregion (opcional) lookups con useExecute
 
   //#region columns, fields, headers (idéntico patrón al CCMM original)
   const { columns, fields, headers } = useMemo(() => {
     const columns: ColumnDef<Row>[] = [];
     const headers: Headers = { columns: {}, options: { formatters: { row: {} } } };
 
-    const fields: Field[] = tables.vSiniestrosWeb230925.slice(1).map(column => {
+    const fields: Field[] = tables.vSiniestrosWeb.map(column => {
       const { name, label, formatter, operators, valueEditorType, values, type } = column;
 
       // Tabla (usa accessorKey, pero la celda lee de row.original con getter tolerante)
@@ -213,7 +217,7 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
     });
 
     return ({ columns, fields, headers });
-  }, [tables.vSiniestrosWeb230925]);
+  }, [tables.vSiniestrosWeb]);
   //#endregion columns, fields, headers
 
   //#region rows, query, dialog
@@ -241,10 +245,10 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
   ), [onCloseDialog]);
   //#endregion helpers diálogo
 
-  //#region acciones (aplicar/limpiar/exportar) — mismo flujo que CCMM
+  //#region acciones (aplicar/limpiar/exportar)
   const onAplicaFiltro = useCallback(async () => {
     const proposition = formatQuery(query, propositionFormat({ fields }));
-    const table: TablesName = "vSiniestrosWeb230925";
+    const table: TablesName = "vSiniestrosWeb";
 
     const apiQuery: Query = {
       select: tables[table].map(c => ({ value: c.name, name: c.name })), // alias = nombre exacto

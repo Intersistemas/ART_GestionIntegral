@@ -135,19 +135,10 @@ function Informe() {
         </Paper>
       </Grid>
 
-
-
-
-
-
-
       {dialog}
     </Grid>
   );
 
 }
-
-
-
 
 export default function ComisionesMedicas() { return (<CCMMContextProvider><Informe /></CCMMContextProvider>); };
