@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Box, Button, Typography } from "@mui/material";
 import UsuarioForm, { UsuarioFormFields } from "./UsuarioForm";
 import UsuarioTable from "./UsuarioTable";
+import Tareas from "./Tareas";
 import useUsuarios from "./useUsuarios";
 import styles from './Usuario.module.css';
 import CustomButton from "@/utils/ui/button/CustomButton";
@@ -15,6 +16,11 @@ type RequestMethod = 'create' | 'edit' | 'view' | 'delete';
 interface RequestState {
     method: RequestMethod | null;
     userData: UsuarioFormFields | null; 
+}
+
+interface PermisosUsuario {
+  tareaId: number;
+  habilitada: boolean;
 }
 
 export default function UsuariosPage() {
@@ -35,12 +41,20 @@ export default function UsuariosPage() {
     cargo: "",
   };
 
-  const { usuarios, roles, refEmpleadores, loading, error, registrarUsuario } = useUsuarios();
+  const { usuarios, roles, refEmpleadores, loading, error, registrarUsuario, actualizarPermisosUsuario } = useUsuarios();
   const [formError, setFormError] = useState<string | null>(null);  
 
   const [requestState, setRequestState] = useState<RequestState>({
         method: null,
         userData: null
+  });
+
+  const [permisosModal, setPermisosModal] = useState<{
+    open: boolean;
+    usuario: UsuarioRow | null;
+  }>({
+    open: false,
+    usuario: null
   });
     
   // Determina si el modal debe estar visible
@@ -80,6 +94,41 @@ export default function UsuariosPage() {
     setRequestState({ method: null, userData: null });
   };
 
+  const handleOpenPermisos = (usuario: UsuarioRow) => {
+    setPermisosModal({
+      open: true,
+      usuario
+    });
+  };
+
+  const handleClosePermisos = () => {
+    setPermisosModal({
+      open: false,
+      usuario: null
+    });
+  };
+
+  const handleSavePermisos = async (permisos: PermisosUsuario[]) => {
+    if (!permisosModal.usuario?.id) {
+      alert('Error: No se pudo identificar el usuario');
+      return;
+    }
+
+    try {
+      const result = await actualizarPermisosUsuario(String(permisosModal.usuario.id), permisos);
+      
+      if (result.success) {
+        alert('Permisos guardados exitosamente');
+        handleClosePermisos();
+      } else {
+        alert(`Error al guardar permisos: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error al guardar permisos:', error);
+      alert('Ocurrió un error al guardar los permisos');
+    }
+  };
+
   const handleSubmit = async (data: UsuarioFormFields) => {
     // Aquí se crea el objeto completo para la API, añadiendo empresaId
     // La lógica de envío debe considerar el modo (create, edit, delete)
@@ -115,13 +164,12 @@ export default function UsuariosPage() {
   if (error) {
     return <Typography color="error">Error: {error instanceof Error ? error.message : "Un error inesperado ha ocurrido."}</Typography>;
   }
-  console.log("UsuariosPage render - refEmpleadores:", refEmpleadores);
-
+  
 
   // AHORA currentInitialData siempre será UsuarioFormFields o initialForm
   // Lo cual satisface la prop initialData de UsuarioForm
   const currentInitialData = requestState.userData || initialForm; // LÍNEA 144
-  
+  console.log("Usuarios", usuarios);
   return (
     <Box className={styles.usuariosPageContainer}>
 
@@ -139,6 +187,7 @@ export default function UsuariosPage() {
           onEdit={(row) => handleOpenModal('edit', row)} 
           onView={(row) => handleOpenModal('view', row)} 
           onDelete={(row) => handleOpenModal('delete', row)}
+          onPermisos={handleOpenPermisos}
           isLoading={loading}
       />
 
@@ -151,6 +200,13 @@ export default function UsuariosPage() {
         initialData={currentInitialData}
         errorMsg={formError}
         method={requestState.method || 'create'}
+      />
+
+      <Tareas
+        open={permisosModal.open}
+        onClose={handleClosePermisos}
+        usuario={permisosModal.usuario}
+        onSave={handleSavePermisos}
       />
     </Box>
   );

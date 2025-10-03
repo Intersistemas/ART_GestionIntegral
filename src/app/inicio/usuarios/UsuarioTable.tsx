@@ -6,6 +6,7 @@ import { IconButton, Box } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility"; 
+import SecurityIcon from "@mui/icons-material/Security";
 import DataTable from "@/utils/ui/table/DataTable";
 import UsuarioRow from "./interfaces/UsuarioRow";
 
@@ -14,10 +15,11 @@ interface Props {
   onEdit: (row: UsuarioRow) => void;
   onDelete: (row: UsuarioRow) => void; 
   onView: (row: UsuarioRow) => void;
+  onPermisos: (row: UsuarioRow) => void;
   isLoading: boolean;
 }
 
-export default function UsuarioTable({ data, onEdit, onDelete, onView, isLoading }: Props) {
+export default function UsuarioTable({ data, onEdit, onDelete, onView, onPermisos, isLoading }: Props) {
   const columns = useMemo<ColumnDef<UsuarioRow>[]>(
     () => [
       { accessorKey: "cuit", header: "CUIT" },
@@ -44,6 +46,9 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, isLoading
             <IconButton onClick={() => onView(row.original)} color="primary" size="small">
               <VisibilityIcon fontSize="large"/>
             </IconButton>
+            <IconButton onClick={() => onPermisos(row.original)} color="success" size="small">
+              <SecurityIcon fontSize="large"/>
+            </IconButton>
             <IconButton onClick={() => onDelete(row.original)} color="error" size="small">
               <DeleteIcon fontSize="large"/>
             </IconButton>
@@ -52,7 +57,7 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, isLoading
         size: 150, 
       },
     ],
-    [onEdit, onDelete, onView] 
+    [onEdit, onDelete, onView, onPermisos] 
   );
 
   return <DataTable data={data} columns={columns}  isLoading={isLoading} />;
