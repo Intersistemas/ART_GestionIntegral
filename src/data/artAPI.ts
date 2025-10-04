@@ -1,17 +1,19 @@
 import useSWR from "swr";
-import axios from "axios";
 import { ExternalAPI } from "./api";
+import { token } from "./usuarioAPI";
 import RefEmpleador from "@/app/inicio/usuarios/interfaces/RefEmpleador";
+
+const tokenizable = token.configure();
 
 export class ArtAPIClass extends ExternalAPI {
   readonly basePath = process.env.NEXT_PUBLIC_API_ART_URL || 'http://fallback-prod.url'; 
   //#region RefEmpleadores
-  readonly refEmpleadoresPath = "/api/Empresas";
-  getRefEmpleadores = async () => axios.get<RefEmpleador[]>(
-    this.getURL({ path: this.refEmpleadoresPath }).toString()
+  readonly refEmpleadoresURL = () => this.getURL({ path: "/api/Empresas" }).toString();
+  getRefEmpleadores = async () => tokenizable.get<RefEmpleador[]>(
+    this.refEmpleadoresURL()
   ).then(({ data }) => data);
   useGetRefEmpleadores = () => useSWR(
-    [this.basePath, this.refEmpleadoresPath], () => this.getRefEmpleadores()
+    [this.refEmpleadoresURL(), token.getToken()], () => this.getRefEmpleadores()
   );
   //#endregion
 }

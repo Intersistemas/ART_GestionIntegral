@@ -1,12 +1,13 @@
 import useSWR from "swr";
-import axios from "axios";
 import { ExternalAPI } from "./api";
-import Personal, { Parameters} from "@/app/inicio/empleador/cobertura/types/persona";
+import { token } from "./usuarioAPI";
+import Personal, { Parameters } from "@/app/inicio/empleador/cobertura/types/persona";
 import dayjs from "dayjs";
-import { stringifyValues } from "@/utils/utils";
-import { getSession } from "next-auth/react";
+import { toURLSearch } from "@/utils/utils";
 
 //const getCurrentPeriodo = (): number => Number(dayjs().format('YYYYMM'));
+
+const tokenizable = token.configure();
 
 const getCurrentPeriodo = (): number => {
     return Number(dayjs().subtract(2, 'month').format('YYYYMM'));
@@ -15,20 +16,16 @@ const getCurrentPeriodo = (): number => {
 export class GestionEmpleadorAPIClass extends ExternalAPI {
   readonly basePath = process.env.NEXT_PUBLIC_API_EMPLEADOR_URL || 'http://fallback-prod.url'; 
   //#region Personal
-  readonly getPersonalPath = "/api/AfiliadoCuentaCorriente/";
-  private getPersonalToken = "";
-  getPersonal = async (params: Parameters = {}) => {
+  readonly getPersonalURL = (params: Parameters = {}) => {
     params.periodo ??= getCurrentPeriodo();
     params.page ??= "1,1";
-    const token = (await getSession())?.accessToken ?? "";
-    if (token !== this.getPersonalToken) this.getPersonalToken = token;
-    return axios.get<Personal[]>(
-      this.getURL({ path: this.getPersonalPath, search: stringifyValues(params) }).toString(),
-      { headers: { Authorization: `Bearer ${token}` } }
-    ).then(({ data }) => data);
-  }
+    return this.getURL({ path: "/api/AfiliadoCuentaCorriente/", search: toURLSearch(params) }).toString();
+  };
+  getPersonal = async (params: Parameters = {}) => tokenizable.get<Personal[]>(
+    this.getPersonalURL(params),
+  ).then(({ data }) => data);
   useGetPersonal = (params: Parameters = {}) => useSWR(
-    [this.basePath, this.getPersonalPath, this.getPersonalToken, JSON.stringify(params)], () => this.getPersonal(params)
+    [this.getPersonalURL(params), token.getToken()], () => this.getPersonal(params)
   );
   //#endregion
 }

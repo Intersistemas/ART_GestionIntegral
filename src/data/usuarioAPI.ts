@@ -1,9 +1,9 @@
 import useSWR from "swr";
 import axios, { AxiosError } from "axios";
-import { ExternalAPI, ExternalAPIGetURLParams } from "./api";
-import { getSession } from "next-auth/react";
+import { ExternalAPI } from "./api";
 import UsuarioRow from "@/app/inicio/usuarios/interfaces/UsuarioRow";
-import { env } from "process";
+import TokenConfigurator from "@/types/TokenConfigurator";
+import { toURLSearch } from "@/utils/utils";
 
 //#region Types
 export interface Auditable {
@@ -106,149 +106,109 @@ export interface Tabla extends Auditable {
 //#endregion /api/Tablas types
 //#endregion Types
 
+//#region token
+export const token = Object.seal(new TokenConfigurator());
+//#endregion token
+
+const tokenizable = token.configure();
+
 export class UsuarioAPIClass extends ExternalAPI {
-
-
 
   readonly basePath = process.env.NEXT_PUBLIC_API_SEGURIDAD_URL || 'http://fallback-prod.url'; 
   //#region login
-  readonly loginPath = "/api/Usuario/Login";
-  login = async (login: LoginCommand) =>
-    axios
-      .post<UsuarioVm>(this.getURL({ path: this.loginPath }).toString(), login)
-      .then(
-        ({ data }) => data,
-        (error) => {
-          if (axios.isAxiosError(error)) {
-            console.error(
-              "Authentication failed:",
-              error.response?.data || error.message
-            );
-          } else if (error instanceof Error) {
-            console.error("An unexpected error occurred:", error.message);
-          } else {
-            console.error("An unexpected error occurred:", error);
-          }
-          return null;
-        }
-      );
-  useLogin = (login: LoginCommand) =>
-    useSWR([this.basePath, this.loginPath, JSON.stringify(login)], () =>
-      this.login(login)
-    );
+  readonly loginURL = () => this.getURL({ path: "/api/Usuario/Login" }).toString();
+  login = async (login: LoginCommand) => axios.post<UsuarioVm>(
+    this.loginURL(), login
+  ).then(
+    ({ data }) => data,
+    (error) => {
+      if (axios.isAxiosError(error)) {
+        console.error(
+          "Authentication failed:",
+          error.response?.data || error.message
+        );
+      } else if (error instanceof Error) {
+        console.error("An unexpected error occurred:", error.message);
+      } else {
+        console.error("An unexpected error occurred:", error);
+      }
+      return null;
+    }
+  );
+  useLogin = (login: LoginCommand) => useSWR(
+    [this.loginURL()], () => this.login(login)
+  );
   //#endregion login
   //#region getAll
-  readonly getAllPath = "/api/Usuario/GetAll";
-  getAll = async ({
-    empresaId,
-    sort,
-    pageIndex,
-    pageSize,
-  }: UsuarioGetAllParams = {}) => {
-    const getURL: ExternalAPIGetURLParams = { path: this.getAllPath };
-    const search: Record<string, string> = {};
-    if (empresaId !== undefined) setSearch({ empresaId });
-    if (sort !== undefined) setSearch({ sort });
-    if (pageIndex !== undefined) setSearch({ pageIndex });
-    if (pageSize !== undefined) setSearch({ pageSize });
-    return axios
-      .get<UsuarioGetAllResult>(this.getURL(getURL).toString())
-      .then(async (response) => {
-        if (response.status === 200) return response.data;
-        return Promise.reject(
-          new AxiosError(`Error en la petición: ${response.data}`)
-        );
-      });
-    function setSearch(props: Record<string, any>) {
-      getURL.search ??= search;
-      Object.entries(props).forEach(([k, v]) => (search[k] = `${v}`));
-    }
-  };
-  useGetAll = (params: UsuarioGetAllParams = {}) =>
-    useSWR([this.basePath, this.getAllPath, JSON.stringify(params)], () =>
-      this.getAll(params)
+  readonly getAllURL = (params: UsuarioGetAllParams = {}) =>
+    this.getURL({ path: "/api/Usuario/GetAll", search: toURLSearch(params) }).toString();
+  getAll = async (params: UsuarioGetAllParams = {}) => tokenizable.get<UsuarioGetAllResult>(
+    this.getAllURL(params)
+  ).then(async (response) => {
+    if (response.status === 200) return response.data;
+    return Promise.reject(
+      new AxiosError(`Error en la petición: ${response.data}`)
     );
+  });
+  useGetAll = (params: UsuarioGetAllParams = {}) => useSWR(
+    [this.getAllURL(params), token.getToken()], () => this.getAll(params)
+  );
   //#endregion getAll
   //#region getRoles
-  readonly getRolesPath = "/api/Roles";
-  getRoles = async (query: any = {}) =>
-    axios
-      .get<RolesInterface[]>(
-        this.getURL({ path: this.getRolesPath }).toString(),
-        { data: query }
-      )
-      .then(async (response) => {
-        if (response.status === 200) return response.data;
-        return Promise.reject(
-          new AxiosError(`Error en la petición: ${response.data}`)
-        );
-      });
-  useGetRoles = (query: any = {}) =>
-    useSWR([this.basePath, this.getRolesPath, JSON.stringify(query)], () =>
-      this.getRoles(query)
+  readonly getRolesURL = () => this.getURL({ path: "/api/Roles" }).toString();
+  getRoles = async (query: any = {}) => tokenizable.get<RolesInterface[]>(
+    this.getRolesURL(), { data: query }
+  ).then(async (response) => {
+    if (response.status === 200) return response.data;
+    return Promise.reject(
+      new AxiosError(`Error en la petición: ${response.data}`)
     );
+  });
+  useGetRoles = (query: any = {}) => useSWR(
+    [this.getRolesURL(), token.getToken()], () => this.getRoles(query)
+  );
   //#endregion getRoles
   //#region registrar
-  readonly registrarPath = "/api/Usuario/Registrar";
-  registrar = async (data: any) =>
-    axios
-      .post(this.getURL({ path: this.registrarPath }).toString(), data)
-      .then(async (response) => {
-        if (response.status === 200) return response.data;
-        return Promise.reject(
-          new AxiosError(`Error en la petición: ${response.data}`)
-        );
-      });
-  useRegistrar = (data: any) =>
-    useSWR([this.basePath, this.registrarPath, JSON.stringify(data)], () =>
-      this.registrar(data)
+  readonly registrarURL = () => this.getURL({ path: "/api/Usuario/Registrar" }).toString();
+  registrar = async (data: any) => axios.post(
+    this.registrarURL(), data
+  ).then(async (response) => {
+    if (response.status === 200) return response.data;
+    return Promise.reject(
+      new AxiosError(`Error en la petición: ${response.data}`)
     );
+  });
+  useRegistrar = (data: any) => useSWR(
+    [this.registrarURL()], () => this.registrar(data)
+  );
   //#endregion registrar
   //#region tablas
-  readonly tablasPath = "/api/Tablas";
-  private tablasToken = "";
-  tablas = async () => {
-    const token = (await getSession())?.accessToken ?? "";
-    if (token !== this.tablasToken) this.tablasToken = token;
-    return axios
-      .get<Tabla[]>(this.getURL({ path: this.tablasPath }).toString(), {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then(({ data }) => data);
-  };
-  useTablas = () =>
-    useSWR([this.basePath, this.tablasPath, this.tablasToken], () =>
-      this.tablas()
-    );
+  readonly tablasURL = () => this.getURL({ path: "/api/Tablas" }).toString();
+  tablas = async () => tokenizable.get<Tabla[]>(
+    this.tablasURL()
+  ).then(({ data }) => data);
+  useTablas = () => useSWR(
+    [this.tablasURL(), token.getToken()], () => this.tablas()
+  );
   //#endregion tablas
-
   //#region actualizarTareas
-  readonly tareasUpdatePath = "/api/Usuario/Tareas";
+  readonly tareasUpdateURL = (usuarioId: string) => this.getURL({ path: `/api/Usuario/Tareas/${usuarioId}` }).toString();
   tareasUpdate = async (
     usuarioId: string,
     data: Array<{ tareaId: number; habilitada: boolean }>
-  ) => {
-    const token = (await getSession())?.accessToken ?? "";
-    const fullPath = `${this.tareasUpdatePath}/${usuarioId}`;
-    
-    return axios
-      .put(
-        this.getURL({ path: fullPath }).toString(),
-        data, // Solo los datos van en el body
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-      .then(async (response) => {
-        if (response.status === 200) return response.data;
-        return Promise.reject(
-          new AxiosError(`Error en la petición: ${response.data}`)
-        );
-      });
-  };
-
-  useTareasUpdate = (usuarioId:string, data: any) =>
-    useSWR([this.basePath, this.tareasUpdatePath, usuarioId, JSON.stringify(data)], () =>
-      this.tareasUpdate(usuarioId, data)
+  ) => tokenizable.put(
+    this.tareasUpdateURL(usuarioId),
+    data, // Solo los datos van en el body
+  ).then(async (response) => {
+    if (response.status === 200) return response.data;
+    return Promise.reject(
+      new AxiosError(`Error en la petición: ${response.data}`)
     );
+  });
+  useTareasUpdate = (usuarioId: string, data: Array<{ tareaId: number; habilitada: boolean }>) => useSWR(
+    [this.tareasUpdateURL(usuarioId), token.getToken(), JSON.stringify(data)],
+    () => this.tareasUpdate(usuarioId, data)
+  );
   //#endregion actualizarTareas
 }
 
