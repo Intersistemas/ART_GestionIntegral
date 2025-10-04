@@ -7,7 +7,7 @@ import { env } from "process";
 
 //#region Types
 export interface Auditable {
-  createdDate?: string;
+  createdDate?: string; 
   createdBy?: string;
   lastModifiedDate?: string;
   lastModifiedBy?: string;
@@ -107,10 +107,10 @@ export interface Tabla extends Auditable {
 //#endregion Types
 
 export class UsuarioAPIClass extends ExternalAPI {
-  readonly basePath =
-    process.env.NODE_ENV === "development"
-      ? "http://localhost:7166"
-      : "http://arttest.intersistemas.ar:8301"; ///ToDo: debo agregarlo al env.
+
+
+
+  readonly basePath = process.env.NEXT_PUBLIC_API_SEGURIDAD_URL || 'http://fallback-prod.url'; 
   //#region login
   readonly loginPath = "/api/Usuario/Login";
   login = async (login: LoginCommand) =>

@@ -4,7 +4,7 @@ import { ExternalAPI } from "./api";
 import RefEmpleador from "@/app/inicio/usuarios/interfaces/RefEmpleador";
 
 export class ArtAPIClass extends ExternalAPI {
-  readonly basePath = "http://arttest.intersistemas.ar:8302"; ///ToDo: debo agregarlo al env.
+  readonly basePath = process.env.NEXT_PUBLIC_API_ART_URL || 'http://fallback-prod.url'; 
   //#region RefEmpleadores
   readonly refEmpleadoresPath = "/api/Empresas";
   getRefEmpleadores = async () => axios.get<RefEmpleador[]>(

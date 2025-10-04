@@ -13,7 +13,7 @@ const getCurrentPeriodo = (): number => {
 };
 
 export class GestionEmpleadorAPIClass extends ExternalAPI {
-  readonly basePath = "http://arttest.intersistemas.ar:8670"; ///ToDo: debo agregarlo al env.
+  readonly basePath = process.env.NEXT_PUBLIC_API_EMPLEADOR_URL || 'http://fallback-prod.url'; 
   //#region Personal
   readonly getPersonalPath = "/api/AfiliadoCuentaCorriente/";
   private getPersonalToken = "";
