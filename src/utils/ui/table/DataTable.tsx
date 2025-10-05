@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState } from "react";
 import {
   useReactTable,
@@ -12,8 +11,24 @@ import {
   SortingState,
   ColumnFiltersState,
   VisibilityState,
+  RowSelectionState,
 } from "@tanstack/react-table";
-import { Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Paper, Box, IconButton, TextField, CircularProgress } from "@mui/material";
+
+import {
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableContainer,
+  Paper,
+  Box,
+  IconButton,
+  TextField,
+  CircularProgress,
+  Checkbox
+} from "@mui/material";
+
 import {
   ArrowDownward,
   ArrowUpward,
@@ -24,7 +39,9 @@ import {
 } from "@mui/icons-material";
 import styles from "./DataTable.module.css";
 
+
 interface DataTableProps<TData extends object> {
+
   data: TData[];
   columns: ColumnDef<TData, any>[];
   pageSizeOptions?: number[];
@@ -33,9 +50,15 @@ interface DataTableProps<TData extends object> {
   size?: 'mid' | 'small';
   isLoading?: boolean;
   onRowClick?: (rowData: TData) => void;
+
+  // 💡 NUEVAS PROPIEDADES PARA SELECCIÓN
+  enableRowSelection?: boolean; // Activa la funcionalidad de selección
+  initialRowSelection?: RowSelectionState; // Estado inicial de selección
+  onRowSelectionChange?: (selectedRows: TData[]) => void; // Callback para filas seleccionadas
 }
 
 export function DataTable<TData extends object>({
+
   data,
   columns,
   pageSizeOptions,
@@ -44,18 +67,24 @@ export function DataTable<TData extends object>({
   size = 'mid',
   isLoading = false,
   onRowClick,
+  enableRowSelection = false, // Valor por defecto
+  initialRowSelection = {},
+  onRowSelectionChange,
 }: DataTableProps<TData>) {
+
   const defaultProps = {
     mid: {
       pageSizeOptions: [10, 20, 30, 40, 50],
       enableSorting: true,
       enableFiltering: true,
     },
+
     small: {
       pageSizeOptions: [5, 10, 15],
       enableSorting: true,
       enableFiltering: true,
     }
+
   };
 
   const resolvedProps = {
@@ -65,29 +94,84 @@ export function DataTable<TData extends object>({
     enableFiltering: enableFiltering ?? defaultProps[size].enableFiltering,
   };
 
+
+
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [globalFilter, setGlobalFilter] = useState('');
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>(initialRowSelection);
+
+  // 💡 Función de utilidad para manejar los cambios de selección
+  const handleRowSelectionChange = (updater: RowSelectionState | ((old: RowSelectionState) => RowSelectionState)) => {
+
+    setRowSelection(updater);
+    // Llamar al callback con las filas seleccionadas
+    if (onRowSelectionChange) {
+      const newSelection = typeof updater === 'function' ? updater(rowSelection) : updater;
+      const selectedRows = table.getSelectedRowModel().flatRows.map(row => row.original);
+      onRowSelectionChange(selectedRows);
+    }
+  };
+
+ 
+
+  // 💡 NUEVA COLUMNA DE SELECCIÓN
+
+  const selectionColumn: ColumnDef<TData> = {
+    id: 'select',
+
+    header: ({ table }) => (
+      // Checkbox para seleccionar/deseleccionar todas las filas
+      <Checkbox
+        checked={table.getIsAllRowsSelected()}
+        indeterminate={table.getIsSomeRowsSelected()}
+        onChange={table.getToggleAllRowsSelectedHandler()}
+        className={styles.selectionCheckbox}
+      />
+    ),
+    cell: ({ row }) => (
+      // Checkbox individual para la fila
+      <Checkbox
+        checked={row.getIsSelected()}
+        disabled={!row.getCanSelect()}
+        indeterminate={row.getIsSomeSelected()}
+        onChange={row.getToggleSelectedHandler()}
+        className={styles.selectionCheckbox}
+      />
+    ),
+    size: 50, // Pequeño tamaño para el checkbox
+    minSize: 50,
+    maxSize: 50,
+  };
+
+  // 💡 Ensamblar la lista final de columnas
+  const finalColumns: ColumnDef<TData, any>[] = enableRowSelection
+    ? [selectionColumn, ...columns]
+    : columns;
 
   const table = useReactTable({
     data,
-    columns,
+    columns: finalColumns, 
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       globalFilter,
+      rowSelection, 
     },
+
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onGlobalFilterChange: setGlobalFilter,
+    onRowSelectionChange: handleRowSelectionChange, // 💡 NUEVO: Handler de selección
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    enableRowSelection: enableRowSelection, // 💡 Habilitar/Deshabilitar la selección
     initialState: {
       pagination: {
         pageSize: resolvedProps.pageSizeOptions?.[0] ?? 10
@@ -97,9 +181,10 @@ export function DataTable<TData extends object>({
 
   const cellPaddingClass = size === 'small' ? styles.smallCell : styles.midCell;
   const headerPaddingClass = size === 'small' ? styles.smallHeader : styles.midHeader;
-  
+
   return (
     <Box className={styles.tableContainer}>
+
       {resolvedProps.enableFiltering && (
         <TextField
           label="Buscar en la tabla..."
@@ -119,13 +204,8 @@ export function DataTable<TData extends object>({
                     key={header.id}
                     colSpan={header.colSpan}
                     className={`${styles.tableHeaderCell} ${headerPaddingClass}`}
-                    onClick={resolvedProps.enableSorting ? header.column.getToggleSortingHandler() : undefined}
-                    sx={{
-                      cursor: resolvedProps.enableSorting ? 'pointer' : 'default',
-                      width: header.getSize() === 150 ? 'auto' : header.getSize(),
-                      minWidth: header.column.columnDef.minSize,
-                      maxWidth: header.column.columnDef.maxSize,
-                    }}
+                    // 💡 Condición para desactivar sorting en la columna de selección
+                    onClick={resolvedProps.enableSorting && header.id !== 'select' ? header.column.getToggleSortingHandler() : undefined}
                   >
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       {header.isPlaceholder ? null : (
@@ -141,9 +221,9 @@ export function DataTable<TData extends object>({
             ))}
           </TableHead>
           <TableBody>
-            {isLoading ? (
+            {isLoading ? ( /* ... (Carga/Loading sin cambios) ... */
               <TableRow>
-                <TableCell colSpan={columns.length} className={styles.loadingCell}>
+                <TableCell colSpan={finalColumns.length} className={styles.loadingCell}>
                   <CircularProgress color="primary" />
                   <Box mt={2}>Cargando...</Box>
                 </TableCell>
@@ -152,23 +232,18 @@ export function DataTable<TData extends object>({
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  className={styles.tableRow}
+                  className={`${styles.tableRow} ${row.getIsSelected() ? styles.selectedRow : ''}`}
+                  // 💡 Si hay onRowClick, el click en la fila lo maneja, sino, el checkbox
                   onClick={() => {
-                    onRowClick?.(row.original);
                     setSelectedRowId(row.id);
+                    onRowClick?.(row.original);
                   }}
                   sx={{ cursor: onRowClick ? 'pointer' : 'default' }}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
                       key={cell.id}
-                      // Aplica la clase `selectedCell` a cada celda si la fila está seleccionada.
                       className={`${styles.tableBodyCell} ${cellPaddingClass} ${row.id === selectedRowId ? styles.selectedCell : ''}`}
-                      sx={{
-                        width: cell.column.getSize() === 150 ? 'auto' : cell.column.getSize(),
-                        minWidth: cell.column.columnDef.minSize,
-                        maxWidth: cell.column.columnDef.maxSize,
-                      }}
                     >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
@@ -177,7 +252,7 @@ export function DataTable<TData extends object>({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className={styles.noDataCell}>
+                <TableCell colSpan={finalColumns.length} className={styles.noDataCell}>
                   No se encontraron datos.
                 </TableCell>
               </TableRow>

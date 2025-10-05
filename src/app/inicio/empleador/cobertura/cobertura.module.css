@@ -1,0 +1,37 @@
+/* components/cobertura/cobertura.module.css */
+
+.inicioContainer {
+    padding: 20px;
+}
+
+.header {
+    margin-bottom: 20px;
+}
+
+.mainTitle {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--negro); /* Utiliza la variable --negro (asumiendo que viene de globals) */
+    margin-top: 5px;
+}
+
+/* --- Nuevo Layout de Doble Tabla --- */
+.dualTableContainer {
+    display: flex;
+    gap: 16px; /* Espacio entre las tablas y el panel de botones */
+    align-items: flex-start; /* Alinea las tablas en la parte superior */
+    flex-wrap: wrap; /* Permite que el contenido se ajuste en pantallas pequeñas */
+}
+
+.tablePanel {
+    flex: 1; /* Permite que cada tabla ocupe espacio equitativamente */
+    min-width: 300px; /* Ancho mínimo para mantener la usabilidad */
+}
+
+.controlsPanel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-self: center; /* Centra verticalmente los botones respecto a las tablas */
+    min-width: 120px;
+}

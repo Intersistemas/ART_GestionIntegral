@@ -1,7 +1,9 @@
 export type Persona = {
   interno: number;
-  CUIL: number;
-  nombre: string;
+  cuil: number;
+  nombreEmpleador: string;
+  internoAfiliadoDatos: string;
+  periodo: number;
 }
 
 export type Parameters = {
