@@ -11,11 +11,28 @@
 .mainTitle {
     font-size: 2.5rem;
     font-weight: bold;
-    color: var(--negro); /* Utiliza la variable --negro (asumiendo que viene de globals) */
+    color: var(--negro);
     margin-top: 5px;
 }
 
-/* --- Nuevo Layout de Doble Tabla --- */
+.tableTitle{
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--negro); 
+}
+
+.detalles{
+    margin-top: 20px;
+    border-top: 1px solid #ccc;
+    padding-top: 10px;
+}
+
+.tableContainer {
+    display: flex;
+    gap: 10px; /* Espacio entre las tablas y el panel de botones */
+    flex-wrap: wrap; /* Permite que el contenido se ajuste en pantallas pequeñas */
+}
+
 .dualTableContainer {
     display: flex;
     gap: 16px; /* Espacio entre las tablas y el panel de botones */
@@ -34,4 +51,8 @@
     gap: 10px;
     align-self: center; /* Centra verticalmente los botones respecto a las tablas */
     min-width: 120px;
+}
+
+.leyendaLegal {
+    font-size: 1.2rem;
 }

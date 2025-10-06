@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
-// Asumiendo que estas importaciones son manejadas por el entorno de ejecución
+import React, { useState, useEffect, useMemo, useCallback } from 'react'; 
 import { useAuth } from '@/data/AuthContext'; 
 import gestionEmpleadorAPI from "@/data/gestionEmpleadorAPI";
 import Persona from './types/persona';
@@ -9,16 +8,14 @@ import DataTable from '@/utils/ui/table/DataTable';
 import { ColumnDef } from '@tanstack/react-table';
 import styles from "./cobertura.module.css";
 import CustomButton from '@/utils/ui/button/CustomButton';
-import { BsBoxArrowInLeft, BsBoxArrowInRight , BsBoxArrowLeft } from "react-icons/bs";
-
+import { BsBoxArrowInLeft, BsBoxArrowInRight } from "react-icons/bs";
+import { Box, TextField } from '@mui/material';
 
 const { useGetPersonal } = gestionEmpleadorAPI;
 
 export default function CoberturaPage() {
-    
-    // Obtención de datos simulada
+
     const { data: personalRawData, isLoading: isPersonalLoading } = useGetPersonal(); 
-    // const { user, status } = useAuth(); // Asumiendo que useAuth funciona correctamente
     
     // Estados para las dos tablas: Pendiente (Origen) y Cubierto (Destino)
     const [personalPendiente, setPersonalPendiente] = useState<Persona[]>([]);
@@ -27,6 +24,10 @@ export default function CoberturaPage() {
     // Estados para las selecciones de filas en cada tabla
     const [selectedPendiente, setSelectedPendiente] = useState<Persona[]>([]);
     const [selectedCubierto, setSelectedCubierto] = useState<Persona[]>([]);
+    
+    // ESTADOS PARA LOS NUEVOS CAMPOS DE ENTRADA (newCuil es number | null)
+    const [newCuil, setNewCuil] = useState<number | null>(null); 
+    const [newNombre, setNewNombre] = useState<string>('');
 
     // Inicializa personalPendiente con los datos crudos cuando se cargan
     useEffect(() => {
@@ -46,14 +47,31 @@ export default function CoberturaPage() {
         },
     ], []);
 
-    // Handlers para la selección en cada tabla
-    const handleSelectionPendiente = (selectedRows: Persona[]) => {
+    // Handlers para la selección (estabilizados con useCallback)
+    const handleSelectionPendiente = useCallback((selectedRows: Persona[]) => {
         setSelectedPendiente(selectedRows);
-    };
+    }, []); 
 
-    const handleSelectionCubierto = (selectedRows: Persona[] | null) => {
-        // En la lógica de DataTable anterior, se pasa un array de filas seleccionadas.
+    const handleSelectionCubierto = useCallback((selectedRows: Persona[] | null) => {
         setSelectedCubierto(selectedRows || []);
+    }, []); 
+
+    // HANDLER PARA EL INPUT DE CUIL: Asegura que el estado sea number o null.
+    const handleInputCuil = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value.trim();
+        
+        // Si el campo está vacío, establece null
+        if (value === '') {
+            setNewCuil(null);
+            return;
+        }
+
+        // Si hay texto, valida que sean solo dígitos
+        if (/^\d+$/.test(value)) {
+            // Convierte a número y almacena en el estado
+            setNewCuil(parseInt(value, 10));
+        }
+        // Si no son dígitos, simplemente ignora la entrada (no actualiza el estado)
     };
 
     // Función principal: Mover de PENDIENTE a CUBIERTO
@@ -62,18 +80,13 @@ export default function CoberturaPage() {
 
         const selectedCuils = new Set(selectedPendiente.map(p => p.cuil));
 
-        // 1. Eliminar los seleccionados de Pendiente
         const newPendiente = personalPendiente.filter(p => !selectedCuils.has(p.cuil));
-
-        // 2. Añadir los seleccionados a Cubierto
         const newCubierto = [...personalCubierto, ...selectedPendiente];
 
-        // 3. Actualizar estados
         setPersonalPendiente(newPendiente);
         setPersonalCubierto(newCubierto);
         
-        // 4. Limpiar selección
-        setSelectedPendiente([]);
+        setSelectedPendiente([]); 
     };
 
     // Función secundaria: Mover de CUBIERTO a PENDIENTE
@@ -82,19 +95,47 @@ export default function CoberturaPage() {
 
         const selectedCuils = new Set(selectedCubierto.map(p => p.cuil));
 
-        // 1. Eliminar los seleccionados de Cubierto
         const newCubierto = personalCubierto.filter(p => !selectedCuils.has(p.cuil));
-
-        // 2. Añadir los seleccionados a Pendiente
         const newPendiente = [...personalPendiente, ...selectedCubierto];
 
-        // 3. Actualizar estados
         setPersonalCubierto(newCubierto);
         setPersonalPendiente(newPendiente);
-        
-        // 4. Limpiar selección
         setSelectedCubierto([]);
     };
+    
+    // FUNCIÓN PARA AGREGAR FILA A LA TABLA CUBIERTO
+    const handleAddFila = () => {
+        // Validar que newCuil no sea null (válido) y que newNombre no esté vacío
+        if (newCuil === null || !newNombre.trim()) {
+            alert("Por favor, ingrese CUIT/CUIL y Nombre válidos.");
+            return;
+        }
+
+        // Verificar duplicados
+        const isDuplicate = personalCubierto.some(p => p.cuil === newCuil) ||
+                            personalPendiente.some(p => p.cuil === newCuil);
+        
+        if (isDuplicate) {
+            alert(`El CUIT/CUIL ${newCuil} ya existe en las listas.`);
+            return;
+        }
+
+        // Crear el nuevo objeto Persona usando newCuil (que ya es number)
+        const newPerson: Persona = {
+            cuil: newCuil, 
+            nombreEmpleador: newNombre.trim(),
+            // Se asume que otras propiedades opcionales quedan sin definir
+        };
+
+        // Añadir a la lista de cubiertos
+        setPersonalCubierto(prev => [...prev, newPerson]);
+
+        // Limpiar campos de entrada
+        setNewCuil(null);
+        setNewNombre('');
+    };
+
+    const isAddButtonDisabled = newCuil === null || newNombre.trim() === '';
 
     return ( 
         <div className={styles.inicioContainer}>
@@ -106,7 +147,7 @@ export default function CoberturaPage() {
                 
                 {/* -------------------- TABLA DE PERSONAL PENDIENTE -------------------- */}
                 <div className={styles.tablePanel}>
-                    <h2>Personal Pendiente ({personalPendiente.length})</h2>
+                    <h2 className={styles.tableTitle}>Personal Pendiente ({personalPendiente.length})</h2>
                     <DataTable
                         data={personalPendiente} 
                         columns={columns} 
@@ -114,9 +155,7 @@ export default function CoberturaPage() {
                         isLoading={isPersonalLoading}
                         enableRowSelection={true}
                         onRowSelectionChange={handleSelectionPendiente}
-                        // Usamos una clave para forzar la re-inicialización del estado de selección
-                        // de la tabla si es necesario (aunque el cambio de 'data' debería bastar)
-                        key={`pendiente-${personalPendiente.length}`}
+                        key={`pendiente-${personalPendiente.length}`} 
                     />
                 </div>
 
@@ -135,13 +174,13 @@ export default function CoberturaPage() {
                         disabled={selectedCubierto.length === 0}
                         title="Mover personal seleccionado de vuelta a 'Pendiente'"
                     >
-                    <BsBoxArrowInLeft style={{fontSize: "2.5rem"}} />LIBERAR
+                    <BsBoxArrowInLeft style={{fontSize: "2.5rem"}} />QUITAR
                     </CustomButton>
                 </div>
 
                 {/* -------------------- TABLA DE PERSONAL CUBIERTO -------------------- */}
                 <div className={styles.tablePanel}>
-                    <h2>Personal Cubierto ({personalCubierto.length})</h2>
+                    <h2 className={styles.tableTitle}>Personal Cubierto ({personalCubierto.length})</h2>
                     <DataTable
                         data={personalCubierto} 
                         columns={columns} 
@@ -151,10 +190,43 @@ export default function CoberturaPage() {
                         onRowSelectionChange={handleSelectionCubierto}
                         key={`cubierto-${personalCubierto.length}`}
                     />
+
+                    {/* NUEVOS CAMPOS DE ENTRADA Y BOTÓN */}
+                    <Box className={styles.tableContainer}>
+                        <TextField
+                            label="CUIL"
+                            type="text"
+                            placeholder="CUIT/CUIL"
+                            // Muestra el número o cadena vacía si es null
+                            value={newCuil === null ? '' : newCuil.toString()} 
+                            onChange={handleInputCuil} 
+                            className={styles.inputField}                  
+                        />
+                        <TextField
+                            label="Nombre"
+                            type="text"
+                            placeholder="Nombre Trabajador"
+                            value={newNombre}
+                            onChange={(e) => setNewNombre(e.target.value)}
+                            className={styles.inputField}
+                        />
+                        <CustomButton 
+                            onClick={handleAddFila}
+                            disabled={isAddButtonDisabled}
+                            title="Agregar Trabajador Cubierto"
+                        >
+                            AGREGAR
+                        </CustomButton>
+                    </Box>
+
+                    <p className={styles.leyendaLegal}>
+                        <strong>Sr. empleador, le recordamos que cualquier modificación a la nómina presentada es considerada una DDJJ.</strong><br/>
+                        Los datos se recolectan únicamente para ser utilizados con motivo de la relación comercial que lo vincula con la compañía (art. 6° ley 25.326).
+                    </p>
                 </div>
             </div>
             
-            <div style={{marginTop: '20px', borderTop: '1px solid #ccc', paddingTop: '10px'}}>
+            <div className={styles.detalles}>
                 <h3>Detalle de Selecciones</h3>
                 <p>Seleccionados en Pendiente: {selectedPendiente.length}</p>
                 <p>Seleccionados en Cubierto: {selectedCubierto.length}</p>
