@@ -635,7 +635,7 @@ const NuevoFormularioRAR: React.FC<NuevoFormularioRARProps & { formulariosRAR: a
     return (
       <BaseDocumentPDF
         title={`Formulario RAR #${datos.interno || datos.InternoFormularioRAR}`}
-        headerComponent={SimpleHeader}
+         headerComponent={SimpleHeader as any}
         columns={columnas}
         data={datosFormateados}
         orientation="landscape"
@@ -788,6 +788,7 @@ const NuevoFormularioRAR: React.FC<NuevoFormularioRARProps & { formulariosRAR: a
                 }
               ]}
               data={filas}
+              size='small'
             />
           </div>
         )}
@@ -1259,7 +1260,7 @@ const FormulariosRAR: React.FC<FormulariosRARProps> = ({ cuit, referenteDatos })
     return (
       <BaseDocumentPDF
         title={`Formulario RAR #${datos.interno || datos.InternoFormularioRAR}`}
-        headerComponent={SimpleHeader}
+         headerComponent={SimpleHeader as any}
         columns={columnas}
         data={datosFormateados}
         orientation="landscape"
@@ -1398,6 +1399,7 @@ const FormulariosRAR: React.FC<FormulariosRARProps> = ({ cuit, referenteDatos })
               columns={tableColumns}
               data={formulariosRAR}
               onRowClick={onRowClick}
+              size='small'
             />
           </div>
 

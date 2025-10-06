@@ -27,7 +27,7 @@ const menuItems: MenuItem[] = [
         permissionTask: "Favoritos",
     },
     {
-        name: "inicio",
+        name: "Inicio",
         icon: BsLayoutSplit,
         link: "/inicio",
         permissionTask: "inicio",
