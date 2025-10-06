@@ -167,7 +167,7 @@ export function SiniestrosContextProvider({ children }: { children: ReactNode })
 
       { name: "CuitPrestadorInicial", label: "CUIT Prestador Inicial", type: "number", formatter: cuipFormatter },
       { name: "PrestadorInicial", label: "Prestador Inicial" },
-      { name: "CuitPrestadorActual", label: "Prestador Actual" },
+      { name: "PrestadorActual", label: "CUIT Prestador Actual" },
 
       { name: "FechaAltaMedica", label: "Fecha Alta Médica", type: "date", formatter: fechaFormatter },
       { name: "DiasIlt", label: "Días ILT", type: "number", formatter: numeroFormatter },
