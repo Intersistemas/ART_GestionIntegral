@@ -24,7 +24,7 @@ import {
 import QueriesAPI, { type Query } from "@/data/queryAPI";
 import Formato from "@/utils/Formato";
 import propositionFormat from "@/utils/PropositionFormatQuery";
-import { defaultOperators } from "@/utils/QueryBuilderDefaults";
+import { operators } from "@/utils/ui/QueryBuilderDefaults";
 import { ColumnDef } from "@tanstack/react-table";
 
 // ===== Tipos =====

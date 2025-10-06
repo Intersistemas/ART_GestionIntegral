@@ -239,9 +239,6 @@ export default function CoberturaPage() {
                 
             </div>
             <div className={styles.detalles}>
-                <h3>Detalle de Selecciones</h3>
-                <p>Seleccionados en Pendiente: {selectedPendiente.length}</p>
-                <p>Seleccionados en Cubierto: {selectedCubierto.length}</p>
             </div>
             
             {/* -------------------- SECCIÓN DE CERTIFICADO DE COBERTURA -------------------- */}
