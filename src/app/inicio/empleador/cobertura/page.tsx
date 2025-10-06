@@ -8,18 +8,27 @@ import DataTable from '@/utils/ui/table/DataTable';
 import { ColumnDef } from '@tanstack/react-table';
 import styles from "./cobertura.module.css";
 import CustomButton from '@/utils/ui/button/CustomButton';
-import { BsBoxArrowInLeft, BsBoxArrowInRight } from "react-icons/bs";
-import { Box, TextField } from '@mui/material';
+import { BsBoxArrowInLeft, BsBoxArrowInRight, BsDownload } from "react-icons/bs";
+import { Box, TextField, Typography } from '@mui/material';
+import Image from 'next/image';
 
-const { useGetPersonal } = gestionEmpleadorAPI;
+const { useGetPersonal, useGetPoliza } = gestionEmpleadorAPI;
+
+const handleDownload = () => {
+    alert("Iniciando descarga del certificado...");
+    // Aquí iría la lógica real para generar/descargar el PDF
+};
 
 export default function CoberturaPage() {
-
+   
     const { data: personalRawData, isLoading: isPersonalLoading } = useGetPersonal(); 
+    const { data: polizaData, isLoading: isPolizaLoading } = useGetPoliza(); 
     
     // Estados para las dos tablas: Pendiente (Origen) y Cubierto (Destino)
     const [personalPendiente, setPersonalPendiente] = useState<Persona[]>([]);
     const [personalCubierto, setPersonalCubierto] = useState<Persona[]>([]);
+
+    const [presentadoA, setPresentadoA] = useState<string>('');
 
     // Estados para las selecciones de filas en cada tabla
     const [selectedPendiente, setSelectedPendiente] = useState<Persona[]>([]);
@@ -29,6 +38,8 @@ export default function CoberturaPage() {
     const [newCuil, setNewCuil] = useState<number | null>(null); 
     const [newNombre, setNewNombre] = useState<string>('');
 
+
+    console.log("polizaData",polizaData)
     // Inicializa personalPendiente con los datos crudos cuando se cargan
     useEffect(() => {
         if (personalRawData && personalRawData.length > 0) {
@@ -47,7 +58,7 @@ export default function CoberturaPage() {
         },
     ], []);
 
-    // Handlers para la selección (estabilizados con useCallback)
+
     const handleSelectionPendiente = useCallback((selectedRows: Persona[]) => {
         setSelectedPendiente(selectedRows);
     }, []); 
@@ -56,11 +67,9 @@ export default function CoberturaPage() {
         setSelectedCubierto(selectedRows || []);
     }, []); 
 
-    // HANDLER PARA EL INPUT DE CUIL: Asegura que el estado sea number o null.
+
     const handleInputCuil = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value.trim();
-        
-        // Si el campo está vacío, establece null
         if (value === '') {
             setNewCuil(null);
             return;
@@ -105,15 +114,13 @@ export default function CoberturaPage() {
     
     // FUNCIÓN PARA AGREGAR FILA A LA TABLA CUBIERTO
     const handleAddFila = () => {
-        // Validar que newCuil no sea null (válido) y que newNombre no esté vacío
         if (newCuil === null || !newNombre.trim()) {
             alert("Por favor, ingrese CUIT/CUIL y Nombre válidos.");
             return;
         }
 
         // Verificar duplicados
-        const isDuplicate = personalCubierto.some(p => p.cuil === newCuil) ||
-                            personalPendiente.some(p => p.cuil === newCuil);
+        const isDuplicate = personalCubierto.some(p => p.cuil === newCuil) || personalPendiente.some(p => p.cuil === newCuil);
         
         if (isDuplicate) {
             alert(`El CUIT/CUIL ${newCuil} ya existe en las listas.`);
@@ -124,7 +131,6 @@ export default function CoberturaPage() {
         const newPerson: Persona = {
             cuil: newCuil, 
             nombreEmpleador: newNombre.trim(),
-            // Se asume que otras propiedades opcionales quedan sin definir
         };
 
         // Añadir a la lista de cubiertos
@@ -147,7 +153,10 @@ export default function CoberturaPage() {
                 
                 {/* -------------------- TABLA DE PERSONAL PENDIENTE -------------------- */}
                 <div className={styles.tablePanel}>
-                    <h2 className={styles.tableTitle}>Personal Pendiente ({personalPendiente.length})</h2>
+                    <div className={styles.detalles}>
+                        <h2 className={styles.tableTitle}>Personal Pendiente ({personalPendiente.length})</h2>
+                        <p>Seleccionados: {selectedPendiente.length}</p>
+                    </div>
                     <DataTable
                         data={personalPendiente} 
                         columns={columns} 
@@ -180,7 +189,10 @@ export default function CoberturaPage() {
 
                 {/* -------------------- TABLA DE PERSONAL CUBIERTO -------------------- */}
                 <div className={styles.tablePanel}>
-                    <h2 className={styles.tableTitle}>Personal Cubierto ({personalCubierto.length})</h2>
+                    <div className={styles.detalles}>
+                        <h2 className={styles.tableTitle}>Personal Cubierto ({personalCubierto.length})</h2>
+                        <p>Seleccionados: {selectedCubierto.length}</p> 
+                    </div>
                     <DataTable
                         data={personalCubierto} 
                         columns={columns} 
@@ -192,12 +204,11 @@ export default function CoberturaPage() {
                     />
 
                     {/* NUEVOS CAMPOS DE ENTRADA Y BOTÓN */}
-                    <Box className={styles.tableContainer}>
+                    <Box className={styles.inputSection}> {/* Usamos Box y el style de la sección de inputs */}
                         <TextField
                             label="CUIL"
                             type="text"
-                            placeholder="CUIT/CUIL"
-                            // Muestra el número o cadena vacía si es null
+                            placeholder="CUIL"
                             value={newCuil === null ? '' : newCuil.toString()} 
                             onChange={handleInputCuil} 
                             className={styles.inputField}                  
@@ -214,6 +225,7 @@ export default function CoberturaPage() {
                             onClick={handleAddFila}
                             disabled={isAddButtonDisabled}
                             title="Agregar Trabajador Cubierto"
+                            icon={<BsBoxArrowInLeft/>}
                         >
                             AGREGAR
                         </CustomButton>
@@ -224,12 +236,111 @@ export default function CoberturaPage() {
                         Los datos se recolectan únicamente para ser utilizados con motivo de la relación comercial que lo vincula con la compañía (art. 6° ley 25.326).
                     </p>
                 </div>
+                
             </div>
-            
             <div className={styles.detalles}>
                 <h3>Detalle de Selecciones</h3>
                 <p>Seleccionados en Pendiente: {selectedPendiente.length}</p>
                 <p>Seleccionados en Cubierto: {selectedCubierto.length}</p>
+            </div>
+            
+            {/* -------------------- SECCIÓN DE CERTIFICADO DE COBERTURA -------------------- */}
+            
+            <div className={styles.downloadButtonContainer}>
+                <CustomButton 
+                    onClick={handleDownload}
+                    variant="contained"
+                    color="primary"
+                    icon={<BsDownload />}
+                    size="large"
+                >
+                    DESCARGAR CERTIFICADO DE COBERTURA
+                </CustomButton>
+            </div>
+            <div className={styles.certificadoContainer}>
+                {/* Contenido del Certificado */}
+                <div className={styles.certificadoContent}>
+                    <h2 className={styles.certificadoTitle}>CERTIFICADO DE COBERTURA</h2>
+                    
+                    <Image
+                        src="/icons/Logo.svg"
+                        alt="Logo ART Mutual Rural"
+                        width={500}
+                        height={500}
+                        className={styles.logoWrapper}
+                        priority
+                    />
+                   
+                    
+                    <div className={styles.presentadoA}>
+                        <text>
+                            Para ser presentado a:
+                        </text>
+                        <TextField
+                            variant="standard"
+                            placeholder="Ingrese destinatario"
+                            value={presentadoA}
+                            onChange={(e) => setPresentadoA(e.target.value)}
+                            className={styles.inputDestinatario}
+                        />
+                    </div>
+                     <br/>    
+
+                    {/* 🟢 Párrafos del certificado (Respetando negritas y párrafos) */}
+                    <text>
+                        Por intermedio del presente <strong>CERTIFICAMOS</strong> que la empresa bajo la denominación de {polizaData?.empleador_Denominacion || ""}
+                         con N° de CUIT: {polizaData?.cuit || ""} ha contratado la cobertura de <strong>ART MUTUAL RURAL DE SEGUROS DE RIESGOS DEL TRABAJO</strong>,
+                          según los términos de la Ley Nro. 24.557 por lo que el personal declarado oportunamente por el/la mencionado/a se encuentra cubierto a partir
+                           del {polizaData?.vigencia_Desde || ""} hasta el {polizaData?.vigencia_Hasta || ""}.
+                    </text>
+                    <br/>
+                    <text>
+                        El N° del contrato es el {polizaData?.nroContrato || ""}.
+                    </text>
+                     <br/>
+                    <text>
+                        Consta por la presente que <strong>ART MUTUAL RURAL DE SEGUROS DE RIESGOS DEL TRABAJO</strong>, renuncia en forma expresa a reclamar o iniciar toda acción de 
+                        repetición o de regreso contra: A quien corresponda, sus funcionarios, empleados u obreros; sea con fundamento en el art. 39, ap. 5, de la Ley 
+                        N° 24.557, sea en cualquier otra norma jurídica, con motivo de las prestaciones en especie o dinerarias que se vea obligada a abonar, contratar
+                        u otorgar al personal dependiente o ex dependiente de {polizaData?.empleador_Denominacion || ""}, amparados por la cobertura del Contrato de
+                        Afiliación N° {polizaData?.nroContrato || ""}, por accidentes del trabajo o enfermedades profesionales, ocurridos o contraídos por el hecho 
+                        o en ocasión del trabajo. Esta <strong>Cláusula de no repetición</strong> cesará en sus efectos si el empresario comitente a favor de quien 
+                        se emite, no cumple estrictamente con las medidas de prevención e higiene y seguridad en el trabajo, o de cualquier manera infringe la Ley 
+                        N° 19.587, su Decreto Reglamentario N° 351/79 y las normativas que sobre el particular ha dictado la Superintendencia de Riesgos del Trabajo,
+                        las Provincias y la Ciudad Autónoma de la Ciudad de Buenos Aires en el ámbito de su competencia.
+                    </text>
+                     <br/>
+                    <text>
+                        Fuera de las causales que expresamente prevé la normativa vigente, el contrato de afiliación no podrá ser modificado o enmendado sin previa
+                         notificación fehaciente a quien corresponda, en un plazo no inferior a quince (15) días corridos.
+                    </text>
+                    <br/>
+                    <text>
+                        Se deja constancia por la presente que la empresa de referencia se encuentra asegurada en <strong>ART MUTUAL RURAL DE SEGUROS DE RIESGOS DEL TRABAJO</strong>.
+                        El presente certificado tiene una validez de 30 días corridos a partir de la fecha de emisión. En ningún caso ART MUTUAL RURAL DE SEGUROS DE RIESGOS
+                        DEL TRABAJO será responsable de las consecuencias del uso del certificado una vez vencido el plazo de validez.
+                    </text>
+                     <br/>
+                    <text>
+                        Sin otro particular, saludo a Ud. muy atentamente.
+                    </text>
+                     <br/>
+                    <div className={styles.signatureSection}>
+                        <div className={styles.signatureLine}>
+                             <Image
+                                src="/images/FirmaFernanda.png" 
+                                alt="Firma de Fernanda Lassalle"
+                                width={170}
+                                height={200}
+                                priority
+                            />
+                        </div>
+                        <p className={styles.signatureText}>
+                            Cdra. Ma. Fernanda Lassalle<br/>
+                            Gerente de Administración
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
     );

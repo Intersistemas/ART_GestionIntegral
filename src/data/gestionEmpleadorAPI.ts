@@ -28,6 +28,20 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     [this.getPersonalURL(params), token.getToken()], () => this.getPersonal(params) 
   );
   //#endregion
+
+
+  //#region Persona
+  readonly getPolizaURL = (params: Parameters = {}) => {
+    return this.getURL({ path: "/api/SRTPoliza", search: toURLSearch(params) }).toString();
+  };
+  getPoliza = async (params: Parameters = {}) => tokenizable.get(
+    this.getPersonalURL(params),
+  ).then(({ data }) => data);
+  useGetPoliza = (params: Parameters = {}) => useSWR(
+    [this.getPolizaURL(params), token.getToken()], () => this.getPoliza(params) 
+  );
+  //#endregion
+
 }
 
 const gestionEmpleadorAPI = Object.seal(new GestionEmpleadorAPIClass());

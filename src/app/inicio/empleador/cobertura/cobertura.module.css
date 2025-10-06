@@ -27,6 +27,7 @@
     padding-top: 10px;
 }
 
+/* Estilos de la sección dual de tablas */
 .tableContainer {
     display: flex;
     gap: 10px; /* Espacio entre las tablas y el panel de botones */
@@ -35,7 +36,7 @@
 
 .dualTableContainer {
     display: flex;
-    gap: 16px; /* Espacio entre las tablas y el panel de botones */
+    gap: 5%; /* Espacio entre las tablas y el panel de botones */
     align-items: flex-start; /* Alinea las tablas en la parte superior */
     flex-wrap: wrap; /* Permite que el contenido se ajuste en pantallas pequeñas */
 }
@@ -55,4 +56,106 @@
 
 .leyendaLegal {
     font-size: 1.2rem;
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+}
+
+/* -------------------------------------------------- */
+/* ----------- ESTILOS DEL CERTIFICADO -------------- */
+/* -------------------------------------------------- */
+
+.certificadoContainer {
+    border: 1px solid #d0d0d0; /* Borde sutil para delimitar la sección */
+    border-radius: 8px;
+    background-color: #ffffff; /* Fondo blanco */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.downloadButtonContainer {
+    display: flex;
+    justify-content: right; /* Centrar el botón de descarga */
+    margin-bottom: 1%;
+}
+
+.certificadoContent {
+    position: relative;
+    padding: 4% 5%;
+    max-width: 70%;
+    margin: 0 auto;
+    background-color: #fff;
+}
+
+.certificadoTitle {
+    text-align: center;
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 40px;
+    color: var(--naranjaOscuro); /* Color oscuro similar al de la imagen */
+}
+
+/* Estilo para el logo transparente de marca de agua */
+.logoWrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0.1; /* Hace que el logo se vea muy transparente */
+    z-index: 0; /* Asegura que esté detrás del texto */
+    pointer-events: none; /* No interactuable */
+}
+
+.certificadoLogo {
+    width: 250px; /* Ajusta el tamaño del logo */
+    height: auto;
+}
+
+.presentadoA {
+    display: flex;
+    align-items: baseline;
+}
+
+.inputDestinatario{
+    width: 70%;
+    padding: 0% 2% !important;
+}
+/* Asegura que el texto esté sobre el logo */
+.certificadoContent text {
+    display: block;
+    position: relative;
+    z-index: 1; 
+    line-height: 1.8;
+    margin-bottom: 15px;
+    text-align: justify;
+    font-size: 1.5rem;
+    color: var(--grisOscuro);
+}
+
+/* Sección de la firma */
+.signatureSection {
+    margin-top: 60px;
+    text-align: right;
+    position: relative;
+    z-index: 1;
+}
+
+.signatureLine {
+    height: 100px; /* Espacio para la firma y el texto */
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.signatureImage {
+    width: 200px; /* Ajusta el ancho de la firma */
+    height: auto;
+    object-fit: contain;
+    /* Ajuste vertical para simular la posición de la firma sobre la línea */
+    align-self: flex-end; 
+}
+
+.signatureText {
+    font-style: italic;
+    font-size: 1.2rem;
+    margin-top: -30px; /* Sube el texto para que quede bajo la firma */
 }

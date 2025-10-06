@@ -219,13 +219,12 @@ export default function Tareas({ open, onClose, usuario, onSave }: TareasProps) 
         {/* Botones de acción */}
         <Box sx={{ display: 'flex', gap: 2, justifyContent: 'space-between' }}>
           <Box sx={{ display: 'flex', gap: 2 }}>
-            <Button 
+            <CustomButton 
               variant="outlined" 
               onClick={handleVolver}
-              sx={{ backgroundColor: '#6c757d', color: 'white', '&:hover': { backgroundColor: '#5a6268' } }}
             >
               Volver
-            </Button>
+            </CustomButton>
 
             <CustomButton 
               variant="outlined" 

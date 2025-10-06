@@ -8,7 +8,7 @@ import styles from './CustomButton.module.css';
 interface CustomButtonProps extends Omit<ButtonProps, 'classes' | 'size' | 'fullWidth'> {
   children: React.ReactNode;
   variant?: 'contained' | 'outlined' | 'text';
-  color?: 'primary' | 'secondary' | 'error';
+  color?: 'primary' | 'secondary' | 'error' ;
   isLoading?: boolean;
   width?: string;
   icon?: React.ReactNode;
@@ -33,16 +33,25 @@ const CustomButton: React.FC<CustomButtonProps> = ({
     large: styles.large,
   };
   
-  const isSecondaryStyle = color === 'secondary';
+  // Mapeo de color a clase CSS específica
+  const colorClass = {
+    primary: styles.primary,
+    secondary: styles.secondary,
+    error: styles.error,
+  };
+  
+  const baseColorClass = colorClass[color] || styles.primary; 
 
   return (
     <Button
       variant={variant}
       classes={{
-        root: `${styles.customButton} ${isSecondaryStyle ? styles.secondary : ''} ${disabled || isLoading ? styles.disabled : ''} ${sizeClass[size]}`,
+        root: `${styles.customButton} ${baseColorClass} ${disabled || isLoading ? styles.disabled : ''} ${sizeClass[size]}`,
+        // Mantener estas líneas si Material UI las requiere, aunque el estilo principal se maneja en 'root'
         containedPrimary: styles.primary,
       }}
-      className={className}
+      // Aseguramos que la clase de color esté en el className para variantes outlined/text
+      className={`${className} ${baseColorClass}`} 
       disabled={disabled || isLoading}
       style={{ width: width || 'fit-content' }}
       {...props}
