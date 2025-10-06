@@ -1,7 +1,7 @@
 import useSWR from "swr";
 import { ExternalAPI } from "./api";
 import { token } from "./usuarioAPI";
-import Personal, { Parameters } from "@/app/inicio/empleador/cobertura/types/persona";
+import Persona, { Parameters } from "@/app/inicio/empleador/cobertura/types/persona";
 import dayjs from "dayjs";
 import { toURLSearch } from "@/utils/utils";
 
@@ -15,19 +15,33 @@ const getCurrentPeriodo = (): number => {
 
 export class GestionEmpleadorAPIClass extends ExternalAPI {
   readonly basePath = process.env.NEXT_PUBLIC_API_EMPLEADOR_URL || 'http://fallback-prod.url'; 
-  //#region Personal
+  //#region Persona
   readonly getPersonalURL = (params: Parameters = {}) => {
     params.periodo ??= getCurrentPeriodo();
     params.page ??= "1,1";
     return this.getURL({ path: "/api/AfiliadoCuentaCorriente/", search: toURLSearch(params) }).toString();
   };
-  getPersonal = async (params: Parameters = {}) => tokenizable.get<Personal[]>(
+  getPersonal = async (params: Parameters = {}) => tokenizable.get<Persona[]>(
     this.getPersonalURL(params),
   ).then(({ data }) => data);
   useGetPersonal = (params: Parameters = {}) => useSWR(
-    [this.getPersonalURL(params), token.getToken()], () => this.getPersonal(params)
+    [this.getPersonalURL(params), token.getToken()], () => this.getPersonal(params) 
   );
   //#endregion
+
+
+  //#region Persona
+  readonly getPolizaURL = (params: Parameters = {}) => {
+    return this.getURL({ path: "/api/SRTPoliza", search: toURLSearch(params) }).toString();
+  };
+  getPoliza = async (params: Parameters = {}) => tokenizable.get(
+    this.getPersonalURL(params),
+  ).then(({ data }) => data);
+  useGetPoliza = (params: Parameters = {}) => useSWR(
+    [this.getPolizaURL(params), token.getToken()], () => this.getPoliza(params) 
+  );
+  //#endregion
+
 }
 
 const gestionEmpleadorAPI = Object.seal(new GestionEmpleadorAPIClass());

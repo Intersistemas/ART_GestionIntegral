@@ -74,6 +74,9 @@ const theme = createTheme({
   typography: {
     fontFamily: font,
   },
+
+  //MuiInputBase-root-MuiInput-root
+
   components: {
     MuiFormControl: {
       styleOverrides: {
@@ -114,6 +117,15 @@ const theme = createTheme({
         },
       },
     },
+    
+    MuiInputBase: { 
+      styleOverrides: {
+        root: {
+          fontSize: '1.8rem',
+        },
+      },
+    },
+
     MuiTableHead: { /* Data Table HEADER */
       styleOverrides: {
         root: {
@@ -177,6 +189,7 @@ const theme = createTheme({
     },
     
     /*MuiPaper-root-MuiPopover-paper-MuiMenu-paper*/
+
     MuiPaper: {
       styleOverrides: {
         root: {
