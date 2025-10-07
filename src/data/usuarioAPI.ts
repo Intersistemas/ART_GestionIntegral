@@ -103,7 +103,12 @@ export interface Tabla extends Auditable {
   descripcion?: string;
   campos?: Campo[];
 }
+export type TablasSWRKey = [url: string, token: string];
 //#endregion /api/Tablas types
+//#region /api/Tablas/Usuario/{usuarioId}
+export type TablasUsuarioParams = { usuarioId: string };
+export type TablasUsuarioSWRKey = [url: string, token: string, params: string];
+//#endregion /api/Tablas/Usuario/{usuarioId}
 //#endregion Types
 
 //#region token
@@ -183,14 +188,28 @@ export class UsuarioAPIClass extends ExternalAPI {
   );
   //#endregion registrar
   //#region tablas
-  readonly tablasURL = () => this.getURL({ path: "/api/Tablas" }).toString();
+  readonly tablasURL = this.getURL({ path: "/api/Tablas" }).toString();
   tablas = async () => tokenizable.get<Tabla[]>(
-    this.tablasURL()
+    this.tablasURL
   ).then(({ data }) => data);
-  useTablas = () => useSWR(
-    [this.tablasURL(), token.getToken()], () => this.tablas()
-  );
+  swrTablas = Object.freeze({
+    Key: [this.tablasURL, token.getToken()],
+    Fetcher: this.tablas,
+  });
+  useTablas = () => useSWR(this.swrTablas.Key, this.swrTablas.Fetcher);
   //#endregion tablas
+  //#region tablasUsuario
+  readonly tablasUsuarioURL = ({ usuarioId }: TablasUsuarioParams) =>
+    this.getURL({ path: `/api/Tablas/Usuario/${usuarioId}` }).toString();
+  tablasUsuario = async (params: TablasUsuarioParams) => tokenizable.get<Tabla[]>(
+    this.tablasUsuarioURL(params)
+  ).then(({ data }) => data);
+  swrTablasUsuario = Object.freeze({
+    Key: (params: TablasUsuarioParams): TablasUsuarioSWRKey => [this.tablasUsuarioURL(params), token.getToken(), JSON.stringify(params)],
+    Fetcher: (key: TablasUsuarioSWRKey) => this.tablasUsuario(JSON.parse(key[2])),
+  });
+  useTablasUsuario = (params: TablasUsuarioParams) => useSWR(this.swrTablasUsuario.Key(params), this.swrTablasUsuario.Fetcher);
+  //#endregion tablasUsuario
   //#region actualizarTareas
   readonly tareasUpdateURL = (usuarioId: string) => this.getURL({ path: `/api/Usuario/Tareas/${usuarioId}` }).toString();
   tareasUpdate = async (
@@ -201,9 +220,7 @@ export class UsuarioAPIClass extends ExternalAPI {
     data, // Solo los datos van en el body
   ).then(async (response) => {
     if (response.status === 200) return response.data;
-    return Promise.reject(
-      new AxiosError(`Error en la petición: ${response.data}`)
-    );
+    return Promise.reject(new AxiosError(`Error en la petición: ${response.data}`));
   });
   useTareasUpdate = (usuarioId: string, data: Array<{ tareaId: number; habilitada: boolean }>) => useSWR(
     [this.tareasUpdateURL(usuarioId), token.getToken(), JSON.stringify(data)],
