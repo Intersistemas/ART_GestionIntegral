@@ -1,10 +1,12 @@
 export type Persona = {
-  interno: number;
-  CUIL: number;
-  nombre: string;
+  interno?: number;
+  cuil: number;
+  nombreEmpleador: string;
+  internoAfiliadoDatos?: string;
+  periodo?: number;
 }
 
-export interface Parameters {
+export type Parameters = {
   cuit?: number;
   periodo?: number;
   page?: string;

@@ -40,7 +40,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/deploym
         import { useAuth } from '@/data/AuthContext';
         const { user } = useAuth();  
 
-    _Para nuevos fetching de datos, agregamos una NUEVA CLASE en la carpeta DATA, declarando los nuevos endpoints que usaremos (los types que declaramos deben ser lo mas parecido a los campos en swagger/backend) mediante SWR de nextsj y AXIOS
+    _Para nuevos fetching de datos, agregamos una NUEVA CLASE en la carpeta DATA, declarando los nuevos endpoints que usaremos (los types que declaramos deben ser lo mas parecido a los campos en swagger/backend) mediante SWR (https://swr.vercel.app) y AXIOS
 
 **Entorno UI: 
     _Usaremos los componentes de UTILS/UI que tiene Botones, Forms, DataGrid y Modals que implementan MATERIAL UI y @tanstack/react-table
