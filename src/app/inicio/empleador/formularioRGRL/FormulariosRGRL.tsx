@@ -14,6 +14,8 @@ import GenerarFormularioRGRL from './generar/GenerarFormularioRGRL';
 
 import dayjs from 'dayjs';
 
+import styles from './FormulariosRGRL.module.css';
+
 /* ===== Tipos ===== */
 export interface FormulariosRGRLProps {
   cuit: number;
@@ -316,10 +318,6 @@ const CargarDetalleRGRL = async (id: number): Promise<DetallePayload> => {
     return (a.Nro ?? 0) - (b.Nro ?? 0);
   });
 
-
-
-
-
   const qsA = await getPlanillaCuestionarios(Number(data.internoFormulario ?? 1), 'A');
   const planillaA: PlanillaAItem[] = qsA.map(q => ({
     Codigo: String(q.codigo ?? ''),
@@ -341,9 +339,6 @@ const CargarDetalleRGRL = async (id: number): Promise<DetallePayload> => {
     SiNo: mapRespuesta(rMap.get(Number(q.codigo))) as PlanillaCItem['SiNo'],
     NormaVigente: q.comentario ?? '',
   }));
-
-
-
 
   const gremios = (data.respuestasGremio ?? []).map(g => ({
     Legajo: String(g.legajo ?? ''),
@@ -376,7 +371,6 @@ const CargarDetalleRGRL = async (id: number): Promise<DetallePayload> => {
     fechaSRT: data.fechaSRT ?? null,
   };
 };
-
 
 type TabKey = 'none' | 'planillaA' | 'planillaB' | 'planillaC' | 'gremios' | 'contratistas' | 'responsables';
 
@@ -488,8 +482,6 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
     setGremios([]);
     setContratistas([]);
     setResponsables([]);
-
-
   };
 
   const tableColumns = useMemo(
@@ -698,18 +690,14 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
 
             <CustomButton onClick={handleExportExcel}>EXPORTAR A EXCEL</CustomButton>
           </div>
-
-
-          <div className="compactTable">
+          <div className={styles.compactTable}>
             <DataTable columns={tableColumns} data={formulariosRGRL} onRowClick={onRowClick} enableSearch={false} />
           </div>
-
-
           {!!internoSeleccionado && (
-            <div className="tabsBar">
+            <div className={styles.tabsBar}>
 
               {totalPages > 1 && (
-                <div className="nums">
+                <div className={styles.nums}>
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
                     <CustomButton
                       key={n}
@@ -722,8 +710,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
                 </div>
               )}
 
-
-              <div className="pills">
+              <div className={styles.pills}>
                 {[
                   { key: 'planillaA', label: 'Planilla A' },
                   { key: 'planillaB', label: 'Planilla B' },
@@ -735,7 +722,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
                   <CustomButton
                     key={t.key}
                     onClick={() => handleOpenTab(t.key as TabKey)}
-                    className={`pill ${activeTab === (t.key as TabKey) ? 'active' : ''}`}
+                    className={`${styles.pill} ${activeTab === (t.key as TabKey) ? styles.active : ''}`}
                     style={{ padding: '6px 12px' }}
                   >
                     {t.label}
@@ -745,7 +732,6 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
             </div>
           )}
 
-
           {activeTab !== 'none' && (
             <div style={{ marginTop: 10 }}>
               {loadingTab ? (
@@ -754,8 +740,8 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
                 <>
                   {activeTab === 'planillaA' && (
                     <>
-                      <div className="tablaTitulo">PLANILLA A - LISTADO DE SUSTANCIAS Y AGENTES CANCERÍGENOS (Res. SRT 81/2019)</div>
-                      <table className="sheetTable">
+                    <div className={styles.tablaTitulo}>PLANILLA A - LISTADO DE SUSTANCIAS Y AGENTES CANCERÍGENOS (Res. SRT 81/2019)</div>
+                    <table className={styles.sheetTable}>
                         <thead>
                           <tr>
                             <th style={{ width: 90 }}>Código</th>
@@ -778,8 +764,8 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
 
                   {activeTab === 'planillaB' && (
                     <>
-                      <div className="tablaTitulo">PLANILLA B - DIFENILOS POLICLORADOS (Res. SRT 497/03)</div>
-                      <table className="sheetTable">
+                     <div className={styles.tablaTitulo}>PLANILLA B - DIFENILOS POLICLORADOS (Res. SRT 497/03)</div>
+                     <table className={styles.sheetTable}>
                         <thead>
                           <tr>
                             <th style={{ width: 90 }}>Código</th>
@@ -802,8 +788,8 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
 
                   {activeTab === 'planillaC' && (
                     <>
-                      <div className="tablaTitulo">PLANILLA C - SUSTANCIAS QUÍMICAS A DECLARAR (Res. SRT 743/03)</div>
-                      <table className="sheetTable">
+                      <div className={styles.tablaTitulo}>PLANILLA C - SUSTANCIAS QUÍMICAS A DECLARAR (Res. SRT 743/03)</div>
+                      <table className={styles.sheetTable}>
                         <thead>
                           <tr>
                             <th style={{ width: 90 }}>Código</th>
@@ -829,7 +815,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
                   {activeTab === 'gremios' && (
                     <>
                       <h2 style={{ textAlign: 'center' }}>Representación Gremial</h2>
-                      <table className="sheetTable">
+                      <table className={styles.sheetTable}>
                         <thead>
                           <tr>
                             <th>Nro Legajo del Gremio</th>
@@ -851,7 +837,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
                   {activeTab === 'contratistas' && (
                     <>
                       <h2 style={{ textAlign: 'center' }}>Contratistas</h2>
-                      <table className="sheetTable">
+                      <table className={styles.sheetTable}>
                         <thead>
                           <tr>
                             <th style={{ width: 160 }}>CUIT</th>
@@ -873,7 +859,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
                   {activeTab === 'responsables' && (
                     <>
                       <h2 style={{ textAlign: 'center' }}>Datos Laborales del Profesional o Responsable del Formulario</h2>
-                      <table className="sheetTable">
+                      <table className={styles.sheetTable}>
                         <thead>
                           <tr>
                             <th>CUIT/CUIL/CUIP</th>
@@ -920,7 +906,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
                     No hay condiciones para mostrar.
                   </div>
                 ) : (
-                  <div className="detalleTable">
+                  <div className={styles.detalleTable}>
                     <table>
                       <thead>
                         <tr>
@@ -948,112 +934,6 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
               )}
             </div>
           )}
-
-          <style jsx>{`
-            .compactTable :global(table) {
-              font-size: 12px;
-            }
-            .compactTable :global(th),
-            .compactTable :global(td) {
-              padding: 6px 8px;
-              line-height: 1.1;
-            }
-            .compactTable :global(thead th) {
-              font-weight: 600;
-              white-space: nowrap;
-            }
-            .compactTable :global(tbody td) {
-              white-space: nowrap;
-              text-overflow: ellipsis;
-              overflow: hidden;
-              max-width: 420px;
-            }
-            .compactTable :global(input[type='search']),
-            .compactTable :global(.table-search),
-            .compactTable :global(.dataTableSearch) {
-              display: none !important;
-            }
-
-            .detalleTable table {
-              width: 100%;
-              border-collapse: collapse;
-              font-size: 12px;
-            }
-            .detalleTable th,
-            .detalleTable td {
-              border: 1px solid #999;
-              padding: 6px 8px;
-            }
-            .detalleTable thead th {
-              background: #f5f5f5;
-              font-weight: 600;
-              text-transform: uppercase;
-            }
-            .categoriaHeader {
-              font-weight: 700;
-              text-align: center;
-              padding: 8px 0;
-              border: 1px solid #327016ff;
-              border-bottom: none;
-              background: #327016ff;
-              letter-spacing: 0.4px;
-              color: #fff;
-            }
-
-            .tabsBar {
-              display: flex;
-              align-items: center;
-              gap: 10px;
-              margin: 8px 0 12px;
-            }
-            .nums {
-              display: flex;
-              gap: 6px;
-            }
-            .numBtn {
-              padding: 4px 10px;
-              border-radius: 6px;
-              border: 1px solid #58b32fff;
-              background: #89d7df;
-              cursor: pointer;
-            }
-            .pills {
-              display: flex;
-              gap: 8px;
-              flex-wrap: wrap;
-            }
-            .pill {
-              padding: 6px 12px;
-              border-radius: 6px;
-              border: 1px solid #6dc6d0;
-              background: #86d6df;
-              cursor: pointer;
-            }
-            .pill.active {
-              background: #65c8d3;
-              font-weight: 700;
-            }
-            .tablaTitulo {
-              text-align: center;
-              font-weight: 700;
-              margin: 6px 0;
-              text-transform: uppercase;
-            }
-            .sheetTable {
-              width: 100%;
-              border-collapse: collapse;
-              font-size: 12px;
-            }
-            .sheetTable th,
-            .sheetTable td {
-              border: 1px solid #999;
-              padding: 6px 8px;
-            }
-            .sheetTable thead th {
-              background: #f5f5f5;
-              font-weight: 600;
-            }
-          `}</style>
         </div>
       ) : (
 
