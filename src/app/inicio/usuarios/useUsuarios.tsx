@@ -2,8 +2,9 @@ import { AxiosError } from "axios";
 import UsuarioAPI from "@/data/usuarioAPI";
 import { useAuth } from '@/data/AuthContext';
 import ArtAPI from "@/data/artAPI";
+import IUsuarioDarDeBaja from "./interfaces/IUsuarioDarDeBajaReactivar";
 
-const { useGetAll, useGetRoles, registrar, tareasUpdate } = UsuarioAPI;
+const { useGetAll, useGetRoles, registrar, tareasUpdate, update, darDeBaja, reactivar } = UsuarioAPI;
 const { useGetRefEmpleadores } = ArtAPI;
 
 export default function useUsuarios() {
@@ -11,7 +12,7 @@ export default function useUsuarios() {
   const { data: roles, error: rolesError, isLoading: rolesLoading } = useGetRoles();
   const { user, status } = useAuth();   
 
-  console.log("user**",user)
+  // console.log("user**",user)
 
   const { data: refEmpleadores } = useGetRefEmpleadores();
 
@@ -24,22 +25,94 @@ export default function useUsuarios() {
       await mutateUsuarios();
       return { success: true };
     } catch (err) {
+      console.log("error",err)
       const error = (err instanceof AxiosError) ? err : new AxiosError("Error desconocido al registrar usuario");
-      console.error("Error al registrar el usuario:", error.message);
-      return { success: false, error: "Ocurrió un error al guardar el usuario." };
+      return { success: false, error: error.response?.data?.Mensaje ?? "Ocurrió un error al guardar el usuario." };
     }
   };
 
-  const actualizarPermisosUsuario = async (usuarioId: string, permisos: Array<{tareaId: number, habilitada: boolean}>) => {
+  const usuarioUpdate = async (usuarioId: string, formData: any) => {
     try {
-      await tareasUpdate(usuarioId, permisos);
+      // Usa el fetcher importado para la petición POST, especificando los tipos genéricos
+      // await fetcher("UsuarioAPI", "registrar", { data: formData });
+      await update(usuarioId, formData);
+      // Con SWR, usa mutate para revalidar automáticamente los datos.
+      await mutateUsuarios();
+      return { success: true };
+    } catch (err) {
+      const error =
+        err instanceof AxiosError
+          ? err
+          : new AxiosError("Error desconocido al actualizar usuario");
+      return {
+        success: false,
+        error: error.response?.data?.Mensaje ?? "Ocurrió un error al guardar el usuario.",
+      };
+    }
+  };
+
+  const actualizarPermisosUsuario = async (usuarioId: string, permisosModulos: Array<{moduloId: number, moduloDescripcion: string, habilitado: boolean}>) => {
+    try {      
+      // Convertir permisos de módulos a permisos de tareas usando la nueva estructura
+      const permisosTareas: Array<{tareaId: number, habilitada: boolean}> = [];
+      
+      permisosModulos.forEach(permisoModulo => {
+        // Encontrar el módulo correspondiente
+        // const modulo = usuario.modulos?.find(m => m.id === permisoModulo.moduloId);
+        
+        // if (modulo?.tareas) {
+        //   // Agregar cada tarea del módulo con el permiso del módulo
+        //   modulo.tareas.forEach(tarea => {
+        //     permisosTareas.push({
+        //       tareaId: tarea.tareaId,
+        //       habilitada: permisoModulo.habilitado
+        //     });
+        //   });
+        // }
+      });
+
+      // console.log('Permisos módulos:', permisosModulos);
+      // console.log('Permisos tareas convertidos:', permisosTareas);
+
+      await tareasUpdate(usuarioId, permisosModulos);
       // Revalidar los datos de usuarios para obtener los permisos actualizados
       await mutateUsuarios();
       return { success: true };
     } catch (err) {
       const error = (err instanceof AxiosError) ? err : new AxiosError("Error desconocido al actualizar permisos");
-      console.error("Error al actualizar permisos:", error.message);
-      return { success: false, error: "Ocurrió un error al actualizar los permisos." };
+      return { success: false, error: error.response?.data?.Mensaje ??"Ocurrió un error al actualizar los permisos." };
+    }
+  };
+
+  const usuarioDarDeBaja = async (data: IUsuarioDarDeBaja) => {
+    try {
+      await darDeBaja(data);
+      // Revalidar los datos de usuarios después de dar de baja
+      await mutateUsuarios();
+      return { success: true };
+    } catch (err) {
+      const error = (err instanceof AxiosError) ? err : new AxiosError("Error desconocido al dar de baja el usuario");
+      return { success: false, error: error.response?.data?.Mensaje ?? "Ocurrió un error al dar de baja el usuario." };
+    }
+  };
+
+  const usuarioReactivar = async (data: IUsuarioDarDeBaja) => {
+    try {
+      await reactivar(data);
+      // Revalidar los datos de usuarios después de reactivar
+      await mutateUsuarios();
+      return { success: true };
+    } catch (err) {
+      const error =
+        err instanceof AxiosError
+          ? err
+          : new AxiosError("Error desconocido al dar de baja el usuario");
+      return {
+        success: false,
+        error:
+          error.response?.data?.Mensaje ??
+          "Ocurrió un error al dar de baja el usuario.",
+      };
     }
   };
 
@@ -51,5 +124,8 @@ export default function useUsuarios() {
     error: usuariosError || rolesError,
     registrarUsuario,
     actualizarPermisosUsuario,
+    usuarioUpdate,
+    usuarioDarDeBaja,
+    usuarioReactivar
   };
 };

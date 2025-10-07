@@ -1,19 +1,26 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { 
-  Box, TextField, Button, Typography, MenuItem, Select, InputLabel, 
-  FormControl, CircularProgress 
-} from '@mui/material';
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+  CircularProgress,
+} from "@mui/material";
 import RolesInterface from "./interfaces/RolesInterface";
-import styles from './Usuario.module.css';
-import { SelectChangeEvent } from '@mui/material/Select';
+import styles from "./Usuario.module.css";
+import { SelectChangeEvent } from "@mui/material/Select";
 import RefEmpleador from "./interfaces/RefEmpleador";
 import CustomModal from "@/utils/ui/form/CustomModal";
 import CustomButton from "@/utils/ui/button/CustomButton";
 
 // Definición del modo de operación (replicada desde UsuariosPage)
-type RequestMethod = 'create' | 'edit' | 'view' | 'delete';
+type RequestMethod = "create" | "edit" | "view" | "delete" | "activate" | "remove";
 
 export interface UsuarioFormFields {
   nombre: string;
@@ -24,8 +31,8 @@ export interface UsuarioFormFields {
   password?: string;
   confirmPassword?: string;
   rol: string;
-  tipo: string;
-  userName: string;
+  // tipo: string;
+  // userName: string;
   empresaId: number;
   id?: string;
 }
@@ -51,8 +58,8 @@ const initialFormState: UsuarioFormFields = {
   password: "",
   confirmPassword: "",
   rol: "",
-  tipo: "",
-  userName: "",
+  // tipo: "",
+  // userName: "",
   empresaId: 0,
 };
 
@@ -66,8 +73,8 @@ interface ValidationErrors {
   password?: string;
   confirmPassword?: string;
   rol?: string;
-  tipo?: string;
-  userName?: string;
+  // tipo?: string;
+  // userName?: string;
   empresaId?: string;
   id?: string;
 }
@@ -81,62 +88,96 @@ interface TouchedFields {
   password?: boolean;
   confirmPassword?: boolean;
   rol?: boolean;
-  tipo?: boolean;
-  userName?: boolean;
+  // tipo?: boolean;
+  // userName?: boolean;
   empresaId?: boolean;
   id?: boolean;
 }
 
-export default function UsuarioForm({ 
-  open, onClose, onSubmit, roles, refEmpleadores, 
-  initialData, errorMsg, method, isSubmitting = false
+export default function UsuarioForm({
+  open,
+  onClose,
+  onSubmit,
+  roles,
+  refEmpleadores,
+  initialData,
+  errorMsg,
+  method,
+  isSubmitting = false,
 }: Props) {
   const [form, setForm] = useState<UsuarioFormFields>(initialFormState);
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [touched, setTouched] = useState<TouchedFields>({});
 
   // --- Lógica de Modos y Estado ---
-  
+  const isViewing = method === "view";
+  const isEditing = method === "edit";
+  const isCreating = method === "create";
+  const isDeleting = method === "delete";
+  const isActivating = method === "activate";
+  const isDisabled = isViewing || isDeleting || isActivating;
+
   useEffect(() => {
     // Restablecer el formulario y los estados de error/tocado al abrir o cambiar los datos
-    setForm(initialData || initialFormState);
+    if (initialData) {
+      const processedData = { ...initialData };
+      
+      // En modo edición, limpiar campos que deben aparecer vacíos
+      if (isEditing) {
+        // Siempre limpiar contraseñas en modo edición
+        processedData.password = "";
+        processedData.confirmPassword = "";
+        
+        // Limpiar campo cargo si viene como undefined, null, cadena vacía, o valores por defecto no deseados
+        if (!processedData.cargo || 
+            processedData.cargo.trim() === "" || 
+            processedData.cargo === "null" || 
+            processedData.cargo === "undefined") {
+          processedData.cargo = "";
+        }
+      }
+      
+      setForm(processedData);
+    } else {
+      setForm(initialFormState);
+    }
+    
     setErrors({});
     setTouched({});
-  }, [initialData, open]);
+  }, [initialData, open, isEditing]);
 
-  const isViewing = method === 'view';
-  const isEditing = method === 'edit';
-  const isCreating = method === 'create';
-  const isDeleting = method === 'delete';
-  const isDisabled = isViewing || isDeleting;
-  
   const modalTitle = useMemo(() => {
-      switch (method) {
-          case 'create':
-              return 'Crear Nuevo Usuario';
-          case 'edit':
-              return `Editar Usuario: ${form.nombre || ''}`;
-          case 'view':
-              return `Detalles Usuario: ${form.nombre || ''}`;
-          case 'delete':
-              return `Eliminar Usuario: ${form.nombre || ''}`;
-          default:
-              return 'Formulario de Usuario';
-      }
+    switch (method) {
+      case "create":
+        return "Crear Nuevo Usuario";
+      case "edit":
+        return `Editar Usuario: ${form.nombre || ""}`;
+      case "view":
+        return `Detalles Usuario: ${form.nombre || ""}`;
+      case "delete":
+        return `Dar de baja Usuario: ${form.nombre || ""}`;
+      case "activate":
+        return `Activar Usuario: ${form.nombre || ""}`;
+      default:
+        return "Formulario de Usuario";
+    }
   }, [method, form.nombre]);
 
   // --- Funciones de Validación ---
-  
+
   const validateCuit = (cuit: string): string | undefined => {
     if (!cuit.trim()) return "CUIT es requerido";
-    const cleanCuit = cuit.replace(/[^\d]/g, '');
+    const cleanCuit = cuit.replace(/[^\d]/g, "");
     if (cleanCuit.length !== 11) return "CUIT debe tener 11 dígitos";
     // Basic CUIT validation algorithm
     const factors = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2];
-    const digits = cleanCuit.split('').map(Number);
-    const sum = digits.slice(0, 10).reduce((acc, digit, index) => acc + digit * factors[index], 0);
+    const digits = cleanCuit.split("").map(Number);
+    const sum = digits
+      .slice(0, 10)
+      .reduce((acc, digit, index) => acc + digit * factors[index], 0);
     const verifierDigit = 11 - (sum % 11);
-    const expectedDigit = verifierDigit >= 10 ? verifierDigit - 11 : verifierDigit;
+    const expectedDigit =
+      verifierDigit >= 10 ? verifierDigit - 11 : verifierDigit;
     if (digits[10] !== expectedDigit) return "CUIT inválido";
     return undefined;
   };
@@ -150,56 +191,91 @@ export default function UsuarioForm({
 
   const validatePassword = (password: string): string | undefined => {
     if (!password) return "Contraseña es requerida";
-    if (password.length < 8) return "La contraseña debe tener al menos 8 caracteres";
-    if (!/(?=.*[a-z])/.test(password)) return "La contraseña debe contener al menos una letra minúscula";
-    if (!/(?=.*[A-Z])/.test(password)) return "La contraseña debe contener al menos una letra mayúscula";
-    if (!/(?=.*\d)/.test(password)) return "La contraseña debe contener al menos un número";
-    if (!/(?=.*[@$!%*?&])/.test(password)) return "La contraseña debe contener al menos un carácter especial (@$!%*?&)";
+    if (password.length < 8)
+      return "La contraseña debe tener al menos 8 caracteres";
+    if (!/(?=.*[a-z])/.test(password))
+      return "La contraseña debe contener al menos una letra minúscula";
+    if (!/(?=.*[A-Z])/.test(password))
+      return "La contraseña debe contener al menos una letra mayúscula";
+    if (!/(?=.*\d)/.test(password))
+      return "La contraseña debe contener al menos un número";
+    if (!/(?=.*[@$!%*?&])/.test(password))
+      return "La contraseña debe contener al menos un carácter especial (@$!%*?&)";
     return undefined;
   };
 
-  const validateConfirmPassword = (confirmPassword: string, password: string): string | undefined => {
+  const validateConfirmPassword = (
+    confirmPassword: string,
+    password: string
+  ): string | undefined => {
     if (!confirmPassword) return "Confirmación de contraseña es requerida";
     if (confirmPassword !== password) return "Las contraseñas no coinciden";
     return undefined;
   };
 
-  const validatePhoneNumber = (phoneNumber: string): string | undefined => {
-    if (!phoneNumber.trim()) return "Número de teléfono es requerido";
-    const cleanPhone = phoneNumber.replace(/[^\d]/g, '');
-    if (cleanPhone.length < 10) return "El teléfono debe tener al menos 10 dígitos";
-    return undefined;
-  };
+  // const validatePhoneNumber = (phoneNumber: string): string | undefined => {
+  //   if (!phoneNumber.trim()) return "Número de teléfono es requerido";
+  //   const cleanPhone = phoneNumber.replace(/[^\d]/g, "");
+  //   if (cleanPhone.length < 10)
+  //     return "El teléfono debe tener al menos 10 dígitos";
+  //   return undefined;
+  // };
 
-  const validateRequired = (value: string, fieldName: string): string | undefined => {
+  const validateRequired = (
+    value: string,
+    fieldName: string
+  ): string | undefined => {
     if (!value.trim()) return `${fieldName} es requerido`;
     return undefined;
   };
-  
-  const validateField = (name: keyof UsuarioFormFields, value: string): string | undefined => {
+
+  const validateField = (
+    name: keyof UsuarioFormFields,
+    value: string
+  ): string | undefined => {
     switch (name) {
       case "cuit":
         return validateCuit(value);
       case "email":
         return validateEmail(value);
       case "password":
-        if (isCreating || (isEditing && value.trim() !== "")) {
+        // Solo validar password si estamos creando, o si estamos editando y el usuario ingresó algo
+        if (isCreating) {
+          return validatePassword(value);
+        } else if (isEditing) {
+          // En edición, solo validar si hay algo escrito
+          if (value.trim() !== "") {
             return validatePassword(value);
+          }
+          // Si está vacío en edición, no hay error (significa que no quiere cambiar la contraseña)
+          return undefined;
         }
         return undefined;
       case "confirmPassword":
-        if (isCreating || (isEditing && form.password && form.password.trim() !== "")) {
+        // Solo validar confirmPassword si estamos creando, o si estamos editando y hay password
+        if (isCreating) {
+          return validateConfirmPassword(value, form.password || "");
+        } else if (isEditing) {
+          // En edición, solo validar si alguno de los campos de password tiene contenido
+          const hasPassword = form.password && form.password.trim() !== "";
+          const hasConfirmPassword = value.trim() !== "";
+          
+          if (hasPassword || hasConfirmPassword) {
+            // Si cualquiera tiene contenido, validar ambos
             return validateConfirmPassword(value, form.password || "");
+          }
+          // Si ambos están vacíos, no hay error (no quiere cambiar contraseña)
+          return undefined;
         }
         return undefined;
-      case "phoneNumber":
-        return validatePhoneNumber(value);
+      // case "phoneNumber":
+      //   return validatePhoneNumber(value);
       case "nombre":
         return validateRequired(value, "Nombre");
-      case "userName":
-        return validateRequired(value, "Usuario");
-      case "tipo":
-        return validateRequired(value, "Tipo");
+      // case "userName":
+      //   return validateRequired(value, "Usuario");
+      // case "tipo":
+      //   return validateRequired(value, "Tipo");
       case "rol":
         return validateRequired(value, "Rol");
       case "cargo":
@@ -218,13 +294,9 @@ export default function UsuarioForm({
     // No validar en modos 'view' o 'delete'
     if (isDisabled) return true;
 
-    // Filtramos campos de contraseña si estamos editando y están vacíos
-    const fieldsToValidate = (Object.keys(form) as (keyof UsuarioFormFields)[]).filter(key => 
-        !(isEditing && (key === 'password' || key === 'confirmPassword') && form[key] === "")
-    );
-    
-    fieldsToValidate.forEach((fieldName) => {
-      const value = String(form[fieldName] ?? '');
+    // Validar todos los campos
+    (Object.keys(form) as (keyof UsuarioFormFields)[]).forEach((fieldName) => {
+      const value = String(form[fieldName] ?? "");
       const error = validateField(fieldName, value);
       if (error) {
         newErrors[fieldName] = error;
@@ -241,7 +313,7 @@ export default function UsuarioForm({
   const handleTextFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const fieldName = name as keyof UsuarioFormFields;
-    
+
     setForm((prev: UsuarioFormFields) => ({
       ...prev,
       [name]: value,
@@ -249,7 +321,7 @@ export default function UsuarioForm({
 
     if (touched[fieldName]) {
       const error = validateField(fieldName, value);
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
         [fieldName]: error,
       }));
@@ -259,7 +331,7 @@ export default function UsuarioForm({
   const handleSelectChange = (e: SelectChangeEvent<string>) => {
     const { name, value } = e.target;
     const fieldName = name as keyof UsuarioFormFields;
-    
+
     setForm((prev: UsuarioFormFields) => ({
       ...prev,
       [name]: value,
@@ -267,7 +339,7 @@ export default function UsuarioForm({
 
     if (touched[fieldName]) {
       const error = validateField(fieldName, value);
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
         [fieldName]: error,
       }));
@@ -276,7 +348,7 @@ export default function UsuarioForm({
 
   const handleEmpresaChange = (e: SelectChangeEvent<number>) => {
     const { value } = e.target;
-    
+
     setForm((prev: UsuarioFormFields) => ({
       ...prev,
       empresaId: Number(value),
@@ -284,7 +356,7 @@ export default function UsuarioForm({
 
     if (touched.empresaId) {
       const error = validateField("empresaId", String(value));
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
         empresaId: error,
       }));
@@ -292,9 +364,9 @@ export default function UsuarioForm({
   };
 
   const handleBlur = (fieldName: keyof UsuarioFormFields) => {
-    setTouched(prev => ({ ...prev, [fieldName]: true }));
-    const error = validateField(fieldName, String(form[fieldName] ?? ''));
-    setErrors(prev => ({
+    setTouched((prev) => ({ ...prev, [fieldName]: true }));
+    const error = validateField(fieldName, String(form[fieldName] ?? ""));
+    setErrors((prev) => ({
       ...prev,
       [fieldName]: error,
     }));
@@ -304,39 +376,41 @@ export default function UsuarioForm({
     e.preventDefault();
 
     // Manejo directo para 'delete' (no requiere validación de formulario)
-    if (isDeleting) {
-      onSubmit(form); 
+    if (isDeleting || isActivating) {
+      onSubmit(form);
       return;
     }
-    
+
     // Set default values for hidden fields
     const formDataWithDefaults = {
       ...form,
       userName: form.email, // Use email as username
-      tipo: form.tipo || "Usuario", // Default type
+      tipo: "", // Default type
       rol: form.rol || (roles.length > 0 ? roles[0].nombre : ""), // Default to first role
-      empresaId: form.empresaId || (refEmpleadores.length > 0 ? refEmpleadores[0].interno : 0),
+      empresaId:
+        form.empresaId ||
+        (refEmpleadores.length > 0 ? refEmpleadores[0].interno : 0),
     };
-    
+
     // Mark all fields as touched
     const allTouched: TouchedFields = Object.keys(form).reduce((acc, key) => {
       acc[key as keyof TouchedFields] = true;
       return acc;
     }, {} as TouchedFields);
     setTouched(allTouched);
-    
+
     if (validateAllFields()) {
+      console.log("Submitting form data:", formDataWithDefaults);
       // Limpiamos los campos de password/confirmPassword si están vacíos al editar
       const dataToSubmit = { ...formDataWithDefaults };
       if (isEditing && !dataToSubmit.password) {
-          delete dataToSubmit.password;
-          delete dataToSubmit.confirmPassword;
+        delete dataToSubmit.password;
+        delete dataToSubmit.confirmPassword;
       }
 
       onSubmit(dataToSubmit);
     }
   };
-
 
   return (
     <CustomModal
@@ -351,9 +425,7 @@ export default function UsuarioForm({
         onSubmit={handleSubmit}
       >
         {errorMsg && (
-          <Typography className={styles.errorMessage}>
-            {errorMsg}
-          </Typography>
+          <Typography className={styles.errorMessage}>{errorMsg}</Typography>
         )}
         <div className={styles.formLayout}>
           <div className={styles.formContent}>
@@ -376,48 +448,32 @@ export default function UsuarioForm({
                   required={!isDisabled}
                   disabled={isDisabled}
                   placeholder="Ingrese nombre"
-                />                
-              </div>
-
-              <div className={styles.formRow}>
-                <TextField
-                  label="Usuario"
-                  name="userName"
-                  type="text"
-                  value={form.userName}
-                  onChange={handleTextFieldChange}
-                  onBlur={() => handleBlur("userName")}
-                  error={touched.userName && !!errors.userName}
-                  helperText={touched.userName && errors.userName}
-                  fullWidth
-                  required={!isDisabled}
-                  disabled={isDisabled}
-                  // placeholder="ejemplo@empresa.com"
-                  className={styles.fullRowField}
                 />
               </div>
 
-              <div className={styles.formRow}>
-                <TextField
-                  label="Email"
-                  name="email"
-                  type="email"
-                  value={form.email}
-                  onChange={handleTextFieldChange}
-                  onBlur={() => handleBlur("email")}
-                  error={touched.email && !!errors.email}
-                  helperText={touched.email && errors.email}
-                  fullWidth
-                  required={!isDisabled}
-                  disabled={isDisabled}
-                  placeholder="ejemplo@empresa.com"
-                  className={styles.fullRowField}
-                />
-              </div>
+              {isCreating && (
+                <div className={styles.formRow}>
+                  <TextField
+                    label="Email"
+                    name="email"
+                    type="email"
+                    value={form.email}
+                    onChange={handleTextFieldChange}
+                    onBlur={() => handleBlur("email")}
+                    error={touched.email && !!errors.email}
+                    helperText={touched.email && errors.email}
+                    fullWidth
+                    required={!isDisabled}
+                    disabled={isDisabled}
+                    placeholder="ejemplo@empresa.com"
+                    className={styles.fullRowField}
+                  />
+                </div>
+              )}
 
               <div className={styles.formRow}>
                 <TextField
-                  label="Documento de Identidad"
+                  label="CUIT"
                   name="cuit"
                   value={form.cuit}
                   onChange={handleTextFieldChange}
@@ -427,7 +483,7 @@ export default function UsuarioForm({
                   fullWidth
                   required={!isDisabled}
                   disabled={isDisabled}
-                  placeholder="Ingrese documento"
+                  placeholder="Ingrese CUIT (11 dígitos)"
                 />
                 <TextField
                   label="Teléfono"
@@ -438,7 +494,6 @@ export default function UsuarioForm({
                   error={touched.phoneNumber && !!errors.phoneNumber}
                   helperText={touched.phoneNumber && errors.phoneNumber}
                   fullWidth
-                  required={!isDisabled}
                   disabled={isDisabled}
                   placeholder="Ingrese teléfono"
                 />
@@ -458,61 +513,84 @@ export default function UsuarioForm({
                   disabled={isDisabled}
                   placeholder="Ingrese cargo o posición"
                   className={styles.fullRowField}
-                />
+                />                
               </div>
 
-              <div className={styles.formRow}>
-                {/* Rol (Select) */}
-                <FormControl fullWidth required={!isDisabled} error={touched.rol && !!errors.rol} disabled={isDisabled}>
-                  <InputLabel>Rol</InputLabel>
-                  <Select
-                    name="rol"
-                    value={form.rol}
-                    label="Rol"
-                    onChange={handleSelectChange}
-                    onBlur={() => handleBlur("rol")}
+              {isCreating && (
+                <div className={styles.formRow}>
+                  {/* Rol (Select) */}
+                  <FormControl
+                    fullWidth
+                    required={!isDisabled}
+                    error={touched.rol && !!errors.rol}
+                    disabled={isDisabled}
                   >
-                    {roles.map((rol) => (
-                      <MenuItem key={rol.id} value={rol.nombre}>
-                        {rol.nombre}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {touched.rol && errors.rol && (
-                    <Typography variant="caption" color="error" sx={{ ml: 2, mt: 0.5 }}>
-                      {errors.rol}
-                    </Typography>
-                  )}
-                </FormControl>
+                    <InputLabel>Rol</InputLabel>
+                    <Select
+                      name="rol"
+                      value={form.rol}
+                      label="Rol"
+                      onChange={handleSelectChange}
+                      onBlur={() => handleBlur("rol")}
+                    >
+                      {roles.map((rol) => (
+                        <MenuItem key={rol.id} value={rol.nombre}>
+                          {rol.nombre}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    {touched.rol && errors.rol && (
+                      <Typography
+                        variant="caption"
+                        color="error"
+                        sx={{ ml: 2, mt: 0.5 }}
+                      >
+                        {errors.rol}
+                      </Typography>
+                    )}
+                  </FormControl>
 
-                {/* Empresa (Select) */}
-                <FormControl fullWidth required={!isDisabled} error={touched.empresaId && !!errors.empresaId} disabled={isDisabled}>
-                  <InputLabel>Empresa</InputLabel>
-                  <Select
-                    name="empresaId"
-                    value={form.empresaId}
-                    label="Empresa"
-                    onChange={handleEmpresaChange}
-                    onBlur={() => handleBlur("empresaId")}
-                    disabled={isDisabled || form.empresaId !== 0} 
+                  {/* Empresa (Select) */}
+                  <FormControl
+                    fullWidth
+                    required={!isDisabled}
+                    error={touched.empresaId && !!errors.empresaId}
+                    disabled={isDisabled}
                   >
-                    {refEmpleadores.map((refEmpleador) => (
-                      <MenuItem key={refEmpleador.interno} value={refEmpleador.interno}>
-                        {refEmpleador.nombre1}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {touched.empresaId && errors.empresaId && (
-                    <Typography variant="caption" color="error" sx={{ ml: 2, mt: 0.5 }}>
-                      {errors.empresaId}
-                    </Typography>
-                  )}
-                </FormControl>
-              </div>
+                    <InputLabel>Empresa</InputLabel>
+                    <Select
+                      name="empresaId"
+                      value={form.empresaId}
+                      label="Empresa"
+                      onChange={handleEmpresaChange}
+                      onBlur={() => handleBlur("empresaId")}
+                      disabled={isDisabled || form.empresaId !== 0}
+                    >
+                      {refEmpleadores.map((refEmpleador) => (
+                        <MenuItem
+                          key={refEmpleador.interno}
+                          value={refEmpleador.interno}
+                        >
+                          {refEmpleador.nombre1}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    {touched.empresaId && errors.empresaId && (
+                      <Typography
+                        variant="caption"
+                        color="error"
+                        sx={{ ml: 2, mt: 0.5 }}
+                      >
+                        {errors.empresaId}
+                      </Typography>
+                    )}
+                  </FormControl>
+                </div>
+              )}
             </div>
 
             {/* Credenciales de Acceso (Ocultas en View y Deleted)*/}
-            {(!isViewing && !isDeleting) && (
+            {isCreating || isEditing && (
               <div className={styles.formSection}>
                 <Typography variant="h6" className={styles.sectionTitle}>
                   Credenciales de Acceso
@@ -520,7 +598,7 @@ export default function UsuarioForm({
 
                 <div className={styles.formRow}>
                   <TextField
-                    label="Contraseña temporal"
+                    label={isCreating ? "Contraseña temporal" : "Nueva contraseña (opcional)"}
                     name="password"
                     type="password"
                     value={form.password}
@@ -529,49 +607,64 @@ export default function UsuarioForm({
                     error={touched.password && !!errors.password}
                     helperText={touched.password && errors.password}
                     fullWidth
-                    required={!isDisabled}
+                    required={isCreating && !isDisabled}
                     disabled={isDisabled}
-                    placeholder="••••••••"
+                    placeholder={isCreating ? "••••••••" : "Dejar vacío para no cambiar"}
                   />
                   <TextField
-                    label="Confirmar contraseña"
+                    label={isCreating ? "Confirmar contraseña" : "Confirmar nueva contraseña"}
                     name="confirmPassword"
                     type="password"
                     value={form.confirmPassword}
                     onChange={handleTextFieldChange}
                     onBlur={() => handleBlur("confirmPassword")}
                     error={touched.confirmPassword && !!errors.confirmPassword}
-                    helperText={touched.confirmPassword && errors.confirmPassword}
+                    helperText={
+                      touched.confirmPassword && errors.confirmPassword
+                    }
                     fullWidth
-                    required={!isDisabled}
+                    required={isCreating && !isDisabled}
                     disabled={isDisabled}
-                    placeholder="••••••••"
+                    placeholder={isCreating ? "••••••••" : "Dejar vacío para no cambiar"}
                   />
                 </div>
 
                 <Typography variant="body2" className={styles.passwordHelp}>
-                  La contraseña debe tener al menos 8 caracteres, incluir
-                  mayúsculas, minúsculas y números.
+                  {isCreating 
+                    ? "La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas y números."
+                    : "Deje ambos campos vacíos para mantener la contraseña actual. Si desea cambiarla, complete ambos campos con la nueva contraseña."
+                  }
                 </Typography>
               </div>
-              )}
+            )}
             <div className={styles.formActions}>
-                {/* Botón de acción principal (Oculto en 'view') */}
-                {!isViewing && (
-                  <CustomButton type="submit"  disabled={isSubmitting}>
-                    {isSubmitting 
-                      ? <CircularProgress size={24} color="inherit" /> 
-                      : (isEditing ? 'Guardar Cambios' : (isDeleting ? 'Eliminar Usuario' : 'Registrar Usuario'))
-                    }
-                  </CustomButton>
-                 )}
+              {/* Botón de acción principal (Oculto en 'view') */}
+              {!isViewing && (
+                <CustomButton type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <CircularProgress size={24} color="inherit" />
+                  ) : isEditing ? (
+                    "Guardar Cambios"
+                  ) : isDeleting ? (
+                    "Dar de baja Usuario"
+                  ) : isActivating ? (
+                    "Activar Usuario"
+                  ) : (
+                    "Registrar Usuario"
+                  )}
+                </CustomButton>
+              )}
 
-                <CustomButton onClick={onClose} color="secondary" disabled={isSubmitting}>
-                  {isViewing ? 'Cerrar' : 'Cancelar'}
-                </CustomButton>             
+              <CustomButton
+                onClick={onClose}
+                color="secondary"
+                disabled={isSubmitting}
+              >
+                {isViewing ? "Cerrar" : "Cancelar"}
+              </CustomButton>
             </div>
           </div>
-          {isCreating && (       
+          {isCreating && (
             <div className={styles.infoPanel}>
               <Typography variant="h6" className={styles.infoPanelTitle}>
                 Información Importante
