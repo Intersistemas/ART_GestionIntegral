@@ -14,10 +14,6 @@ import GenerarFormularioRGRL from './generar/GenerarFormularioRGRL';
 
 import dayjs from 'dayjs';
 
-
-
-
-
 /* ===== Tipos ===== */
 export interface FormulariosRGRLProps {
   cuit: number;
@@ -57,8 +53,6 @@ type PrintData = {
   responsables: ResponsableItem[];
 };
 
-
-
 type ApiTiposFormularios = Array<{
   descripcion: string;
   decreto: number;
@@ -87,7 +81,6 @@ const cargarTipos = async (): Promise<ApiTiposFormularios> => {
   return _tiposCache!;
 };
 
-
 const buildTiposIndex = async (internoFormulario: number): Promise<Map<number, TiposIndexItem>> => {
   const all = await cargarTipos();
   const form = all.find(f => f.secciones?.some(s => s.internoFormulario === internoFormulario));
@@ -107,15 +100,12 @@ const buildTiposIndex = async (internoFormulario: number): Promise<Map<number, T
   return idx;
 };
 
-
 const getPlanillaCuestionarios = async (internoFormulario: number, letra: 'A' | 'B' | 'C') => {
   const all = await cargarTipos();
   const form = all.find(f => f.secciones?.some(s => s.internoFormulario === internoFormulario));
   const secs = form?.secciones?.filter(s => (s.planilla ?? '').trim().toUpperCase() === letra) ?? [];
   return secs.flatMap(s => s.cuestionarios ?? []);
 };
-
-
 
 type ApiFormularioRGRL = {
   interno: number;
@@ -163,7 +153,6 @@ const mapApiToUi = (r: ApiFormularioRGRL): FormularioRGRL => ({
 
 const CargarConsultaFormulariosRGRL = async (cuit: number): Promise<FormularioRGRL[]> => {
 
-
   const url = `http://arttest.intersistemas.ar:8302/api/FormulariosRGRL/CUIT/${encodeURIComponent(
     cuit
   )}`;
@@ -184,10 +173,6 @@ const CargarConsultaFormulariosRGRL = async (cuit: number): Promise<FormularioRG
   return (data ?? []).map(mapApiToUi);
 
 };
-
-
-
-
 
 type ApiFormularioDetalle = {
   interno: number;
@@ -211,7 +196,6 @@ type ApiFormularioDetalle = {
     fechaRegularizacionNormal: string | null;
   }>;
 
-
   respuestasGremio?: Array<{ legajo?: string | number; nombre?: string }>;
   respuestasContratista?: Array<{ cuit?: string | number; contratista?: string; nombre?: string }>;
   respuestasResponsable?: Array<{
@@ -224,8 +208,6 @@ type ApiFormularioDetalle = {
     matricula?: string;
     entidadOtorganteTitulo?: string;
   }>;
-
-
 
 };
 
@@ -261,7 +243,6 @@ const CargarEstablecimientosEmpresa = async (cuit: number): Promise<ApiEstableci
   return (await res.json()) as ApiEstablecimientoEmpresa[];
 };
 
-
 const mapRespuesta = (v?: string | null) =>
   v === 'S' ? 'Sí' : v === 'N' ? 'No' : v === 'A' ? 'No Aplica' : (v ?? '');
 
@@ -272,13 +253,6 @@ const normPropioContratado = (v?: string | null): 'Propio' | 'Contratado' => {
   if (s === 'contratado' || s === 'c' || s === 'externo' || s === '1' || s === 'true') return 'Contratado';
   return 'Propio';
 };
-
-
-
-
-
-
-
 
 type DetallePayload = {
   detalle: FormularioRGRLDetalle[];
@@ -296,9 +270,6 @@ type DetallePayload = {
 
 
 };
-
-
-
 
 const CargarDetalleRGRL = async (id: number): Promise<DetallePayload> => {
   const res = await fetch(`http://arttest.intersistemas.ar:8302/api/FormulariosRGRL/${id}`, { cache: 'no-store' });
@@ -415,20 +386,9 @@ type PlanillaCItem = { Codigo: string; Sustancia: string; SiNo: 'Sí' | 'No' | '
 
 type PlanillaBItem = { Codigo: string; Sustancia: string; SiNo: 'Sí' | 'No' | 'No Aplica' };
 
-
 type GremioItem = { Legajo: string; Nombre: string };
-const CargarGremios = async (_interno: number): Promise<GremioItem[]> =>
-  new Promise((r) => setTimeout(() => r([
-    { Legajo: '12345', Nombre: 'Sindicato de Empleados Metalúrgicos' },
-    { Legajo: '67890', Nombre: 'Unión Obrera Textil' },
-  ]), 200));
 
 type ContratistaItem = { CUIT: string; Contratista: string };
-const CargarContratistas = async (_interno: number): Promise<ContratistaItem[]> =>
-  new Promise((r) => setTimeout(() => r([
-    { CUIT: '30-99999999-7', Contratista: 'Servicios Integrales SRL' },
-    { CUIT: '30-12345678-9', Contratista: 'Obras & Montajes SA' },
-  ]), 200));
 
 type ResponsableItem = {
   CUITCUIL: string;
@@ -440,32 +400,6 @@ type ResponsableItem = {
   Matricula: string;
   EntidadOtorgante: string;
 };
-
-
-const CargarResponsables = async (_interno: number): Promise<ResponsableItem[]> =>
-  new Promise((r) => setTimeout(() => r([
-    {
-      CUITCUIL: '20-14736729-6',
-      NombreApellido: 'PONCE DANIEL OSCAR',
-      Cargo: 'Responsable de los datos del formulario',
-      Representacion: 'Director General',
-      PropioContratado: 'Propio',
-      TituloHabilitante: '',
-      Matricula: '',
-      EntidadOtorgante: '',
-    },
-    {
-      CUITCUIL: '27-20304050-3',
-      NombreApellido: 'FERREYRA ANA PAULA',
-      Cargo: 'Profesional de Higiene y Seguridad',
-      Representacion: 'No especificado',
-      PropioContratado: 'Propio',
-      TituloHabilitante: 'Ing. Hig. y Seg.',
-      Matricula: 'HS-12345',
-      EntidadOtorgante: 'COHYNST',
-    },
-  ]), 250));
-
 
 const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos }) => {
   const router = useRouter();
@@ -492,8 +426,6 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
   const [openGenerar, setOpenGenerar] = useState<boolean>(false);
   const [replicaDe, setReplicaDe] = useState<number | undefined>(undefined);
 
-
-
   const isFilaVacia = (r: FormularioRGRLDetalle) =>
     !(
       (r.Pregunta && r.Pregunta.trim()) ||
@@ -508,12 +440,8 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
     [detalle]
   );
 
-
   const [detallePage, setDetallePage] = useState<number>(1);
   const pageSize = 20;
-
-  //const totalPages = Math.max(1, Math.ceil(detalle.length / pageSize));
-  //const detallePageData = detalle.slice((detallePage - 1) * pageSize, detallePage * pageSize);
 
   const totalPages = Math.max(1, Math.ceil(detalleFiltrado.length / pageSize));
   const detallePageData = useMemo(
@@ -525,8 +453,6 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
   useEffect(() => {
     if (detallePage > totalPages) setDetallePage(totalPages);
   }, [totalPages, detallePage]);
-
-
 
   const [cuitBusqueda, setCuitBusqueda] = useState<string>(String(cuit ?? ''));
 
@@ -566,7 +492,6 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
 
   };
 
-
   const tableColumns = useMemo(
     () => [
       { accessorKey: 'CUIT', header: 'CUIT' },
@@ -594,8 +519,6 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
               const estab =
                 establecimientos.find(e => e.interno === Number(data.internoEstablecimiento ?? 0)) ||
                 establecimientos[0];
-
-
 
               const cabecera: CabeceraData = {
                 empresa: {
@@ -644,7 +567,6 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
     []
   );
 
-
   const DataTable = DataTableImport as unknown as React.FC<{
     columns: any[];
     data: FormularioRGRL[];
@@ -659,15 +581,12 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
     setLoadingDetalle(true);
     setDetallePage(1);
 
-
-
     setActiveTab('none');
     setPlanillaA([]);
     setPlanillaC([]);
     setGremios([]);
     setContratistas([]);
     setResponsables([]);
-
 
     const data = await CargarDetalleRGRL(interno);
     setDetalle(data.detalle);
@@ -680,8 +599,6 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
     setPlanillaC(data.planillaC);
     setPlanillaB(data.planillaB);
 
-
-
   };
 
   const handleOpenTab = async (tab: TabKey) => {
@@ -689,28 +606,18 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
     setActiveTab(tab);
     setLoadingTab(true);
     switch (tab) {
-
-
       case 'planillaA':
       case 'planillaC':
         break;
       case 'planillaB':
         break;
-
       case 'gremios':
       case 'contratistas':
       case 'responsables':
-
         break;
-
-
-
-
     }
     setLoadingTab(false);
   };
-
-
 
   const handleClickGenerar = () => {
     setReplicaDe(undefined);
@@ -726,7 +633,6 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
     setCargarFormulario(false);
     if (refrescar) await fetchFormularios(Number(cuitBusqueda) || cuit);
   };
-
 
   const handleReplicar = () => {
     if (!internoSeleccionado) return;
@@ -1040,10 +946,6 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
                   </div>
                 )
               )}
-
-
-
-
             </div>
           )}
 
@@ -1166,7 +1068,6 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
           </div>
         </div>
       )}
-
 
       {printOpen && printData && (
         <VentanaImpresionFormulario

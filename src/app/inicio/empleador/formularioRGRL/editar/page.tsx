@@ -5,7 +5,6 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import CustomButton from '@/utils/ui/button/CustomButton';
 import dayjs from 'dayjs';
 
-
 const API_BASE = 'http://arttest.intersistemas.ar:8302/api';
 
 type RespuestaCuestionarioVm = {
@@ -126,11 +125,9 @@ export default function Page() {
 
     useEffect(() => { cargar(); }, [cargar]);
 
-
     useEffect(() => {
         setPage(Math.floor(secIdx / PAGE_SIZE));
     }, [secIdx]);
-
 
     const onCambiarRespuesta = (internoCuestionario: number, cambios: Partial<RespuestaCuestionarioVm>) => {
         setRespuestas((prev) => {
@@ -224,11 +221,8 @@ export default function Page() {
 
             const data = await res.json().catch(() => null);
             if (!res.ok) throw new Error(`PUT /FormulariosRGRL/${form.interno} -> ${res.status}`);
-
             setForm(data as FormularioVm);
-            //alert('Formulario guardado correctamente.');
             router.replace('/inicio/empleador/formularioRGRL');
-
         } catch (e: any) {
             setError(e?.message ?? 'Error al guardar.');
         } finally {
@@ -253,15 +247,9 @@ export default function Page() {
 
     return (
         <div style={{ padding: 16, maxWidth: 960, margin: '0 auto' }}>
-
-
-
             <div style={{ marginTop: 6, opacity: 0.95, fontWeight: 700 }}>
                 Sección {secIdx + 1} de {totalSecs} — {secActual.descripcion}
             </div>
-
-
-
 
             {(() => {
                 const totalSecs = secciones.length;
@@ -276,7 +264,6 @@ export default function Page() {
                     background: '#fff',
                     cursor: 'pointer'
                 };
-
                 return (
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '10px 0 14px', alignItems: 'center' }}>
                         <button

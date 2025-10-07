@@ -84,13 +84,11 @@ type ResponsableUI = {
   entidadOtorganteTitulo?: string;
 };
 
-
 const toIsoOrNull = (v?: string | Date | null) => {
   if (!v) return null;
   const d = dayjs(v);
   return d.isValid() ? d.toISOString() : null;
 };
-
 
 const addRow = <T,>(setter: React.Dispatch<React.SetStateAction<T[]>>, empty: T) =>
   setter((rows) => [...rows, empty]);
@@ -135,7 +133,6 @@ const fetchFormularioById = async (id: number): Promise<FormularioVm> => {
   return (await res.json()) as FormularioVm;
 };
 
-
 const GenerarFormularioRGRL: React.FC<{
   initialCuit?: number;
   replicaDe?: number;
@@ -144,9 +141,7 @@ const GenerarFormularioRGRL: React.FC<{
 
   const router = useRouter();
   const search = useSearchParams();
-
   const isModal = Boolean(onDone);
-
   const cuitFromQuery = useMemo(() => {
     if (isModal) return undefined;
     const v = search?.get('cuit');
@@ -168,10 +163,8 @@ const GenerarFormularioRGRL: React.FC<{
   }, [search, isModal]);
 
   const [original, setOriginal] = useState<FormularioVm | null>(null);
-  /* ------------------------------------------------------------- */
 
   const esReplica = Boolean(replicaDe || replicaDeQuery || original);
-
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -257,7 +250,6 @@ const GenerarFormularioRGRL: React.FC<{
       setLoading(false);
     }
   }, [replicaDe, replicaDeQuery]);
-
 
   useEffect(() => {
     if (!idFromQuery && (replicaDe || replicaDeQuery)) cargarReplicaDe();
@@ -374,14 +366,10 @@ const GenerarFormularioRGRL: React.FC<{
         await resPut.json().catch(() => null);
         if (!resPut.ok) throw new Error(`PUT /FormulariosRGRL/${nuevoId} -> ${resPut.status}`);
 
-
-
-
         onDone?.(nuevoId);
         router.push(`/inicio/empleador/formularioRGRL/editar?id=${nuevoId}`);
         return;
       }
-      /* ----------------------------------------------------------------------------- */
       onDone?.(nuevoId);
       router.push(`/inicio/empleador/formularioRGRL/editar?id=${nuevoId}`);
     } catch (e: any) {
@@ -554,7 +542,6 @@ const GenerarFormularioRGRL: React.FC<{
 
       await res.json().catch(() => null);
       if (!res.ok) throw new Error(`PUT /FormulariosRGRL/${form.interno} -> ${res.status}`);
-
 
       router.replace('/inicio/empleador/formularioRGRL');
     } catch (e: any) {
@@ -748,7 +735,6 @@ const GenerarFormularioRGRL: React.FC<{
             </div>
           </div>
         </CustomModal>
-
         <CustomModal open={openContratistas} onClose={() => setOpenContratistas(false)} title="Contratistas" size="mid">
           <div className="formGrid">
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -788,7 +774,6 @@ const GenerarFormularioRGRL: React.FC<{
             </div>
           </div>
         </CustomModal>
-
         <CustomModal open={openResponsables} onClose={() => setOpenResponsables(false)} title="Profesional / Responsable" size="large">
           <div className="formGrid">
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
@@ -954,7 +939,6 @@ const GenerarFormularioRGRL: React.FC<{
           ))}
         </select>
       </div>
-
       {estActual && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 12 }}>
           <div>
@@ -986,7 +970,6 @@ const GenerarFormularioRGRL: React.FC<{
           </div>
         </div>
       )}
-
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
         <label style={{ minWidth: 80 }}>Formulario:</label>
         <select
@@ -1002,13 +985,10 @@ const GenerarFormularioRGRL: React.FC<{
           ))}
         </select>
       </div>
-
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 16 }}>
         <CustomButton onClick={() => router.back()}>VOLVER</CustomButton>
         <CustomButton onClick={crearFormulario} disabled={!cuit}>CREAR FORMULARIO</CustomButton>
       </div>
-
-
     </div>
   );
 };
