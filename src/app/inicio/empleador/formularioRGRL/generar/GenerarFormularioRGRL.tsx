@@ -115,6 +115,7 @@ const fetchRazonSocial = async (cuit: number): Promise<string> => {
 const fetchEstablecimientos = async (cuit: number): Promise<Establecimiento[]> => {
   const url = `${API_BASE}/Establecimientos/Empresa/${encodeURIComponent(cuit)}`;
   const res = await fetch(url, { cache: 'no-store', headers: { Accept: 'application/json, text/json' } });
+  if (res.status === 404) return []; 
   if (!res.ok) throw new Error(`GET ${url} -> ${res.status}`);
   return (await res.json()) as Establecimiento[];
 };
@@ -122,6 +123,7 @@ const fetchEstablecimientos = async (cuit: number): Promise<Establecimiento[]> =
 const fetchTipos = async (): Promise<TipoFormulario[]> => {
   const url = `${API_BASE}/TiposFormulariosRGRL`;
   const res = await fetch(url, { cache: 'no-store', headers: { Accept: 'application/json, text/json' } });
+  if (res.status === 404) return []; 
   if (!res.ok) throw new Error(`GET ${url} -> ${res.status}`);
   return (await res.json()) as TipoFormulario[];
 };
@@ -619,7 +621,6 @@ const GenerarFormularioRGRL: React.FC<{
     return (
       <div style={{ padding: 16, maxWidth: 960, margin: '0 auto' }}>
         <h2 style={{ margin: 0 }}>
-          Generar Formulario RGRL — Paso 2 (#{form.interno}) — {tipoDeEsteFormulario.descripcion}
         </h2>
         <div style={{ marginTop: 6, opacity: 0.95, fontWeight: 700 }}>
           Sección {secIdx + 1} de {totalSecs} — {secActual?.descripcion}
@@ -902,7 +903,6 @@ const GenerarFormularioRGRL: React.FC<{
 
   return (
     <div style={{ padding: 16, maxWidth: 960, margin: '0 auto' }}>
-      <h2 style={{ margin: '8px 0 16px' }}>Generar Formulario RGRL</h2>
 
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
         <label style={{ minWidth: 80 }}>CUIT:</label>
@@ -913,7 +913,7 @@ const GenerarFormularioRGRL: React.FC<{
           placeholder="Ingresá CUIT"
           style={{ height: 36, padding: '6px 10px', border: '1px solid #c7c7c7', borderRadius: 6, width: 220 }}
         />
-        <CustomButton onClick={cargarTodoPaso1} disabled={!canBuscar || loading}>
+        <CustomButton onClick={cargarTodoPaso1} disabled={!canBuscar}>
           CARGAR
         </CustomButton>
       </div>
@@ -996,7 +996,7 @@ const GenerarFormularioRGRL: React.FC<{
           title={esReplica ? 'Tipo fijado por replicación' : undefined}
           style={{ flex: 1, height: 36, padding: '6px 10px', border: '1px solid #c7c7c7', borderRadius: 6 }}
         >
-          <option value="" disabled>Seleccioná...</option>
+          <option value="" disabled>Selecciona</option>
           {tipos.map((t) => (
             <option key={t.interno} value={t.interno}>{t.descripcion}</option>
           ))}
@@ -1004,12 +1004,11 @@ const GenerarFormularioRGRL: React.FC<{
       </div>
 
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 16 }}>
-        <CustomButton onClick={() => router.back()} disabled={loading}>VOLVER</CustomButton>
-        <CustomButton onClick={crearFormulario} disabled={loading || !cuit}>CREAR FORMULARIO</CustomButton>
+        <CustomButton onClick={() => router.back()}>VOLVER</CustomButton>
+        <CustomButton onClick={crearFormulario} disabled={!cuit}>CREAR FORMULARIO</CustomButton>
       </div>
 
-      {loading && <div style={{ marginTop: 12, opacity: 0.7 }}>Cargando...</div>}
-      {!!error && <div style={{ marginTop: 12, color: '#b00020' }}>{error}</div>}
+
     </div>
   );
 };
