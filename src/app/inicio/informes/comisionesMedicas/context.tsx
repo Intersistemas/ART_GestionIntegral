@@ -76,7 +76,6 @@ const CCMMContext = createContext<DataContextType | undefined>(undefined);
 export function CCMMContextProvider({ children }: { children: ReactNode }) {
   const [tables, setTables] = useState<Tables>({});
   const { isLoading: isLoadingTablas } = useSWR(swrTablas.Key, swrTablas.Fetcher, {
-    revalidateIfStale: false,
     revalidateOnFocus: false,
     onSuccess(tablas) {
       const tables: Tables = {};
@@ -135,7 +134,6 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
       }) : null,
     swrExecute.Fetcher,
     {
-      revalidateIfStale: false,
       revalidateOnFocus: false,
       onSuccess(motivos) {
         if (!motivos?.data) return;
@@ -161,7 +159,6 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
       }) : null,
     swrExecute.Fetcher,
     {
-      revalidateIfStale: false,
       revalidateOnFocus: false,
       onSuccess(tipos) {
         if (!tipos?.data) return;
