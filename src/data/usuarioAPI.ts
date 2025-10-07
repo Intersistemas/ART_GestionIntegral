@@ -210,12 +210,29 @@ export class UsuarioAPIClass extends ExternalAPI {
   //#endregion Update
 
   //#region tablas
-  readonly tablasURL = () => this.getURL({ path: "/api/Tablas" }).toString();
-  tablas = async () =>
-    tokenizable.get<Tabla[]>(this.tablasURL()).then(({ data }) => data);
-  useTablas = () =>
-    useSWR([this.tablasURL(), token.getToken()], () => this.tablas());
+  readonly tablasURL = this.getURL({ path: "/api/Tablas" }).toString();
+  tablas = async () => tokenizable.get<Tabla[]>(
+    this.tablasURL
+  ).then(({ data }) => data);
+  swrTablas = Object.freeze({
+    Key: [this.tablasURL, token.getToken()],
+    Fetcher: this.tablas,
+  });
+  useTablas = () => useSWR(this.swrTablas.Key, this.swrTablas.Fetcher);
   //#endregion tablas
+
+  //#region tablasUsuario
+  readonly tablasUsuarioURL = ({ usuarioId }: TablasUsuarioParams) =>
+    this.getURL({ path: `/api/Tablas/Usuario/${usuarioId}` }).toString();
+  tablasUsuario = async (params: TablasUsuarioParams) => tokenizable.get<Tabla[]>(
+    this.tablasUsuarioURL(params)
+  ).then(({ data }) => data);
+  swrTablasUsuario = Object.freeze({
+    Key: (params: TablasUsuarioParams): TablasUsuarioSWRKey => [this.tablasUsuarioURL(params), token.getToken(), JSON.stringify(params)],
+    Fetcher: (key: TablasUsuarioSWRKey) => this.tablasUsuario(JSON.parse(key[2])),
+  });
+  useTablasUsuario = (params: TablasUsuarioParams) => useSWR(this.swrTablasUsuario.Key(params), this.swrTablasUsuario.Fetcher);
+  //#endregion tablasUsuario
 
   //#region actualizarTareas
   readonly tareasUpdateURL = (usuarioId: string) =>
