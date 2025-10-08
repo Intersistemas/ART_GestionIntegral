@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import CustomButton from '@/utils/ui/button/CustomButton';
 import dayjs from 'dayjs';
+import styles from './editar.module.css';
 
 const API_BASE = 'http://arttest.intersistemas.ar:8302/api';
 
@@ -232,22 +233,22 @@ export default function Page() {
 
     if (!idFromQuery) {
         return (
-            <div style={{ padding: 16 }}>
-                <div style={{ marginBottom: 8, color: '#b00020' }}>Falta el parámetro <code>id</code> en la URL.</div>
+            <div className={styles.pad16}>
+                <div className={styles.missingParam}>Falta el parámetro <code>id</code> en la URL.</div>
                 <CustomButton onClick={() => router.back()}>VOLVER</CustomButton>
             </div>
         );
     }
 
     if (loading || !form || !secciones.length) {
-        return <div style={{ padding: 16 }}>{loading ? 'Cargando…' : 'No hay secciones para editar.'}</div>;
+        return <div className={styles.pad16}>{loading ? 'Cargando…' : 'No hay secciones para editar.'}</div>;
     }
 
     const preguntas = (secActual?.cuestionarios ?? []).slice().sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
 
     return (
-        <div style={{ padding: 16, maxWidth: 960, margin: '0 auto' }}>
-            <div style={{ marginTop: 6, opacity: 0.95, fontWeight: 700 }}>
+        <div className={styles.container}>
+            <div className={styles.sectionHeader}>
                 Sección {secIdx + 1} de {totalSecs} — {secActual.descripcion}
             </div>
 
@@ -257,19 +258,12 @@ export default function Page() {
                 const pageStart = page * PAGE_SIZE;
                 const pageEnd = Math.min(pageStart + PAGE_SIZE, totalSecs);
 
-                const btnBase: React.CSSProperties = {
-                    padding: '6px 10px',
-                    borderRadius: 8,
-                    border: '1px solid #c9c9c9',
-                    background: '#fff',
-                    cursor: 'pointer'
-                };
                 return (
-                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '10px 0 14px', alignItems: 'center' }}>
+                    <div className={styles.paginatorBar}>
                         <button
                             onClick={() => setPage(p => Math.max(0, p - 1))}
                             disabled={page === 0}
-                            style={{ ...btnBase, width: 36, opacity: page === 0 ? 0.5 : 1 }}
+                            className={`${styles.pagerBtn} ${styles.pagerBtnNarrow}`}
                         >
                             &lt;
                         </button>
@@ -281,7 +275,7 @@ export default function Page() {
                                 <button
                                     key={secciones[i].interno ?? i}
                                     onClick={() => setSecIdx(i)}
-                                    style={{ ...btnBase, background: active ? '#ffecb3' : '#fff', fontWeight: active ? 700 : 400 }}
+                                    className={`${styles.pagerBtn} ${active ? styles.pagerBtnActive : ''}`}
                                     title={secciones[i].descripcion}
                                 >
                                     {i + 1}
@@ -292,7 +286,7 @@ export default function Page() {
                         <button
                             onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
                             disabled={page === totalPages - 1}
-                            style={{ ...btnBase, width: 36, opacity: page === totalPages - 1 ? 0.5 : 1 }}
+                            className={`${styles.pagerBtn} ${styles.pagerBtnNarrow}`}
                         >
                             &gt;
                         </button>
@@ -300,7 +294,7 @@ export default function Page() {
                 );
             })()}
 
-            <div style={{ border: '1px solid #e5e5e5', borderRadius: 10, padding: 12, marginTop: 10, marginBottom: 12 }}>
+            <div className={styles.questionsBox}>
                 {preguntas.map((q) => {
                     const key = q.codigo as number;
                     const rr = respuestas[key] ?? {};
@@ -308,13 +302,13 @@ export default function Page() {
                     const tieneNA = secActual.tieneNoAplica === 1;
 
                     return (
-                        <div key={key} style={{ padding: 10, border: '1px dashed #ddd', borderRadius: 8, marginBottom: 10 }}>
-                            <div style={{ marginBottom: 6, fontWeight: 500 }}>
+                        <div key={key} className={styles.questionCard}>
+                            <div className={styles.questionTitle}>
                                 {q.orden}. {q.pregunta}{' '}
-                                {q.comentario ? <span style={{ opacity: 0.7 }}>— {q.comentario}</span> : null}
+                                {q.comentario ? <span className={styles.questionComment}>— {q.comentario}</span> : null}
                             </div>
 
-                            <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 8 }}>
+                            <div className={styles.radioRow}>
                                 <label>
                                     <input
                                         type="radio"
@@ -344,20 +338,20 @@ export default function Page() {
                                         No aplica
                                     </label>
                                 ) : null}
-                                <span style={{ opacity: 0.6, fontSize: 13 }}>{value ? '' : '(Sin respuesta)'}</span>
+                                <span className={styles.radioHint}>{value ? '' : '(Sin respuesta)'}</span>
                             </div>
 
-                            <div style={{ marginBottom: 8 }}>
+                            <div className={styles.obsArea}>
                                 <textarea
                                     value={rr.observaciones ?? ''}
                                     onChange={(e) => onCambiarRespuesta(key, { observaciones: e.target.value })}
                                     placeholder="Observaciones…"
-                                    style={{ width: '100%', minHeight: 60, padding: 8, borderRadius: 6, border: '1px solid #ccc' }}
+                                    className={styles.textarea}
                                 />
                             </div>
 
-                            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                                <label style={{ minWidth: 210 }}>Fecha regularización (AAAAMMDD):</label>
+                            <div className={styles.dateRow}>
+                                <label className={styles.dateLabel}>Fecha regularización (AAAAMMDD):</label>
                                 <input
                                     type="number"
                                     value={rr.fechaRegularizacion ?? ''}
@@ -365,7 +359,7 @@ export default function Page() {
                                         onCambiarRespuesta(key, { fechaRegularizacion: e.target.value ? Number(e.target.value) : 0 })
                                     }
                                     placeholder="20251030"
-                                    style={{ height: 36, padding: '6px 10px', border: '1px solid #c7c7c7', borderRadius: 6, width: 180 }}
+                                    className={styles.dateInputNum}
                                 />
                             </div>
                         </div>
@@ -373,13 +367,13 @@ export default function Page() {
                 })}
             </div>
 
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div className={styles.actionsRow}>
                 <CustomButton onClick={() => router.back()} disabled={saving}>VOLVER</CustomButton>
                 <CustomButton onClick={guardarPUT} disabled={saving}>GUARDAR</CustomButton>
             </div>
 
-            {saving && <div style={{ marginTop: 12, opacity: 0.7 }}>Guardando…</div>}
-            {!!error && <div style={{ marginTop: 12, color: '#b00020' }}>{error}</div>}
+            {saving && <div className={styles.savingMsg}>Guardando…</div>}
+            {!!error && <div className={styles.errorMsg}>{error}</div>}
         </div>
     );
 }
