@@ -6,54 +6,13 @@ import CustomButton from '@/utils/ui/button/CustomButton';
 import dayjs from 'dayjs';
 import styles from './editar.module.css';
 
+ import type {
+   RespuestaCuestionarioVm,
+   FormularioVm,
+   TipoFormulario
+ } from '../generar/types/generar';
+
 const API_BASE = 'http://arttest.intersistemas.ar:8302/api';
-
-type RespuestaCuestionarioVm = {
-    interno?: number;
-    internoCuestionario?: number;
-    internoRespuestaFormulario?: number;
-    respuesta?: string;
-    fechaRegularizacion?: number | null;
-    observaciones?: string | null;
-    estadoAccion?: string | null;
-    estadoFecha?: number | null;
-    estadoSituacion?: string | null;
-    bajaMotivo?: number | null;
-};
-
-type FormularioVm = {
-    interno: number;
-    creacionFechaHora: string;
-    completadoFechaHora?: string | null;
-    notificacionFecha?: string | null;
-    internoFormulario: number;
-    internoEstablecimiento: number;
-    respuestasCuestionario: RespuestaCuestionarioVm[];
-    respuestasGremio: any[];
-    respuestasContratista: any[];
-    respuestasResponsable: any[];
-    internoPresentacion?: number;
-    fechaSRT?: string | null;
-};
-
-type TipoFormulario = {
-    interno: number;
-    descripcion: string;
-    secciones?: Array<{
-        interno: number;
-        orden: number;
-        descripcion: string;
-        tieneNoAplica: number;
-        comentario?: string;
-        cuestionarios?: Array<{
-            internoSeccion: number;
-            orden: number;
-            codigo: number;
-            pregunta: string;
-            comentario: string;
-        }>;
-    }>;
-};
 
 const toIsoOrNull = (v?: string | Date | null) => {
     if (!v) return null;
