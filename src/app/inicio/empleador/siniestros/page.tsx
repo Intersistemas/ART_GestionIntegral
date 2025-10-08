@@ -24,7 +24,7 @@ type SiniestroItem = {
   empCUIT?: string | null;
 };
 
-// Normaliza cualquier forma de token a "Bearer <jwt>"
+
 function normalizeBearerToken(raw: unknown): string | undefined {
   if (!raw) return undefined;
 
@@ -65,20 +65,19 @@ function fmtDate(v?: string | null) {
 }
 
 export default function SiniestrosPage() {
-  // Si querés enviar filtros/paginación, agregalos acá
-  const params: Parameters = {}; // e.g. { page: '1,50' }
 
-  // URL construida por tu API class (para log)
+  const params: Parameters = {}; 
+
   const url = useMemo(
     () => gestionEmpleadorAPI.getVEmpleadorSiniestrosURL(params),
     [params]
   );
 
-  // SWR usando tu wrapper (inyecta token automáticamente)
+  
   const { data, error, isLoading } =
     gestionEmpleadorAPI.useGetVEmpleadorSiniestros(params);
 
-  // 🔎 Logs de diagnóstico (sin exponer el JWT completo)
+
   useEffect(() => {
     const raw = token.getToken?.();
     const authHeader = normalizeBearerToken(raw);
