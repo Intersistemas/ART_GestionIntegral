@@ -42,6 +42,18 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
   );
   //#endregion
 
+    //#region SiniestrosEmpleador
+  readonly getVEmpleadorSiniestrosURL = (params: Parameters = {}) => {
+    return this.getURL({ path: "/api/VEmpleadorSiniestros", search: toURLSearch(params) }).toString();
+  };
+  getVEmpleadorSiniestros = async (params: Parameters = {}) => tokenizable.get(
+    this.getVEmpleadorSiniestrosURL(params),
+  ).then(({ data }) => data);
+  useGetVEmpleadorSiniestros = (params: Parameters = {}) => useSWR(
+    [this.getVEmpleadorSiniestrosURL(params), token.getToken()], () => this.getVEmpleadorSiniestros(params) 
+  );
+  //#endregion
+
 }
 
 const gestionEmpleadorAPI = Object.seal(new GestionEmpleadorAPIClass());

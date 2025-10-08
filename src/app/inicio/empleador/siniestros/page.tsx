@@ -1,143 +1,168 @@
-"use client";
-import React, { useMemo } from 'react';
-import DataTable from '@/utils/ui/table/DataTable'; // ⚠️ Asegúrate que esta ruta es correcta
-import { ColumnDef } from '@tanstack/react-table';
-import { BsPencilSquare } from 'react-icons/bs'; // Para el ícono de 'Evoluciones'
-import { Box, Typography, TextField, InputAdornment } from '@mui/material';
+'use client';
 
-// ⚠️ Define una interfaz para los datos de siniestros
-interface Siniestro {
-    cuil: number;
-    apellidoNombre: string;
-    establecimiento: string;
-    nroSiniestro: string;
-    tipoSiniestro: string;
-    fechaSiniestroPMI: string;
-    diagnostico: string;
-    categoria: string;
-    proximoControlMedico: string;
-    prestadorInicial: string;
-    fechaAltaMedica: string;
-    evoluciones: string; // Se usará para el botón/ícono
+import React, { useMemo, useEffect } from 'react';
+import dayjs from 'dayjs';
+import 'dayjs/locale/es';
+
+import gestionEmpleadorAPI from '@/data/gestionEmpleadorAPI';
+import { token } from '@/data/usuarioAPI';
+import type { Parameters } from '@/app/inicio/empleador/cobertura/types/persona';
+
+type SiniestroItem = {
+  denunciaNro: number;
+  trabCUIL: string;
+  trabNombre: string;
+  establecimiento: string;
+  siniestroNro: string;
+  tipoSiniestro: string;
+  siniestroFechaHora?: string | null;
+  diagnostico?: string | null;
+  siniestroCategoria?: string | null;
+  proximoControlMedicoFechaHora?: string | null;
+  prestador?: string | null;
+  altaMedicaFecha?: string | null;
+  empCUIT?: string | null;
+};
+
+// Normaliza cualquier forma de token a "Bearer <jwt>"
+function normalizeBearerToken(raw: unknown): string | undefined {
+  if (!raw) return undefined;
+
+  if (typeof raw === 'string') {
+    const s = raw.trim();
+    if (!s) return undefined;
+    return s.startsWith('Bearer ') ? s : `Bearer ${s}`;
+  }
+
+  if (typeof raw === 'object') {
+    const o = raw as Record<string, unknown>;
+    const candidate = [
+      o['accessToken'],
+      o['token'],
+      o['id_token'],
+      o['jwt'],
+      o['value'],
+    ].find((v) => typeof v === 'string' && (v as string).trim().length > 0) as
+      | string
+      | undefined;
+
+    if (!candidate) return undefined;
+    return candidate.startsWith('Bearer ') ? candidate : `Bearer ${candidate}`;
+  }
+
+  return undefined;
 }
 
-// ----------------------------------------------------
-// 2. DATOS DE EJEMPLO (GENERADOS A PARTIR DE LA IMAGEN)
-// ----------------------------------------------------
-const siniestrosData: Siniestro[] = [
-    {
-        cuil: 20391913200,
-        apellidoNombre: 'MONTERO, PABLO EMANUEL',
-        establecimiento: 'TRES MARIAS S.A - BONPLAND - CTES.',
-        nroSiniestro: '202200009800',
-        tipoSiniestro: 'AccidenteTrabajo',
-        fechaSiniestroPMI: '18-03-2022, 18:30 pm',
-        diagnostico: 'CONTUSION DE LA RODILLA',
-        categoria: 'CB',
-        proximoControlMedico: '18-04-2022',
-        prestadorInicial: 'CLINICA MADARIAGA S R L - BARTOLOME MITRE 876 - PASO DE LOS LIBRES - CTES.',
-        fechaAltaMedica: '18-04-2022',
-        evoluciones: 'Ver',
-    },
-    {
-        cuil: 26321154809,
-        apellidoNombre: 'MIYO, RAMON FORTUNATO',
-        establecimiento: 'TRES MARIAS S.A - BONPLAND - CTES.',
-        nroSiniestro: '202200009900',
-        tipoSiniestro: 'AccidenteTrabajo',
-        fechaSiniestroPMI: '12-10-2022, 10:10 am',
-        diagnostico: 'CONTUSION DE DEDO(S) DE LA MANO, SIN DAÑO DE UÑA(S), UÑA(S)',
-        categoria: 'CB',
-        proximoControlMedico: '20-01-2023',
-        prestadorInicial: 'CLINICA MADARIAGA S R L - BARTOLOME MITRE 876 - PASO DE LOS LIBRES - CTES.',
-        fechaAltaMedica: '20-01-2023',
-        evoluciones: 'Ver',
-    },
-    {
-        cuil: 20181642859,
-        apellidoNombre: 'ZARATE, RAMON ANDRES',
-        establecimiento: 'TRES MARIAS S.A - BONPLAND - CTES.',
-        nroSiniestro: '202300009500',
-        tipoSiniestro: 'AccidenteTrabajo',
-        fechaSiniestroPMI: '24-05-2023, 16:00 pm',
-        diagnostico: 'ESGUINCES Y TORCEDURAS DE OTRAS PARTES Y DE LAS NO ESPECIFICADAS DE LA RODILLA',
-        categoria: 'CB',
-        proximoControlMedico: '03-07-2023',
-        prestadorInicial: 'CLINICA MADARIAGA S R L - BARTOLOME MITRE 876 - PASO DE LOS LIBRES - CTES.',
-        fechaAltaMedica: '03-07-2023',
-        evoluciones: 'Ver',
-    },
-    {
-        cuil: 20391913200,
-        apellidoNombre: 'MONTERO, PABLO EMANUEL',
-        establecimiento: 'TRES MARIAS S.A - BONPLAND - CTES.',
-        nroSiniestro: '202300010900',
-        tipoSiniestro: 'AccidenteTrabajo',
-        fechaSiniestroPMI: '07-06-2023, 16:00 pm',
-        diagnostico: 'ESGUINCES Y TORCEDURAS DE LA COLUMNA LUMBAR',
-        categoria: 'CB',
-        proximoControlMedico: '03-07-2023',
-        prestadorInicial: 'CLINICA MADARIAGA S R L - BARTOLOME MITRE 876 - PASO DE LOS LIBRES - CTES.',
-        fechaAltaMedica: '03-07-2023',
-        evoluciones: 'Ver',
-    },
-];
+function fmtDateTime(v?: string | null) {
+  if (!v) return '';
+  const d = dayjs(v);
+  return d.isValid() ? d.format('DD-MM-YYYY, HH:mm') : '';
+}
+function fmtDate(v?: string | null) {
+  if (!v) return '';
+  const d = dayjs(v);
+  return d.isValid() ? d.format('DD-MM-YYYY') : '';
+}
 
-// ----------------------------------------------------
-// 3. DEFINICIÓN DE COLUMNAS
-// ----------------------------------------------------
-function SiniestrosPage() {
+export default function SiniestrosPage() {
+  // Si querés enviar filtros/paginación, agregalos acá
+  const params: Parameters = {}; // e.g. { page: '1,50' }
 
-    // ⚠️ Estado para la búsqueda (opcional, pero útil)
-    const [searchTerm, setSearchTerm] = React.useState(''); 
+  // URL construida por tu API class (para log)
+  const url = useMemo(
+    () => gestionEmpleadorAPI.getVEmpleadorSiniestrosURL(params),
+    [params]
+  );
 
-    const columns: ColumnDef<Siniestro>[] = useMemo(() => [
-        { header: 'CUIL', accessorKey: 'cuil', cell: info => info.getValue() },
-        { header: 'Apellido_Nombre', accessorKey: 'apellidoNombre' },
-        { header: 'Establecimiento', accessorKey: 'establecimiento' },
-        { header: 'Nro. Siniestro', accessorKey: 'nroSiniestro' },
-        { header: 'Tipo de Siniestro', accessorKey: 'tipoSiniestro' },
-        { header: 'Fecha Siniestro PMI', accessorKey: 'fechaSiniestroPMI' },
-        { header: 'Diagnóstico', accessorKey: 'diagnostico' },
-        { header: 'Categoría', accessorKey: 'categoria' },
-        { header: 'Próximo Control Médico', accessorKey: 'proximoControlMedico' },
-        { header: 'Prestador Inicial', accessorKey: 'prestadorInicial' },
-        { header: 'Fecha Alta Médica', accessorKey: 'fechaAltaMedica' },
-        { 
-            header: 'Evoluciones', 
-            accessorKey: 'evoluciones',
-            // 🟢 Renderizado de celda para mostrar un botón/ícono
-            cell: () => (
-                <button 
-                    title="Ver Evoluciones"
-                    style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-                    onClick={() => alert("Mostrando evoluciones...")}
-                >
-                    <BsPencilSquare style={{ fontSize: '1.2rem', color: 'var(--naranja)' }} />
-                </button>
-            ),
-            enableSorting: false,
-            size: 50, // Columna más angosta
-        },
-    ], []);
+  // SWR usando tu wrapper (inyecta token automáticamente)
+  const { data, error, isLoading } =
+    gestionEmpleadorAPI.useGetVEmpleadorSiniestros(params);
 
-    return (
-        <div style={{ padding: '20px' }}>
-            <Typography variant="h3" component="h1" gutterBottom style={{ fontWeight: 'bold' }}>
-                Control de Siniestros
-            </Typography>
+  // 🔎 Logs de diagnóstico (sin exponer el JWT completo)
+  useEffect(() => {
+    const raw = token.getToken?.();
+    const authHeader = normalizeBearerToken(raw);
+    const masked = authHeader
+      ? authHeader.replace(/^Bearer\s+(.{6}).+(.{6})$/, 'Bearer $1…$2')
+      : '(vacío)';
 
-            {/* -------------------- TABLA DE SINIESTROS -------------------- */}
-            <DataTable
-                data={siniestrosData} 
-                columns={columns} 
-                size="mid"
-                isLoading={false}
-                // Aquí podrías agregar lógica para filtrar los datos con searchTerm
-                // filterCriteria={searchTerm} 
-            />
+    console.log('[GET] VEmpleadorSiniestros →', {
+      url,
+      params,
+      tokenTipo: typeof raw,
+      tokenClaves:
+        raw && typeof raw === 'object'
+          ? Object.keys(raw as Record<string, unknown>)
+          : undefined,
+      tokenPreview: masked,
+    });
+  }, [url, params]);
+
+  const rows: SiniestroItem[] = useMemo(
+    () => (Array.isArray(data) ? data : []),
+    [data]
+  );
+
+  return (
+    <div style={{ padding: 16 }}>
+      <h1>Control de Siniestros</h1>
+
+      {isLoading && <p>Cargando…</p>}
+
+      {error && (
+        <p style={{ color: 'crimson' }}>
+          {String((error as any)?.message ?? error)}
+        </p>
+      )}
+
+      {!isLoading && !error && rows.length === 0 && (
+        <p>No hay siniestros para mostrar.</p>
+      )}
+
+      {!isLoading && !error && rows.length > 0 && (
+        <div style={{ overflowX: 'auto' }}>
+          <table
+            style={{
+              borderCollapse: 'collapse',
+              width: '100%',
+              minWidth: 980,
+            }}
+          >
+            <thead>
+              <tr>
+                <th style={{ borderBottom: '1px solid #ddd', textAlign: 'left', padding: 8 }}>CUIL</th>
+                <th style={{ borderBottom: '1px solid #ddd', textAlign: 'left', padding: 8 }}>Apellido y Nombre</th>
+                <th style={{ borderBottom: '1px solid #ddd', textAlign: 'left', padding: 8 }}>Establecimiento</th>
+                <th style={{ borderBottom: '1px solid #ddd', textAlign: 'left', padding: 8 }}>Nº Siniestro</th>
+                <th style={{ borderBottom: '1px solid #ddd', textAlign: 'left', padding: 8 }}>Tipo</th>
+                <th style={{ borderBottom: '1px solid #ddd', textAlign: 'left', padding: 8 }}>Fecha Siniestro PMI</th>
+                <th style={{ borderBottom: '1px solid #ddd', textAlign: 'left', padding: 8 }}>Diagnóstico</th>
+                <th style={{ borderBottom: '1px solid #ddd', textAlign: 'left', padding: 8 }}>Categoría</th>
+                <th style={{ borderBottom: '1px solid #ddd', textAlign: 'left', padding: 8 }}>Próx. Control Médico</th>
+                <th style={{ borderBottom: '1px solid #ddd', textAlign: 'left', padding: 8 }}>Prestador inicial</th>
+                <th style={{ borderBottom: '1px solid #ddd', textAlign: 'left', padding: 8 }}>Alta Médica</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r, idx) => (
+                <tr key={`${r.denunciaNro ?? idx}-${idx}`}>
+                  <td style={{ borderBottom: '1px solid #eee', padding: 8 }}>{r.trabCUIL}</td>
+                  <td style={{ borderBottom: '1px solid #eee', padding: 8 }}>{r.trabNombre}</td>
+                  <td style={{ borderBottom: '1px solid #eee', padding: 8 }}>{r.establecimiento}</td>
+                  <td style={{ borderBottom: '1px solid #eee', padding: 8 }}>{r.siniestroNro}</td>
+                  <td style={{ borderBottom: '1px solid #eee', padding: 8 }}>{r.tipoSiniestro}</td>
+                  <td style={{ borderBottom: '1px solid #eee', padding: 8 }}>{fmtDateTime(r.siniestroFechaHora)}</td>
+                  <td style={{ borderBottom: '1px solid #eee', padding: 8 }}>{r.diagnostico ?? ''}</td>
+                  <td style={{ borderBottom: '1px solid #eee', padding: 8 }}>{r.siniestroCategoria ?? ''}</td>
+                  <td style={{ borderBottom: '1px solid #eee', padding: 8 }}>{fmtDateTime(r.proximoControlMedicoFechaHora)}</td>
+                  <td style={{ borderBottom: '1px solid #eee', padding: 8 }}>{r.prestador ?? ''}</td>
+                  <td style={{ borderBottom: '1px solid #eee', padding: 8 }}>{fmtDate(r.altaMedicaFecha)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-    )
+      )}
+    </div>
+  );
 }
-
-export default SiniestrosPage;
