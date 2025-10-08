@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
 
@@ -8,12 +8,20 @@ import gestionEmpleadorAPI from '@/data/gestionEmpleadorAPI';
 import { token } from '@/data/usuarioAPI';
 import type { Parameters } from '@/app/inicio/empleador/cobertura/types/persona';
 
+import DataTable from '@/utils/ui/table/DataTable';
+import type { ColumnDef } from '@tanstack/react-table';
+
+// 👇 IMPORTA el componente de abajo (tu tabla) con el TIPO correcto
+import CondicionesTabla, { type InstanciaSiniestro } from './table';
+
+/* ===== Tipos (lista superior) ===== */
 type SiniestroItem = {
   denunciaNro: number;
-  trabCUIL: string;
+  siniestroNro: number | string;
+  empCUIT?: number | string;
+  trabCUIL: number | string;
   trabNombre: string;
   establecimiento: string;
-  siniestroNro: string;
   tipoSiniestro: string;
   siniestroFechaHora?: string | null;
   diagnostico?: string | null;
@@ -21,92 +29,121 @@ type SiniestroItem = {
   proximoControlMedicoFechaHora?: string | null;
   prestador?: string | null;
   altaMedicaFecha?: string | null;
-  empCUIT?: string | null;
 };
 
-
-function normalizeBearerToken(raw: unknown): string | undefined {
-  if (!raw) return undefined;
-
-  if (typeof raw === 'string') {
-    const s = raw.trim();
-    if (!s) return undefined;
-    return s.startsWith('Bearer ') ? s : `Bearer ${s}`;
-  }
-
-  if (typeof raw === 'object') {
-    const o = raw as Record<string, unknown>;
-    const candidate = [
-      o['accessToken'],
-      o['token'],
-      o['id_token'],
-      o['jwt'],
-      o['value'],
-    ].find((v) => typeof v === 'string' && (v as string).trim().length > 0) as
-      | string
-      | undefined;
-
-    if (!candidate) return undefined;
-    return candidate.startsWith('Bearer ') ? candidate : `Bearer ${candidate}`;
-  }
-
-  return undefined;
-}
-
-function fmtDateTime(v?: string | null) {
+/* ===== Helpers (solo para la grilla superior) ===== */
+const fmtDateTime = (v?: string | null) => {
   if (!v) return '';
   const d = dayjs(v);
   return d.isValid() ? d.format('DD-MM-YYYY, HH:mm') : '';
-}
-function fmtDate(v?: string | null) {
+};
+const fmtDate = (v?: string | null) => {
   if (!v) return '';
   const d = dayjs(v);
   return d.isValid() ? d.format('DD-MM-YYYY') : '';
-}
+};
 
+/* ===== Columnas (tabla superior) ===== */
+const cols: ColumnDef<SiniestroItem>[] = [
+  { header: 'CUIL', accessorKey: 'trabCUIL' },
+  {
+    header: 'Apellido y Nombre',
+    accessorKey: 'trabNombre',
+    cell: ({ getValue }) => String(getValue() ?? '').trim(),
+  },
+  { header: 'Establecimiento', accessorKey: 'establecimiento' },
+  { header: 'Nº Siniestro', accessorKey: 'siniestroNro' },
+  {
+    header: 'Tipo',
+    accessorKey: 'tipoSiniestro',
+    cell: ({ getValue }) => String(getValue() ?? '').trim(),
+  },
+  {
+    header: 'Fecha Siniestro PMI',
+    accessorKey: 'siniestroFechaHora',
+    cell: ({ getValue }) => fmtDateTime(getValue() as string | null),
+  },
+  { header: 'Diagnóstico', accessorKey: 'diagnostico' },
+  {
+    header: 'Categoría',
+    accessorKey: 'siniestroCategoria',
+    cell: ({ getValue }) => String(getValue() ?? '').trim(),
+  },
+  {
+    header: 'Próx. Control Médico',
+    accessorKey: 'proximoControlMedicoFechaHora',
+    cell: ({ getValue }) => fmtDateTime(getValue() as string | null),
+  },
+  { header: 'Prestador inicial', accessorKey: 'prestador' },
+  {
+    header: 'Alta Médica',
+    accessorKey: 'altaMedicaFecha',
+    cell: ({ getValue }) => fmtDate(getValue() as string | null),
+  },
+];
+
+/* ===== Componente ===== */
 export default function SiniestrosPage() {
+  const [selectedDenuncia, setSelectedDenuncia] = useState<number | null>(null);
 
-  const params: Parameters = {}; 
+  // Query base (sin filtros adicionales)
+  const params: Parameters = {};
 
+  // Lista principal
+  const { data, error, isLoading } =
+    gestionEmpleadorAPI.useGetVEmpleadorSiniestros(params);
+
+  // Detalle por denuncia (instancias) — se dispara SOLO si hay denuncia seleccionada
+  const {
+    data: instanciasData,
+    isLoading: isLoadingInst,
+    error: errorInst,
+  } = gestionEmpleadorAPI.useGetVEmpleadorSiniestrosInstancias(
+    selectedDenuncia != null ? ({ Denuncia: selectedDenuncia } as any) : ({} as any)
+  );
+
+  // Log con token enmascarado y URL (debug)
   const url = useMemo(
     () => gestionEmpleadorAPI.getVEmpleadorSiniestrosURL(params),
     [params]
   );
-
-  
-  const { data, error, isLoading } =
-    gestionEmpleadorAPI.useGetVEmpleadorSiniestros(params);
-
-
   useEffect(() => {
     const raw = token.getToken?.();
-    const authHeader = normalizeBearerToken(raw);
-    const masked = authHeader
-      ? authHeader.replace(/^Bearer\s+(.{6}).+(.{6})$/, 'Bearer $1…$2')
-      : '(vacío)';
-
-    console.log('[GET] VEmpleadorSiniestros →', {
-      url,
-      params,
-      tokenTipo: typeof raw,
-      tokenClaves:
-        raw && typeof raw === 'object'
-          ? Object.keys(raw as Record<string, unknown>)
-          : undefined,
-      tokenPreview: masked,
-    });
+    const masked =
+      typeof raw === 'string'
+        ? `Bearer ${raw.slice(0, 6)}…${raw.slice(-6)}`
+        : '(objeto/token compuesto)';
+    console.log('[GET] VEmpleadorSiniestros →', { url, params, tokenPreview: masked });
   }, [url, params]);
 
+  // Filas principales
   const rows: SiniestroItem[] = useMemo(
     () => (Array.isArray(data) ? data : []),
     [data]
   );
 
+  // Click en fila → carga instancias de esa denuncia
+  const handleRowClick = (row: SiniestroItem) => {
+    const den = Number(row.denunciaNro ?? 0);
+    if (den) setSelectedDenuncia(den);
+  };
+
+  const instanciasRows: InstanciaSiniestro[] = useMemo(() => {
+    if (!Array.isArray(instanciasData)) return [];
+    return (instanciasData as any[]).map((it) => ({
+      denunciaNro: Number(it.denunciaNro ?? 0),
+      fechaHoraInstancia: it.fechaHoraInstancia ?? null,
+      tipoInstancia: typeof it.tipoInstancia === 'string' ? it.tipoInstancia.trim() : it.tipoInstancia ?? null,
+      comentarioInstancia: typeof it.comentarioInstancia === 'string' ? it.comentarioInstancia.trim() : it.comentarioInstancia ?? null,
+      estadoInstancia: typeof it.estadoInstancia === 'string' ? it.estadoInstancia.trim() : it.estadoInstancia ?? null,
+      proximoControlMedicoFechaHora: it.proximoControlMedicoFechaHora ?? null,
+    }));
+  }, [instanciasData]);
+
+  const hasAnyDetalle = instanciasRows.length > 0;
+
   return (
     <div style={{ padding: 16 }}>
-      <h1>Control de Siniestros</h1>
-
-      {isLoading && <p>Cargando…</p>}
 
       {error && (
         <p style={{ color: 'crimson' }}>
@@ -114,53 +151,29 @@ export default function SiniestrosPage() {
         </p>
       )}
 
-      {!isLoading && !error && rows.length === 0 && (
-        <p>No hay siniestros para mostrar.</p>
-      )}
+      <DataTable<SiniestroItem>
+        data={rows}
+        columns={cols}
+        isLoading={isLoading}
+        size="mid"
+        onRowClick={handleRowClick}
+      />
 
-      {!isLoading && !error && rows.length > 0 && (
-        <div style={{ overflowX: 'auto' }}>
-          <table
-            style={{
-              borderCollapse: 'collapse',
-              width: '100%',
-              minWidth: 980,
-            }}
-          >
-            <thead>
-              <tr>
-                <th style={{ borderBottom: '1px solid #ddd', textAlign: 'left', padding: 8 }}>CUIL</th>
-                <th style={{ borderBottom: '1px solid #ddd', textAlign: 'left', padding: 8 }}>Apellido y Nombre</th>
-                <th style={{ borderBottom: '1px solid #ddd', textAlign: 'left', padding: 8 }}>Establecimiento</th>
-                <th style={{ borderBottom: '1px solid #ddd', textAlign: 'left', padding: 8 }}>Nº Siniestro</th>
-                <th style={{ borderBottom: '1px solid #ddd', textAlign: 'left', padding: 8 }}>Tipo</th>
-                <th style={{ borderBottom: '1px solid #ddd', textAlign: 'left', padding: 8 }}>Fecha Siniestro PMI</th>
-                <th style={{ borderBottom: '1px solid #ddd', textAlign: 'left', padding: 8 }}>Diagnóstico</th>
-                <th style={{ borderBottom: '1px solid #ddd', textAlign: 'left', padding: 8 }}>Categoría</th>
-                <th style={{ borderBottom: '1px solid #ddd', textAlign: 'left', padding: 8 }}>Próx. Control Médico</th>
-                <th style={{ borderBottom: '1px solid #ddd', textAlign: 'left', padding: 8 }}>Prestador inicial</th>
-                <th style={{ borderBottom: '1px solid #ddd', textAlign: 'left', padding: 8 }}>Alta Médica</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r, idx) => (
-                <tr key={`${r.denunciaNro ?? idx}-${idx}`}>
-                  <td style={{ borderBottom: '1px solid #eee', padding: 8 }}>{r.trabCUIL}</td>
-                  <td style={{ borderBottom: '1px solid #eee', padding: 8 }}>{r.trabNombre}</td>
-                  <td style={{ borderBottom: '1px solid #eee', padding: 8 }}>{r.establecimiento}</td>
-                  <td style={{ borderBottom: '1px solid #eee', padding: 8 }}>{r.siniestroNro}</td>
-                  <td style={{ borderBottom: '1px solid #eee', padding: 8 }}>{r.tipoSiniestro}</td>
-                  <td style={{ borderBottom: '1px solid #eee', padding: 8 }}>{fmtDateTime(r.siniestroFechaHora)}</td>
-                  <td style={{ borderBottom: '1px solid #eee', padding: 8 }}>{r.diagnostico ?? ''}</td>
-                  <td style={{ borderBottom: '1px solid #eee', padding: 8 }}>{r.siniestroCategoria ?? ''}</td>
-                  <td style={{ borderBottom: '1px solid #eee', padding: 8 }}>{fmtDateTime(r.proximoControlMedicoFechaHora)}</td>
-                  <td style={{ borderBottom: '1px solid #eee', padding: 8 }}>{r.prestador ?? ''}</td>
-                  <td style={{ borderBottom: '1px solid #eee', padding: 8 }}>{fmtDate(r.altaMedicaFecha)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {/* Panel inferior: SOLO usa CondicionesTabla (instancias del siniestro) */}
+      {selectedDenuncia != null && (
+        <>
+          {errorInst && (
+            <p style={{ color: 'crimson' }}>
+              {String((errorInst as any)?.message ?? errorInst)}
+            </p>
+          )}
+
+          <CondicionesTabla
+            rows={instanciasRows}
+            loading={isLoadingInst}
+            hasAny={hasAnyDetalle}
+          />
+        </>
       )}
     </div>
   );
