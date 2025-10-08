@@ -16,63 +16,26 @@ import dayjs from 'dayjs';
 
 import styles from './FormulariosRGRL.module.css';
 
-/* ===== Tipos ===== */
-export interface FormulariosRGRLProps {
-  cuit: number;
-  referenteDatos?: unknown;
-}
+import type {
+  FormulariosRGRLProps,
+  FormularioRGRL,
+  FormularioRGRLDetalle,
+  PrintData,
+  ApiTiposFormularios,
+  TiposIndexItem,
+  ApiFormularioRGRL,
+  ApiFormularioDetalle,
+  ApiEstablecimientoEmpresa,
+  TabKey,
+  PlanillaAItem,
+  PlanillaBItem,
+  PlanillaCItem,
+  GremioItem,
+  ContratistaItem,
+  ResponsableItem,
+  DetallePayload
+} from './types/rgrl';
 
-export type FormularioRGRL = {
-  InternoFormularioRGRL: number;
-  CUIT: string;
-  RazonSocial: string;
-  Establecimiento: string;
-  Formulario: string;
-  Estado: string;
-  FechaHoraCreacion: string;
-  FechaHoraConfirmado: string;
-};
-
-
-type FormularioRGRLDetalle = {
-  Nro: number;
-  Categoria: string;
-  CategoriaOrden?: number;
-  Pregunta: string;
-  Respuesta: string;
-  FechaRegularizacion: string;
-  NormaVigente: string;
-};
-
-type PrintData = {
-  cabecera: CabeceraData;
-  detalle: FormularioRGRLDetalle[];
-  planillaA: PlanillaAItem[];
-  planillaB: PlanillaBItem[];
-  planillaC: PlanillaCItem[];
-  gremios: GremioItem[];
-  contratistas: ContratistaItem[];
-  responsables: ResponsableItem[];
-};
-
-type ApiTiposFormularios = Array<{
-  descripcion: string;
-  decreto: number;
-  secciones: Array<{
-    internoFormulario: number;
-    orden: number;
-    descripcion: string;
-    pagina: number;
-    planilla?: string;
-    cuestionarios: Array<{
-      codigo: number;
-      pregunta: string;
-      comentario: string;
-    }>;
-  }>;
-}>;
-
-type TiposIndexItem = { pregunta: string; norma: string; seccion: string; pagina: number; planilla?: string; seccionOrden?: number; };
 let _tiposCache: ApiTiposFormularios | null = null;
 
 const cargarTipos = async (): Promise<ApiTiposFormularios> => {
@@ -109,23 +72,7 @@ const getPlanillaCuestionarios = async (internoFormulario: number, letra: 'A' | 
   return secs.flatMap(s => s.cuestionarios ?? []);
 };
 
-type ApiFormularioRGRL = {
-  interno: number;
-  cuit: number;
-  razonSocial: string;
-  direccion: string | null;
-  descripcion: string | null;
-  estado: string;
-  creacionFechaHora: string | null;
-  completadoFechaHora: string | null;
-  internoFormulario: number | null;
-  internoEstablecimiento: number | null;
-  fechaSRT: string | null;
-  respuestasCuestionario: unknown[];
-  respuestasGremio: unknown[];
-  respuestasContratista: unknown[];
-  respuestasResponsable: unknown[];
-};
+
 
 const dt = (iso: string | null | undefined) => {
   if (!iso) return '';
@@ -176,64 +123,6 @@ const CargarConsultaFormulariosRGRL = async (cuit: number): Promise<FormularioRG
 
 };
 
-type ApiFormularioDetalle = {
-  interno: number;
-  cuit: number;
-  razonSocial: string;
-  direccion: string | null;
-  descripcion: string | null;
-  estado: string;
-  creacionFechaHora: string | null;
-  completadoFechaHora: string | null;
-  internoFormulario: number | null;
-  internoEstablecimiento: number | null;
-  fechaSRT: string | null;
-  respuestasCuestionario: Array<{
-    interno: number;
-    internoCuestionario: number;
-    internoRespuestaFormulario: number;
-    respuesta: string | null;
-    fechaRegularizacion: number | null;
-    observaciones: string | null;
-    fechaRegularizacionNormal: string | null;
-  }>;
-
-  respuestasGremio?: Array<{ legajo?: string | number; nombre?: string }>;
-  respuestasContratista?: Array<{ cuit?: string | number; contratista?: string; nombre?: string }>;
-  respuestasResponsable?: Array<{
-    cuit?: string;
-    responsable?: string;
-    cargo?: string;
-    representacion?: string;
-    propioContratado?: string;
-    tituloHabilitante?: string;
-    matricula?: string;
-    entidadOtorganteTitulo?: string;
-  }>;
-
-};
-
-type ApiEstablecimientoEmpresa = {
-  interno: number;
-  cuit: number;
-  nroSucursal: number;
-  nombre: string;
-  domicilioCalle: string;
-  domicilioNro: string;
-  superficie: number;
-  cantTrabajadores: number;
-  estadoAccion: string;
-  estadoFecha: number;
-  estadoSituacion: string;
-  bajaMotivo: number;
-  localidad: string;
-  provincia: string;
-  codigo: number;
-  numero: number;
-  codEstabEmpresa: number;
-  ciiu: number;
-};
-
 const CargarEstablecimientosEmpresa = async (cuit: number): Promise<ApiEstablecimientoEmpresa[]> => {
   const url = `http://arttest.intersistemas.ar:8302/api/Establecimientos/Empresa/${encodeURIComponent(cuit)}`;
   const res = await fetch(url, { cache: 'no-store', headers: { Accept: 'application/json' } });
@@ -256,28 +145,10 @@ const normPropioContratado = (v?: string | null): 'Propio' | 'Contratado' => {
   return 'Propio';
 };
 
-type DetallePayload = {
-  detalle: FormularioRGRLDetalle[];
-  gremios: { Legajo: string; Nombre: string }[];
-  contratistas: { CUIT: string; Contratista: string }[];
-  responsables: ResponsableItem[];
-
-  planillaA: PlanillaAItem[];
-  planillaB: PlanillaBItem[];
-  planillaC: PlanillaCItem[];
-
-  internoFormulario?: number | null;
-  internoEstablecimiento?: number | null;
-  fechaSRT?: string | null;
-
-
-};
-
 const CargarDetalleRGRL = async (id: number): Promise<DetallePayload> => {
   const res = await fetch(`http://arttest.intersistemas.ar:8302/api/FormulariosRGRL/${id}`, { cache: 'no-store' });
   if (!res.ok) throw new Error(`Error ${res.status}`);
   const data: ApiFormularioDetalle = await res.json();
-
 
   const idx = await buildTiposIndex(Number(data.internoFormulario ?? 1));
 
@@ -372,28 +243,6 @@ const CargarDetalleRGRL = async (id: number): Promise<DetallePayload> => {
   };
 };
 
-type TabKey = 'none' | 'planillaA' | 'planillaB' | 'planillaC' | 'gremios' | 'contratistas' | 'responsables';
-
-type PlanillaAItem = { Codigo: string; Sustancia: string; SiNo: 'Sí' | 'No' | 'No Aplica' };
-
-type PlanillaCItem = { Codigo: string; Sustancia: string; SiNo: 'Sí' | 'No' | 'No Aplica'; NormaVigente: string };
-
-type PlanillaBItem = { Codigo: string; Sustancia: string; SiNo: 'Sí' | 'No' | 'No Aplica' };
-
-type GremioItem = { Legajo: string; Nombre: string };
-
-type ContratistaItem = { CUIT: string; Contratista: string };
-
-type ResponsableItem = {
-  CUITCUIL: string;
-  NombreApellido: string;
-  Cargo: string;
-  Representacion: string;
-  PropioContratado: 'Propio' | 'Contratado';
-  TituloHabilitante: string;
-  Matricula: string;
-  EntidadOtorgante: string;
-};
 
 const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos }) => {
   const router = useRouter();
@@ -740,8 +589,8 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
                 <>
                   {activeTab === 'planillaA' && (
                     <>
-                    <div className={styles.tablaTitulo}>PLANILLA A - LISTADO DE SUSTANCIAS Y AGENTES CANCERÍGENOS (Res. SRT 81/2019)</div>
-                    <table className={styles.sheetTable}>
+                      <div className={styles.tablaTitulo}>PLANILLA A - LISTADO DE SUSTANCIAS Y AGENTES CANCERÍGENOS (Res. SRT 81/2019)</div>
+                      <table className={styles.sheetTable}>
                         <thead>
                           <tr>
                             <th style={{ width: 90 }}>Código</th>
@@ -764,8 +613,8 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
 
                   {activeTab === 'planillaB' && (
                     <>
-                     <div className={styles.tablaTitulo}>PLANILLA B - DIFENILOS POLICLORADOS (Res. SRT 497/03)</div>
-                     <table className={styles.sheetTable}>
+                      <div className={styles.tablaTitulo}>PLANILLA B - DIFENILOS POLICLORADOS (Res. SRT 497/03)</div>
+                      <table className={styles.sheetTable}>
                         <thead>
                           <tr>
                             <th style={{ width: 90 }}>Código</th>
