@@ -155,7 +155,7 @@ export default function Tareas({
             <strong>Usuario:</strong> {usuario.email}
           </Typography>
           <Typography variant="body2" sx={{ fontSize: "1.5rem" }}>
-            <strong>Cargo:</strong> {usuario.cargo}
+            <strong>Cargo:</strong> {usuario.cargoDescripcion}
           </Typography>
         </Box>
 

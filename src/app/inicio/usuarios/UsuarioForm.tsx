@@ -18,6 +18,7 @@ import { SelectChangeEvent } from "@mui/material/Select";
 import RefEmpleador from "./interfaces/RefEmpleador";
 import CustomModal from "@/utils/ui/form/CustomModal";
 import CustomButton from "@/utils/ui/button/CustomButton";
+import CargoInterface from "./interfaces/CargoInterface";
 
 // Definición del modo de operación (replicada desde UsuariosPage)
 type RequestMethod = "create" | "edit" | "view" | "delete" | "activate" | "remove";
@@ -27,7 +28,7 @@ export interface UsuarioFormFields {
   email: string;
   cuit: string;
   phoneNumber: string;
-  cargo: string;
+  cargoId?: number;
   password?: string;
   confirmPassword?: string;
   rol: string;
@@ -42,6 +43,7 @@ interface Props {
   onClose: () => void;
   onSubmit: (formData: UsuarioFormFields) => void;
   roles: RolesInterface[];
+  cargos: CargoInterface[];
   refEmpleadores: RefEmpleador[];
   initialData?: UsuarioFormFields;
   errorMsg?: string | null;
@@ -54,7 +56,7 @@ const initialFormState: UsuarioFormFields = {
   email: "",
   cuit: "",
   phoneNumber: "",
-  cargo: "",
+  cargoId: 0,
   password: "",
   confirmPassword: "",
   rol: "",
@@ -69,7 +71,7 @@ interface ValidationErrors {
   email?: string;
   cuit?: string;
   phoneNumber?: string;
-  cargo?: string;
+  cargoId?: string;
   password?: string;
   confirmPassword?: string;
   rol?: string;
@@ -84,7 +86,7 @@ interface TouchedFields {
   email?: boolean;
   cuit?: boolean;
   phoneNumber?: boolean;
-  cargo?: boolean;
+  cargoId?: boolean;
   password?: boolean;
   confirmPassword?: boolean;
   rol?: boolean;
@@ -99,6 +101,7 @@ export default function UsuarioForm({
   onClose,
   onSubmit,
   roles,
+  cargos,
   refEmpleadores,
   initialData,
   errorMsg,
@@ -129,12 +132,12 @@ export default function UsuarioForm({
         processedData.confirmPassword = "";
         
         // Limpiar campo cargo si viene como undefined, null, cadena vacía, o valores por defecto no deseados
-        if (!processedData.cargo || 
-            processedData.cargo.trim() === "" || 
-            processedData.cargo === "null" || 
-            processedData.cargo === "undefined") {
-          processedData.cargo = "";
-        }
+        // if (!processedData.cargo || 
+        //     processedData.cargo.trim() === "" || 
+        //     processedData.cargo === "null" || 
+        //     processedData.cargo === "undefined") {
+        //   processedData.cargo = "";
+        // }
       }
       
       setForm(processedData);
@@ -278,8 +281,8 @@ export default function UsuarioForm({
       //   return validateRequired(value, "Tipo");
       case "rol":
         return validateRequired(value, "Rol");
-      case "cargo":
-        return validateRequired(value, "Cargo");
+      case "cargoId":
+        return validateRequired(String(value), "Cargo");
       case "empresaId":
         return validateRequired(String(value), "Empresa");
       default:
@@ -359,6 +362,23 @@ export default function UsuarioForm({
       setErrors((prev) => ({
         ...prev,
         empresaId: error,
+      }));
+    }
+  };
+
+  const handleCargoChange = (e: SelectChangeEvent<number>) => {
+    const { value } = e.target;
+
+    setForm((prev: UsuarioFormFields) => ({
+      ...prev,
+      cargoId: Number(value),
+    }));
+
+    if (touched.cargoId) {
+      const error = validateField("cargoId", String(value));
+      setErrors((prev) => ({
+        ...prev,
+        cargoId: error,
       }));
     }
   };
@@ -500,20 +520,36 @@ export default function UsuarioForm({
               </div>
 
               <div className={styles.formRow}>
-                <TextField
-                  label="Cargo/Posición"
-                  name="cargo"
-                  value={form.cargo}
-                  onChange={handleTextFieldChange}
-                  onBlur={() => handleBlur("cargo")}
-                  error={touched.cargo && !!errors.cargo}
-                  helperText={touched.cargo && errors.cargo}
+                <FormControl
                   fullWidth
                   required={!isDisabled}
+                  error={touched.cargoId && !!errors.cargoId}
                   disabled={isDisabled}
-                  placeholder="Ingrese cargo o posición"
-                  className={styles.fullRowField}
-                />                
+                >
+                  <InputLabel>Cargo/Función</InputLabel>
+                  <Select
+                    name="cargoId"
+                    value={form.cargoId}
+                    label="Cargo"
+                    onChange={handleCargoChange}
+                    onBlur={() => handleBlur("cargoId")}
+                  >
+                    {cargos.map((cargo) => (
+                      <MenuItem key={cargo.id} value={cargo.id}>
+                        {cargo.descripcion}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {touched.cargoId && errors.cargoId && (
+                    <Typography
+                      variant="caption"
+                      color="error"
+                      sx={{ ml: 2, mt: 0.5 }}
+                    >
+                      {errors.cargoId}
+                    </Typography>
+                  )}
+                </FormControl>
               </div>
 
               {isCreating && (
@@ -590,53 +626,67 @@ export default function UsuarioForm({
             </div>
 
             {/* Credenciales de Acceso (Ocultas en View y Deleted)*/}
-            {isCreating || isEditing && (
-              <div className={styles.formSection}>
-                <Typography variant="h6" className={styles.sectionTitle}>
-                  Credenciales de Acceso
-                </Typography>
+            {isCreating ||
+              (isEditing && (
+                <div className={styles.formSection}>
+                  <Typography variant="h6" className={styles.sectionTitle}>
+                    Credenciales de Acceso
+                  </Typography>
 
-                <div className={styles.formRow}>
-                  <TextField
-                    label={isCreating ? "Contraseña temporal" : "Nueva contraseña (opcional)"}
-                    name="password"
-                    type="password"
-                    value={form.password}
-                    onChange={handleTextFieldChange}
-                    onBlur={() => handleBlur("password")}
-                    error={touched.password && !!errors.password}
-                    helperText={touched.password && errors.password}
-                    fullWidth
-                    required={isCreating && !isDisabled}
-                    disabled={isDisabled}
-                    placeholder={isCreating ? "••••••••" : "Dejar vacío para no cambiar"}
-                  />
-                  <TextField
-                    label={isCreating ? "Confirmar contraseña" : "Confirmar nueva contraseña"}
-                    name="confirmPassword"
-                    type="password"
-                    value={form.confirmPassword}
-                    onChange={handleTextFieldChange}
-                    onBlur={() => handleBlur("confirmPassword")}
-                    error={touched.confirmPassword && !!errors.confirmPassword}
-                    helperText={
-                      touched.confirmPassword && errors.confirmPassword
-                    }
-                    fullWidth
-                    required={isCreating && !isDisabled}
-                    disabled={isDisabled}
-                    placeholder={isCreating ? "••••••••" : "Dejar vacío para no cambiar"}
-                  />
+                  <div className={styles.formRow}>
+                    <TextField
+                      label={
+                        isCreating
+                          ? "Contraseña temporal"
+                          : "Nueva contraseña (opcional)"
+                      }
+                      name="password"
+                      type="password"
+                      value={form.password}
+                      onChange={handleTextFieldChange}
+                      onBlur={() => handleBlur("password")}
+                      error={touched.password && !!errors.password}
+                      helperText={touched.password && errors.password}
+                      fullWidth
+                      required={isCreating && !isDisabled}
+                      disabled={isDisabled}
+                      placeholder={
+                        isCreating ? "••••••••" : "Dejar vacío para no cambiar"
+                      }
+                    />
+                    <TextField
+                      label={
+                        isCreating
+                          ? "Confirmar contraseña"
+                          : "Confirmar nueva contraseña"
+                      }
+                      name="confirmPassword"
+                      type="password"
+                      value={form.confirmPassword}
+                      onChange={handleTextFieldChange}
+                      onBlur={() => handleBlur("confirmPassword")}
+                      error={
+                        touched.confirmPassword && !!errors.confirmPassword
+                      }
+                      helperText={
+                        touched.confirmPassword && errors.confirmPassword
+                      }
+                      fullWidth
+                      required={isCreating && !isDisabled}
+                      disabled={isDisabled}
+                      placeholder={
+                        isCreating ? "••••••••" : "Dejar vacío para no cambiar"
+                      }
+                    />
+                  </div>
+
+                  <Typography variant="body2" className={styles.passwordHelp}>
+                    {isCreating
+                      ? "La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas y números."
+                      : "Deje ambos campos vacíos para mantener la contraseña actual. Si desea cambiarla, complete ambos campos con la nueva contraseña."}
+                  </Typography>
                 </div>
-
-                <Typography variant="body2" className={styles.passwordHelp}>
-                  {isCreating 
-                    ? "La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas y números."
-                    : "Deje ambos campos vacíos para mantener la contraseña actual. Si desea cambiarla, complete ambos campos con la nueva contraseña."
-                  }
-                </Typography>
-              </div>
-            )}
+              ))}
             <div className={styles.formActions}>
               {/* Botón de acción principal (Oculto en 'view') */}
               {!isViewing && (

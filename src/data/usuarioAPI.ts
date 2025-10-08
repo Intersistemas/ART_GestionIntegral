@@ -5,6 +5,7 @@ import UsuarioRow from "@/app/inicio/usuarios/interfaces/UsuarioRow";
 import TokenConfigurator from "@/types/TokenConfigurator";
 import { toURLSearch } from "@/utils/utils";
 import IUsuarioDarDeBaja from "@/app/inicio/usuarios/interfaces/IUsuarioDarDeBajaReactivar";
+import CargoInterface from "@/app/inicio/usuarios/interfaces/CargoInterface";
 
 //#region Types
 export interface Auditable {
@@ -55,6 +56,8 @@ export interface UsuarioVm {
   cuit: number;
   nombre?: string;
   tipo?: string;
+  cargoId?: number;
+  cargoDescripcion?: string;
   userName?: string;
   normalizedUserName?: string;
   email?: string;
@@ -291,6 +294,23 @@ export class UsuarioAPIClass extends ExternalAPI {
   useUsuarioReactivar = (data: IUsuarioDarDeBaja) =>
     useSWR([this.reactivarURL(), token.getToken()], () => this.reactivar(data));
   //#endregion Reactivar Usuario
+
+  //#region Cargos
+
+  readonly getCargosUrl = (empresaId: number) => this.getURL({ path: `/api/Cargos/Empresa/${empresaId}` }).toString();
+  getCargos = async (query: any = {}) =>
+    tokenizable
+      .get<CargoInterface[]>(this.getCargosUrl(query.empresaId), { data: query })
+      .then(async (response) => {
+        if (response.status === 200) return response.data;
+        return Promise.reject(
+          new AxiosError(`Error en la petición: ${response.data}`)
+        );
+      });
+  useGetCargos = (query: any = {}) =>
+    useSWR([this.getCargosUrl(query.empresaId), token.getToken()], () => this.getCargos(query));
+
+  //#endregion
 }
 
 const UsuarioAPI = Object.seal(new UsuarioAPIClass());
