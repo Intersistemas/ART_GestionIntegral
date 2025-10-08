@@ -9,7 +9,6 @@ import VentanaImpresionFormulario from './impresionFormulario/VentanaImpresionFo
 import ImpresionFormulario from './impresionFormulario/ImpresionFormulario';
 import type { CabeceraData } from './impresionFormulario/types/impresion';
 
-
 import CustomModal from '@/utils/ui/form/CustomModal';
 import GenerarFormularioRGRL from './generar/GenerarFormularioRGRL';
 
