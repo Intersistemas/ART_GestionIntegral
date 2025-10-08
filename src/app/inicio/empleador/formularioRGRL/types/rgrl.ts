@@ -1,5 +1,4 @@
-// ./types/rgrl.ts
-import type { CabeceraData } from '../impresionFormulario/CabeceraFormulario';
+import type { CabeceraData } from '../impresionFormulario/types/impresion';
 
 /* ===== Tipos (públicos para el componente) ===== */
 export interface FormulariosRGRLProps {

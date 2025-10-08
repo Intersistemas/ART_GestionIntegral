@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 
 import VentanaImpresionFormulario from './impresionFormulario/VentanaImpresionFormulario';
 import ImpresionFormulario from './impresionFormulario/ImpresionFormulario';
-import type { CabeceraData } from './impresionFormulario/CabeceraFormulario';
+import type { CabeceraData } from './impresionFormulario/types/impresion';
 
 import CustomModal from '@/utils/ui/form/CustomModal';
 import GenerarFormularioRGRL from './generar/GenerarFormularioRGRL';
