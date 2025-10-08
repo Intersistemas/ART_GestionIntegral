@@ -25,7 +25,7 @@ export default function AccessDeniedPage() {
             <Box >
                   
             <Link href="/login">
-              <CustomButton>
+              <CustomButton className='button'>
                 Volver a la Pantalla de Ingreso
               </CustomButton>
             </Link>
