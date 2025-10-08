@@ -33,7 +33,7 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
       { accessorKey: "nombre", header: "Nombre" },
       { accessorKey: "email", header: "Email" },
       { accessorKey: "rol", header: "Rol" },
-      { accessorKey: "cargo", header: "Cargo/Funcion" },
+      { accessorKey: "cargoDescripcion", header: "Cargo/Funcion" },
       { accessorKey: "estado", header: "Estado" },
       { accessorKey: "phoneNumber", header: "Telefono" },
       {

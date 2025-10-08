@@ -40,10 +40,10 @@ export default function UsuariosPage() {
     // userName: "",
     // Usamos el `|| 1` como valor por defecto, aunque es mejor que el backend lo maneje si no existe
     empresaId: user?.empresaId || 1, 
-    cargo: "",
+    cargoId: undefined,
   };
 
-  const { usuarios, roles, refEmpleadores, loading, error, registrarUsuario, actualizarPermisosUsuario, usuarioUpdate, usuarioDarDeBaja, usuarioReactivar } = useUsuarios();
+  const { usuarios, roles, cargos, refEmpleadores, loading, error, registrarUsuario, actualizarPermisosUsuario, usuarioUpdate, usuarioDarDeBaja, usuarioReactivar } = useUsuarios();
   const [formError, setFormError] = useState<string | null>(null);  
 
   const [requestState, setRequestState] = useState<RequestState>({
@@ -75,8 +75,9 @@ export default function UsuariosPage() {
           rol: row.rol || "",
           phoneNumber: row.phoneNumber || "",
           nombre: row.nombre || "",
+          cargoId: row.cargoId || 1,
           // Limpiar cargo si está vacío, es null, undefined, o contiene valores no deseados
-          cargo: (row.cargo && row.cargo.trim() !== "" && row.cargo !== "null" && row.cargo !== "undefined") ? row.cargo : "",
+          // cargo: (row.cargo && row.cargo.trim() !== "" && row.cargo !== "null" && row.cargo !== "undefined") ? row.cargo : "",
           // Mantenemos la empresaId de la fila o del usuario actual
           empresaId: row.empresaId || user?.empresaId || 1, 
           // Es crucial incluir el ID de usuario para edición/eliminación
@@ -236,6 +237,7 @@ export default function UsuariosPage() {
         onClose={handleCloseModal}
         onSubmit={handleSubmit}
         roles={roles}
+        cargos={cargos}
         refEmpleadores={refEmpleadores}
         initialData={currentInitialData}
         errorMsg={formError}

@@ -10,7 +10,8 @@ export default interface UsuarioRow {
   estado: string;
   phoneNumber: string;
   phoneNumberConfirmed: boolean;
-  cargo: string;
+  cargoId: number;
+  cargoDescripcion: string;
   rol: string;
   empresaId: number;
   deletedDate: string | null;
