@@ -392,7 +392,7 @@ export default function UsuarioForm({
                   fullWidth
                   required={!isDisabled}
                   disabled={isDisabled}
-                  placeholder="ejemplo@empresa.com"
+                  // placeholder="ejemplo@empresa.com"
                   className={styles.fullRowField}
                 />
               </div>

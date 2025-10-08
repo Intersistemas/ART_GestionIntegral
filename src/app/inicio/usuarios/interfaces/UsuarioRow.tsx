@@ -1,3 +1,5 @@
+import ITarea from "./ITarea";
+
 export default interface UsuarioRow {
   id: number;
   cuit: string;
@@ -11,5 +13,6 @@ export default interface UsuarioRow {
   cargo: string;
   rol: string;
   empresaId: number;
+  tareas: ITarea[];
   // Add other fields if needed
 }

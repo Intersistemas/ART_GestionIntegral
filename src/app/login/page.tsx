@@ -79,7 +79,7 @@ export default function Signin() {
       <Box className={styles.rightCard}>
         <Box className={styles.smallLogoWrap}>
           <Image
-            src="/icons/ARTIcon_SVG.svg"
+            src="/icons/Logo.svg"
             alt="logo small"
             width={75}
             height={75}

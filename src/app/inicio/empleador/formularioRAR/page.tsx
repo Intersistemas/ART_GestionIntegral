@@ -1,7 +1,13 @@
-function FormularioRARPage() {
+import styles from './FormulariosRAR.module.css';
+
+function FormularioRarPage() {
   return (
-    <div>FormularioRARPage</div>
+    <div className={styles.inicioContainer}>
+      <div className={styles.header}>
+        <h1 className={styles.mainTitle}>Formulario RAR</h1>
+      </div>
+    </div>
   )
 }
 
-export default FormularioRARPage
+export default FormularioRarPage
