@@ -78,9 +78,9 @@ const defaultQuery: RuleGroupType = { combinator: "and", rules: [
   // {field: "Apertura", operator: "=", value: "Apertura"},
   // {field: "Cierre", operator: "=", value: "Cierre"},
   // { combinator: "and", rules: [
-  //   {field: "TemaDescripcion", operator: "=", value: "TemaDescripcion"},
-  //   {field: "CategoriaDescripcion", operator: "=", value: "CategoriaDescripcion"},
-  //   {field: "TipoTramiteDescripcion", operator: "=", value: "TipoTramiteDescripcion"}
+  //   {field: "TemaDescripcion", operator: "=", value: ""},
+  //   {field: "CategoriaDescripcion", operator: "=", value: ""},
+  //   {field: "TipoTramiteDescripcion", operator: "=", value: ""}
   // ] }
 ] };
 const DataContext = createContext<DataContextType | undefined>(undefined);

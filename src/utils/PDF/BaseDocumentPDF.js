@@ -1,3 +1,5 @@
+
+
 import React from 'react';
 import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer';
 
@@ -50,20 +52,24 @@ const baseStyles = StyleSheet.create({
 //#endregion
 
 /**
+ * @typedef {{ key: string; title: string; width?: string }} ColumnDef
+ */
+
+/**
  * Componente base reutilizable para generar PDFs de formularios
- * @param {Object} props - Propiedades del componente
- * @param {string} props.title - Título del documento
- * @param {React.Component} props.headerComponent - Componente de cabecera personalizado
- * @param {Array} props.columns - Definición de columnas [{ key, title, width }]
- * @param {Array} props.data - Datos para la tabla
- * @param {string} props.orientation - Orientación del documento ('portrait' | 'landscape')
- * @param {number} props.itemsPerPage - Elementos por página para paginación
- * @param {Function} props.renderCustomContent - Función para renderizar contenido personalizado
- * @param {Object} props.customStyles - Estilos personalizados adicionales
+ * @param {Object} props
+ * @param {string} [props.title]                    - Título del documento
+ * @param {React.ElementType|null} [props.headerComponent] - Componente de cabecera (funcional o clase)
+ * @param {ColumnDef[]} [props.columns]             - Definición de columnas [{ key, title, width }]
+ * @param {any[]} [props.data]                      - Datos para la tabla
+ * @param {'portrait'|'landscape'} [props.orientation] - Orientación del documento
+ * @param {number} [props.itemsPerPage]             - Elementos por página
+ * @param {(extra?: any) => React.ReactNode} [props.renderCustomContent] - Render de contenido extra
+ * @param {Record<string, any>} [props.customStyles]- Estilos personalizados
  */
 const BaseDocumentPDF = ({
-  title = "Documento PDF",
-  headerComponent: HeaderComponent,
+  title = 'Documento PDF',
+  headerComponent: HeaderComponent = null,
   columns = [],
   data = [],
   orientation = 'portrait',
@@ -72,26 +78,24 @@ const BaseDocumentPDF = ({
   customStyles = {},
   ...props
 }) => {
-  
   // Combinar estilos base con estilos personalizados
   const styles = StyleSheet.create({
     ...baseStyles,
-    ...customStyles
+    ...customStyles,
   });
 
   // Renderizar cabecera de tabla
   const renderTableHeader = () => {
-    if (columns.length === 0) return null;
-    
+    if (!columns.length) return null;
     return (
       <View style={styles.tableHeader} fixed>
         {columns.map((column, index) => (
-          <Text 
-            key={index} 
-            style={{ 
-              width: column.width || `${100/columns.length}%`,
+          <Text
+            key={index}
+            style={{
+              width: column.width || `${100 / columns.length}%`,
               color: 'white',
-              fontWeight: 'bold'
+              fontWeight: 'bold',
             }}
           >
             {column.title}
@@ -103,22 +107,18 @@ const BaseDocumentPDF = ({
 
   // Renderizar filas de datos
   const renderTableRows = () => {
-    if (data.length === 0) {
-      return <Text>No hay datos para mostrar</Text>;
-    }
+    if (!data.length) return <Text>No hay datos para mostrar</Text>;
 
     return data.map((item, index) => (
-      <View 
-        style={styles.tableRow} 
+      <View
+        style={styles.tableRow}
         key={index}
-        break={index > 0 && (index % itemsPerPage === 0) ? true : false}
+        break={index > 0 && index % itemsPerPage === 0}
       >
         {columns.map((column, colIndex) => (
-          <Text 
+          <Text
             key={colIndex}
-            style={{ 
-              width: column.width || `${100/columns.length}%`
-            }}
+            style={{ width: column.width || `${100 / columns.length}%` }}
           >
             {column.render ? column.render(item[column.key], item) : item[column.key]}
           </Text>
@@ -131,29 +131,26 @@ const BaseDocumentPDF = ({
     <Document>
       <Page style={styles.page} orientation={orientation} wrap>
         {/* Numeración de páginas */}
-        <Text 
-          style={styles.pageNumbers} 
-          render={({ pageNumber, totalPages }) => (
-            `Página ${pageNumber} / ${totalPages}`
-          )} 
-          fixed 
+        <Text
+          style={styles.pageNumbers}
+          render={({ pageNumber, totalPages }) => `Página ${pageNumber} / ${totalPages}`}
+          fixed
         />
-        
-        {/* Componente de cabecera personalizado */}
-        {HeaderComponent && <HeaderComponent {...props} />}
-        
-        {/* Título por defecto si no hay componente de cabecera */}
-        {!HeaderComponent && (
+
+        {/* Cabecera personalizada (acepta componente funcional o clase) */}
+        {HeaderComponent ? (
+          <HeaderComponent {...props} />
+        ) : (
           <View style={styles.header}>
             <Text style={styles.headerText}>{title}</Text>
           </View>
         )}
-        
-        {/* Contenido personalizado adicional */}
+
+        {/* Contenido extra */}
         {renderCustomContent && renderCustomContent(props)}
-        
-        {/* Tabla de datos */}
-        {columns.length > 0 && (
+
+        {/* Tabla */}
+        {!!columns.length && (
           <>
             {renderTableHeader()}
             {renderTableRows()}

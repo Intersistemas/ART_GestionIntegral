@@ -19,7 +19,7 @@ const defaultModalStyles = {
   content: {
     top: '5%',
     left: '50%',
-    right: 'auto',
+    right: 'auto', 
     bottom: 'auto',
     marginRight: '-50%',
     width: '80%',
