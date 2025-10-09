@@ -59,7 +59,7 @@ const cols: ColumnDef<SiniestroItem>[] = [
     cell: ({ getValue }) => String(getValue() ?? '').trim(),
   },
   {
-    header: 'Fecha Siniestro PMI',
+    header: 'Fecha y Hora Siniestro',
     accessorKey: 'siniestroFechaHora',
     cell: ({ getValue }) => fmtDateTime(getValue() as string | null),
   },
