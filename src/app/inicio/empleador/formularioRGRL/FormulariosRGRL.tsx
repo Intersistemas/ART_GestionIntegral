@@ -525,8 +525,10 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
 
   return (
     <div>
+      {/* Contenedor principal: buscador, acciones, tabla y detalle */}
       {!cargarFormulario ? (
         <div>
+          {/* Buscador: input para CUIT y tecla Enter para buscar */}
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <input
               type="text"
@@ -547,6 +549,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
 
           <br />
 
+          {/* Acciones: editar, generar, replicar y exportar */}
           <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
             <CustomButton onClick={handleClickEditar} disabled={!internoSeleccionado}>
               EDITA FORMULARIO
@@ -560,6 +563,8 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
 
             <CustomButton onClick={handleExportExcel}>EXPORTAR A EXCEL</CustomButton>
           </div>
+
+          {/* Tabla principal: resultados de la búsqueda */}
           <div className={styles.compactTable}>
             <DataTable columns={tableColumns} data={formulariosRGRL} onRowClick={onRowClick} enableSearch={false} />
           </div>
@@ -580,6 +585,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
                 </div>
               )}
 
+              {/* Pestanas: selección de planillas y listas auxiliares */}
               <div className={styles.pills}>
                 {[
                   { key: 'planillaA', label: 'Planilla A' },
@@ -602,6 +608,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
             </div>
           )}
 
+          {/* Paneles de planillas y listas (se muestran cuando activeTab != 'none') */}
           {activeTab !== 'none' && (
             <div style={{ marginTop: 10 }}>
               {loadingTab ? (
@@ -764,6 +771,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
             </div>
           )}
 
+          {/* Detalle principal: condiciones a cumplir y paginación del detalle */}
           {!!internoSeleccionado && activeTab === 'none' && (
             <div style={{ marginTop: 18 }}>
               <h2 style={{ textAlign: 'center', margin: '12px 0 6px' }}>CONDICIONES A CUMPLIR</h2>
@@ -807,6 +815,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
         </div>
       ) : null}
 
+      {/* Modal de impresión: muestra la vista para imprimir */}
       {printOpen && printData && (
         <VentanaImpresionFormulario
           // Abre ventana de impresion
@@ -826,6 +835,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
         </VentanaImpresionFormulario>
       )}
 
+      {/* Modal generar/replicar: abre el componente GenerarFormularioRGRL */}
       <CustomModal
         //Modal generar/replicar
         open={openGenerar}

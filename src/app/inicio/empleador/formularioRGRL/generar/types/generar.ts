@@ -1,5 +1,3 @@
-// ./types/generar.ts
-
 export type Establecimiento = {
   interno: number;
   cuit: number;

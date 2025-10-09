@@ -549,6 +549,7 @@ const GenerarFormularioRGRL: React.FC<{
     return (
 
       <div className={styles.container}>
+        {/* Vista de edición del formulario — preguntas, paginador y listas (gremios/contratistas/responsables). */}
         <h2 style={{ margin: 0 }} />
         <div style={{ marginTop: 6, opacity: 0.95, fontWeight: 700 }}>
 
@@ -831,7 +832,7 @@ const GenerarFormularioRGRL: React.FC<{
 
   return (
     <div className={styles.container}>
-
+      {/* Carga de datos inicial y botones para crear/replicar el formulario. */}
       <div className={styles.row}>
         <label className={styles.label}>CUIT:</label>
         <input
