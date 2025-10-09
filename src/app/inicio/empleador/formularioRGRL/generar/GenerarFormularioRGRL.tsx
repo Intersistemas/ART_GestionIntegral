@@ -20,11 +20,12 @@ import type {
 // URL base de la API (entorno de pruebas)
 const API_BASE = 'http://arttest.intersistemas.ar:8302/api';
 
+// Helper: convierte fecha a ISO (o null)
 const toIsoOrNull = (v?: string | Date | null) => {
   if (!v) return null;
   const d = dayjs(v);
   return d.isValid() ? d.toISOString() : null;
-}; // Helper: convierte fecha a ISO (o null)
+};
 
 const addRow = <T,>(setter: React.Dispatch<React.SetStateAction<T[]>>, empty: T) =>
   setter((rows) => [...rows, empty]);
@@ -63,7 +64,7 @@ const fetchTipos = async (): Promise<TipoFormulario[]> => {
   if (!res.ok) throw new Error(`GET ${url} -> ${res.status}`);
   return (await res.json()) as TipoFormulario[];
 };
-
+// Trae un formulario existente por ID (para edición o réplica)
 const fetchFormularioById = async (id: number): Promise<FormularioVm> => {
   const url = `${API_BASE}/FormulariosRGRL/${id}`;
   const res = await fetch(url, { cache: 'no-store', headers: { Accept: 'application/json, text/json' } });
@@ -80,6 +81,7 @@ const GenerarFormularioRGRL: React.FC<{
 
   const router = useRouter();
   const search = useSearchParams();
+  // En modal (onDone) se ignoran query params.
   const isModal = Boolean(onDone);
   const cuitFromQuery = useMemo(() => {
     if (isModal) return undefined;
@@ -102,7 +104,7 @@ const GenerarFormularioRGRL: React.FC<{
   }, [search, isModal]);
 
   const [original, setOriginal] = useState<FormularioVm | null>(null);
-
+   // Marca si el flujo actual es de réplica
   const esReplica = Boolean(replicaDe || replicaDeQuery || original);
 
   const [loading, setLoading] = useState(false);
@@ -132,7 +134,7 @@ const GenerarFormularioRGRL: React.FC<{
 
   const canBuscar = !!cuit && !Number.isNaN(cuit);
 
-    //trae razón social, establecimientos y tipos.
+  //trae razón social, establecimientos y tipos.
   const cargarTodoPaso1 = useCallback(async () => {
     if (!canBuscar) return;
     setLoading(true);
@@ -229,6 +231,7 @@ const GenerarFormularioRGRL: React.FC<{
 
 
       if (original) {
+        // Copia respuestas y listas del original con nuevo ID
         const fullCuest = (original.respuestasCuestionario || []).map((r) => ({
           interno: 0,
           internoCuestionario: r.internoCuestionario ?? 0,
@@ -377,10 +380,13 @@ const GenerarFormularioRGRL: React.FC<{
   }, [idFromQuery, isModal, cargarPaso2]);
 
   const tipoDeEsteFormulario = useMemo(() => {
+    
+  // Obtiene el tipo de formulario actual según 'interno'
     if (!form || !tipos?.length) return undefined;
     return tipos.find((t) => t.interno === form.internoFormulario);
   }, [form, tipos]);
 
+  // Actualiza una respuesta parcial del cuestionario
   const onCambiarRespuesta = (internoCuestionario: number, cambios: Partial<RespuestaCuestionarioVm>) => {
     setRespuestas((prev) => {
       const base = prev[internoCuestionario] ?? { internoCuestionario, respuesta: '' };
@@ -499,7 +505,7 @@ const GenerarFormularioRGRL: React.FC<{
     return null;
   }
 
-  if (!isModal && idFromQuery && form) {  
+  if (!isModal && idFromQuery && form) {
     const secActual = secciones[secIdx];
     const preguntas = (secActual?.cuestionarios ?? []).slice().sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
     const tieneNA = secActual?.tieneNoAplica === 1;

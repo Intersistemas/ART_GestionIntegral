@@ -104,7 +104,7 @@ const ImpresionFormulario: React.FC<ImpresionProps> = (props) => {
     );
   };
 
-  /* ===== PLANILLAS Y OTRAS TABLAS, UNA TABLA CONTINUA CADA UNA ===== */
+  //PLANILLAS Y OTRAS TABLAS, UNA TABLA CONTINUA CADA UNA 
 
   const TablaPlanillaA = () => (
     <>
