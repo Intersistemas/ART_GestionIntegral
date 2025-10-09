@@ -17,16 +17,18 @@ import type {
   ResponsableUI
 } from './types/generar';
 
+// URL base de la API (entorno de pruebas)
 const API_BASE = 'http://arttest.intersistemas.ar:8302/api';
 
 const toIsoOrNull = (v?: string | Date | null) => {
   if (!v) return null;
   const d = dayjs(v);
   return d.isValid() ? d.toISOString() : null;
-};
+}; // Helper: convierte fecha a ISO (o null)
 
 const addRow = <T,>(setter: React.Dispatch<React.SetStateAction<T[]>>, empty: T) =>
   setter((rows) => [...rows, empty]);
+// Helpers para manipular arrays de estado (add/remove/change)
 const removeRow = <T,>(setter: React.Dispatch<React.SetStateAction<T[]>>, idx: number) =>
   setter((rows) => rows.filter((_, i) => i !== idx));
 const changeRow = <T extends object>(
@@ -36,6 +38,7 @@ const changeRow = <T extends object>(
   value: any
 ) => setter((rows) => rows.map((r, i) => (i === idx ? { ...r, [field]: value } as T : r)));
 
+// Llamadas a la API para obtener datos (razón social, establecimientos, tipos, formulario)
 const fetchRazonSocial = async (cuit: number): Promise<string> => {
   const url = `${API_BASE}/FormulariosRGRL/CUIT/${encodeURIComponent(cuit)}`;
   const res = await fetch(url, { cache: 'no-store', headers: { Accept: 'application/json, text/json' } });
@@ -68,6 +71,7 @@ const fetchFormularioById = async (id: number): Promise<FormularioVm> => {
   return (await res.json()) as FormularioVm;
 };
 
+// Componente principal: crea, edita o replica formularios RGRL
 const GenerarFormularioRGRL: React.FC<{
   initialCuit?: number;
   replicaDe?: number;
@@ -128,6 +132,7 @@ const GenerarFormularioRGRL: React.FC<{
 
   const canBuscar = !!cuit && !Number.isNaN(cuit);
 
+    //trae razón social, establecimientos y tipos.
   const cargarTodoPaso1 = useCallback(async () => {
     if (!canBuscar) return;
     setLoading(true);
@@ -150,6 +155,7 @@ const GenerarFormularioRGRL: React.FC<{
     if (!idFromQuery && cuit && !(replicaDe || replicaDeQuery)) cargarTodoPaso1();
   }, [cuit, idFromQuery, replicaDe, replicaDeQuery, cargarTodoPaso1]);
 
+  // Carga datos cuando se solicita replicar un formulario
   const cargarReplicaDe = useCallback(async () => {
     const replId = typeof replicaDe === 'number' ? replicaDe : replicaDeQuery;
     if (!replId) return;
@@ -190,6 +196,7 @@ const GenerarFormularioRGRL: React.FC<{
     if (!idFromQuery && (replicaDe || replicaDeQuery)) cargarReplicaDe();
   }, [idFromQuery, replicaDe, replicaDeQuery, cargarReplicaDe]);
 
+  // Crea el formulario y, si viene de una réplica, copia respuestas/listas
   const crearFormulario = async () => {
     if (!cuit || !establecimientoSel || !tipoSel) {
       setError('Completá CUIT, Establecimiento y Tipo de formulario.');
@@ -324,6 +331,7 @@ const GenerarFormularioRGRL: React.FC<{
   const [openContratistas, setOpenContratistas] = useState(false);
   const [openResponsables, setOpenResponsables] = useState(false);
 
+  // Carga el formulario ya creado/edición (paso 2)
   const cargarPaso2 = useCallback(async () => {
     if (!idFromQuery) return;
     setLoading(true);
@@ -391,6 +399,7 @@ const GenerarFormularioRGRL: React.FC<{
   const [page, setPage] = useState(0);
   useEffect(() => { setPage(Math.floor(secIdx / PAGE_SIZE)); }, [secIdx]);
 
+  // Envía PUT final con todas las respuestas y listas (finalizar)
   const finalizarPUT = async () => {
     if (!form) return;
     setLoading(true);

@@ -1,6 +1,5 @@
 import type { CabeceraData } from '../impresionFormulario/types/impresion';
 
-/* ===== Tipos (públicos para el componente) ===== */
 export interface FormulariosRGRLProps {
   cuit: number;
   referenteDatos?: unknown;
@@ -56,7 +55,6 @@ export type PrintData = {
   responsables: ResponsableItem[];
 };
 
-/* ===== Tipos API / helpers ===== */
 export type ApiTiposFormularios = Array<{
   descripcion: string;
   decreto: number;

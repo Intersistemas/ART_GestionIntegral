@@ -12,14 +12,17 @@ import styles from './editar.module.css';
    TipoFormulario
  } from '../generar/types/generar';
 
+// Constante con la URL base de la API (entorno de pruebas)
 const API_BASE = 'http://arttest.intersistemas.ar:8302/api';
 
+// Convierte una fecha a ISO o devuelve null
 const toIsoOrNull = (v?: string | Date | null) => {
     if (!v) return null;
     const d = dayjs(v);
     return d.isValid() ? d.toISOString() : null;
 };
 
+// Obtiene un formulario por id desde la API
 const fetchFormularioById = async (id: number): Promise<FormularioVm> => {
     const url = `${API_BASE}/FormulariosRGRL/${id}`;
     const res = await fetch(url, { cache: 'no-store', headers: { Accept: 'application/json, text/json' } });
@@ -27,6 +30,7 @@ const fetchFormularioById = async (id: number): Promise<FormularioVm> => {
     return (await res.json()) as FormularioVm;
 };
 
+// Obtiene la lista de tipos de formulario desde la API
 const fetchTipos = async (): Promise<TipoFormulario[]> => {
     const url = `${API_BASE}/TiposFormulariosRGRL`;
     const res = await fetch(url, { cache: 'no-store', headers: { Accept: 'application/json, text/json' } });
@@ -34,25 +38,31 @@ const fetchTipos = async (): Promise<TipoFormulario[]> => {
     return (await res.json()) as TipoFormulario[];
 };
 
+// Componente de página para editar un formulario existente
 export default function Page() {
     const router = useRouter();
     const search = useSearchParams();
+    // Lee el parámetro id de la URL (si está presente)
     const idFromQuery = useMemo(() => {
         const v = search?.get('id');
         return v ? Number(v) : undefined;
     }, [search]);
 
+    // Tamaño de página para el paginador de secciones
     const PAGE_SIZE = 20;
     const [page, setPage] = useState(0);
 
+    // Estados de carga/guardado y errores
     const [loading, setLoading] = useState<boolean>(true);
     const [saving, setSaving] = useState<boolean>(false);
     const [error, setError] = useState<string>('');
 
+    // Estado del formulario y datos asociados
     const [form, setForm] = useState<FormularioVm | null>(null);
     const [tipos, setTipos] = useState<TipoFormulario[]>([]);
     const [respuestas, setRespuestas] = useState<Record<number, RespuestaCuestionarioVm>>({}); // key: internoCuestionario
 
+    // Deriva secciones del tipo de formulario actual
     const secciones = useMemo(() => {
         const t = tipos.find((x) => x.interno === form?.internoFormulario);
         return (t?.secciones ?? []).slice().sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
@@ -61,6 +71,7 @@ export default function Page() {
     const totalSecs = secciones.length;
     const secActual = secciones[secIdx];
 
+    // Función para cargar datos iniciales (tipos + formulario)
     const cargar = useCallback(async () => {
         if (!idFromQuery) return;
         setLoading(true);
@@ -83,12 +94,15 @@ export default function Page() {
         }
     }, [idFromQuery]);
 
+    // Ejecuta la carga inicial cuando cambia la función "cargar"
     useEffect(() => { cargar(); }, [cargar]);
 
+    // Actualiza la página visible cuando cambia la sección
     useEffect(() => {
         setPage(Math.floor(secIdx / PAGE_SIZE));
     }, [secIdx]);
 
+    // Actualiza una respuesta específica en el diccionario de respuestas
     const onCambiarRespuesta = (internoCuestionario: number, cambios: Partial<RespuestaCuestionarioVm>) => {
         setRespuestas((prev) => {
             const base = prev[internoCuestionario] ?? { internoCuestionario, respuesta: '' };
@@ -96,6 +110,7 @@ export default function Page() {
         });
     };
 
+    // Envía un PUT con todas las respuestas y listas actualizadas
     const guardarPUT = async () => {
         if (!form) return;
         setSaving(true);
@@ -190,6 +205,7 @@ export default function Page() {
         }
     };
 
+    // Si no hay id en la URL mostramos mensaje y volvemos
     if (!idFromQuery) {
         return (
             <div className={styles.pad16}>
@@ -199,6 +215,7 @@ export default function Page() {
         );
     }
 
+    // Mientras carga o no hay secciones mostramos estado
     if (loading || !form || !secciones.length) {
         return <div className={styles.pad16}>{loading ? 'Cargando…' : 'No hay secciones para editar.'}</div>;
     }
@@ -207,10 +224,13 @@ export default function Page() {
 
     return (
         <div className={styles.container}>
+
+            {/* Cabecera: muestra índice y descripción de la sección actual */}
             <div className={styles.sectionHeader}>
                 Sección {secIdx + 1} de {totalSecs} — {secActual.descripcion}
             </div>
 
+            {/* Paginador: botones para navegar entre páginas de secciones */}
             {(() => {
                 const totalSecs = secciones.length;
                 const totalPages = Math.max(1, Math.ceil(totalSecs / PAGE_SIZE));
@@ -253,6 +273,7 @@ export default function Page() {
                 );
             })()}
 
+            {/* Lista de preguntas: renderiza los cuestionarios de la sección */}
             <div className={styles.questionsBox}>
                 {preguntas.map((q) => {
                     const key = q.codigo as number;
@@ -326,11 +347,13 @@ export default function Page() {
                 })}
             </div>
 
+            {/* Acciones: botones para volver y guardar */}
             <div className={styles.actionsRow}>
                 <CustomButton onClick={() => router.back()} disabled={saving}>VOLVER</CustomButton>
                 <CustomButton onClick={guardarPUT} disabled={saving}>GUARDAR</CustomButton>
             </div>
 
+            {/* Mensajes de estado: guardando y errores */}
             {saving && <div className={styles.savingMsg}>Guardando…</div>}
             {!!error && <div className={styles.errorMsg}>{error}</div>}
         </div>
