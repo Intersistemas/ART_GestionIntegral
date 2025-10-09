@@ -1,5 +1,3 @@
-// ./types/siniestros.ts
-
 // Fila principal de la tabla de siniestros
 export type SiniestroItem = {
   denunciaNro: number;
