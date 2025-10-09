@@ -74,14 +74,6 @@ const display = (v: any) => (typeof v === "string" ? v.trim() : v);
 // ===== Globals =====
 const { execute, analyze } = QueriesAPI;
 const defaultQuery: RuleGroupType = { combinator: "and", rules: [
-  // {field: "Interno", operator: "=", value: "Interno"},
-  // {field: "Apertura", operator: "=", value: "Apertura"},
-  // {field: "Cierre", operator: "=", value: "Cierre"},
-  // { combinator: "and", rules: [
-  //   {field: "TemaDescripcion", operator: "=", value: ""},
-  //   {field: "CategoriaDescripcion", operator: "=", value: ""},
-  //   {field: "TipoTramiteDescripcion", operator: "=", value: ""}
-  // ] }
 ] };
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
