@@ -298,7 +298,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
     () => detalle.filter(r => !isFilaVacia(r)),
     [detalle]
   );
-// Paginación del detalle (20 filas por página).
+  // Paginación del detalle (20 filas por página).
   const [detallePage, setDetallePage] = useState<number>(1);
   const pageSize = 20;
 
@@ -308,7 +308,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
     [detalleFiltrado, detallePage]
   );
 
-// Asegura que la página actual no exceda el total de páginas al cambiar el detalle.
+  // Asegura que la página actual no exceda el total de páginas al cambiar el detalle.
   useEffect(() => {
     if (detallePage > totalPages) setDetallePage(totalPages);
   }, [totalPages, detallePage]);
@@ -428,7 +428,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
     ],
     []
   );
-// Re-define DataTable con tipado específico para este componente.
+  // Re-define DataTable con tipado específico para este componente.
   const DataTable = DataTableImport as unknown as React.FC<{
     columns: any[];
     data: FormularioRGRL[];
@@ -805,22 +805,11 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
             </div>
           )}
         </div>
-      ) : (
-
-        <div style={{ maxWidth: 560 }}>
-          <h2>{internoSeleccionado ? `Editar Formulario #${internoSeleccionado}` : 'Nuevo Formulario RGRL'}</h2>
-          <p style={{ opacity: 0.7, marginBottom: 12 }}>
-            (Acá va tu componente de alta/edición; al guardar llamá a <code>handleFinalizaCarga(true)</code>)
-          </p>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <CustomButton onClick={() => handleFinalizaCarga(true)}>Guardar</CustomButton>
-            <CustomButton onClick={() => handleFinalizaCarga(false)}>Cancelar</CustomButton>
-          </div>
-        </div>
-      )}
+      ) : null}
 
       {printOpen && printData && (
         <VentanaImpresionFormulario
+          // Abre ventana de impresion
           open={printOpen}
           onClose={() => { setPrintOpen(false); setPrintData(null); }}
         >
@@ -838,12 +827,14 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
       )}
 
       <CustomModal
+        //Modal generar/replicar
         open={openGenerar}
         onClose={() => setOpenGenerar(false)}
         title={replicaDe ? 'Replicar Formulario RGRL' : 'Generar Formulario RGRL'}
         size="large"
       >
         <GenerarFormularioRGRL
+          //Generar
           initialCuit={Number(cuitBusqueda) || Number(cuit) || undefined}
           replicaDe={replicaDe}
           onDone={async () => {

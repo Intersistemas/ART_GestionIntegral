@@ -7,15 +7,15 @@ import CustomModal from '@/utils/ui/form/CustomModal';
 import dayjs from 'dayjs';
 import styles from './GenerarFormularioRGRL.module.css';
 
- import type {
-   Establecimiento,
-   TipoFormulario,
-   RespuestaCuestionarioVm,
-   FormularioVm,
-   GremioUI,
-   ContratistaUI,
-   ResponsableUI
- } from './types/generar';
+import type {
+  Establecimiento,
+  TipoFormulario,
+  RespuestaCuestionarioVm,
+  FormularioVm,
+  GremioUI,
+  ContratistaUI,
+  ResponsableUI
+} from './types/generar';
 
 const API_BASE = 'http://arttest.intersistemas.ar:8302/api';
 
@@ -302,11 +302,11 @@ const GenerarFormularioRGRL: React.FC<{
         if (!resPut.ok) throw new Error(`PUT /FormulariosRGRL/${nuevoId} -> ${resPut.status}`);
 
         onDone?.(nuevoId);
-        router.push(`/inicio/empleador/formularioRGRL/editar?id=${nuevoId}`);
+        router.push(`/inicio/empleador/formularioRGRL/generar?id=${nuevoId}`);
         return;
       }
       onDone?.(nuevoId);
-      router.push(`/inicio/empleador/formularioRGRL/editar?id=${nuevoId}`);
+      router.push(`/inicio/empleador/formularioRGRL/generar?id=${nuevoId}`);
     } catch (e: any) {
       setError(e?.message ?? 'Error al crear el formulario.');
     } finally {
@@ -486,7 +486,11 @@ const GenerarFormularioRGRL: React.FC<{
     }
   };
 
-  if (!isModal && idFromQuery && form && tipoDeEsteFormulario) {
+  if (!isModal && idFromQuery && !form) {
+    return null;
+  }
+
+  if (!isModal && idFromQuery && form) {  
     const secActual = secciones[secIdx];
     const preguntas = (secActual?.cuestionarios ?? []).slice().sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
     const tieneNA = secActual?.tieneNoAplica === 1;
@@ -792,7 +796,7 @@ const GenerarFormularioRGRL: React.FC<{
                 ))}
               </tbody>
             </table>
-           <div className={styles.tableFooter}>
+            <div className={styles.tableFooter}>
               <CustomButton
                 onClick={() =>
                   addRow<ResponsableUI>(setResponsablesUI, {
@@ -845,13 +849,13 @@ const GenerarFormularioRGRL: React.FC<{
         />
       </div>
 
-     <div className={styles.row}>
-       <label className={styles.label}>Notificación Fecha:</label>
+      <div className={styles.row}>
+        <label className={styles.label}>Notificación Fecha:</label>
         <input
           type="date"
           value={notificacionFecha}
           onChange={(e) => setNotificacionFecha(e.target.value)}
-         className={styles.date}
+          className={styles.date}
         />
       </div>
 
@@ -873,8 +877,8 @@ const GenerarFormularioRGRL: React.FC<{
       {estActual && (
         <div className={styles.grid3}>
           <div>
-          <label className={styles.subLabel}>Superficie</label>
-          <input
+            <label className={styles.subLabel}>Superficie</label>
+            <input
               type="text"
               value={estActual.superficie ?? ''}
               readOnly
@@ -882,8 +886,8 @@ const GenerarFormularioRGRL: React.FC<{
             />
           </div>
           <div>
-          <label className={styles.subLabel}>Cant. Trabajadores</label>
-          <input
+            <label className={styles.subLabel}>Cant. Trabajadores</label>
+            <input
               type="text"
               value={estActual.cantTrabajadores ?? ''}
               readOnly
@@ -901,8 +905,8 @@ const GenerarFormularioRGRL: React.FC<{
           </div>
         </div>
       )}
-     <div className={styles.row}>
-       <label className={styles.label}>Formulario:</label>
+      <div className={styles.row}>
+        <label className={styles.label}>Formulario:</label>
         <select
           value={tipoSel ?? ''}
           onChange={(e) => setTipoSel(Number(e.target.value) || undefined)}
