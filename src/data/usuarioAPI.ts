@@ -51,6 +51,21 @@ export interface UsuarioExclusionVm {
   campoId: number;
   campoDescripcion?: string;
 }
+
+export type Tarea = {
+  id: number;
+  tareaDescripcion: string;
+  habilitada: boolean;
+};
+
+export type Modulo = {
+  id: number;
+  codigo: number;
+  nombre: string;
+  habilitado: boolean;
+  tareas: Tarea[]; 
+};
+
 export interface UsuarioVm {
   id?: string;
   cuit: number;
@@ -72,7 +87,7 @@ export interface UsuarioVm {
   token: TokenDTO;
   rol?: string;
   empresaId?: number;
-  tareas?: Array<UsuarioTareaVm | string>; //ToDo: verificar el tipo de arreglo
+  modulos?: Modulo[]; //ToDo: verificar el tipo de arreglo
   exclusiones?: UsuarioExclusionVm[];
 }
 export type Usuario = Omit<UsuarioVm, "token">;
