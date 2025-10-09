@@ -11,27 +11,11 @@ import type { Parameters } from '@/app/inicio/empleador/cobertura/types/persona'
 import DataTable from '@/utils/ui/table/DataTable';
 import type { ColumnDef } from '@tanstack/react-table';
 
-// 👇 IMPORTA el componente de abajo (tu tabla) con el TIPO correcto
-import CondicionesTabla, { type InstanciaSiniestro } from './table';
 
-/* ===== Tipos (lista superior) ===== */
-type SiniestroItem = {
-  denunciaNro: number;
-  siniestroNro: number | string;
-  empCUIT?: number | string;
-  trabCUIL: number | string;
-  trabNombre: string;
-  establecimiento: string;
-  tipoSiniestro: string;
-  siniestroFechaHora?: string | null;
-  diagnostico?: string | null;
-  siniestroCategoria?: string | null;
-  proximoControlMedicoFechaHora?: string | null;
-  prestador?: string | null;
-  altaMedicaFecha?: string | null;
-};
+import CondicionesTabla from './table';
+import type { SiniestroItem, InstanciaSiniestro } from './types/tipos';
 
-/* ===== Helpers (solo para la grilla superior) ===== */
+
 const fmtDateTime = (v?: string | null) => {
   if (!v) return '';
   const d = dayjs(v);
@@ -43,7 +27,6 @@ const fmtDate = (v?: string | null) => {
   return d.isValid() ? d.format('DD-MM-YYYY') : '';
 };
 
-/* ===== Columnas (tabla superior) ===== */
 const cols: ColumnDef<SiniestroItem>[] = [
   { header: 'CUIL', accessorKey: 'trabCUIL' },
   {
@@ -82,18 +65,17 @@ const cols: ColumnDef<SiniestroItem>[] = [
   },
 ];
 
-/* ===== Componente ===== */
+
 export default function SiniestrosPage() {
   const [selectedDenuncia, setSelectedDenuncia] = useState<number | null>(null);
 
-  // Query base (sin filtros adicionales)
+
   const params: Parameters = {};
 
-  // Lista principal
+
   const { data, error, isLoading } =
     gestionEmpleadorAPI.useGetVEmpleadorSiniestros(params);
 
-  // Detalle por denuncia (instancias) — se dispara SOLO si hay denuncia seleccionada
   const {
     data: instanciasData,
     isLoading: isLoadingInst,
@@ -122,7 +104,7 @@ export default function SiniestrosPage() {
     [data]
   );
 
-  // Click en fila → carga instancias de esa denuncia
+  // Carga instancias de esa denuncia
   const handleRowClick = (row: SiniestroItem) => {
     const den = Number(row.denunciaNro ?? 0);
     if (den) setSelectedDenuncia(den);
@@ -159,7 +141,7 @@ export default function SiniestrosPage() {
         onRowClick={handleRowClick}
       />
 
-      {/* Panel inferior: SOLO usa CondicionesTabla (instancias del siniestro) */}
+      {/* Panel inferior*/}
       {selectedDenuncia != null && (
         <>
           {errorInst && (

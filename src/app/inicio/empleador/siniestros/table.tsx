@@ -2,23 +2,15 @@
 
 import React from 'react';
 import dayjs from 'dayjs';
-
-export type InstanciaSiniestro = {
-  denunciaNro: number;
-  fechaHoraInstancia: string | null;
-  tipoInstancia: string | null;
-  comentarioInstancia: string | null;
-  estadoInstancia: string | null;
-  proximoControlMedicoFechaHora: string | null;
-};
+import type { InstanciasTablaProps, InstanciaSiniestro } from './types/tipos';
 
 type Props = {
-  /** Filas a renderizar (pueden venir ya paginadas) */
+
   rows: InstanciaSiniestro[];
-  /** Muestra el estado de carga */
+
   loading?: boolean;
-  /** Si querés que muestre el vacío cuando no hay ningún registro globalmente */
-  hasAny?: boolean; // típico: rows.length > 0
+
+  hasAny?: boolean;
 };
 
 const fmtDateTime = (v?: string | null) => {
@@ -27,7 +19,7 @@ const fmtDateTime = (v?: string | null) => {
   return d.isValid() ? d.format('DD-MM-YYYY HH:mm') : String(v ?? '');
 };
 
-const CondicionesTabla: React.FC<Props> = ({ rows, loading = false, hasAny = true }) => {
+const CondicionesTabla: React.FC<InstanciasTablaProps> = ({ rows, loading = false, hasAny = true }) => {
   return (
     <div style={{ marginTop: 18 }}>
 
