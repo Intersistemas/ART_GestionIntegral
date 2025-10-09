@@ -74,21 +74,21 @@ function ProfilePage() {
                 <Box className={styles.dataItem}>
                   <MailIcon className={styles.icon} />
                   <Typography variant="body1" component="span">
-                    <span className={styles.label}>Email:</span> {session.user?.email}
+                    <span className={styles.label}>Email: {session.user?.email}</span>  
                   </Typography>
                 </Box>
                 
                 <Box className={styles.dataItem}>
                   <BadgeIcon className={styles.icon} />
                   <Typography variant="body1" component="span">
-                    <span className={styles.label}>CUIT:</span> {cuit ?? "N/A"}
+                    <span className={styles.label}>CUIT: {cuit ?? "N/A"}</span> 
                   </Typography>
                 </Box>
                 
                 <Box className={styles.dataItem}>
                   <CodeIcon className={styles.icon} />
                   <Typography variant="body1" component="span">
-                    <span className={styles.label}>Rol:</span> {rol ?? "N/A"}
+                    <span className={styles.label}>Rol: {rol ?? "N/A"}</span> 
                   </Typography>
                 </Box>
               </CardContent>
