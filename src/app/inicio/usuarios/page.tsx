@@ -10,17 +10,19 @@ import styles from './Usuario.module.css';
 import CustomButton from "@/utils/ui/button/CustomButton";
 import UsuarioRow from "./interfaces/UsuarioRow";
 import { useAuth } from "@/data/AuthContext";
+import IUsuarioDarDeBajaReactivar from "./interfaces/IUsuarioDarDeBajaReactivar";
 
-type RequestMethod = 'create' | 'edit' | 'view' | 'delete';
+type RequestMethod = 'create' | 'edit' | 'view' | 'delete' | 'activate' | 'remove';
 
 interface RequestState {
     method: RequestMethod | null;
     userData: UsuarioFormFields | null; 
 }
 
-interface PermisosUsuario {
-  tareaId: number;
-  habilitada: boolean;
+interface PermisosModulo {
+  moduloId: number;
+  moduloDescripcion: string;
+  habilitado: boolean;
 }
 
 export default function UsuariosPage() {
@@ -32,16 +34,16 @@ export default function UsuariosPage() {
     password: "",
     confirmPassword: "",
     rol: "",
-    tipo: "",
+    // tipo: "",
     phoneNumber: "",
     nombre: "",
-    userName: "",
+    // userName: "",
     // Usamos el `|| 1` como valor por defecto, aunque es mejor que el backend lo maneje si no existe
     empresaId: user?.empresaId || 1, 
-    cargo: "",
+    cargoId: undefined,
   };
 
-  const { usuarios, roles, refEmpleadores, loading, error, registrarUsuario, actualizarPermisosUsuario } = useUsuarios();
+  const { usuarios, roles, cargos, refEmpleadores, loading, error, registrarUsuario, actualizarPermisosUsuario, usuarioUpdate, usuarioDarDeBaja, usuarioReactivar } = useUsuarios();
   const [formError, setFormError] = useState<string | null>(null);  
 
   const [requestState, setRequestState] = useState<RequestState>({
@@ -65,17 +67,17 @@ export default function UsuariosPage() {
 
       // CORRECCIÓN 2: Mapeamos la fila (UsuarioRow) a datos del formulario (UsuarioFormFields)
       const dataToForm: UsuarioFormFields = row ? {
-          cuit: row.cuit,
-          email: row.email,
-          // La contraseña y su confirmación deben ir vacías
-          password: "", 
-          confirmPassword: "",
-          rol: row.rol,
-          tipo: row.tipo,
-          phoneNumber: row.phoneNumber,
-          nombre: row.nombre,
-          userName: row.userName,
-          cargo: row.cargo,
+          cuit: row.cuit || "",
+          email: row.email || "",
+          // La contraseña y su confirmación deben ir vacías SIEMPRE en edición
+          password: method === 'edit' ? "" : "", 
+          confirmPassword: method === 'edit' ? "" : "",
+          rol: row.rol || "",
+          phoneNumber: row.phoneNumber || "",
+          nombre: row.nombre || "",
+          cargoId: row.cargoId || 1,
+          // Limpiar cargo si está vacío, es null, undefined, o contiene valores no deseados
+          // cargo: (row.cargo && row.cargo.trim() !== "" && row.cargo !== "null" && row.cargo !== "undefined") ? row.cargo : "",
           // Mantenemos la empresaId de la fila o del usuario actual
           empresaId: row.empresaId || user?.empresaId || 1, 
           // Es crucial incluir el ID de usuario para edición/eliminación
@@ -108,7 +110,7 @@ export default function UsuariosPage() {
     });
   };
 
-  const handleSavePermisos = async (permisos: PermisosUsuario[]) => {
+  const handleSavePermisos = async (permisos: PermisosModulo[]) => {
     if (!permisosModal.usuario?.id) {
       alert('Error: No se pudo identificar el usuario');
       return;
@@ -129,10 +131,12 @@ export default function UsuariosPage() {
     }
   };
 
-  const handleSubmit = async (data: UsuarioFormFields) => {
+    const handleSubmit = async (data: UsuarioFormFields) => {
     // Aquí se crea el objeto completo para la API, añadiendo empresaId
     // La lógica de envío debe considerar el modo (create, edit, delete)
         const method = requestState.method;
+        console.log("handleSubmit method:", method);
+        let result: { success: boolean; error: string | null } = { success: false, error: null };
 
         if (method === 'view') {
             handleCloseModal();
@@ -148,7 +152,45 @@ export default function UsuariosPage() {
         };
         
         // TODO: Implementar lógica de API para EDITAR y ELIMINAR
-        const result = await registrarUsuario(dataToSubmit); 
+        if (method === 'edit') {
+          // Lógica para editar usuario
+          {
+            const rawResult = await usuarioUpdate(String(data.id), dataToSubmit);
+            result = {
+              success: rawResult.success,
+              error: rawResult.error !== undefined ? rawResult.error : null
+            };
+          } 
+        } else if (method === 'activate') {
+          // Lógica para reactivar usuario
+          const reactivarBody: IUsuarioDarDeBajaReactivar = {
+            id: String(data.id),
+            deletedObs: "", // data.deletedObs || ""
+          };
+          {
+            const rawResult = await usuarioReactivar(reactivarBody);
+            result = {
+              success: rawResult.success,
+              error:
+                rawResult.error !== undefined ? String(rawResult.error) : null,
+            };
+          }
+        } else if (method === 'delete') {
+          // Lógica para eliminar usuario
+          const darDeBajaBody: IUsuarioDarDeBajaReactivar = {
+            id: String(data.id),
+            deletedObs: "" // data.deletedObs || ""
+          };
+          {
+            const rawResult = await usuarioDarDeBaja(darDeBajaBody);
+            result = {
+              success: rawResult.success,
+              error: rawResult.error !== undefined ? String(rawResult.error) : null
+            };
+          }
+        } else if (method === 'create') {
+          result = await registrarUsuario(dataToSubmit) as { success: boolean; error: string | null }; 
+        }
 
         if (result.success) {
             handleCloseModal();
@@ -172,23 +214,22 @@ export default function UsuariosPage() {
   console.log("Usuarios", usuarios);
   return (
     <Box className={styles.usuariosPageContainer}>
-
-      
       <CustomButton
-        onClick={() => handleOpenModal('create')}
-        style={{float: 'right'}}
+        onClick={() => handleOpenModal("create")}
+        style={{ float: "right" }}
       >
         Crear usuario
       </CustomButton>
 
-
       <UsuarioTable
-          data={usuarios}
-          onEdit={(row) => handleOpenModal('edit', row)} 
-          onView={(row) => handleOpenModal('view', row)} 
-          onDelete={(row) => handleOpenModal('delete', row)}
-          onPermisos={handleOpenPermisos}
-          isLoading={loading}
+        data={usuarios}
+        onEdit={(row) => handleOpenModal("edit", row)}
+        onView={(row) => handleOpenModal("view", row)}
+        onDelete={(row) => handleOpenModal("delete", row)}
+        onActivate={(row) => handleOpenModal("activate", row)}
+        onRemove={(row) => handleOpenModal("remove", row)}
+        onPermisos={handleOpenPermisos}
+        isLoading={loading}
       />
 
       <UsuarioForm
@@ -196,10 +237,11 @@ export default function UsuariosPage() {
         onClose={handleCloseModal}
         onSubmit={handleSubmit}
         roles={roles}
+        cargos={cargos}
         refEmpleadores={refEmpleadores}
         initialData={currentInitialData}
         errorMsg={formError}
-        method={requestState.method || 'create'}
+        method={requestState.method || "create"}
       />
 
       <Tareas
