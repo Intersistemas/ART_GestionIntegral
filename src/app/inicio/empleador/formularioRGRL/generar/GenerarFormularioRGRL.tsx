@@ -5,95 +5,30 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import CustomButton from '@/utils/ui/button/CustomButton';
 import CustomModal from '@/utils/ui/form/CustomModal';
 import dayjs from 'dayjs';
+import styles from './GenerarFormularioRGRL.module.css';
 
+import type {
+  Establecimiento,
+  TipoFormulario,
+  RespuestaCuestionarioVm,
+  FormularioVm,
+  GremioUI,
+  ContratistaUI,
+  ResponsableUI
+} from './types/generar';
+
+// URL base de la API (entorno de pruebas)
 const API_BASE = 'http://arttest.intersistemas.ar:8302/api';
-
-/* ===== Tipos ===== */
-type Establecimiento = {
-  interno: number;
-  cuit: number;
-  nroSucursal: number;
-  nombre: string;
-  domicilioCalle: string | null;
-  domicilioNro: string | null;
-  superficie: number | null;
-  cantTrabajadores: number | null;
-  localidad?: string | null;
-  provincia?: string | null;
-  numero?: number | null;
-  ciiu?: number | null;
-};
-
-type TipoFormulario = {
-  interno: number;
-  descripcion: string;
-  secciones?: Array<{
-    interno: number;
-    orden: number;
-    descripcion: string;
-    tieneNoAplica: number;
-    comentario?: string;
-    cuestionarios?: Array<{
-      internoSeccion: number;
-      orden: number;
-      codigo: number;
-      pregunta: string;
-      comentario: string;
-    }>;
-  }>;
-};
-
-type RespuestaCuestionarioVm = {
-  interno?: number;
-  internoCuestionario?: number;
-  internoRespuestaFormulario?: number;
-  respuesta?: string;
-  fechaRegularizacion?: number | null;
-  observaciones?: string | null;
-  estadoAccion?: string | null;
-  estadoFecha?: number | null;
-  estadoSituacion?: string | null;
-  bajaMotivo?: number | null;
-};
-
-type FormularioVm = {
-  interno: number;
-  creacionFechaHora: string;
-  completadoFechaHora?: string | null;
-  notificacionFecha?: string | null;
-  internoFormulario: number;
-  internoEstablecimiento: number;
-  respuestasCuestionario: RespuestaCuestionarioVm[];
-  respuestasGremio: any[];
-  respuestasContratista: any[];
-  respuestasResponsable: any[];
-  internoPresentacion?: number;
-  fechaSRT?: string | null;
-};
-
-type GremioUI = { legajo?: number; nombre?: string };
-type ContratistaUI = { cuit?: number; contratista?: string };
-type ResponsableUI = {
-  cuit?: number;
-  responsable?: string;
-  cargo?: string;
-  representacion?: number;
-  esContratado?: number;
-  tituloHabilitante?: string;
-  matricula?: string;
-  entidadOtorganteTitulo?: string;
-};
-
 
 const toIsoOrNull = (v?: string | Date | null) => {
   if (!v) return null;
   const d = dayjs(v);
   return d.isValid() ? d.toISOString() : null;
-};
-
+}; // Helper: convierte fecha a ISO (o null)
 
 const addRow = <T,>(setter: React.Dispatch<React.SetStateAction<T[]>>, empty: T) =>
   setter((rows) => [...rows, empty]);
+// Helpers para manipular arrays de estado (add/remove/change)
 const removeRow = <T,>(setter: React.Dispatch<React.SetStateAction<T[]>>, idx: number) =>
   setter((rows) => rows.filter((_, i) => i !== idx));
 const changeRow = <T extends object>(
@@ -103,6 +38,7 @@ const changeRow = <T extends object>(
   value: any
 ) => setter((rows) => rows.map((r, i) => (i === idx ? { ...r, [field]: value } as T : r)));
 
+// Llamadas a la API para obtener datos (razón social, establecimientos, tipos, formulario)
 const fetchRazonSocial = async (cuit: number): Promise<string> => {
   const url = `${API_BASE}/FormulariosRGRL/CUIT/${encodeURIComponent(cuit)}`;
   const res = await fetch(url, { cache: 'no-store', headers: { Accept: 'application/json, text/json' } });
@@ -115,7 +51,7 @@ const fetchRazonSocial = async (cuit: number): Promise<string> => {
 const fetchEstablecimientos = async (cuit: number): Promise<Establecimiento[]> => {
   const url = `${API_BASE}/Establecimientos/Empresa/${encodeURIComponent(cuit)}`;
   const res = await fetch(url, { cache: 'no-store', headers: { Accept: 'application/json, text/json' } });
-  if (res.status === 404) return []; 
+  if (res.status === 404) return [];
   if (!res.ok) throw new Error(`GET ${url} -> ${res.status}`);
   return (await res.json()) as Establecimiento[];
 };
@@ -123,7 +59,7 @@ const fetchEstablecimientos = async (cuit: number): Promise<Establecimiento[]> =
 const fetchTipos = async (): Promise<TipoFormulario[]> => {
   const url = `${API_BASE}/TiposFormulariosRGRL`;
   const res = await fetch(url, { cache: 'no-store', headers: { Accept: 'application/json, text/json' } });
-  if (res.status === 404) return []; 
+  if (res.status === 404) return [];
   if (!res.ok) throw new Error(`GET ${url} -> ${res.status}`);
   return (await res.json()) as TipoFormulario[];
 };
@@ -135,7 +71,7 @@ const fetchFormularioById = async (id: number): Promise<FormularioVm> => {
   return (await res.json()) as FormularioVm;
 };
 
-
+// Componente principal: crea, edita o replica formularios RGRL
 const GenerarFormularioRGRL: React.FC<{
   initialCuit?: number;
   replicaDe?: number;
@@ -144,9 +80,7 @@ const GenerarFormularioRGRL: React.FC<{
 
   const router = useRouter();
   const search = useSearchParams();
-
   const isModal = Boolean(onDone);
-
   const cuitFromQuery = useMemo(() => {
     if (isModal) return undefined;
     const v = search?.get('cuit');
@@ -168,10 +102,8 @@ const GenerarFormularioRGRL: React.FC<{
   }, [search, isModal]);
 
   const [original, setOriginal] = useState<FormularioVm | null>(null);
-  /* ------------------------------------------------------------- */
 
   const esReplica = Boolean(replicaDe || replicaDeQuery || original);
-
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -200,6 +132,7 @@ const GenerarFormularioRGRL: React.FC<{
 
   const canBuscar = !!cuit && !Number.isNaN(cuit);
 
+    //trae razón social, establecimientos y tipos.
   const cargarTodoPaso1 = useCallback(async () => {
     if (!canBuscar) return;
     setLoading(true);
@@ -222,6 +155,7 @@ const GenerarFormularioRGRL: React.FC<{
     if (!idFromQuery && cuit && !(replicaDe || replicaDeQuery)) cargarTodoPaso1();
   }, [cuit, idFromQuery, replicaDe, replicaDeQuery, cargarTodoPaso1]);
 
+  // Carga datos cuando se solicita replicar un formulario
   const cargarReplicaDe = useCallback(async () => {
     const replId = typeof replicaDe === 'number' ? replicaDe : replicaDeQuery;
     if (!replId) return;
@@ -258,11 +192,11 @@ const GenerarFormularioRGRL: React.FC<{
     }
   }, [replicaDe, replicaDeQuery]);
 
-
   useEffect(() => {
     if (!idFromQuery && (replicaDe || replicaDeQuery)) cargarReplicaDe();
   }, [idFromQuery, replicaDe, replicaDeQuery, cargarReplicaDe]);
 
+  // Crea el formulario y, si viene de una réplica, copia respuestas/listas
   const crearFormulario = async () => {
     if (!cuit || !establecimientoSel || !tipoSel) {
       setError('Completá CUIT, Establecimiento y Tipo de formulario.');
@@ -374,16 +308,12 @@ const GenerarFormularioRGRL: React.FC<{
         await resPut.json().catch(() => null);
         if (!resPut.ok) throw new Error(`PUT /FormulariosRGRL/${nuevoId} -> ${resPut.status}`);
 
-
-
-
         onDone?.(nuevoId);
-        router.push(`/inicio/empleador/formularioRGRL/editar?id=${nuevoId}`);
+        router.push(`/inicio/empleador/formularioRGRL/generar?id=${nuevoId}`);
         return;
       }
-      /* ----------------------------------------------------------------------------- */
       onDone?.(nuevoId);
-      router.push(`/inicio/empleador/formularioRGRL/editar?id=${nuevoId}`);
+      router.push(`/inicio/empleador/formularioRGRL/generar?id=${nuevoId}`);
     } catch (e: any) {
       setError(e?.message ?? 'Error al crear el formulario.');
     } finally {
@@ -401,6 +331,7 @@ const GenerarFormularioRGRL: React.FC<{
   const [openContratistas, setOpenContratistas] = useState(false);
   const [openResponsables, setOpenResponsables] = useState(false);
 
+  // Carga el formulario ya creado/edición (paso 2)
   const cargarPaso2 = useCallback(async () => {
     if (!idFromQuery) return;
     setLoading(true);
@@ -468,6 +399,7 @@ const GenerarFormularioRGRL: React.FC<{
   const [page, setPage] = useState(0);
   useEffect(() => { setPage(Math.floor(secIdx / PAGE_SIZE)); }, [secIdx]);
 
+  // Envía PUT final con todas las respuestas y listas (finalizar)
   const finalizarPUT = async () => {
     if (!form) return;
     setLoading(true);
@@ -555,7 +487,6 @@ const GenerarFormularioRGRL: React.FC<{
       await res.json().catch(() => null);
       if (!res.ok) throw new Error(`PUT /FormulariosRGRL/${form.interno} -> ${res.status}`);
 
-
       router.replace('/inicio/empleador/formularioRGRL');
     } catch (e: any) {
       setError(e?.message ?? 'Error al finalizar.');
@@ -564,7 +495,11 @@ const GenerarFormularioRGRL: React.FC<{
     }
   };
 
-  if (!isModal && idFromQuery && form && tipoDeEsteFormulario) {
+  if (!isModal && idFromQuery && !form) {
+    return null;
+  }
+
+  if (!isModal && idFromQuery && form) {  
     const secActual = secciones[secIdx];
     const preguntas = (secActual?.cuestionarios ?? []).slice().sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
     const tieneNA = secActual?.tieneNoAplica === 1;
@@ -574,20 +509,13 @@ const GenerarFormularioRGRL: React.FC<{
       const pageStart = page * PAGE_SIZE;
       const pageEnd = Math.min(pageStart + PAGE_SIZE, totalSecs);
 
-      const btnBase: React.CSSProperties = {
-        padding: '6px 10px',
-        borderRadius: 8,
-        border: '1px solid #c9c9c9',
-        background: '#fff',
-        cursor: 'pointer'
-      };
 
       return (
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '10px 0 14px', alignItems: 'center' }}>
+        <div className={styles.paginatorBar}>
           <button
             onClick={() => setPage(p => Math.max(0, p - 1))}
             disabled={page === 0}
-            style={{ ...btnBase, width: 36, opacity: page === 0 ? 0.5 : 1 }}
+            className={`${styles.pagerBtn} ${styles.pagerBtnNarrow}`}
           >
             &lt;
           </button>
@@ -599,7 +527,7 @@ const GenerarFormularioRGRL: React.FC<{
               <button
                 key={secciones[i].interno ?? i}
                 onClick={() => setSecIdx(i)}
-                style={{ ...btnBase, background: active ? '#ffecb3' : '#fff', fontWeight: active ? 700 : 400 }}
+                className={`${styles.pagerBtn} ${active ? styles.pagerBtnActive : ''}`}
                 title={secciones[i].descripcion}
               >
                 {i + 1}
@@ -610,7 +538,7 @@ const GenerarFormularioRGRL: React.FC<{
           <button
             onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
             disabled={page === totalPages - 1}
-            style={{ ...btnBase, width: 36, opacity: page === totalPages - 1 ? 0.5 : 1 }}
+            className={`${styles.pagerBtn} ${styles.pagerBtnNarrow}`}
           >
             &gt;
           </button>
@@ -619,33 +547,35 @@ const GenerarFormularioRGRL: React.FC<{
     };
 
     return (
-      <div style={{ padding: 16, maxWidth: 960, margin: '0 auto' }}>
-        <h2 style={{ margin: 0 }}>
-        </h2>
+
+      <div className={styles.container}>
+        {/* Vista de edición del formulario — preguntas, paginador y listas (gremios/contratistas/responsables). */}
+        <h2 style={{ margin: 0 }} />
         <div style={{ marginTop: 6, opacity: 0.95, fontWeight: 700 }}>
+
           Sección {secIdx + 1} de {totalSecs} — {secActual?.descripcion}
         </div>
 
-        <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+        <div className={styles.row} style={{ marginTop: 10 }}>
           <CustomButton onClick={() => setOpenGremios(true)}>Gremios</CustomButton>
           <CustomButton onClick={() => setOpenContratistas(true)}>Contratistas</CustomButton>
           <CustomButton onClick={() => setOpenResponsables(true)}>Responsables</CustomButton>
         </div>
 
         {renderPaginador()}
-        <div style={{ border: '1px solid #e5e5e5', borderRadius: 10, padding: 12, marginTop: 10, marginBottom: 12 }}>
+        <div className={styles.questionsBox}>
           {preguntas.map((q) => {
             const key = q.codigo as number;
             const rr = respuestas[key] ?? {};
             const value = rr.respuesta ?? '';
             return (
-              <div key={key} style={{ padding: 10, border: '1px dashed #ddd', borderRadius: 8, marginBottom: 10 }}>
-                <div style={{ marginBottom: 6, fontWeight: 500 }}>
+              <div key={key} className={styles.questionCard}>
+                <div className={styles.questionTitle}>
                   {q.orden}. {q.pregunta}{' '}
-                  {q.comentario ? <span style={{ opacity: 0.7 }}>— {q.comentario}</span> : null}
+                  {q.comentario ? <span className={styles.questionComment}>— {q.comentario}</span> : null}
                 </div>
 
-                <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 8 }}>
+                <div className={styles.radioRow}>
                   <label>
                     <input
                       type="radio"
@@ -672,20 +602,21 @@ const GenerarFormularioRGRL: React.FC<{
                       /> No aplica
                     </label>
                   ) : null}
-                  <span style={{ opacity: 0.6, fontSize: 13 }}>{value ? '' : '(Sin respuesta)'}</span>
+                  <span className={styles.radioHint}>{value ? '' : '(Sin respuesta)'}</span>
                 </div>
 
-                <div style={{ marginBottom: 8 }}>
+                <div className={styles.obsArea}>
                   <textarea
                     value={rr.observaciones ?? ''}
                     onChange={(e) => onCambiarRespuesta(key, { observaciones: e.target.value })}
                     placeholder="Observaciones…"
-                    style={{ width: '100%', minHeight: 60, padding: 8, borderRadius: 6, border: '1px solid #ccc' }}
+                    className={styles.textarea}
+
                   />
                 </div>
 
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <label style={{ minWidth: 210 }}>Fecha regularización (AAAAMMDD):</label>
+                <div className={styles.dateRow}>
+                  <label className={styles.dateLabel}>Fecha regularización (AAAAMMDD):</label>
                   <input
                     type="number"
                     value={rr.fechaRegularizacion ?? ''}
@@ -693,7 +624,7 @@ const GenerarFormularioRGRL: React.FC<{
                       onCambiarRespuesta(key, { fechaRegularizacion: e.target.value ? Number(e.target.value) : 0 })
                     }
                     placeholder="20251030"
-                    style={{ height: 36, padding: '6px 10px', border: '1px solid #c7c7c7', borderRadius: 6, width: 180 }}
+                    className={styles.dateInputNum}
                   />
                 </div>
               </div>
@@ -701,28 +632,28 @@ const GenerarFormularioRGRL: React.FC<{
           })}
         </div>
 
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div className={styles.row}>
           <CustomButton onClick={() => router.back()} disabled={loading}>VOLVER</CustomButton>
           <CustomButton onClick={finalizarPUT} disabled={loading}>FINALIZAR</CustomButton>
         </div>
 
-        {loading && <div style={{ marginTop: 12, opacity: 0.7 }}>Guardando…</div>}
-        {!!error && <div style={{ marginTop: 12, color: '#b00020' }}>{error}</div>}
+        {loading && <div className={styles.savingMsg}>Guardando…</div>}
+        {!!error && <div className={styles.errorMsg}>{error}</div>}
 
         <CustomModal open={openGremios} onClose={() => setOpenGremios(false)} title="Representación Gremial" size="mid">
           <div className="formGrid">
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <table className={styles.table}>
               <thead>
                 <tr>
-                  <th style={{ border: '1px solid #ddd', padding: 6, width: 140 }}>Nro Legajo</th>
-                  <th style={{ border: '1px solid #ddd', padding: 6 }}>Nombre</th>
-                  <th style={{ width: 70 }}></th>
+                  <th>Nro Legajo</th>
+                  <th>Nombre</th>
+                  <th className={styles.tableActionsCol}></th>
                 </tr>
               </thead>
               <tbody>
                 {gremiosUI.map((g, i) => (
                   <tr key={i}>
-                    <td style={{ border: '1px solid #eee,', padding: 4 }}>
+                    <td className={styles.tdPad4}>
                       <input
                         type="number"
                         value={g.legajo ?? 0}
@@ -730,7 +661,7 @@ const GenerarFormularioRGRL: React.FC<{
                         style={{ width: '100%' }}
                       />
                     </td>
-                    <td style={{ border: '1px solid #eee', padding: 4 }}>
+                    <td className={styles.tdPad4}>
                       <input
                         type="text"
                         value={g.nombre ?? ''}
@@ -743,26 +674,25 @@ const GenerarFormularioRGRL: React.FC<{
                 ))}
               </tbody>
             </table>
-            <div style={{ marginTop: 12, display: 'flex', justifyContent: 'space-between' }}>
+            <div className={styles.tableFooter}>
               <CustomButton onClick={() => addRow<GremioUI>(setGremiosUI, { legajo: 0, nombre: '' })}>AGREGAR</CustomButton>
             </div>
           </div>
         </CustomModal>
-
         <CustomModal open={openContratistas} onClose={() => setOpenContratistas(false)} title="Contratistas" size="mid">
           <div className="formGrid">
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <table className={`${styles.table} ${styles.tableSmall}`}>
               <thead>
                 <tr>
-                  <th style={{ border: '1px solid #ddd', padding: 6, width: 160 }}>CUIT</th>
-                  <th style={{ border: '1px solid #ddd', padding: 6 }}>Contratista</th>
-                  <th style={{ width: 70 }}></th>
+                  <th className={styles.tableWidth160}>CUIT</th>
+                  <th>Contratista</th>
+                  <th className={styles.tableActionsCol}></th>
                 </tr>
               </thead>
               <tbody>
                 {contratistasUI.map((c, i) => (
                   <tr key={i}>
-                    <td style={{ border: '1px solid #eee', padding: 4 }}>
+                    <td className={styles.tdPad4}>
                       <input
                         type="number"
                         value={c.cuit ?? 0}
@@ -770,7 +700,7 @@ const GenerarFormularioRGRL: React.FC<{
                         style={{ width: '100%' }}
                       />
                     </td>
-                    <td style={{ border: '1px solid #eee', padding: 4 }}>
+                    <td className={styles.tdPad4}>
                       <input
                         type="text"
                         value={c.contratista ?? ''}
@@ -783,32 +713,31 @@ const GenerarFormularioRGRL: React.FC<{
                 ))}
               </tbody>
             </table>
-            <div style={{ marginTop: 12, display: 'flex', justifyContent: 'space-between' }}>
+            <div className={styles.tableFooter}>
               <CustomButton onClick={() => addRow<ContratistaUI>(setContratistasUI, { cuit: 0, contratista: '' })}>AGREGAR</CustomButton>
             </div>
           </div>
         </CustomModal>
-
         <CustomModal open={openResponsables} onClose={() => setOpenResponsables(false)} title="Profesional / Responsable" size="large">
           <div className="formGrid">
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+            <table className={styles.table}>
               <thead>
                 <tr>
-                  <th style={{ border: '1px solid #ddd', padding: 6, width: 130 }}>CUIT</th>
-                  <th style={{ border: '1px solid #ddd', padding: 6 }}>Nombre y apellido</th>
-                  <th style={{ border: '1px solid #ddd', padding: 6 }}>Cargo</th>
-                  <th style={{ border: '1px solid #ddd', padding: 6, width: 120 }}>Representación</th>
-                  <th style={{ border: '1px solid #ddd', padding: 6, width: 110 }}>Contratado (0/1)</th>
-                  <th style={{ border: '1px solid #ddd', padding: 6 }}>Título</th>
-                  <th style={{ border: '1px solid #ddd', padding: 6 }}>Matrícula</th>
-                  <th style={{ border: '1px solid #ddd', padding: 6 }}>Entidad</th>
-                  <th style={{ width: 70 }}></th>
+                  <th className={styles.tableWidth130}>CUIT</th>
+                  <th>Nombre y apellido</th>
+                  <th>Cargo</th>
+                  <th className={styles.tableWidth120}>Representación</th>
+                  <th className={styles.tableWidth110}>Contratado (0/1)</th>
+                  <th>Título</th>
+                  <th>Matrícula</th>
+                  <th>Entidad</th>
+                  <th className={styles.tableActionsCol}></th>
                 </tr>
               </thead>
               <tbody>
                 {responsablesUI.map((r, i) => (
                   <tr key={i}>
-                    <td style={{ border: '1px solid #eee', padding: 4 }}>
+                    <td className={styles.tdPad4}>
                       <input
                         type="number"
                         value={r.cuit ?? 0}
@@ -816,7 +745,7 @@ const GenerarFormularioRGRL: React.FC<{
                         style={{ width: '100%' }}
                       />
                     </td>
-                    <td style={{ border: '1px solid #eee', padding: 4 }}>
+                    <td className={styles.tdPad4}>
                       <input
                         type="text"
                         value={r.responsable ?? ''}
@@ -824,7 +753,7 @@ const GenerarFormularioRGRL: React.FC<{
                         style={{ width: '100%' }}
                       />
                     </td>
-                    <td style={{ border: '1px solid #eee', padding: 4 }}>
+                    <td className={styles.tdPad4}>
                       <input
                         type="text"
                         value={r.cargo ?? ''}
@@ -832,7 +761,7 @@ const GenerarFormularioRGRL: React.FC<{
                         style={{ width: '100%' }}
                       />
                     </td>
-                    <td style={{ border: '1px solid #eee', padding: 4 }}>
+                    <td className={styles.tdPad4}>
                       <input
                         type="number"
                         value={r.representacion ?? 0}
@@ -840,7 +769,7 @@ const GenerarFormularioRGRL: React.FC<{
                         style={{ width: '100%' }}
                       />
                     </td>
-                    <td style={{ border: '1px solid #eee', padding: 4 }}>
+                    <td className={styles.tdPad4}>
                       <input
                         type="number"
                         value={r.esContratado ?? 0}
@@ -848,7 +777,7 @@ const GenerarFormularioRGRL: React.FC<{
                         style={{ width: '100%' }}
                       />
                     </td>
-                    <td style={{ border: '1px solid #eee', padding: 4 }}>
+                    <td className={styles.tdPad4}>
                       <input
                         type="text"
                         value={r.tituloHabilitante ?? ''}
@@ -856,7 +785,7 @@ const GenerarFormularioRGRL: React.FC<{
                         style={{ width: '100%' }}
                       />
                     </td>
-                    <td style={{ border: '1px solid #eee', padding: 4 }}>
+                    <td className={styles.tdPad4}>
                       <input
                         type="text"
                         value={r.matricula ?? ''}
@@ -864,7 +793,7 @@ const GenerarFormularioRGRL: React.FC<{
                         style={{ width: '100%' }}
                       />
                     </td>
-                    <td style={{ border: '1px solid #eee', padding: 4 }}>
+                    <td className={styles.tdPad4}>
                       <input
                         type="text"
                         value={r.entidadOtorganteTitulo ?? ''}
@@ -877,7 +806,7 @@ const GenerarFormularioRGRL: React.FC<{
                 ))}
               </tbody>
             </table>
-            <div style={{ marginTop: 12, display: 'flex', justifyContent: 'space-between' }}>
+            <div className={styles.tableFooter}>
               <CustomButton
                 onClick={() =>
                   addRow<ResponsableUI>(setResponsablesUI, {
@@ -902,49 +831,50 @@ const GenerarFormularioRGRL: React.FC<{
   }
 
   return (
-    <div style={{ padding: 16, maxWidth: 960, margin: '0 auto' }}>
-
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
-        <label style={{ minWidth: 80 }}>CUIT:</label>
+    <div className={styles.container}>
+      {/* Carga de datos inicial y botones para crear/replicar el formulario. */}
+      <div className={styles.row}>
+        <label className={styles.label}>CUIT:</label>
         <input
           type="text"
           value={cuit ? String(cuit) : ''}
           onChange={(e) => setCuit(Number(e.target.value.replace(/[^\d]/g, '')) || undefined)}
           placeholder="Ingresá CUIT"
-          style={{ height: 36, padding: '6px 10px', border: '1px solid #c7c7c7', borderRadius: 6, width: 220 }}
+          className={styles.input}
+          style={{ width: 220 }}
         />
         <CustomButton onClick={cargarTodoPaso1} disabled={!canBuscar}>
           CARGAR
         </CustomButton>
       </div>
 
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
-        <label style={{ minWidth: 80 }}>Razón Social:</label>
+      <div className={styles.row}>
+        <label className={styles.label}>Razón Social:</label>
         <input
           type="text"
           value={razonSocial}
           readOnly
           placeholder="Sin datos"
-          style={{ flex: 1, height: 36, padding: '6px 10px', border: '1px solid #c7c7c7', borderRadius: 6 }}
+          className={`${styles.input} ${styles.inputFull}`}
         />
       </div>
 
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
-        <label style={{ minWidth: 80 }}>Notificación Fecha:</label>
+      <div className={styles.row}>
+        <label className={styles.label}>Notificación Fecha:</label>
         <input
           type="date"
           value={notificacionFecha}
           onChange={(e) => setNotificacionFecha(e.target.value)}
-          style={{ height: 36, padding: '6px 10px', border: '1px solid #c7c7c7', borderRadius: 6 }}
+          className={styles.date}
         />
       </div>
 
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
-        <label style={{ minWidth: 80 }}>Establecimiento:</label>
+      <div className={styles.row}>
+        <label className={styles.label}>Establecimiento:</label>
         <select
           value={establecimientoSel ?? ''}
           onChange={(e) => setEstablecimientoSel(Number(e.target.value) || undefined)}
-          style={{ flex: 1, height: 36, padding: '6px 10px', border: '1px solid #c7c7c7', borderRadius: 6 }}
+          className={`${styles.select} ${styles.inputFull}`}
         >
           <option value="" disabled>Seleccioná...</option>
           {establecimientos.map((e) => (
@@ -954,47 +884,45 @@ const GenerarFormularioRGRL: React.FC<{
           ))}
         </select>
       </div>
-
       {estActual && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 12 }}>
+        <div className={styles.grid3}>
           <div>
-            <label style={{ display: 'block', fontSize: 12, opacity: 0.7 }}>Superficie</label>
+            <label className={styles.subLabel}>Superficie</label>
             <input
               type="text"
               value={estActual.superficie ?? ''}
               readOnly
-              style={{ width: '100%', height: 36, padding: '6px 10px', border: '1px solid #c7c7c7', borderRadius: 6 }}
+              className={styles.inputRead}
             />
           </div>
           <div>
-            <label style={{ display: 'block', fontSize: 12, opacity: 0.7 }}>Cant. Trabajadores</label>
+            <label className={styles.subLabel}>Cant. Trabajadores</label>
             <input
               type="text"
               value={estActual.cantTrabajadores ?? ''}
               readOnly
-              style={{ width: '100%', height: 36, padding: '6px 10px', border: '1px solid #c7c7c7', borderRadius: 6 }}
+              className={styles.inputRead}
             />
           </div>
           <div>
-            <label style={{ display: 'block', fontSize: 12, opacity: 0.7 }}>CIIU</label>
+            <label className={styles.subLabel}>CIIU</label>
             <input
               type="text"
               value={estActual.ciiu ?? ''}
               readOnly
-              style={{ width: '100%', height: 36, padding: '6px 10px', border: '1px solid #c7c7c7', borderRadius: 6 }}
+              className={styles.inputRead}
             />
           </div>
         </div>
       )}
-
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
-        <label style={{ minWidth: 80 }}>Formulario:</label>
+      <div className={styles.row}>
+        <label className={styles.label}>Formulario:</label>
         <select
           value={tipoSel ?? ''}
           onChange={(e) => setTipoSel(Number(e.target.value) || undefined)}
           disabled={esReplica}
           title={esReplica ? 'Tipo fijado por replicación' : undefined}
-          style={{ flex: 1, height: 36, padding: '6px 10px', border: '1px solid #c7c7c7', borderRadius: 6 }}
+          className={`${styles.select} ${styles.inputFull}`}
         >
           <option value="" disabled>Selecciona</option>
           {tipos.map((t) => (
@@ -1002,13 +930,10 @@ const GenerarFormularioRGRL: React.FC<{
           ))}
         </select>
       </div>
-
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 16 }}>
+      <div className={styles.rowTopSpace}>
         <CustomButton onClick={() => router.back()}>VOLVER</CustomButton>
         <CustomButton onClick={crearFormulario} disabled={!cuit}>CREAR FORMULARIO</CustomButton>
       </div>
-
-
     </div>
   );
 };

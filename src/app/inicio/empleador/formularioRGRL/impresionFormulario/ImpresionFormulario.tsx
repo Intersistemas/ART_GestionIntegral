@@ -1,47 +1,8 @@
 'use client';
 import React, { Fragment } from 'react';
 import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer';
-import CabeceraFormulario, { CabeceraData } from './CabeceraFormulario';
-
-export type DetalleRow = {
-  Nro: number;
-  /** nombre de la sección (categoría) a la que pertenece la pregunta */
-  Categoria: string;
-  /** orden de la sección, para respetar el orden del catálogo */
-  CategoriaOrden?: number;
-  Pregunta: string;
-  Respuesta: string; // Sí | No | No Aplica
-  FechaRegularizacion: string;
-  NormaVigente: string;
-};
-
-export type PlanillaAItem = { Codigo: string; Sustancia: string; SiNo: 'Sí' | 'No' | 'No Aplica' };
-export type PlanillaBItem = { Codigo: string; Sustancia: string; SiNo: 'Sí' | 'No' | 'No Aplica' };
-export type PlanillaCItem = { Codigo: string; Sustancia: string; SiNo: 'Sí' | 'No' | 'No Aplica'; NormaVigente: string };
-
-export type GremioItem = { Legajo: string; Nombre: string };
-export type ContratistaItem = { CUIT: string; Contratista: string };
-export type ResponsableItem = {
-  CUITCUIL: string;
-  NombreApellido: string;
-  Cargo: string;
-  Representacion: string;
-  PropioContratado: 'Propio' | 'Contratado';
-  TituloHabilitante: string;
-  Matricula: string;
-  EntidadOtorgante: string;
-};
-
-export type ImpresionProps = {
-  cabecera: CabeceraData;
-  detalle: DetalleRow[];
-  planillaA: PlanillaAItem[];
-  planillaB: PlanillaBItem[];
-  planillaC: PlanillaCItem[];
-  gremios: GremioItem[];
-  contratistas: ContratistaItem[];
-  responsables: ResponsableItem[];
-};
+import CabeceraFormulario from './CabeceraFormulario';
+import type { CabeceraData, ImpresionProps, DetalleRow } from './types/impresion';
 
 const styles = StyleSheet.create({
   page: { backgroundColor: 'white', padding: 10 },

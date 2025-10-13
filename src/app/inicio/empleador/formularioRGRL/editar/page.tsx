@@ -4,63 +4,25 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import CustomButton from '@/utils/ui/button/CustomButton';
 import dayjs from 'dayjs';
+import styles from './editar.module.css';
 
+ import type {
+   RespuestaCuestionarioVm,
+   FormularioVm,
+   TipoFormulario
+ } from '../generar/types/generar';
 
+// Constante con la URL base de la API (entorno de pruebas)
 const API_BASE = 'http://arttest.intersistemas.ar:8302/api';
 
-type RespuestaCuestionarioVm = {
-    interno?: number;
-    internoCuestionario?: number;
-    internoRespuestaFormulario?: number;
-    respuesta?: string;
-    fechaRegularizacion?: number | null;
-    observaciones?: string | null;
-    estadoAccion?: string | null;
-    estadoFecha?: number | null;
-    estadoSituacion?: string | null;
-    bajaMotivo?: number | null;
-};
-
-type FormularioVm = {
-    interno: number;
-    creacionFechaHora: string;
-    completadoFechaHora?: string | null;
-    notificacionFecha?: string | null;
-    internoFormulario: number;
-    internoEstablecimiento: number;
-    respuestasCuestionario: RespuestaCuestionarioVm[];
-    respuestasGremio: any[];
-    respuestasContratista: any[];
-    respuestasResponsable: any[];
-    internoPresentacion?: number;
-    fechaSRT?: string | null;
-};
-
-type TipoFormulario = {
-    interno: number;
-    descripcion: string;
-    secciones?: Array<{
-        interno: number;
-        orden: number;
-        descripcion: string;
-        tieneNoAplica: number;
-        comentario?: string;
-        cuestionarios?: Array<{
-            internoSeccion: number;
-            orden: number;
-            codigo: number;
-            pregunta: string;
-            comentario: string;
-        }>;
-    }>;
-};
-
+// Convierte una fecha a ISO o devuelve null
 const toIsoOrNull = (v?: string | Date | null) => {
     if (!v) return null;
     const d = dayjs(v);
     return d.isValid() ? d.toISOString() : null;
 };
 
+// Obtiene un formulario por id desde la API
 const fetchFormularioById = async (id: number): Promise<FormularioVm> => {
     const url = `${API_BASE}/FormulariosRGRL/${id}`;
     const res = await fetch(url, { cache: 'no-store', headers: { Accept: 'application/json, text/json' } });
@@ -68,6 +30,7 @@ const fetchFormularioById = async (id: number): Promise<FormularioVm> => {
     return (await res.json()) as FormularioVm;
 };
 
+// Obtiene la lista de tipos de formulario desde la API
 const fetchTipos = async (): Promise<TipoFormulario[]> => {
     const url = `${API_BASE}/TiposFormulariosRGRL`;
     const res = await fetch(url, { cache: 'no-store', headers: { Accept: 'application/json, text/json' } });
@@ -75,25 +38,31 @@ const fetchTipos = async (): Promise<TipoFormulario[]> => {
     return (await res.json()) as TipoFormulario[];
 };
 
+// Componente de página para editar un formulario existente
 export default function Page() {
     const router = useRouter();
     const search = useSearchParams();
+    // Lee el parámetro id de la URL (si está presente)
     const idFromQuery = useMemo(() => {
         const v = search?.get('id');
         return v ? Number(v) : undefined;
     }, [search]);
 
+    // Tamaño de página para el paginador de secciones
     const PAGE_SIZE = 20;
     const [page, setPage] = useState(0);
 
+    // Estados de carga/guardado y errores
     const [loading, setLoading] = useState<boolean>(true);
     const [saving, setSaving] = useState<boolean>(false);
     const [error, setError] = useState<string>('');
 
+    // Estado del formulario y datos asociados
     const [form, setForm] = useState<FormularioVm | null>(null);
     const [tipos, setTipos] = useState<TipoFormulario[]>([]);
     const [respuestas, setRespuestas] = useState<Record<number, RespuestaCuestionarioVm>>({}); // key: internoCuestionario
 
+    // Deriva secciones del tipo de formulario actual
     const secciones = useMemo(() => {
         const t = tipos.find((x) => x.interno === form?.internoFormulario);
         return (t?.secciones ?? []).slice().sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
@@ -102,6 +71,7 @@ export default function Page() {
     const totalSecs = secciones.length;
     const secActual = secciones[secIdx];
 
+    // Función para cargar datos iniciales (tipos + formulario)
     const cargar = useCallback(async () => {
         if (!idFromQuery) return;
         setLoading(true);
@@ -124,14 +94,15 @@ export default function Page() {
         }
     }, [idFromQuery]);
 
+    // Ejecuta la carga inicial cuando cambia la función "cargar"
     useEffect(() => { cargar(); }, [cargar]);
 
-
+    // Actualiza la página visible cuando cambia la sección
     useEffect(() => {
         setPage(Math.floor(secIdx / PAGE_SIZE));
     }, [secIdx]);
 
-
+    // Actualiza una respuesta específica en el diccionario de respuestas
     const onCambiarRespuesta = (internoCuestionario: number, cambios: Partial<RespuestaCuestionarioVm>) => {
         setRespuestas((prev) => {
             const base = prev[internoCuestionario] ?? { internoCuestionario, respuesta: '' };
@@ -139,6 +110,7 @@ export default function Page() {
         });
     };
 
+    // Envía un PUT con todas las respuestas y listas actualizadas
     const guardarPUT = async () => {
         if (!form) return;
         setSaving(true);
@@ -224,11 +196,8 @@ export default function Page() {
 
             const data = await res.json().catch(() => null);
             if (!res.ok) throw new Error(`PUT /FormulariosRGRL/${form.interno} -> ${res.status}`);
-
             setForm(data as FormularioVm);
-            //alert('Formulario guardado correctamente.');
             router.replace('/inicio/empleador/formularioRGRL');
-
         } catch (e: any) {
             setError(e?.message ?? 'Error al guardar.');
         } finally {
@@ -236,53 +205,44 @@ export default function Page() {
         }
     };
 
+    // Si no hay id en la URL mostramos mensaje y volvemos
     if (!idFromQuery) {
         return (
-            <div style={{ padding: 16 }}>
-                <div style={{ marginBottom: 8, color: '#b00020' }}>Falta el parámetro <code>id</code> en la URL.</div>
+            <div className={styles.pad16}>
+                <div className={styles.missingParam}>Falta el parámetro <code>id</code> en la URL.</div>
                 <CustomButton onClick={() => router.back()}>VOLVER</CustomButton>
             </div>
         );
     }
 
+    // Mientras carga o no hay secciones mostramos estado
     if (loading || !form || !secciones.length) {
-        return <div style={{ padding: 16 }}>{loading ? 'Cargando…' : 'No hay secciones para editar.'}</div>;
+        return <div className={styles.pad16}>{loading ? 'Cargando…' : 'No hay secciones para editar.'}</div>;
     }
 
     const preguntas = (secActual?.cuestionarios ?? []).slice().sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
 
     return (
-        <div style={{ padding: 16, maxWidth: 960, margin: '0 auto' }}>
+        <div className={styles.container}>
 
-
-
-            <div style={{ marginTop: 6, opacity: 0.95, fontWeight: 700 }}>
+            {/* Cabecera: muestra índice y descripción de la sección actual */}
+            <div className={styles.sectionHeader}>
                 Sección {secIdx + 1} de {totalSecs} — {secActual.descripcion}
             </div>
 
-
-
-
+            {/* Paginador: botones para navegar entre páginas de secciones */}
             {(() => {
                 const totalSecs = secciones.length;
                 const totalPages = Math.max(1, Math.ceil(totalSecs / PAGE_SIZE));
                 const pageStart = page * PAGE_SIZE;
                 const pageEnd = Math.min(pageStart + PAGE_SIZE, totalSecs);
 
-                const btnBase: React.CSSProperties = {
-                    padding: '6px 10px',
-                    borderRadius: 8,
-                    border: '1px solid #c9c9c9',
-                    background: '#fff',
-                    cursor: 'pointer'
-                };
-
                 return (
-                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '10px 0 14px', alignItems: 'center' }}>
+                    <div className={styles.paginatorBar}>
                         <button
                             onClick={() => setPage(p => Math.max(0, p - 1))}
                             disabled={page === 0}
-                            style={{ ...btnBase, width: 36, opacity: page === 0 ? 0.5 : 1 }}
+                            className={`${styles.pagerBtn} ${styles.pagerBtnNarrow}`}
                         >
                             &lt;
                         </button>
@@ -294,7 +254,7 @@ export default function Page() {
                                 <button
                                     key={secciones[i].interno ?? i}
                                     onClick={() => setSecIdx(i)}
-                                    style={{ ...btnBase, background: active ? '#ffecb3' : '#fff', fontWeight: active ? 700 : 400 }}
+                                    className={`${styles.pagerBtn} ${active ? styles.pagerBtnActive : ''}`}
                                     title={secciones[i].descripcion}
                                 >
                                     {i + 1}
@@ -305,7 +265,7 @@ export default function Page() {
                         <button
                             onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
                             disabled={page === totalPages - 1}
-                            style={{ ...btnBase, width: 36, opacity: page === totalPages - 1 ? 0.5 : 1 }}
+                            className={`${styles.pagerBtn} ${styles.pagerBtnNarrow}`}
                         >
                             &gt;
                         </button>
@@ -313,7 +273,8 @@ export default function Page() {
                 );
             })()}
 
-            <div style={{ border: '1px solid #e5e5e5', borderRadius: 10, padding: 12, marginTop: 10, marginBottom: 12 }}>
+            {/* Lista de preguntas: renderiza los cuestionarios de la sección */}
+            <div className={styles.questionsBox}>
                 {preguntas.map((q) => {
                     const key = q.codigo as number;
                     const rr = respuestas[key] ?? {};
@@ -321,13 +282,13 @@ export default function Page() {
                     const tieneNA = secActual.tieneNoAplica === 1;
 
                     return (
-                        <div key={key} style={{ padding: 10, border: '1px dashed #ddd', borderRadius: 8, marginBottom: 10 }}>
-                            <div style={{ marginBottom: 6, fontWeight: 500 }}>
+                        <div key={key} className={styles.questionCard}>
+                            <div className={styles.questionTitle}>
                                 {q.orden}. {q.pregunta}{' '}
-                                {q.comentario ? <span style={{ opacity: 0.7 }}>— {q.comentario}</span> : null}
+                                {q.comentario ? <span className={styles.questionComment}>— {q.comentario}</span> : null}
                             </div>
 
-                            <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 8 }}>
+                            <div className={styles.radioRow}>
                                 <label>
                                     <input
                                         type="radio"
@@ -357,20 +318,20 @@ export default function Page() {
                                         No aplica
                                     </label>
                                 ) : null}
-                                <span style={{ opacity: 0.6, fontSize: 13 }}>{value ? '' : '(Sin respuesta)'}</span>
+                                <span className={styles.radioHint}>{value ? '' : '(Sin respuesta)'}</span>
                             </div>
 
-                            <div style={{ marginBottom: 8 }}>
+                            <div className={styles.obsArea}>
                                 <textarea
                                     value={rr.observaciones ?? ''}
                                     onChange={(e) => onCambiarRespuesta(key, { observaciones: e.target.value })}
                                     placeholder="Observaciones…"
-                                    style={{ width: '100%', minHeight: 60, padding: 8, borderRadius: 6, border: '1px solid #ccc' }}
+                                    className={styles.textarea}
                                 />
                             </div>
 
-                            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                                <label style={{ minWidth: 210 }}>Fecha regularización (AAAAMMDD):</label>
+                            <div className={styles.dateRow}>
+                                <label className={styles.dateLabel}>Fecha regularización (AAAAMMDD):</label>
                                 <input
                                     type="number"
                                     value={rr.fechaRegularizacion ?? ''}
@@ -378,7 +339,7 @@ export default function Page() {
                                         onCambiarRespuesta(key, { fechaRegularizacion: e.target.value ? Number(e.target.value) : 0 })
                                     }
                                     placeholder="20251030"
-                                    style={{ height: 36, padding: '6px 10px', border: '1px solid #c7c7c7', borderRadius: 6, width: 180 }}
+                                    className={styles.dateInputNum}
                                 />
                             </div>
                         </div>
@@ -386,13 +347,15 @@ export default function Page() {
                 })}
             </div>
 
-            <div style={{ display: 'flex', gap: 8 }}>
+            {/* Acciones: botones para volver y guardar */}
+            <div className={styles.actionsRow}>
                 <CustomButton onClick={() => router.back()} disabled={saving}>VOLVER</CustomButton>
                 <CustomButton onClick={guardarPUT} disabled={saving}>GUARDAR</CustomButton>
             </div>
 
-            {saving && <div style={{ marginTop: 12, opacity: 0.7 }}>Guardando…</div>}
-            {!!error && <div style={{ marginTop: 12, color: '#b00020' }}>{error}</div>}
+            {/* Mensajes de estado: guardando y errores */}
+            {saving && <div className={styles.savingMsg}>Guardando…</div>}
+            {!!error && <div className={styles.errorMsg}>{error}</div>}
         </div>
     );
 }

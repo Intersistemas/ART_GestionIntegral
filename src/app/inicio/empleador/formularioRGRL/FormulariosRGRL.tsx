@@ -7,79 +7,39 @@ import { useRouter } from 'next/navigation';
 
 import VentanaImpresionFormulario from './impresionFormulario/VentanaImpresionFormulario';
 import ImpresionFormulario from './impresionFormulario/ImpresionFormulario';
-import type { CabeceraData } from './impresionFormulario/CabeceraFormulario';
+import type { CabeceraData } from './impresionFormulario/types/impresion';
+
 
 import CustomModal from '@/utils/ui/form/CustomModal';
 import GenerarFormularioRGRL from './generar/GenerarFormularioRGRL';
 
 import dayjs from 'dayjs';
+import styles from './FormulariosRGRL.module.css';
+import type {
+  FormulariosRGRLProps,
+  FormularioRGRL,
+  FormularioRGRLDetalle,
+  PrintData,
+  ApiTiposFormularios,
+  TiposIndexItem,
+  ApiFormularioRGRL,
+  ApiFormularioDetalle,
+  ApiEstablecimientoEmpresa,
+  TabKey,
+  PlanillaAItem,
+  PlanillaBItem,
+  PlanillaCItem,
+  GremioItem,
+  ContratistaItem,
+  ResponsableItem,
+  DetallePayload
+} from './types/rgrl';
 
-
-
-
-
-/* ===== Tipos ===== */
-export interface FormulariosRGRLProps {
-  cuit: number;
-  referenteDatos?: unknown;
-}
-
-export type FormularioRGRL = {
-  InternoFormularioRGRL: number;
-  CUIT: string;
-  RazonSocial: string;
-  Establecimiento: string;
-  Formulario: string;
-  Estado: string;
-  FechaHoraCreacion: string;
-  FechaHoraConfirmado: string;
-};
-
-
-type FormularioRGRLDetalle = {
-  Nro: number;
-  Categoria: string;
-  CategoriaOrden?: number;
-  Pregunta: string;
-  Respuesta: string;
-  FechaRegularizacion: string;
-  NormaVigente: string;
-};
-
-type PrintData = {
-  cabecera: CabeceraData;
-  detalle: FormularioRGRLDetalle[];
-  planillaA: PlanillaAItem[];
-  planillaB: PlanillaBItem[];
-  planillaC: PlanillaCItem[];
-  gremios: GremioItem[];
-  contratistas: ContratistaItem[];
-  responsables: ResponsableItem[];
-};
-
-
-
-type ApiTiposFormularios = Array<{
-  descripcion: string;
-  decreto: number;
-  secciones: Array<{
-    internoFormulario: number;
-    orden: number;
-    descripcion: string;
-    pagina: number;
-    planilla?: string;
-    cuestionarios: Array<{
-      codigo: number;
-      pregunta: string;
-      comentario: string;
-    }>;
-  }>;
-}>;
-
-type TiposIndexItem = { pregunta: string; norma: string; seccion: string; pagina: number; planilla?: string; seccionOrden?: number; };
 let _tiposCache: ApiTiposFormularios | null = null;
-
+//#region tipos-catalogos
+// Cache de TiposFormulariosRGRL y utilitarios para mapear secciones/cuestionarios/planillas.
 const cargarTipos = async (): Promise<ApiTiposFormularios> => {
+  // Descarga (una sola vez) el catálogo de tipos; guarda en _tiposCache para reuso.
   if (_tiposCache) return _tiposCache;
   const res = await fetch('http://arttest.intersistemas.ar:8302/api/TiposFormulariosRGRL', { cache: 'no-store' });
   if (!res.ok) throw new Error(`TiposFormulariosRGRL error ${res.status}`);
@@ -87,8 +47,8 @@ const cargarTipos = async (): Promise<ApiTiposFormularios> => {
   return _tiposCache!;
 };
 
-
 const buildTiposIndex = async (internoFormulario: number): Promise<Map<number, TiposIndexItem>> => {
+  // Índice por código de cuestionario metadatos (pregunta, norma, sección, planilla, orden).
   const all = await cargarTipos();
   const form = all.find(f => f.secciones?.some(s => s.internoFormulario === internoFormulario));
   const idx = new Map<number, TiposIndexItem>();
@@ -107,40 +67,25 @@ const buildTiposIndex = async (internoFormulario: number): Promise<Map<number, T
   return idx;
 };
 
-
 const getPlanillaCuestionarios = async (internoFormulario: number, letra: 'A' | 'B' | 'C') => {
+  // Devuelve cuestionarios pertenecientes a la planilla indicada (A/B/C) para el tipo de formulario.
   const all = await cargarTipos();
   const form = all.find(f => f.secciones?.some(s => s.internoFormulario === internoFormulario));
   const secs = form?.secciones?.filter(s => (s.planilla ?? '').trim().toUpperCase() === letra) ?? [];
   return secs.flatMap(s => s.cuestionarios ?? []);
 };
+//#endregion tipos-catalogos
 
-
-
-type ApiFormularioRGRL = {
-  interno: number;
-  cuit: number;
-  razonSocial: string;
-  direccion: string | null;
-  descripcion: string | null;
-  estado: string;
-  creacionFechaHora: string | null;
-  completadoFechaHora: string | null;
-  internoFormulario: number | null;
-  internoEstablecimiento: number | null;
-  fechaSRT: string | null;
-  respuestasCuestionario: unknown[];
-  respuestasGremio: unknown[];
-  respuestasContratista: unknown[];
-  respuestasResponsable: unknown[];
-};
 
 const dt = (iso: string | null | undefined) => {
+  //#region api-mappers-loaders
+  // Helpers de formateo y funciones de carga que adaptan la API a las estructuras de UI.
   if (!iso) return '';
   const d = dayjs(iso);
   return d.isValid() ? d.format('DD-MM-YYYY HH:mm') : '';
 };
 const mapApiToUi = (r: ApiFormularioRGRL): FormularioRGRL => ({
+  // Normaliza el registro de cabecera de la API al shape de la grilla principal.
   InternoFormularioRGRL: r.interno ?? 0,
   CUIT: String(r.cuit ?? ''),
   RazonSocial: r.razonSocial ?? '',
@@ -163,7 +108,7 @@ const mapApiToUi = (r: ApiFormularioRGRL): FormularioRGRL => ({
 
 const CargarConsultaFormulariosRGRL = async (cuit: number): Promise<FormularioRGRL[]> => {
 
-
+  // GET /FormulariosRGRL/CUIT/{cuit}: obtiene lista de formularios para la grilla.
   const url = `http://arttest.intersistemas.ar:8302/api/FormulariosRGRL/CUIT/${encodeURIComponent(
     cuit
   )}`;
@@ -185,72 +130,8 @@ const CargarConsultaFormulariosRGRL = async (cuit: number): Promise<FormularioRG
 
 };
 
-
-
-
-
-type ApiFormularioDetalle = {
-  interno: number;
-  cuit: number;
-  razonSocial: string;
-  direccion: string | null;
-  descripcion: string | null;
-  estado: string;
-  creacionFechaHora: string | null;
-  completadoFechaHora: string | null;
-  internoFormulario: number | null;
-  internoEstablecimiento: number | null;
-  fechaSRT: string | null;
-  respuestasCuestionario: Array<{
-    interno: number;
-    internoCuestionario: number;
-    internoRespuestaFormulario: number;
-    respuesta: string | null;
-    fechaRegularizacion: number | null;
-    observaciones: string | null;
-    fechaRegularizacionNormal: string | null;
-  }>;
-
-
-  respuestasGremio?: Array<{ legajo?: string | number; nombre?: string }>;
-  respuestasContratista?: Array<{ cuit?: string | number; contratista?: string; nombre?: string }>;
-  respuestasResponsable?: Array<{
-    cuit?: string;
-    responsable?: string;
-    cargo?: string;
-    representacion?: string;
-    propioContratado?: string;
-    tituloHabilitante?: string;
-    matricula?: string;
-    entidadOtorganteTitulo?: string;
-  }>;
-
-
-
-};
-
-type ApiEstablecimientoEmpresa = {
-  interno: number;
-  cuit: number;
-  nroSucursal: number;
-  nombre: string;
-  domicilioCalle: string;
-  domicilioNro: string;
-  superficie: number;
-  cantTrabajadores: number;
-  estadoAccion: string;
-  estadoFecha: number;
-  estadoSituacion: string;
-  bajaMotivo: number;
-  localidad: string;
-  provincia: string;
-  codigo: number;
-  numero: number;
-  codEstabEmpresa: number;
-  ciiu: number;
-};
-
 const CargarEstablecimientosEmpresa = async (cuit: number): Promise<ApiEstablecimientoEmpresa[]> => {
+  // GET /Establecimientos/Empresa/{cuit}: datos para cabecera de impresión (establecimiento).
   const url = `http://arttest.intersistemas.ar:8302/api/Establecimientos/Empresa/${encodeURIComponent(cuit)}`;
   const res = await fetch(url, { cache: 'no-store', headers: { Accept: 'application/json' } });
   if (res.status === 404) return [];
@@ -261,50 +142,23 @@ const CargarEstablecimientosEmpresa = async (cuit: number): Promise<ApiEstableci
   return (await res.json()) as ApiEstablecimientoEmpresa[];
 };
 
-
 const mapRespuesta = (v?: string | null) =>
+  // Normaliza 'S'/'N'/'A' a 'Sí'/'No'/'No Aplica'.
   v === 'S' ? 'Sí' : v === 'N' ? 'No' : v === 'A' ? 'No Aplica' : (v ?? '');
 
-
 const normPropioContratado = (v?: string | null): 'Propio' | 'Contratado' => {
+  // Homogeneiza variantes ('contratado','externo','1','true','c') 'Contratado'; resto 'Propio'.
   const s = String(v ?? '').trim().toLowerCase();
 
   if (s === 'contratado' || s === 'c' || s === 'externo' || s === '1' || s === 'true') return 'Contratado';
   return 'Propio';
 };
 
-
-
-
-
-
-
-
-type DetallePayload = {
-  detalle: FormularioRGRLDetalle[];
-  gremios: { Legajo: string; Nombre: string }[];
-  contratistas: { CUIT: string; Contratista: string }[];
-  responsables: ResponsableItem[];
-
-  planillaA: PlanillaAItem[];
-  planillaB: PlanillaBItem[];
-  planillaC: PlanillaCItem[];
-
-  internoFormulario?: number | null;
-  internoEstablecimiento?: number | null;
-  fechaSRT?: string | null;
-
-
-};
-
-
-
-
 const CargarDetalleRGRL = async (id: number): Promise<DetallePayload> => {
+  // GET /FormulariosRGRL/{id}: arma el payload completo para impresión y vista de detalle.
   const res = await fetch(`http://arttest.intersistemas.ar:8302/api/FormulariosRGRL/${id}`, { cache: 'no-store' });
   if (!res.ok) throw new Error(`Error ${res.status}`);
   const data: ApiFormularioDetalle = await res.json();
-
 
   const idx = await buildTiposIndex(Number(data.internoFormulario ?? 1));
 
@@ -320,6 +174,7 @@ const CargarDetalleRGRL = async (id: number): Promise<DetallePayload> => {
     const key = Number(r.internoCuestionario);
     const meta = idx.get(key);
     const p = (meta?.planilla ?? '').toUpperCase();
+    // Omite cuestionarios de planillas A/B/C: se muestran en sus tabs específicos.
     if (p === 'A' || p === 'B' || p === 'C') continue;
     if (!meta || !(meta.pregunta ?? '').trim()) continue;
     items.push({
@@ -334,6 +189,7 @@ const CargarDetalleRGRL = async (id: number): Promise<DetallePayload> => {
   }
 
   const cleaned = items.filter(it =>
+    // Filtra filas vacías y mantiene únicamente las que tengan algún dato relevante.
     (it.Pregunta && it.Pregunta.trim()) ||
     (it.Respuesta && it.Respuesta.trim()) ||
     (it.FechaRegularizacion && it.FechaRegularizacion.trim()) ||
@@ -344,10 +200,6 @@ const CargarDetalleRGRL = async (id: number): Promise<DetallePayload> => {
     if (so !== 0) return so;
     return (a.Nro ?? 0) - (b.Nro ?? 0);
   });
-
-
-
-
 
   const qsA = await getPlanillaCuestionarios(Number(data.internoFormulario ?? 1), 'A');
   const planillaA: PlanillaAItem[] = qsA.map(q => ({
@@ -370,9 +222,6 @@ const CargarDetalleRGRL = async (id: number): Promise<DetallePayload> => {
     SiNo: mapRespuesta(rMap.get(Number(q.codigo))) as PlanillaCItem['SiNo'],
     NormaVigente: q.comentario ?? '',
   }));
-
-
-
 
   const gremios = (data.respuestasGremio ?? []).map(g => ({
     Legajo: String(g.legajo ?? ''),
@@ -406,68 +255,11 @@ const CargarDetalleRGRL = async (id: number): Promise<DetallePayload> => {
   };
 };
 
-
-type TabKey = 'none' | 'planillaA' | 'planillaB' | 'planillaC' | 'gremios' | 'contratistas' | 'responsables';
-
-type PlanillaAItem = { Codigo: string; Sustancia: string; SiNo: 'Sí' | 'No' | 'No Aplica' };
-
-type PlanillaCItem = { Codigo: string; Sustancia: string; SiNo: 'Sí' | 'No' | 'No Aplica'; NormaVigente: string };
-
-type PlanillaBItem = { Codigo: string; Sustancia: string; SiNo: 'Sí' | 'No' | 'No Aplica' };
-
-
-type GremioItem = { Legajo: string; Nombre: string };
-const CargarGremios = async (_interno: number): Promise<GremioItem[]> =>
-  new Promise((r) => setTimeout(() => r([
-    { Legajo: '12345', Nombre: 'Sindicato de Empleados Metalúrgicos' },
-    { Legajo: '67890', Nombre: 'Unión Obrera Textil' },
-  ]), 200));
-
-type ContratistaItem = { CUIT: string; Contratista: string };
-const CargarContratistas = async (_interno: number): Promise<ContratistaItem[]> =>
-  new Promise((r) => setTimeout(() => r([
-    { CUIT: '30-99999999-7', Contratista: 'Servicios Integrales SRL' },
-    { CUIT: '30-12345678-9', Contratista: 'Obras & Montajes SA' },
-  ]), 200));
-
-type ResponsableItem = {
-  CUITCUIL: string;
-  NombreApellido: string;
-  Cargo: string;
-  Representacion: string;
-  PropioContratado: 'Propio' | 'Contratado';
-  TituloHabilitante: string;
-  Matricula: string;
-  EntidadOtorgante: string;
-};
-
-
-const CargarResponsables = async (_interno: number): Promise<ResponsableItem[]> =>
-  new Promise((r) => setTimeout(() => r([
-    {
-      CUITCUIL: '20-14736729-6',
-      NombreApellido: 'PONCE DANIEL OSCAR',
-      Cargo: 'Responsable de los datos del formulario',
-      Representacion: 'Director General',
-      PropioContratado: 'Propio',
-      TituloHabilitante: '',
-      Matricula: '',
-      EntidadOtorgante: '',
-    },
-    {
-      CUITCUIL: '27-20304050-3',
-      NombreApellido: 'FERREYRA ANA PAULA',
-      Cargo: 'Profesional de Higiene y Seguridad',
-      Representacion: 'No especificado',
-      PropioContratado: 'Propio',
-      TituloHabilitante: 'Ing. Hig. y Seg.',
-      Matricula: 'HS-12345',
-      EntidadOtorgante: 'COHYNST',
-    },
-  ]), 250));
-
-
+//#endregion api-mappers-loaders
 const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos }) => {
+  //#region component-state-effects
+  // Estados principales: loading, lista de formularios, selección, detalle/planillas,
+  // pestañas secundarias, modales (impresión/generación), y paginación del detalle.
   const router = useRouter();
   const [loading, setLoading] = useState<boolean>(true);
   const [formulariosRGRL, setFormulariosRGRL] = useState<FormularioRGRL[]>([]);
@@ -492,8 +284,6 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
   const [openGenerar, setOpenGenerar] = useState<boolean>(false);
   const [replicaDe, setReplicaDe] = useState<number | undefined>(undefined);
 
-
-
   const isFilaVacia = (r: FormularioRGRLDetalle) =>
     !(
       (r.Pregunta && r.Pregunta.trim()) ||
@@ -507,13 +297,9 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
     () => detalle.filter(r => !isFilaVacia(r)),
     [detalle]
   );
-
-
+  // Paginación del detalle (20 filas por página).
   const [detallePage, setDetallePage] = useState<number>(1);
   const pageSize = 20;
-
-  //const totalPages = Math.max(1, Math.ceil(detalle.length / pageSize));
-  //const detallePageData = detalle.slice((detallePage - 1) * pageSize, detallePage * pageSize);
 
   const totalPages = Math.max(1, Math.ceil(detalleFiltrado.length / pageSize));
   const detallePageData = useMemo(
@@ -521,16 +307,15 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
     [detalleFiltrado, detallePage]
   );
 
-
+  // Asegura que la página actual no exceda el total de páginas al cambiar el detalle.
   useEffect(() => {
     if (detallePage > totalPages) setDetallePage(totalPages);
   }, [totalPages, detallePage]);
 
-
-
   const [cuitBusqueda, setCuitBusqueda] = useState<string>(String(cuit ?? ''));
 
   const fetchFormularios = useCallback(
+    // Busca cabeceras por CUIT; si CUIT inválido, limpia la grilla.
     async (cuitParam?: number) => {
       try {
         setLoading(true);
@@ -547,11 +332,12 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
     },
     [cuit]
   );
-
+  // Carga inicial y recarga cuando cambian "cuit" o "referenteDatos".
   useEffect(() => {
     fetchFormularios(cuit);
   }, [fetchFormularios, referenteDatos, cuit]);
 
+  // Ejecuta búsqueda por CUIT ingresado y resetea selección/tabs/detalle.
   const onBuscar = async () => {
     await fetchFormularios(Number(cuitBusqueda));
     setInternoSeleccionado(0);
@@ -562,11 +348,10 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
     setGremios([]);
     setContratistas([]);
     setResponsables([]);
-
-
   };
 
-
+  //#region table-and-handlers
+  // Definición de columnas de la grilla principal y handlers asociados.
   const tableColumns = useMemo(
     () => [
       { accessorKey: 'CUIT', header: 'CUIT' },
@@ -577,6 +362,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
       { accessorKey: 'FechaHoraCreacion', header: 'Fecha Hora Creación' },
       { accessorKey: 'FechaHoraConfirmado', header: 'Fecha Hora Confirmado' },
       {
+        // Botón "Imprimir": carga detalle + establecimientos para armar la cabecera y abre el modal.
         id: 'acciones',
         header: 'Imprimir',
         // @ts-ignore
@@ -594,8 +380,6 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
               const estab =
                 establecimientos.find(e => e.interno === Number(data.internoEstablecimiento ?? 0)) ||
                 establecimientos[0];
-
-
 
               const cabecera: CabeceraData = {
                 empresa: {
@@ -643,8 +427,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
     ],
     []
   );
-
-
+  // Re-define DataTable con tipado específico para este componente.
   const DataTable = DataTableImport as unknown as React.FC<{
     columns: any[];
     data: FormularioRGRL[];
@@ -659,15 +442,12 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
     setLoadingDetalle(true);
     setDetallePage(1);
 
-
-
     setActiveTab('none');
     setPlanillaA([]);
     setPlanillaC([]);
     setGremios([]);
     setContratistas([]);
     setResponsables([]);
-
 
     const data = await CargarDetalleRGRL(interno);
     setDetalle(data.detalle);
@@ -680,8 +460,6 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
     setPlanillaC(data.planillaC);
     setPlanillaB(data.planillaB);
 
-
-
   };
 
   const handleOpenTab = async (tab: TabKey) => {
@@ -689,28 +467,18 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
     setActiveTab(tab);
     setLoadingTab(true);
     switch (tab) {
-
-
       case 'planillaA':
       case 'planillaC':
         break;
       case 'planillaB':
         break;
-
       case 'gremios':
       case 'contratistas':
       case 'responsables':
-
         break;
-
-
-
-
     }
     setLoadingTab(false);
   };
-
-
 
   const handleClickGenerar = () => {
     setReplicaDe(undefined);
@@ -727,13 +495,12 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
     if (refrescar) await fetchFormularios(Number(cuitBusqueda) || cuit);
   };
 
-
   const handleReplicar = () => {
     if (!internoSeleccionado) return;
     setReplicaDe(internoSeleccionado);
     setOpenGenerar(true);
   };
-
+  //#endregion table-and-handlers
   const handleExportExcel = async () => {
     const columns: Record<string, TableColumn> = {
       CUIT: { header: 'CUIT', key: 'CUIT' },
@@ -757,8 +524,10 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
 
   return (
     <div>
+      {/* Contenedor principal: buscador, acciones, tabla y detalle */}
       {!cargarFormulario ? (
         <div>
+          {/* Buscador: input para CUIT y tecla Enter para buscar */}
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <input
               type="text"
@@ -779,6 +548,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
 
           <br />
 
+          {/* Acciones: editar, generar, replicar y exportar */}
           <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
             <CustomButton onClick={handleClickEditar} disabled={!internoSeleccionado}>
               EDITA FORMULARIO
@@ -793,17 +563,15 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
             <CustomButton onClick={handleExportExcel}>EXPORTAR A EXCEL</CustomButton>
           </div>
 
-
-          <div className="compactTable">
+          {/* Tabla principal: resultados de la búsqueda */}
+          <div className={styles.compactTable}>
             <DataTable columns={tableColumns} data={formulariosRGRL} onRowClick={onRowClick} enableSearch={false} />
           </div>
-
-
           {!!internoSeleccionado && (
-            <div className="tabsBar">
+            <div className={styles.tabsBar}>
 
               {totalPages > 1 && (
-                <div className="nums">
+                <div className={styles.nums}>
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
                     <CustomButton
                       key={n}
@@ -816,8 +584,8 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
                 </div>
               )}
 
-
-              <div className="pills">
+              {/* Pestanas: selección de planillas y listas auxiliares */}
+              <div className={styles.pills}>
                 {[
                   { key: 'planillaA', label: 'Planilla A' },
                   { key: 'planillaB', label: 'Planilla B' },
@@ -829,7 +597,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
                   <CustomButton
                     key={t.key}
                     onClick={() => handleOpenTab(t.key as TabKey)}
-                    className={`pill ${activeTab === (t.key as TabKey) ? 'active' : ''}`}
+                    className={`${styles.pill} ${activeTab === (t.key as TabKey) ? styles.active : ''}`}
                     style={{ padding: '6px 12px' }}
                   >
                     {t.label}
@@ -839,7 +607,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
             </div>
           )}
 
-
+          {/* Paneles de planillas y listas (se muestran cuando activeTab != 'none') */}
           {activeTab !== 'none' && (
             <div style={{ marginTop: 10 }}>
               {loadingTab ? (
@@ -848,8 +616,8 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
                 <>
                   {activeTab === 'planillaA' && (
                     <>
-                      <div className="tablaTitulo">PLANILLA A - LISTADO DE SUSTANCIAS Y AGENTES CANCERÍGENOS (Res. SRT 81/2019)</div>
-                      <table className="sheetTable">
+                      <div className={styles.tablaTitulo}>PLANILLA A - LISTADO DE SUSTANCIAS Y AGENTES CANCERÍGENOS (Res. SRT 81/2019)</div>
+                      <table className={styles.sheetTable}>
                         <thead>
                           <tr>
                             <th style={{ width: 90 }}>Código</th>
@@ -872,8 +640,8 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
 
                   {activeTab === 'planillaB' && (
                     <>
-                      <div className="tablaTitulo">PLANILLA B - DIFENILOS POLICLORADOS (Res. SRT 497/03)</div>
-                      <table className="sheetTable">
+                      <div className={styles.tablaTitulo}>PLANILLA B - DIFENILOS POLICLORADOS (Res. SRT 497/03)</div>
+                      <table className={styles.sheetTable}>
                         <thead>
                           <tr>
                             <th style={{ width: 90 }}>Código</th>
@@ -896,8 +664,8 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
 
                   {activeTab === 'planillaC' && (
                     <>
-                      <div className="tablaTitulo">PLANILLA C - SUSTANCIAS QUÍMICAS A DECLARAR (Res. SRT 743/03)</div>
-                      <table className="sheetTable">
+                      <div className={styles.tablaTitulo}>PLANILLA C - SUSTANCIAS QUÍMICAS A DECLARAR (Res. SRT 743/03)</div>
+                      <table className={styles.sheetTable}>
                         <thead>
                           <tr>
                             <th style={{ width: 90 }}>Código</th>
@@ -923,7 +691,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
                   {activeTab === 'gremios' && (
                     <>
                       <h2 style={{ textAlign: 'center' }}>Representación Gremial</h2>
-                      <table className="sheetTable">
+                      <table className={styles.sheetTable}>
                         <thead>
                           <tr>
                             <th>Nro Legajo del Gremio</th>
@@ -945,7 +713,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
                   {activeTab === 'contratistas' && (
                     <>
                       <h2 style={{ textAlign: 'center' }}>Contratistas</h2>
-                      <table className="sheetTable">
+                      <table className={styles.sheetTable}>
                         <thead>
                           <tr>
                             <th style={{ width: 160 }}>CUIT</th>
@@ -967,7 +735,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
                   {activeTab === 'responsables' && (
                     <>
                       <h2 style={{ textAlign: 'center' }}>Datos Laborales del Profesional o Responsable del Formulario</h2>
-                      <table className="sheetTable">
+                      <table className={styles.sheetTable}>
                         <thead>
                           <tr>
                             <th>CUIT/CUIL/CUIP</th>
@@ -1002,6 +770,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
             </div>
           )}
 
+          {/* Detalle principal: condiciones a cumplir y paginación del detalle */}
           {!!internoSeleccionado && activeTab === 'none' && (
             <div style={{ marginTop: 18 }}>
               <h2 style={{ textAlign: 'center', margin: '12px 0 6px' }}>CONDICIONES A CUMPLIR</h2>
@@ -1014,7 +783,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
                     No hay condiciones para mostrar.
                   </div>
                 ) : (
-                  <div className="detalleTable">
+                  <div className={styles.detalleTable}>
                     <table>
                       <thead>
                         <tr>
@@ -1040,136 +809,15 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
                   </div>
                 )
               )}
-
-
-
-
             </div>
           )}
-
-          <style jsx>{`
-            .compactTable :global(table) {
-              font-size: 12px;
-            }
-            .compactTable :global(th),
-            .compactTable :global(td) {
-              padding: 6px 8px;
-              line-height: 1.1;
-            }
-            .compactTable :global(thead th) {
-              font-weight: 600;
-              white-space: nowrap;
-            }
-            .compactTable :global(tbody td) {
-              white-space: nowrap;
-              text-overflow: ellipsis;
-              overflow: hidden;
-              max-width: 420px;
-            }
-            .compactTable :global(input[type='search']),
-            .compactTable :global(.table-search),
-            .compactTable :global(.dataTableSearch) {
-              display: none !important;
-            }
-
-            .detalleTable table {
-              width: 100%;
-              border-collapse: collapse;
-              font-size: 12px;
-            }
-            .detalleTable th,
-            .detalleTable td {
-              border: 1px solid #999;
-              padding: 6px 8px;
-            }
-            .detalleTable thead th {
-              background: #f5f5f5;
-              font-weight: 600;
-              text-transform: uppercase;
-            }
-            .categoriaHeader {
-              font-weight: 700;
-              text-align: center;
-              padding: 8px 0;
-              border: 1px solid #327016ff;
-              border-bottom: none;
-              background: #327016ff;
-              letter-spacing: 0.4px;
-              color: #fff;
-            }
-
-            .tabsBar {
-              display: flex;
-              align-items: center;
-              gap: 10px;
-              margin: 8px 0 12px;
-            }
-            .nums {
-              display: flex;
-              gap: 6px;
-            }
-            .numBtn {
-              padding: 4px 10px;
-              border-radius: 6px;
-              border: 1px solid #58b32fff;
-              background: #89d7df;
-              cursor: pointer;
-            }
-            .pills {
-              display: flex;
-              gap: 8px;
-              flex-wrap: wrap;
-            }
-            .pill {
-              padding: 6px 12px;
-              border-radius: 6px;
-              border: 1px solid #6dc6d0;
-              background: #86d6df;
-              cursor: pointer;
-            }
-            .pill.active {
-              background: #65c8d3;
-              font-weight: 700;
-            }
-            .tablaTitulo {
-              text-align: center;
-              font-weight: 700;
-              margin: 6px 0;
-              text-transform: uppercase;
-            }
-            .sheetTable {
-              width: 100%;
-              border-collapse: collapse;
-              font-size: 12px;
-            }
-            .sheetTable th,
-            .sheetTable td {
-              border: 1px solid #999;
-              padding: 6px 8px;
-            }
-            .sheetTable thead th {
-              background: #f5f5f5;
-              font-weight: 600;
-            }
-          `}</style>
         </div>
-      ) : (
+      ) : null}
 
-        <div style={{ maxWidth: 560 }}>
-          <h2>{internoSeleccionado ? `Editar Formulario #${internoSeleccionado}` : 'Nuevo Formulario RGRL'}</h2>
-          <p style={{ opacity: 0.7, marginBottom: 12 }}>
-            (Acá va tu componente de alta/edición; al guardar llamá a <code>handleFinalizaCarga(true)</code>)
-          </p>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <CustomButton onClick={() => handleFinalizaCarga(true)}>Guardar</CustomButton>
-            <CustomButton onClick={() => handleFinalizaCarga(false)}>Cancelar</CustomButton>
-          </div>
-        </div>
-      )}
-
-
+      {/* Modal de impresión: muestra la vista para imprimir */}
       {printOpen && printData && (
         <VentanaImpresionFormulario
+          // Abre ventana de impresion
           open={printOpen}
           onClose={() => { setPrintOpen(false); setPrintData(null); }}
         >
@@ -1186,13 +834,16 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
         </VentanaImpresionFormulario>
       )}
 
+      {/* Modal generar/replicar: abre el componente GenerarFormularioRGRL */}
       <CustomModal
+        //Modal generar/replicar
         open={openGenerar}
         onClose={() => setOpenGenerar(false)}
         title={replicaDe ? 'Replicar Formulario RGRL' : 'Generar Formulario RGRL'}
         size="large"
       >
         <GenerarFormularioRGRL
+          //Generar
           initialCuit={Number(cuitBusqueda) || Number(cuit) || undefined}
           replicaDe={replicaDe}
           onDone={async () => {

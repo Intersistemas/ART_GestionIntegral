@@ -1,8 +1,10 @@
 'use client';
 import React from 'react';
 import { Text, View, StyleSheet, Image } from '@react-pdf/renderer';
-// Ajustá la ruta si usás otra ubicación:
+import type { CabeceraData } from './types/impresion';
+
 const headerPng = '/images/Header.png';
+
 
 const styles = StyleSheet.create({
   cabecera: { flexDirection: 'row', marginBottom: 12 },
@@ -16,26 +18,6 @@ const styles = StyleSheet.create({
   textoCabeceraForm: { color: 'white', fontWeight: 'bold', fontSize: 12, paddingHorizontal: 4, paddingVertical: 2 },
   textoDatos: { fontSize: 10, marginBottom: 2 },
 });
-
-export type CabeceraData = {
-  empresa: {
-    razonSocial?: string;
-    cuit?: string;
-    contrato?: string;
-    ciiu?: string;
-  };
-  establecimiento: {
-    numero?: string;
-    ciiu?: string;
-    direccion?: string;
-    cp?: string;
-    localidad?: string;
-    provincia?: string;
-    superficie?: string | number;
-    cantTrabajadores?: number | string;
-  };
-  fechaSRT?: string; // DD-MM-YYYY
-};
 
 const CabeceraFormulario: React.FC<CabeceraData> = ({ empresa, establecimiento, fechaSRT }) => {
   const anexoI =

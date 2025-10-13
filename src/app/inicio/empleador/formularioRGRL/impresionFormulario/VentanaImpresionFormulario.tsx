@@ -1,17 +1,8 @@
 'use client';
 import React from 'react';
 import { PDFViewer, type DocumentProps } from '@react-pdf/renderer';
-// 👇 Preferido: usar el tipo Style de @react-pdf
 import type { Style as PDFStyle } from '@react-pdf/types';
-
-type PDFChild = React.ReactElement<DocumentProps>;
-
-type VentanaImpresionFormularioProps = {
-  open: boolean;
-  onClose: () => void;
-  title?: string;
-  children: PDFChild; // Debe ser siempre un <Document /> válido
-};
+import type { VentanaImpresionFormularioProps, PDFChild } from './types/impresion';
 
 /* ===== Estilos de elementos HTML (div/button): CSSProperties ===== */
 const overlay: React.CSSProperties = {
