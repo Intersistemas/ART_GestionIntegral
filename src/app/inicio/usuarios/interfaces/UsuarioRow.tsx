@@ -1,4 +1,4 @@
-import ITarea from "./ITarea";
+import IModulo from "./IModulo";
 
 export default interface UsuarioRow {
   id: number;
@@ -7,12 +7,14 @@ export default interface UsuarioRow {
   tipo: string;
   userName: string;
   email: string;
-  emailConfirmed: boolean;
+  estado: string;
   phoneNumber: string;
   phoneNumberConfirmed: boolean;
-  cargo: string;
+  cargoId: number;
+  cargoDescripcion: string;
   rol: string;
   empresaId: number;
-  tareas: ITarea[];
+  deletedDate: string | null;
+  modulos: IModulo[];
   // Add other fields if needed
 }

@@ -2,14 +2,13 @@
 "use client";
 
 import { createContext, useContext, ReactNode, useMemo } from 'react';
-import { Usuario } from '@/data/usuarioAPI'; // usa la Interface que declaro rodri
+import { Modulo, Usuario, Tarea } from '@/data/usuarioAPI'; // usa la Interface que declaro rodri
 import { useSession } from 'next-auth/react';
 
 interface AuthContextType {
     session: any;
     status: 'loading' | 'authenticated' | 'unauthenticated';
     user: Usuario | null; 
-
     hasTask: (taskName: string) => boolean;
 }
 
@@ -23,20 +22,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     // Verificación de si el usuario está autenticado
     const isAuthenticated = status === 'authenticated';
+    const userModules: Modulo[] = user?.modulos || [];
+    const userTasks: Tarea[] = userModules.map(m => m?.tareas).flat() || [];
+
 
     const hasTask = (taskName: string): boolean => {
-
             
         if (isAuthenticated && user) {
             const userRol = user.rol || '';
             // Si tiene el rol "Administrador", siempre permite el acceso.
-            if (userRol == "Administrador") {
+            if (userRol?.toLowerCase() == "administrador") {
                 return true;
             }
 
             // Si no es Administrador, verifica la tarea específica.
-            const userTasks = user.tareas || [];
-            return userTasks.includes(taskName);
+            return userTasks.some(tarea => tarea.tareaDescripcion.toLowerCase() === taskName.toLowerCase());
         }
 
         return false;

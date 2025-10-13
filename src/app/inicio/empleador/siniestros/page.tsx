@@ -1,143 +1,162 @@
-"use client";
-import React, { useMemo } from 'react';
-import DataTable from '@/utils/ui/table/DataTable'; // ⚠️ Asegúrate que esta ruta es correcta
-import { ColumnDef } from '@tanstack/react-table';
-import { BsPencilSquare } from 'react-icons/bs'; // Para el ícono de 'Evoluciones'
-import { Box, Typography, TextField, InputAdornment } from '@mui/material';
+'use client';
 
-// ⚠️ Define una interfaz para los datos de siniestros
-interface Siniestro {
-    cuil: number;
-    apellidoNombre: string;
-    establecimiento: string;
-    nroSiniestro: string;
-    tipoSiniestro: string;
-    fechaSiniestroPMI: string;
-    diagnostico: string;
-    categoria: string;
-    proximoControlMedico: string;
-    prestadorInicial: string;
-    fechaAltaMedica: string;
-    evoluciones: string; // Se usará para el botón/ícono
-}
+import React, { useEffect, useMemo, useState } from 'react';
+import dayjs from 'dayjs';
+import 'dayjs/locale/es';
 
-// ----------------------------------------------------
-// 2. DATOS DE EJEMPLO (GENERADOS A PARTIR DE LA IMAGEN)
-// ----------------------------------------------------
-const siniestrosData: Siniestro[] = [
-    {
-        cuil: 20391913200,
-        apellidoNombre: 'MONTERO, PABLO EMANUEL',
-        establecimiento: 'TRES MARIAS S.A - BONPLAND - CTES.',
-        nroSiniestro: '202200009800',
-        tipoSiniestro: 'AccidenteTrabajo',
-        fechaSiniestroPMI: '18-03-2022, 18:30 pm',
-        diagnostico: 'CONTUSION DE LA RODILLA',
-        categoria: 'CB',
-        proximoControlMedico: '18-04-2022',
-        prestadorInicial: 'CLINICA MADARIAGA S R L - BARTOLOME MITRE 876 - PASO DE LOS LIBRES - CTES.',
-        fechaAltaMedica: '18-04-2022',
-        evoluciones: 'Ver',
-    },
-    {
-        cuil: 26321154809,
-        apellidoNombre: 'MIYO, RAMON FORTUNATO',
-        establecimiento: 'TRES MARIAS S.A - BONPLAND - CTES.',
-        nroSiniestro: '202200009900',
-        tipoSiniestro: 'AccidenteTrabajo',
-        fechaSiniestroPMI: '12-10-2022, 10:10 am',
-        diagnostico: 'CONTUSION DE DEDO(S) DE LA MANO, SIN DAÑO DE UÑA(S), UÑA(S)',
-        categoria: 'CB',
-        proximoControlMedico: '20-01-2023',
-        prestadorInicial: 'CLINICA MADARIAGA S R L - BARTOLOME MITRE 876 - PASO DE LOS LIBRES - CTES.',
-        fechaAltaMedica: '20-01-2023',
-        evoluciones: 'Ver',
-    },
-    {
-        cuil: 20181642859,
-        apellidoNombre: 'ZARATE, RAMON ANDRES',
-        establecimiento: 'TRES MARIAS S.A - BONPLAND - CTES.',
-        nroSiniestro: '202300009500',
-        tipoSiniestro: 'AccidenteTrabajo',
-        fechaSiniestroPMI: '24-05-2023, 16:00 pm',
-        diagnostico: 'ESGUINCES Y TORCEDURAS DE OTRAS PARTES Y DE LAS NO ESPECIFICADAS DE LA RODILLA',
-        categoria: 'CB',
-        proximoControlMedico: '03-07-2023',
-        prestadorInicial: 'CLINICA MADARIAGA S R L - BARTOLOME MITRE 876 - PASO DE LOS LIBRES - CTES.',
-        fechaAltaMedica: '03-07-2023',
-        evoluciones: 'Ver',
-    },
-    {
-        cuil: 20391913200,
-        apellidoNombre: 'MONTERO, PABLO EMANUEL',
-        establecimiento: 'TRES MARIAS S.A - BONPLAND - CTES.',
-        nroSiniestro: '202300010900',
-        tipoSiniestro: 'AccidenteTrabajo',
-        fechaSiniestroPMI: '07-06-2023, 16:00 pm',
-        diagnostico: 'ESGUINCES Y TORCEDURAS DE LA COLUMNA LUMBAR',
-        categoria: 'CB',
-        proximoControlMedico: '03-07-2023',
-        prestadorInicial: 'CLINICA MADARIAGA S R L - BARTOLOME MITRE 876 - PASO DE LOS LIBRES - CTES.',
-        fechaAltaMedica: '03-07-2023',
-        evoluciones: 'Ver',
-    },
+import gestionEmpleadorAPI from '@/data/gestionEmpleadorAPI';
+import { token } from '@/data/usuarioAPI';
+import type { Parameters } from '@/app/inicio/empleador/cobertura/types/persona';
+
+import DataTable from '@/utils/ui/table/DataTable';
+import type { ColumnDef } from '@tanstack/react-table';
+
+
+import CondicionesTabla from './table';
+import type { SiniestroItem, InstanciaSiniestro } from './types/tipos';
+
+
+const fmtDateTime = (v?: string | null) => {
+  if (!v) return '';
+  const d = dayjs(v);
+  return d.isValid() ? d.format('DD-MM-YYYY, HH:mm') : '';
+};
+const fmtDate = (v?: string | null) => {
+  if (!v) return '';
+  const d = dayjs(v);
+  return d.isValid() ? d.format('DD-MM-YYYY') : '';
+};
+
+const cols: ColumnDef<SiniestroItem>[] = [
+  { header: 'CUIL', accessorKey: 'trabCUIL' },
+  {
+    header: 'Apellido y Nombre',
+    accessorKey: 'trabNombre',
+    cell: ({ getValue }) => String(getValue() ?? '').trim(),
+  },
+  { header: 'Establecimiento', accessorKey: 'establecimiento' },
+  { header: 'Nº Siniestro', accessorKey: 'siniestroNro' },
+  {
+    header: 'Tipo',
+    accessorKey: 'tipoSiniestro',
+    cell: ({ getValue }) => String(getValue() ?? '').trim(),
+  },
+  {
+    header: 'Fecha y Hora Siniestro',
+    accessorKey: 'siniestroFechaHora',
+    cell: ({ getValue }) => fmtDateTime(getValue() as string | null),
+  },
+  { header: 'Diagnóstico', accessorKey: 'diagnostico' },
+  {
+    header: 'Categoría',
+    accessorKey: 'siniestroCategoria',
+    cell: ({ getValue }) => String(getValue() ?? '').trim(),
+  },
+  {
+    header: 'Próx. Control Médico',
+    accessorKey: 'proximoControlMedicoFechaHora',
+    cell: ({ getValue }) => fmtDateTime(getValue() as string | null),
+  },
+  { header: 'Prestador inicial', accessorKey: 'prestador' },
+  {
+    header: 'Alta Médica',
+    accessorKey: 'altaMedicaFecha',
+    cell: ({ getValue }) => fmtDate(getValue() as string | null),
+  },
 ];
 
-// ----------------------------------------------------
-// 3. DEFINICIÓN DE COLUMNAS
-// ----------------------------------------------------
-function SiniestrosPage() {
 
-    // ⚠️ Estado para la búsqueda (opcional, pero útil)
-    const [searchTerm, setSearchTerm] = React.useState(''); 
+export default function SiniestrosPage() {
+  const [selectedDenuncia, setSelectedDenuncia] = useState<number | null>(null);
 
-    const columns: ColumnDef<Siniestro>[] = useMemo(() => [
-        { header: 'CUIL', accessorKey: 'cuil', cell: info => info.getValue() },
-        { header: 'Apellido_Nombre', accessorKey: 'apellidoNombre' },
-        { header: 'Establecimiento', accessorKey: 'establecimiento' },
-        { header: 'Nro. Siniestro', accessorKey: 'nroSiniestro' },
-        { header: 'Tipo de Siniestro', accessorKey: 'tipoSiniestro' },
-        { header: 'Fecha Siniestro PMI', accessorKey: 'fechaSiniestroPMI' },
-        { header: 'Diagnóstico', accessorKey: 'diagnostico' },
-        { header: 'Categoría', accessorKey: 'categoria' },
-        { header: 'Próximo Control Médico', accessorKey: 'proximoControlMedico' },
-        { header: 'Prestador Inicial', accessorKey: 'prestadorInicial' },
-        { header: 'Fecha Alta Médica', accessorKey: 'fechaAltaMedica' },
-        { 
-            header: 'Evoluciones', 
-            accessorKey: 'evoluciones',
-            // 🟢 Renderizado de celda para mostrar un botón/ícono
-            cell: () => (
-                <button 
-                    title="Ver Evoluciones"
-                    style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-                    onClick={() => alert("Mostrando evoluciones...")}
-                >
-                    <BsPencilSquare style={{ fontSize: '1.2rem', color: 'var(--naranja)' }} />
-                </button>
-            ),
-            enableSorting: false,
-            size: 50, // Columna más angosta
-        },
-    ], []);
 
-    return (
-        <div style={{ padding: '20px' }}>
-            <Typography variant="h3" component="h1" gutterBottom style={{ fontWeight: 'bold' }}>
-                Control de Siniestros
-            </Typography>
+  const params: Parameters = {};
 
-            {/* -------------------- TABLA DE SINIESTROS -------------------- */}
-            <DataTable
-                data={siniestrosData} 
-                columns={columns} 
-                size="mid"
-                isLoading={false}
-                // Aquí podrías agregar lógica para filtrar los datos con searchTerm
-                // filterCriteria={searchTerm} 
-            />
-        </div>
-    )
+
+  const { data, error, isLoading } =
+    gestionEmpleadorAPI.useGetVEmpleadorSiniestros(params);
+
+  const {
+    data: instanciasData,
+    isLoading: isLoadingInst,
+    error: errorInst,
+  } = gestionEmpleadorAPI.useGetVEmpleadorSiniestrosInstancias(
+    selectedDenuncia != null ? ({ Denuncia: selectedDenuncia } as any) : ({} as any)
+  );
+
+  // Log con token enmascarado y URL (debug)
+  const url = useMemo(
+    () => gestionEmpleadorAPI.getVEmpleadorSiniestrosURL(params),
+    [params]
+  );
+  useEffect(() => {
+    const raw = token.getToken?.();
+    const masked =
+      typeof raw === 'string'
+        ? `Bearer ${raw.slice(0, 6)}…${raw.slice(-6)}`
+        : '(objeto/token compuesto)';
+    console.log('[GET] VEmpleadorSiniestros →', { url, params, tokenPreview: masked });
+  }, [url, params]);
+
+  // Filas principales
+  const rows: SiniestroItem[] = useMemo(
+    () => (Array.isArray(data) ? data : []),
+    [data]
+  );
+
+  // Carga instancias de esa denuncia
+  const handleRowClick = (row: SiniestroItem) => {
+    const den = Number(row.denunciaNro ?? 0);
+    if (den) setSelectedDenuncia(den);
+  };
+
+  const instanciasRows: InstanciaSiniestro[] = useMemo(() => {
+    if (!Array.isArray(instanciasData)) return [];
+    return (instanciasData as any[]).map((it) => ({
+      denunciaNro: Number(it.denunciaNro ?? 0),
+      fechaHoraInstancia: it.fechaHoraInstancia ?? null,
+      tipoInstancia: typeof it.tipoInstancia === 'string' ? it.tipoInstancia.trim() : it.tipoInstancia ?? null,
+      comentarioInstancia: typeof it.comentarioInstancia === 'string' ? it.comentarioInstancia.trim() : it.comentarioInstancia ?? null,
+      estadoInstancia: typeof it.estadoInstancia === 'string' ? it.estadoInstancia.trim() : it.estadoInstancia ?? null,
+      proximoControlMedicoFechaHora: it.proximoControlMedicoFechaHora ?? null,
+    }));
+  }, [instanciasData]);
+
+  const hasAnyDetalle = instanciasRows.length > 0;
+
+  return (
+    <div style={{ padding: 16 }}>
+
+      {error && (
+        <p style={{ color: 'crimson' }}>
+          {String((error as any)?.message ?? error)}
+        </p>
+      )}
+
+      <DataTable<SiniestroItem>
+        data={rows}
+        columns={cols}
+        isLoading={isLoading}
+        size="mid"
+        onRowClick={handleRowClick}
+      />
+
+      {/* Panel inferior*/}
+      {selectedDenuncia != null && (
+        <>
+          {errorInst && (
+            <p style={{ color: 'crimson' }}>
+              {String((errorInst as any)?.message ?? errorInst)}
+            </p>
+          )}
+
+          <CondicionesTabla
+            rows={instanciasRows}
+            loading={isLoadingInst}
+            hasAny={hasAnyDetalle}
+          />
+        </>
+      )}
+    </div>
+  );
 }
-
-export default SiniestrosPage;

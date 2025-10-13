@@ -8,7 +8,6 @@ export { default } from "next-auth/middleware";
 // Si una ruta requiere una tarea, agrégala aquí.
 // Si no, no la incluyas.
 const permissionMap: { [key: string]: string | null } = {
-  "/inicio": "Inicio",
   "/inicio/favoritos": "Favoritos",
   "/inicio/empleador/poliza": "empleador_Poliza",
   "/inicio/empleador/cobertura": "empleador_Cobertura",
@@ -28,37 +27,51 @@ const permissionMap: { [key: string]: string | null } = {
   "/inicio/usuarios": "Usuarios",
 };
 
+type Task = {
+  id: number;
+  tareaDescripcion: string;
+  habilitada: boolean;
+};
+
+type Module = {
+  id: number;
+  codigo: number;
+  nombre: string;
+  habilitado: boolean;
+  tareas: Task[]; 
+};
+
 export async function middleware(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   const { pathname } = req.nextUrl;
 
-  
+  console.log("token_login",token)
   // 1. Redirección de autenticación 
   if (!token && pathname.startsWith('/inicio')) {
     return NextResponse.redirect(new URL('/login', req.url));
   }
 
-  // 2. Control de Roles
-  const userRol = (token as any)?.user?.rol || [];
- 
+  // 2. Control de Roles, Modulos y Tareas
+  const userRol = (token as any)?.user?.rol || "";
+  const userModules: Module[] = (token as any)?.user?.modulos || [];
+  const userTasks: Task[] = userModules.map(m => m?.tareas).flat() || [];
 
-  if (userRol == 'Administrador') {
+  if (userRol?.toLowerCase() == 'administrador') { // Si es Admin, acceso ilimitado
         return NextResponse.next();
-    }
+  }
+
 
   // 3. Control de permisos
   if (token && pathname.startsWith('/inicio')) {
     const requiredTask = permissionMap[pathname];
     
-    // Si la ruta no está en el mapa, o no requiere una tarea,
-    // significa que no hay restricciones de permisos, así que se permite el acceso.
+    // Si la ruta no está en el mapa, o no requiere una tarea, significa que no hay restricciones de permisos, así que se permite el acceso.
     if (!requiredTask) {
         return NextResponse.next();
     }
-    
+
     // Si la ruta requiere una tarea, verifica si el usuario la tiene
-    const userTasks = (token as any)?.user?.tareas || [];
-    if (!userTasks.includes(requiredTask)) {
+    if (!userTasks.some(tarea => tarea.tareaDescripcion.toLowerCase() === requiredTask.toLowerCase())) {
         // Redirige a una página de "acceso denegado"
         return NextResponse.redirect(new URL('/accesoDenegado', req.url));
     }
