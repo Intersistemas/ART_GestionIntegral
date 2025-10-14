@@ -33,6 +33,8 @@ import type {
   ResponsableItem,
   DetallePayload
 } from './types/rgrl';
+import { AiOutlinePrinter } from "react-icons/ai";
+
 
 let _tiposCache: ApiTiposFormularios | null = null;
 //#region tipos-catalogos
@@ -360,6 +362,11 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
       { accessorKey: 'Estado', header: 'Estado' },
       { accessorKey: 'FechaHoraCreacion', header: 'Fecha Hora Creación' },
       { accessorKey: 'FechaHoraConfirmado', header: 'Fecha Hora Confirmado' },
+
+
+
+
+
       {
         // Botón "Imprimir": carga detalle + establecimientos para armar la cabecera y abre el modal.
         id: 'acciones',
@@ -373,9 +380,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
               if (!interno) return;
 
               const data = await CargarDetalleRGRL(interno);
-
               const establecimientos = await CargarEstablecimientosEmpresa(Number(row.original.CUIT));
-
               const estab =
                 establecimientos.find(e => e.interno === Number(data.internoEstablecimiento ?? 0)) ||
                 establecimientos[0];
@@ -417,10 +422,13 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
               });
               setPrintOpen(true);
             }}
+            title="Imprimir formulario"
+            style={{ padding: 6 }}
           >
-            Imprimir
+            <AiOutlinePrinter size={20} />
           </CustomButton>
         ),
+
         enableSorting: false,
       },
     ],
