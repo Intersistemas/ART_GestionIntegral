@@ -1,6 +1,10 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+//import { Box, Grid, TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
+import { TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { useSearchParams, useRouter } from 'next/navigation';
 import CustomButton from '@/utils/ui/button/CustomButton';
 import CustomModal from '@/utils/ui/form/CustomModal';
@@ -104,7 +108,7 @@ const GenerarFormularioRGRL: React.FC<{
   }, [search, isModal]);
 
   const [original, setOriginal] = useState<FormularioVm | null>(null);
-   // Marca si el flujo actual es de réplica
+  // Marca si el flujo actual es de réplica
   const esReplica = Boolean(replicaDe || replicaDeQuery || original);
 
   const [loading, setLoading] = useState(false);
@@ -380,8 +384,8 @@ const GenerarFormularioRGRL: React.FC<{
   }, [idFromQuery, isModal, cargarPaso2]);
 
   const tipoDeEsteFormulario = useMemo(() => {
-    
-  // Obtiene el tipo de formulario actual según 'interno'
+
+    // Obtiene el tipo de formulario actual según 'interno'
     if (!form || !tipos?.length) return undefined;
     return tipos.find((t) => t.interno === form.internoFormulario);
   }, [form, tipos]);
@@ -659,22 +663,31 @@ const GenerarFormularioRGRL: React.FC<{
               <tbody>
                 {gremiosUI.map((g, i) => (
                   <tr key={i}>
+
+
                     <td className={styles.tdPad4}>
-                      <input
+                      <TextField
                         type="number"
                         value={g.legajo ?? 0}
                         onChange={(e) => changeRow(setGremiosUI, i, 'legajo', Number(e.target.value || 0))}
-                        style={{ width: '100%' }}
+                        fullWidth
                       />
                     </td>
+
+
+
+
                     <td className={styles.tdPad4}>
-                      <input
-                        type="text"
+                      <TextField
                         value={g.nombre ?? ''}
                         onChange={(e) => changeRow(setGremiosUI, i, 'nombre', e.target.value)}
-                        style={{ width: '100%' }}
+                        fullWidth
                       />
                     </td>
+
+
+
+
                     <td><CustomButton onClick={() => removeRow(setGremiosUI, i)}>−</CustomButton></td>
                   </tr>
                 ))}
@@ -698,22 +711,35 @@ const GenerarFormularioRGRL: React.FC<{
               <tbody>
                 {contratistasUI.map((c, i) => (
                   <tr key={i}>
+
+
+
+
                     <td className={styles.tdPad4}>
-                      <input
+                      <TextField
                         type="number"
                         value={c.cuit ?? 0}
                         onChange={(e) => changeRow(setContratistasUI, i, 'cuit', Number(e.target.value || 0))}
-                        style={{ width: '100%' }}
+                        fullWidth
                       />
                     </td>
+
+
+
+
+
                     <td className={styles.tdPad4}>
-                      <input
-                        type="text"
+                      <TextField
                         value={c.contratista ?? ''}
                         onChange={(e) => changeRow(setContratistasUI, i, 'contratista', e.target.value)}
-                        style={{ width: '100%' }}
+                        fullWidth
                       />
                     </td>
+
+
+
+
+
                     <td><CustomButton onClick={() => removeRow(setContratistasUI, i)}>−</CustomButton></td>
                   </tr>
                 ))}
@@ -743,46 +769,65 @@ const GenerarFormularioRGRL: React.FC<{
               <tbody>
                 {responsablesUI.map((r, i) => (
                   <tr key={i}>
+
+
+
+
                     <td className={styles.tdPad4}>
-                      <input
+                      <TextField
                         type="number"
                         value={r.cuit ?? 0}
                         onChange={(e) => changeRow(setResponsablesUI, i, 'cuit', Number(e.target.value || 0))}
-                        style={{ width: '100%' }}
+                        fullWidth
                       />
                     </td>
+
+
+
                     <td className={styles.tdPad4}>
-                      <input
-                        type="text"
+                      <TextField
                         value={r.responsable ?? ''}
                         onChange={(e) => changeRow(setResponsablesUI, i, 'responsable', e.target.value)}
-                        style={{ width: '100%' }}
+                        fullWidth
                       />
                     </td>
+
+
+
+
                     <td className={styles.tdPad4}>
-                      <input
-                        type="text"
+                      <TextField
                         value={r.cargo ?? ''}
                         onChange={(e) => changeRow(setResponsablesUI, i, 'cargo', e.target.value)}
-                        style={{ width: '100%' }}
+                        fullWidth
                       />
                     </td>
+
+
+
+
                     <td className={styles.tdPad4}>
-                      <input
+                      <TextField
                         type="number"
                         value={r.representacion ?? 0}
                         onChange={(e) => changeRow(setResponsablesUI, i, 'representacion', Number(e.target.value || 0))}
-                        style={{ width: '100%' }}
+                        fullWidth
                       />
                     </td>
+
+
+
                     <td className={styles.tdPad4}>
-                      <input
+                      <TextField
                         type="number"
                         value={r.esContratado ?? 0}
                         onChange={(e) => changeRow(setResponsablesUI, i, 'esContratado', Number(e.target.value || 0))}
-                        style={{ width: '100%' }}
+                        fullWidth
                       />
                     </td>
+
+
+
                     <td className={styles.tdPad4}>
                       <input
                         type="text"
@@ -839,107 +884,170 @@ const GenerarFormularioRGRL: React.FC<{
   return (
     <div className={styles.container}>
       {/* Carga de datos inicial y botones para crear/replicar el formulario. */}
-      <div className={styles.row}>
-        <label className={styles.label}>CUIT:</label>
-        <input
-          type="text"
+
+
+
+
+
+
+
+      <Box
+        sx={{
+          mb: 2,
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', sm: '1fr auto' },
+          gap: 2,
+          alignItems: 'center',
+        }}
+      >
+        <TextField
+          label="CUIT"
           value={cuit ? String(cuit) : ''}
           onChange={(e) => setCuit(Number(e.target.value.replace(/[^\d]/g, '')) || undefined)}
           placeholder="Ingresá CUIT"
-          className={styles.input}
-          style={{ width: 220 }}
+          inputProps={{ inputMode: 'numeric' }}
+          fullWidth
         />
         <CustomButton onClick={cargarTodoPaso1} disabled={!canBuscar}>
           CARGAR
         </CustomButton>
-      </div>
+      </Box>
 
-      <div className={styles.row}>
-        <label className={styles.label}>Razón Social:</label>
-        <input
-          type="text"
+
+
+
+
+
+
+
+      <Box sx={{ mb: 2 }}>
+        <TextField
+          label="Razón Social"
           value={razonSocial}
-          readOnly
           placeholder="Sin datos"
-          className={`${styles.input} ${styles.inputFull}`}
+          fullWidth
+          InputProps={{ readOnly: true }}
         />
-      </div>
+      </Box>
 
-      <div className={styles.row}>
-        <label className={styles.label}>Notificación Fecha:</label>
-        <input
+
+
+
+      <Box sx={{ mb: 2, maxWidth: 360 }}>
+        <TextField
+          label="Notificación Fecha"
           type="date"
           value={notificacionFecha}
           onChange={(e) => setNotificacionFecha(e.target.value)}
-          className={styles.date}
+          fullWidth
+          InputLabelProps={{ shrink: true }}
         />
-      </div>
+      </Box>
 
-      <div className={styles.row}>
-        <label className={styles.label}>Establecimiento:</label>
-        <select
-          value={establecimientoSel ?? ''}
-          onChange={(e) => setEstablecimientoSel(Number(e.target.value) || undefined)}
-          className={`${styles.select} ${styles.inputFull}`}
-        >
-          <option value="" disabled>Seleccioná...</option>
-          {establecimientos.map((e) => (
-            <option key={e.interno} value={e.interno}>
-              {labelEst(e)}
-            </option>
-          ))}
-        </select>
-      </div>
+
+
+
+
+      <Box sx={{ mb: 2 }}>
+        <FormControl fullWidth>
+          <InputLabel>Establecimiento</InputLabel>
+          <Select
+            label="Establecimiento"
+            value={establecimientoSel ?? ''}
+            onChange={(e) => setEstablecimientoSel(Number(e.target.value) || undefined)}
+
+            MenuProps={{
+              PaperProps: {
+                sx: {
+                  height: 'auto',
+                  maxHeight: 320,
+                  overflowY: 'auto',
+                },
+              },
+            }}
+
+          >
+            <MenuItem value="" disabled>
+              Seleccioná...
+            </MenuItem>
+            {establecimientos.map((e) => (
+              <MenuItem key={e.interno} value={e.interno}>
+                {labelEst(e)}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
+
+
+
+
+
+
       {estActual && (
-        <div className={styles.grid3}>
-          <div>
-            <label className={styles.subLabel}>Superficie</label>
-            <input
-              type="text"
-              value={estActual.superficie ?? ''}
-              readOnly
-              className={styles.inputRead}
-            />
-          </div>
-          <div>
-            <label className={styles.subLabel}>Cant. Trabajadores</label>
-            <input
-              type="text"
-              value={estActual.cantTrabajadores ?? ''}
-              readOnly
-              className={styles.inputRead}
-            />
-          </div>
-          <div>
-            <label className={styles.subLabel}>CIIU</label>
-            <input
-              type="text"
-              value={estActual.ciiu ?? ''}
-              readOnly
-              className={styles.inputRead}
-            />
-          </div>
-        </div>
-      )}
-      <div className={styles.row}>
-        <label className={styles.label}>Formulario:</label>
-        <select
-          value={tipoSel ?? ''}
-          onChange={(e) => setTipoSel(Number(e.target.value) || undefined)}
-          disabled={esReplica}
-          title={esReplica ? 'Tipo fijado por replicación' : undefined}
-          className={`${styles.select} ${styles.inputFull}`}
+        <Box
+          sx={{
+            mb: 2,
+            display: 'grid',
+            gap: 2,
+            gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+          }}
         >
-          <option value="" disabled>Selecciona</option>
-          {tipos.map((t) => (
-            <option key={t.interno} value={t.interno}>{t.descripcion}</option>
-          ))}
-        </select>
-      </div>
-      <div className={styles.rowTopSpace}>
+          <TextField
+            label="Superficie"
+            value={estActual.superficie ?? ''}
+            fullWidth
+            InputProps={{ readOnly: true }}
+          />
+          <TextField
+            label="Cant. Trabajadores"
+            value={estActual.cantTrabajadores ?? ''}
+            fullWidth
+            InputProps={{ readOnly: true }}
+          />
+          <TextField
+            label="CIIU"
+            value={estActual.ciiu ?? ''}
+            fullWidth
+            InputProps={{ readOnly: true }}
+          />
+        </Box>
+      )}
+
+
+
+
+
+
+      <Box sx={{ mb: 2 }}>
+        <FormControl fullWidth disabled={esReplica} title={esReplica ? 'Tipo fijado por replicación' : undefined}>
+          <InputLabel>Formulario</InputLabel>
+          <Select
+            label="Formulario"
+            value={tipoSel ?? ''}
+            onChange={(e) => setTipoSel(Number(e.target.value) || undefined)}
+          >
+            <MenuItem value="" disabled>Seleccioná</MenuItem>
+            {tipos.map((t) => (
+              <MenuItem key={t.interno} value={t.interno}>{t.descripcion}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
+
+
+
+
+
+
+      <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
         <CustomButton onClick={() => router.back()}>VOLVER</CustomButton>
         <CustomButton onClick={crearFormulario} disabled={!cuit}>CREAR FORMULARIO</CustomButton>
-      </div>
+      </Box>
+
+
+
+
     </div>
   );
 };
