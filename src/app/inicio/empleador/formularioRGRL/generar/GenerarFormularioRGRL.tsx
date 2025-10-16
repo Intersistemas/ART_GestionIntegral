@@ -122,10 +122,23 @@ const GenerarFormularioRGRL: React.FC<{
   const [tipoSel, setTipoSel] = useState<number | undefined>(undefined);
   const [notificacionFecha, setNotificacionFecha] = useState<string>('');
 
+  const [estSuperficie, setEstSuperficie] = useState<number | string>('');
+  const [estCantTrab, setEstCantTrab] = useState<number | string>('');
+
   const estActual = useMemo(
     () => establecimientos.find((e) => e.interno === establecimientoSel),
     [establecimientos, establecimientoSel]
   );
+
+  useEffect(() => {
+    if (estActual) {
+      setEstSuperficie(estActual.superficie ?? 0);
+      setEstCantTrab(estActual.cantTrabajadores ?? 0);
+    } else {
+      setEstSuperficie('');
+      setEstCantTrab('');
+    }
+  }, [estActual]);
 
   const labelEst = (e: Establecimiento) => {
     const num = e.numero ?? e.nroSucursal;
@@ -211,6 +224,31 @@ const GenerarFormularioRGRL: React.FC<{
     setLoading(true);
     setError('');
     try {
+
+      // Actualiza Superficie y Cant. Trabajadores del Establecimiento antes de crear el formulario
+     {
+       const payloadEst = {
+         superficie: Number(estSuperficie) || 0,
+         cantTrabajadores: Number(estCantTrab) || 0,
+       };
+       const respEst = await fetch(`${API_BASE}/Establecimientos/${establecimientoSel}`, {
+         method: 'PATCH', // cambialo a 'PUT' si tu API lo requiere
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify(payloadEst),
+       });
+       const rawEst = await respEst.text().catch(() => '');
+       if (!respEst.ok) throw new Error(`Actualizar establecimiento -> ${respEst.status} ${rawEst}`);
+       // reflejamos en memoria
+       setEstablecimientos(prev =>
+         prev.map(e =>
+           e.interno === establecimientoSel
+             ? { ...e, superficie: payloadEst.superficie, cantTrabajadores: payloadEst.cantTrabajadores }
+             : e
+         )
+       );
+     }
+
+
       const payload = {
         internoFormulario: tipoSel!,
         internoEstablecimiento: establecimientoSel!,
@@ -673,10 +711,6 @@ const GenerarFormularioRGRL: React.FC<{
                         fullWidth
                       />
                     </td>
-
-
-
-
                     <td className={styles.tdPad4}>
                       <TextField
                         value={g.nombre ?? ''}
@@ -993,18 +1027,28 @@ const GenerarFormularioRGRL: React.FC<{
             gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
           }}
         >
+
+
           <TextField
             label="Superficie"
-            value={estActual.superficie ?? ''}
+            type="number"
+            value={estSuperficie}
+            onChange={(e) => setEstSuperficie(e.target.value)}
             fullWidth
-            InputProps={{ readOnly: true }}
+            inputProps={{ inputMode: 'numeric' }}
           />
           <TextField
             label="Cant. Trabajadores"
-            value={estActual.cantTrabajadores ?? ''}
+            type="number"
+            value={estCantTrab}
+            onChange={(e) => setEstCantTrab(e.target.value)}
             fullWidth
-            InputProps={{ readOnly: true }}
+            inputProps={{ inputMode: 'numeric' }}
           />
+
+
+
+
           <TextField
             label="CIIU"
             value={estActual.ciiu ?? ''}
