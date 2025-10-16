@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import UsuarioForm, { UsuarioFormFields } from "./UsuarioForm";
 import UsuarioTable from "./UsuarioTable";
 import Tareas from "./Tareas";
@@ -26,7 +26,7 @@ interface PermisosModulo {
 }
 
 export default function UsuariosPage() {
-  const { user } = useAuth();
+  const { user } = useAuth(); 
 
   const initialForm: UsuarioFormFields = { 
     cuit: "",

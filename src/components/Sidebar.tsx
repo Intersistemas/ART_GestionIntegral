@@ -37,7 +37,7 @@ const menuItems: MenuItem[] = [
         icon: BsBriefcaseFill,
         permissionTask: "Empleador",
         children: [
-            { name: "Póliza", icon: BsFileText, link: "/inicio/empleador/poliza"},
+            { name: "Póliza", icon: BsFileText, link: "/inicio/empleador/poliza", permissionTask: "empleador_Poliza"},
             { name: "Cobertura", icon: BsCardChecklist, link: "/inicio/empleador/cobertura", permissionTask: "empleador_Cobertura"},
             { name: "Cuenta Corriente", icon: BsGraphUpArrow, link: "/inicio/empleador/cuentaCorriente", permissionTask: "empleador_CuentaCorriente" },
             { name: "Formulario RGRL", icon: BsClipboard2Data, link: "/inicio/empleador/formularioRGRL", permissionTask: "empleador_FormularioRGRL" },

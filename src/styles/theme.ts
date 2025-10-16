@@ -100,16 +100,6 @@ const theme = createTheme({
               borderColor: naranja,
             },
           },
-           '& .MuiInputLabel-root': {
-            color: verdeOscuro,
-            fontSize: '1.4rem',
-            backgroundColor: blanco,
-            padding: '0% 2%',
-          },
-          '& .MuiInputLabel-root.Mui-focused': {
-            color: naranjaOscuro,
-            fontSize: '1.4rem',
-          },
           '& .MuiFormHelperText-root': {
             fontSize: '1rem',
             lineHeight: '1',
@@ -118,10 +108,26 @@ const theme = createTheme({
       },
     },
     
+     MuiInputLabel: {
+      styleOverrides: {
+        root: { //LABEL CUANDO NO TIENE CONTENIDO EL ENTRY
+            color: verdeOscuro,
+            fontSize: 'smaller',
+            fontWeight: "bold",
+            //backgroundColor: blanco, lo quito por ahora
+            paddingRight: '1%',
+                   
+          },
+        shrink: {  //SOLO PARA QUE APLIQUE AL LABEL CUANDO ESTA ENCIMA
+          fontSize: 'medium',
+        },
+        },
+      },
+
     MuiInputBase: { 
       styleOverrides: {
         root: {
-          fontSize: '1.8rem',
+          fontSize: '1.5rem',
         },
       },
     },

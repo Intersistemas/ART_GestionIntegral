@@ -14,6 +14,12 @@ const formatTitleFromPath = (pathname: string): string => {
   if (pathname === '/inicio') {
     return 'Inicio';
   }
+
+  if (pathname === '/inicio/empleador/poliza') {
+    return 'Póliza';
+  }
+
+
   const parts = pathname.split('/').filter(Boolean);
   const lastPart = parts[parts.length - 1];
   if (!lastPart) {
@@ -51,7 +57,7 @@ export default function ClientLayoutWrapper({ children }: { children: React.Reac
   if (status === "unauthenticated" || !session) {
     return null;
   }
-  
+    
   return (
     <>
       <Navbar />
