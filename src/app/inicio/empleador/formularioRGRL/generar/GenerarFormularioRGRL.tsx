@@ -232,7 +232,7 @@ const GenerarFormularioRGRL: React.FC<{
          cantTrabajadores: Number(estCantTrab) || 0,
        };
        const respEst = await fetch(`${API_BASE}/Establecimientos/${establecimientoSel}`, {
-         method: 'PATCH', // cambialo a 'PUT' si tu API lo requiere
+         method: 'PATCH',
          headers: { 'Content-Type': 'application/json' },
          body: JSON.stringify(payloadEst),
        });
