@@ -5,7 +5,7 @@ import type { CabeceraData } from './types/impresion';
 
 const headerPng = '/images/Header.png';
 
-
+//Estilos del PDF
 const styles = StyleSheet.create({
   cabecera: { flexDirection: 'row', marginBottom: 12 },
   imagen: { height: 40, width: 125, marginRight: 12 },
@@ -20,6 +20,7 @@ const styles = StyleSheet.create({
 });
 
 const CabeceraFormulario: React.FC<CabeceraData> = ({ empresa, establecimiento, fechaSRT }) => {
+  //Anexo y leyes
   const anexoI =
     'El presente relevamiento deberá ser completado obligatoriamente en todos sus campos por el empleador oprofesional responsable, revistiendo los datos allí consignados carácter de declaración jurada. El relevamiento deberá ser realizado para cada uno de los establecimientos que disponga la empresa. Para los empleadores cuya actividad se desarrolle en embarcaciones, las mismas serán consideradas como establecimientos.';
   const ley19587 =
