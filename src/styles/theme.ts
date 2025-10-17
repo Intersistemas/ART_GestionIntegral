@@ -75,8 +75,6 @@ const theme = createTheme({
     fontFamily: font,
   },
 
-  //MuiInputBase-root-MuiInput-root
-
   components: {
     MuiFormControl: {
       styleOverrides: {
@@ -115,8 +113,7 @@ const theme = createTheme({
             fontSize: 'smaller',
             fontWeight: "bold",
             //backgroundColor: blanco, lo quito por ahora
-            paddingRight: '1%',
-                   
+            left: '-2px',       
           },
         shrink: {  //SOLO PARA QUE APLIQUE AL LABEL CUANDO ESTA ENCIMA
           fontSize: 'medium',
@@ -127,7 +124,7 @@ const theme = createTheme({
     MuiInputBase: { 
       styleOverrides: {
         root: {
-          fontSize: '1.5rem',
+          fontSize: '1.6rem',
         },
       },
     },

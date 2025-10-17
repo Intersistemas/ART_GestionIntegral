@@ -529,7 +529,7 @@ export default function UsuarioForm({
                   <Select
                     name="cargoId"
                     value={form.cargoId}
-                    label="Cargo"
+                    label="Cargo/Función..."
                     onChange={handleCargoChange}
                     onBlur={() => handleBlur("cargoId")}
                   >
