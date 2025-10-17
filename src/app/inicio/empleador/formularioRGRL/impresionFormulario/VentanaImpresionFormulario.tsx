@@ -4,7 +4,7 @@ import { PDFViewer, type DocumentProps } from '@react-pdf/renderer';
 import type { Style as PDFStyle } from '@react-pdf/types';
 import type { VentanaImpresionFormularioProps, PDFChild } from './types/impresion';
 
-/* ===== Estilos de elementos HTML (div/button): CSSProperties ===== */
+// Estilos de elementos HTML (div/button): CSSProperties 
 const overlay: React.CSSProperties = {
   position: 'fixed',
   inset: 0,
@@ -51,11 +51,10 @@ const body: React.CSSProperties = {
   background: '#f8f8f8',
 };
 
-/* ===== Estilo del PDFViewer: usar tipo Style de @react-pdf ===== */
+//Estilo del PDFViewer: usar tipo Style de @react-pdf 
 const viewerStyle: PDFStyle = {
   width: '100%',
   height: '100%',
-  // ¡No usar propiedades CSS no soportadas por react-pdf como borderStyle!
 };
 
 const VentanaImpresionFormulario: React.FC<VentanaImpresionFormularioProps> = ({
@@ -77,7 +76,7 @@ const VentanaImpresionFormulario: React.FC<VentanaImpresionFormularioProps> = ({
         </div>
         <div style={body}>
           {/* PDFViewer requiere children = <Document /> */}
-          <PDFViewer style={viewerStyle /* si te falla el import del tipo, hacé: as any */}>
+          <PDFViewer style={viewerStyle /* si falla el import del tipo, hacé: as any */}>
             {children}
           </PDFViewer>
         </div>

@@ -9,7 +9,6 @@ import VentanaImpresionFormulario from './impresionFormulario/VentanaImpresionFo
 import ImpresionFormulario from './impresionFormulario/ImpresionFormulario';
 import type { CabeceraData } from './impresionFormulario/types/impresion';
 
-
 import CustomModal from '@/utils/ui/form/CustomModal';
 import GenerarFormularioRGRL from './generar/GenerarFormularioRGRL';
 
@@ -34,6 +33,8 @@ import type {
   ResponsableItem,
   DetallePayload
 } from './types/rgrl';
+import { FaRegFilePdf } from "react-icons/fa";
+
 
 let _tiposCache: ApiTiposFormularios | null = null;
 //#region tipos-catalogos
@@ -361,67 +362,80 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
       { accessorKey: 'Estado', header: 'Estado' },
       { accessorKey: 'FechaHoraCreacion', header: 'Fecha Hora Creación' },
       { accessorKey: 'FechaHoraConfirmado', header: 'Fecha Hora Confirmado' },
+
       {
-        // Botón "Imprimir": carga detalle + establecimientos para armar la cabecera y abre el modal.
         id: 'acciones',
-        header: 'Imprimir',
-        // @ts-ignore
-        cell: ({ row }) => (
-          <CustomButton
-            onClick={async (e: any) => {
-              e.stopPropagation?.();
-              const interno = Number(row.original.InternoFormularioRGRL || 0);
-              if (!interno) return;
+        header: 'Impresion',
+        //@ts-ignore
+        cell: ({ row }) => {
+          const onClick = async (e: any) => {
+            e.stopPropagation?.();
+            const interno = Number(row.original.InternoFormularioRGRL || 0);
+            if (!interno) return;
 
-              const data = await CargarDetalleRGRL(interno);
+            const data = await CargarDetalleRGRL(interno);
+            const establecimientos = await CargarEstablecimientosEmpresa(Number(row.original.CUIT));
+            const estab =
+              establecimientos.find(e => e.interno === Number(data.internoEstablecimiento ?? 0)) ||
+              establecimientos[0];
 
-              const establecimientos = await CargarEstablecimientosEmpresa(Number(row.original.CUIT));
+            const cabecera: CabeceraData = {
+              empresa: {
+                razonSocial: row.original.RazonSocial,
+                cuit: row.original.CUIT,
+                contrato: '',
+                ciiu: estab?.ciiu != null ? String(estab.ciiu) : '',
+              },
+              establecimiento: {
+                numero: estab ? String(estab.numero || estab.codigo || estab.codEstabEmpresa || '') : '',
+                ciiu: estab?.ciiu != null ? String(estab.ciiu) : '',
+                direccion: estab ? `${estab.domicilioCalle ?? ''} ${estab.domicilioNro ?? ''}`.trim() : row.original.Establecimiento,
+                cp: '',
+                localidad: estab?.localidad ?? '',
+                provincia: estab?.provincia ?? '',
+                superficie: estab?.superficie != null ? String(estab.superficie) : '',
+                cantTrabajadores: estab?.cantTrabajadores != null ? String(estab.cantTrabajadores) : '',
+              },
+              fechaSRT: data.fechaSRT ?? '',
+            };
 
-              const estab =
-                establecimientos.find(e => e.interno === Number(data.internoEstablecimiento ?? 0)) ||
-                establecimientos[0];
+            setPrintData({
+              cabecera,
+              detalle: (data.detalle ?? []).filter(r =>
+                (r.Pregunta?.trim()) ||
+                (r.Respuesta?.trim()) ||
+                (r.FechaRegularizacion?.trim()) ||
+                (r.NormaVigente?.trim())
+              ),
+              planillaA: data.planillaA,
+              planillaB: data.planillaB,
+              planillaC: data.planillaC,
+              gremios: data.gremios,
+              contratistas: data.contratistas,
+              responsables: data.responsables,
+            });
+            setPrintOpen(true);
+          };
 
-              const cabecera: CabeceraData = {
-                empresa: {
-                  razonSocial: row.original.RazonSocial,
-                  cuit: row.original.CUIT,
-                  contrato: '',
-                  ciiu: estab?.ciiu != null ? String(estab.ciiu) : '',
-                },
-                establecimiento: {
-                  numero: estab ? String(estab.numero || estab.codigo || estab.codEstabEmpresa || '') : '',
-                  ciiu: estab?.ciiu != null ? String(estab.ciiu) : '',
-                  direccion: estab ? `${estab.domicilioCalle ?? ''} ${estab.domicilioNro ?? ''}`.trim() : row.original.Establecimiento,
-                  cp: '',
-                  localidad: estab?.localidad ?? '',
-                  provincia: estab?.provincia ?? '',
-                  superficie: estab?.superficie != null ? String(estab.superficie) : '',
-                  cantTrabajadores: estab?.cantTrabajadores != null ? String(estab.cantTrabajadores) : '',
-                },
-                fechaSRT: data.fechaSRT ?? '',
-              };
+          const onEnter = (e: React.MouseEvent<SVGSVGElement>) => {
+            (e.currentTarget as SVGElement).style.opacity = '0.85';
+          };
+          const onLeave = (e: React.MouseEvent<SVGSVGElement>) => {
+            (e.currentTarget as SVGElement).style.opacity = '1';
+          };
 
-              setPrintData({
-                cabecera,
-                detalle: (data.detalle ?? []).filter(r =>
-                  (r.Pregunta?.trim()) ||
-                  (r.Respuesta?.trim()) ||
-                  (r.FechaRegularizacion?.trim()) ||
-                  (r.NormaVigente?.trim())
-                ),
-                planillaA: data.planillaA,
-                planillaB: data.planillaB,
-                planillaC: data.planillaC,
-                gremios: data.gremios,
-                contratistas: data.contratistas,
-                responsables: data.responsables,
-              });
-              setPrintOpen(true);
-            }}
-          >
-            Imprimir
-          </CustomButton>
-        ),
+          return (
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', alignItems: 'center' }}>
+              <FaRegFilePdf 
+                title="Imprimir"
+                onClick={onClick}
+                onMouseEnter={onEnter}
+                onMouseLeave={onLeave}
+                style={{ fontSize: '20px', color: '#E4840C', cursor: 'pointer', transition: 'opacity 0.2s ease' }}
+              />
+            </div>
+          );
+        },
         enableSorting: false,
       },
     ],
