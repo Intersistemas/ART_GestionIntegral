@@ -3,7 +3,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { useState, Dispatch, SetStateAction } from 'react';
 import { usePathname } from 'next/navigation';
-import { BsFillStarFill, BsLayoutSplit, BsBriefcaseFill, BsPenFill, BsPersonFillGear, BsFolder, BsHouseGear, BsCalendar2Plus, BsBarChartLineFill, BsList, BsChevronDown, BsChevronRight, BsTerminal, BsFileText, BsCreditCard, BsCardChecklist, BsGraphUpArrow, BsClipboard2Data } from 'react-icons/bs';
+import { BsFillStarFill, BsLayoutSplit, BsBriefcaseFill, BsPersonFillGear, BsFolder, BsHouseGear, BsCalendar2Plus, BsBarChartLineFill, BsList, BsChevronDown, BsChevronRight, BsFileText, BsCardChecklist, BsGraphUpArrow, BsClipboard2Data } from 'react-icons/bs';
 import { FaFileInvoiceDollar } from "react-icons/fa6";
 import { IconType } from 'react-icons';
 import { Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Collapse } from '@mui/material';
@@ -54,7 +54,7 @@ const menuItems: MenuItem[] = [
         permissionTask: "Comercializador",
         children: [
             { name: "Cuenta Corriente", icon: BsGraphUpArrow, link: "/inicio/comercializador/cuentaCorriente", permissionTask: "Comercializador_CuentaCorriente" },
-            { name: "Polizas", icon: BsList, link: "/inicio/comercializador/polizas",permissionTask: "Comercializador_Polizas" },
+            { name: "Polizas", icon: BsFileText, link: "/inicio/comercializador/polizas",permissionTask: "Comercializador_Polizas" },
         ],
     },
     {
@@ -69,8 +69,8 @@ const menuItems: MenuItem[] = [
         permissionTask: "Informes",
         children: [
             { name: "Comisiones Médicas", icon: BsGraphUpArrow, link: "/inicio/informes/comisionesMedicas", permissionTask: "Informes_ComisionesMedicas" },
-            { name: "Siniestros", icon: BsList, link: "/inicio/informes/siniestros", permissionTask: "Informes_Siniestros" },
-            { name: "Atención Al Público", icon: BsList, link: "/inicio/informes/atencionAlPublico", permissionTask: "Informes_AtencionAlPublico" },
+            { name: "Siniestros", icon: BsGraphUpArrow, link: "/inicio/informes/siniestros", permissionTask: "Informes_Siniestros" },
+            { name: "Atención Al Público", icon: BsGraphUpArrow, link: "/inicio/informes/atencionAlPublico", permissionTask: "Informes_AtencionAlPublico" },
         ],
     },
     {

@@ -19,7 +19,7 @@
 }
 
 .tableHead {
-  background-color: var(--verdeOscuro) !important;
+  background-color: var(--verde) !important;
 }
 
 .tableHeaderCell {
@@ -146,3 +146,26 @@
     text-align: center;
 }
 
+.align-left {
+    text-align: left !important;
+}
+
+.align-center {
+    text-align: center !important;
+}
+
+.align-right {
+    text-align: right !important;
+}
+
+.align-justify {
+    text-align: justify !important;
+}
+
+.tableHeaderCell.align-center > div {
+    justify-content: center !important;
+}
+
+.tableHeaderCell.align-right > div {
+    justify-content: flex-end !important;
+}

@@ -1,0 +1,66 @@
+/* src/utils/tab/CustomTab.module.css */
+
+.tabsContainer {
+  /* Opcional: Puedes dar estilo al contenedor de toda la barra de Tabs */
+  border-bottom: 1px solid var(--grisClaro);
+  
+}
+
+.customTabsBar {
+
+}
+
+/* MUI utiliza la propiedad 'color' para el indicador en lugar de 'background-color'
+  Se requiere un selector más específico para garantizar la sobrescritura, 
+  ya que Material UI genera clases dinámicas.
+  En Next.js con CSS Modules, a veces necesitas el selector global :global() o 
+  simplemente apuntar a la clase generada por MUI que siempre es la misma: MuiTabs-indicator
+*/
+.customTabsBar :global(.MuiTabs-indicator) {
+  background: var(--naranja) !important; /* Fuerza el color de la línea activa */
+  height: 3px !important; 
+}
+
+
+/* --- Estilos para cada Tab individual (el <Tab> de MUI) --- */
+.customTab {
+  box-shadow: 0 3px 4px 2px rgba(0, 0, 0, 0.5) !important;
+  border-radius: 8px 8px 0 0 !important;
+  margin-top: 0.2% !important;
+  /* Fuente, tamaño y peso definidos en  globals.css */
+  font-family: var(--font) !important;
+  font-size: 1.6rem !important; /* Más grande que tu font-size base de 1.5rem para destacar */
+  font-weight: 700 !important;
+
+  /* Color por defecto de la pestaña (no seleccionada) */
+  color: var(--blanco) !important; 
+  background: var(--verde) !important; 
+  opacity: 1 !important; /* Asegura que no tenga transparencia por defecto */
+  
+  /* Relleno */
+  padding: 1rem 2rem !important;
+  min-width: 120px !important; /* Asegura un ancho mínimo para pestañas pequeñas */
+  text-transform: none !important; /* Quita el MAYÚSCULAS por defecto de MUI */
+}
+
+.customTab:global(.Mui-selected) {
+    /* Usa background: para sobrescribir cualquier background-color o background-image */
+   background: linear-gradient(to top, var(--verdeClaro) 5%, var(--verde) 60%) !important;
+   margin-top: 0% !important;
+}
+
+
+
+.customTab:hover {
+  background: var(--verdeClaro) !important; /* Fondo suave al pasar el ratón */
+}
+
+
+
+
+
+/* --- Estilos para el Panel de Contenido de la pestaña --- */
+.tabPanel {
+  /* Aquí puedes aplicar estilos al área de contenido, como un ligero margen superior */
+  margin-top: 1rem;
+}

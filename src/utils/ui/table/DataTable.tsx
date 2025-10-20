@@ -1,7 +1,8 @@
+//src/utils/ui/table/DataTable.tsx
+
 "use client";
-import React, { useState, useEffect, useMemo } from "react"; // Añadido useMemo
+import React, { useState, useEffect, useMemo } from "react";
 import {
-    // ... imports de TanStack/React-Table
     useReactTable,
     getCoreRowModel,
     getPaginationRowModel,
@@ -16,7 +17,6 @@ import {
     HeaderContext,
     CellContext,
 } from "@tanstack/react-table";
-// ... imports de Material UI y estilos ...
 import {
     Table,
     TableHead,
@@ -41,6 +41,11 @@ import {
     LastPage,
 } from "@mui/icons-material";
 import styles from "./DataTable.module.css";
+
+// TIPO PARA ACCEDER A LA PROPIEDAD 'meta' CON ALINEACIÓN
+type ColumnMeta = {
+    align?: 'left' | 'center' | 'right' | 'justify';
+};
 
 
 interface DataTableProps<TData extends object> {
@@ -72,7 +77,6 @@ export function DataTable<TData extends object>({
     onRowSelectionChange,
 }: DataTableProps<TData>) {
 
-    // ... (Inicialización de props resueltas y useStates) ...
     const defaultProps = {
         mid: {
             pageSizeOptions: [10, 20, 30, 40, 50],
@@ -98,25 +102,21 @@ export function DataTable<TData extends object>({
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
     const [globalFilter, setGlobalFilter] = useState('');
     const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
-    // Usar initialRowSelection solo al montar:
     const [rowSelection, setRowSelection] = useState<RowSelectionState>(initialRowSelection);
 
 
     const handleRowSelectionChange = (updater: RowSelectionState | ((old: RowSelectionState) => RowSelectionState)) => {
         setRowSelection(updater);
-        // Descomenta si necesitas depuración de estado:
-        // console.log('HANDLER CHANGE: Estado de rowSelection actualizado.');
     };
     
-    // Columna de selección con el manejo manual del header (mantenido)
-    const selectionColumn: ColumnDef<TData> = {
+    // Columna de selección con la alineación definida en meta
+    const selectionColumn: ColumnDef<TData, unknown> = {
         id: 'select',
         header: ({ table }: HeaderContext<TData, unknown>) => ( 
             <Checkbox
                 checked={table.getIsAllRowsSelected()} 
                 indeterminate={table.getIsSomeRowsSelected()}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    // console.log('HEADER CHECKBOX: Clic en el header. Nuevo estado:', e.target.checked);
                     table.toggleAllRowsSelected(e.target.checked); 
                 }}
                 className={styles.selectionCheckbox}
@@ -133,6 +133,10 @@ export function DataTable<TData extends object>({
                 }}
             />
         ),
+        // Usamos meta para la alineación
+        meta: {
+            align: 'center', 
+        },
         size: 50,
         minSize: 50,
         maxSize: 50,
@@ -142,11 +146,12 @@ export function DataTable<TData extends object>({
 
     const finalColumns = useMemo(() => enableRowSelection
         ? [selectionColumn, ...columns]
-        : columns, [enableRowSelection, columns]); // Estabilizar finalColumns
+        : columns, [enableRowSelection, columns]);
 
     const table = useReactTable({
         data,
-        columns: finalColumns,
+        // Casteamos para que useReactTable acepte el tipo de columna
+        columns: finalColumns as ColumnDef<TData, any>[],
         state: {
             sorting,
             columnFilters,
@@ -174,25 +179,21 @@ export function DataTable<TData extends object>({
     // #1. useEffect para notificar al padre (solo depende de rowSelection y el callback estabilizado)
     useEffect(() => {
         if (onRowSelectionChange) {
-            // Obtenemos las filas seleccionadas *sincrónicamente* del modelo de la tabla
             const selectedRows = table.getSelectedRowModel().flatRows.map(row => row.original);
             console.log('USE EFFECT (CALLBACK): Filas seleccionadas (Callback al padre):', selectedRows.length);
             onRowSelectionChange(selectedRows);
         }
-    }, [rowSelection, onRowSelectionChange, data.length]); // Añadimos data.length como una dependencia proxy estable.
+    }, [rowSelection, onRowSelectionChange, data.length]);
 
 
     // #2. useEffect para manejar la visibilidad de la columna 'select'
     useEffect(() => {
         const selectColumn = table.getColumn('select');
         if (selectColumn) {
-            // Utilizamos el método seguro toggleVisibility
             selectColumn.toggleVisibility(enableRowSelection);
         }
-    }, [enableRowSelection]); // Dependencia más limpia
+    }, [enableRowSelection]);
 
-
-    // ... (Resto del JSX de la tabla) ...
     // Determinación de clases CSS
     const cellPaddingClass = size === 'small' ? styles.smallCell : styles.midCell;
     const headerPaddingClass = size === 'small' ? styles.smallHeader : styles.midHeader;
@@ -214,26 +215,34 @@ export function DataTable<TData extends object>({
                     <TableHead className={`${styles.tableHead}`}>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
-                                {headerGroup.headers.map((header) => (
-                                    <TableCell
-                                        key={header.id}
-                                        colSpan={header.colSpan}
-                                        className={`${styles.tableHeaderCell} ${headerPaddingClass}`}
-                                        // Clic para sorting (excluyendo la columna de selección)
-                                        onClick={resolvedProps.enableSorting && header.id !== 'select' ? header.column.getToggleSortingHandler() : undefined}
-                                        // Estilo de cursor condicional usando sx para el cursor
-                                        sx={{ cursor: (resolvedProps.enableSorting && header.id !== 'select') ? 'pointer' : 'default' }} 
-                                    >
-                                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                            {header.isPlaceholder ? null : (
-                                                flexRender(header.column.columnDef.header, header.getContext())
-                                            )}
-                                            {resolvedProps.enableSorting && header.column.getIsSorted() && (
-                                                header.column.getIsSorted() === 'asc' ? <ArrowUpward className={styles.sortIcon} /> : <ArrowDownward className={styles.sortIcon} />
-                                            )}
-                                        </Box>
-                                    </TableCell>
-                                ))}
+                                {headerGroup.headers.map((header) => {
+                                    // 1. Obtener la alineación y crear la clase dinámica
+                                    const meta = header.column.columnDef.meta as ColumnMeta | undefined;
+                                    const align = meta?.align || 'left';
+                                    const alignClass = styles[`align-${align}`] || styles['align-left'];
+
+                                    return (
+                                        <TableCell
+                                            key={header.id}
+                                            colSpan={header.colSpan}
+                                            // APLICAR CLASE DE ALINEACIÓN
+                                            className={`${styles.tableHeaderCell} ${headerPaddingClass} ${alignClass}`}
+                                            // Clic para sorting (excluyendo la columna de selección)
+                                            onClick={resolvedProps.enableSorting && header.id !== 'select' ? header.column.getToggleSortingHandler() : undefined}
+                                            // Estilo de cursor DEBE USARSE INLINE o 'style', ya que 'sx' se removió
+                                            style={{ cursor: (resolvedProps.enableSorting && header.id !== 'select') || onRowClick || enableRowSelection ? 'pointer' : 'default' }} 
+                                        >
+                                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                {header.isPlaceholder ? null : (
+                                                    flexRender(header.column.columnDef.header, header.getContext())
+                                                )}
+                                                {resolvedProps.enableSorting && header.column.getIsSorted() && (
+                                                    header.column.getIsSorted() === 'asc' ? <ArrowUpward className={styles.sortIcon} /> : <ArrowDownward className={styles.sortIcon} />
+                                                )}
+                                            </Box>
+                                        </TableCell>
+                                    );
+                                })}
                             </TableRow>
                         ))}
                     </TableHead>
@@ -261,17 +270,25 @@ export function DataTable<TData extends object>({
                                         setSelectedRowId(row.id);
                                         onRowClick?.(row.original);
                                     }}
-                                    sx={{ cursor: 'pointer' }}
+                                    // ELIMINAMOS EL SX Y USAMOS STYLE PARA EL CURSOR
+                                    style={{ cursor: onRowClick || enableRowSelection ? 'pointer' : 'default' }}
                                 >
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell
-                                            key={cell.id}
-                                            // Aplicación de clases CSS modular
-                                            className={`${styles.tableBodyCell} ${cellPaddingClass} ${row.id === selectedRowId ? styles.selectedCell : ''}`}
-                                        >
-                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                        </TableCell>
-                                    ))}
+                                    {row.getVisibleCells().map((cell) => {
+                                        // 1. Obtener la alineación y crear la clase dinámica
+                                        const meta = cell.column.columnDef.meta as ColumnMeta | undefined;
+                                        const align = meta?.align || 'left';
+                                        const alignClass = styles[`align-${align}`] || styles['align-left'];
+
+                                        return (
+                                            <TableCell
+                                                key={cell.id}
+                                                // APLICAR CLASE DE ALINEACIÓN
+                                                className={`${styles.tableBodyCell} ${cellPaddingClass} ${row.id === selectedRowId ? styles.selectedCell : ''} ${alignClass}`}
+                                            >
+                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                            </TableCell>
+                                        );
+                                    })}
                                 </TableRow>
                             ))
                         ) : (

@@ -159,15 +159,6 @@ const FormulariosRAR: React.FC = () => {
     setViewMode('editar');
   };
 
-  const handleClickCerrar = () => {
-    try {
-      window.history.back();
-      window.close();
-    } catch {
-      // no-op en ambientes donde no se pueda cerrar
-    }
-  };
-
   const seleccionaRegistro = (internoFormRAR: number, internoEstab: number, estadoSel: string) => {
     setInternoFormularioRAR(internoFormRAR);
     setInternoEstablecimiento(internoEstab);
@@ -362,8 +353,6 @@ const FormulariosRAR: React.FC = () => {
     <div>
       {viewMode === 'list' ? (
         <div>
-          <h1>Consulta de Formularios RAR</h1>
-
           <div className={`${styles.flex} ${styles.gap12} ${styles.mb16}`}>
             <CustomButton onClick={handleEdita} disabled={disableEdita}>
               Editar
@@ -371,7 +360,6 @@ const FormulariosRAR: React.FC = () => {
             <CustomButton onClick={handleClickNuevo} disabled={disableGenera}>
               Generar formulario
             </CustomButton>
-            <CustomButton onClick={handleClickCerrar}>Finaliza</CustomButton>
           </div>
 
           <div className={styles.compactTable}>

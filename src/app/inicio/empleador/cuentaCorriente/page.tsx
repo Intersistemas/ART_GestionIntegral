@@ -4,11 +4,12 @@ import DataTable from '@/utils/ui/table/DataTable';
 import CustomButton from '@/utils/ui/button/CustomButton';
 import { ColumnDef } from '@tanstack/react-table';
 import { Box, Typography, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import CustomTab from '@/utils/ui/tab/CustomTab';
 
 // ----------------------------------------------------
-// 1. INTERFAZ DE DATOS (Basada en la tabla adjunta de Cuenta Corriente)
+// 1. INTERFAZ DE DATOS (Basada en la tabla adjunta de Cuenta Corriente y la tabla de DDJJ)
 // ----------------------------------------------------
-interface CuentaCorrienteRegistro {
+type CuentaCorrienteRegistro = {
     periodoCobertura: string;
     periodoDDJJ: string;
     fechaPresentacion: string;
@@ -27,6 +28,17 @@ interface CuentaCorrienteRegistro {
     totalPagadoCuota: number;
     saldoMensual: number;
 }
+
+type DDJJRegistro = {
+    periodoDDJJ: string;
+    presentacion: string;	
+    tipo: string;	
+    alicFija: string; 	
+    alicVariable: string;
+    cantTrabajadores: string;
+    masaSalarial: string;
+}
+
 
 // ----------------------------------------------------
 // 2. DATOS DE EJEMPLO (GENERADOS A PARTIR DE LA IMAGEN)
@@ -79,6 +91,64 @@ const cuentaCorrienteData: CuentaCorrienteRegistro[] = [
     },
 ];
 
+
+const ddjjData: DDJJRegistro[] = [
+    {
+        periodoDDJJ: '202503',
+        presentacion: '2025-04-10',	
+        tipo: 'O',	
+        alicFija: '0,00', 	
+        alicVariable: '3,20',
+        cantTrabajadores: '360',
+        masaSalarial: '405.991.711,64',
+    },
+    {
+        periodoDDJJ: '202504',
+        presentacion: '2025-05-11',	
+        tipo: 'O',	
+        alicFija: '0,00', 	
+        alicVariable: '3,20',
+        cantTrabajadores: '360',
+        masaSalarial: '243.613.956,84',
+    },
+    {
+        periodoDDJJ: '202505',
+        presentacion: '2025-06-07',	
+        tipo: 'O',	
+        alicFija: '0,00', 	
+        alicVariable: '3,20',
+        cantTrabajadores: '340',
+        masaSalarial: '272.474.094,31',
+    },
+    {
+        periodoDDJJ: '202506',
+        presentacion: '2025-07-11',	
+        tipo: 'O',	
+        alicFija: '0,00', 	
+        alicVariable: '3,20',
+        cantTrabajadores: '320',
+        masaSalarial: '343.711.403,75',
+    },
+    {
+        periodoDDJJ: '202507',
+        presentacion: '2025-08-09',	
+        tipo: 'R',	
+        alicFija: '0,00', 	
+        alicVariable: '3,20',
+        cantTrabajadores: '290',
+        masaSalarial: '278.051.489,13',
+    },
+    {
+        periodoDDJJ: '202508',
+        presentacion: '2025-09-10',	
+        tipo: 'R',	
+        alicFija: '0,00', 	
+        alicVariable: '3,20',
+        cantTrabajadores: '270',
+        masaSalarial: '264.725.031,59',
+    }
+]
+
 // Función auxiliar para formatear a moneda
 const formatCurrency = (value: number | string) => {
     const num = typeof value === 'string' ? parseFloat(value) : value;
@@ -96,22 +166,22 @@ const formatCurrency = (value: number | string) => {
 function CuentaCorrientePage() {
 
     const columns: ColumnDef<CuentaCorrienteRegistro>[] = useMemo(() => [
-        { header: 'Período Cobertura', accessorKey: 'periodoCobertura' },
-        { header: 'Período DDJJ', accessorKey: 'periodoDDJJ' },
-        { header: 'Fecha de Presentación', accessorKey: 'fechaPresentacion' },
-        { header: 'Tipo', accessorKey: 'tipo' },
-        { header: 'Masa Salarial', accessorKey: 'masaSalarial', cell: info => formatCurrency(info.getValue() as number) },
-        { header: 'Cant. Trabajadores', accessorKey: 'cantTrabajadores' },
-        { header: 'Alic. Fija', accessorKey: 'alicFija' },
-        { header: 'Alic. Var.', accessorKey: 'alicVar' },
-        { header: 'Alic. Fija + FFEP Declarado', accessorKey: 'alicFijaFFEPDeclarado' },
-        { header: 'Alic. Var. Declarada', accessorKey: 'alicVarDeclarado' },
-        { header: 'Premio A Pagar', accessorKey: 'premioAPagar', cell: info => formatCurrency(info.getValue() as number) },
-        { header: 'Deducción Devengado', accessorKey: 'deduccionDevengado', cell: info => formatCurrency(info.getValue() as number) },
-        { header: 'Total FFEP', accessorKey: 'totalFFEP', cell: info => formatCurrency(info.getValue() as number) },
-        { header: 'Total S/RES', accessorKey: 'totalSRES', cell: info => formatCurrency(info.getValue() as number) },
-        { header: 'Total Cuota a Pagar', accessorKey: 'totalCuotaAPagar', cell: info => formatCurrency(info.getValue() as number) },
-        { header: 'Total Pagado Cuota', accessorKey: 'totalPagadoCuota', cell: info => formatCurrency(info.getValue() as number) },
+        { header: 'Período Cobertura', accessorKey: 'periodoCobertura', meta: { align: 'center'} },
+        { header: 'Período DDJJ', accessorKey: 'periodoDDJJ', meta: { align: 'center'} },
+        { header: 'Fecha de Presentación', accessorKey: 'fechaPresentacion', meta: { align: 'center'} },
+        { header: 'Tipo', accessorKey: 'tipo', meta: { align: 'center'} },
+        { header: 'Masa Salarial', accessorKey: 'masaSalarial', cell: info => formatCurrency(info.getValue() as number), meta: { align: 'center'} },
+        { header: 'Cant. Trabajadores', accessorKey: 'cantTrabajadores', meta: { align: 'center'} },
+        { header: 'Alic. Fija', accessorKey: 'alicFija', meta: { align: 'center'} },
+        { header: 'Alic. Var.', accessorKey: 'alicVar', meta: { align: 'center'} },
+        { header: 'Alic. Fija + FFEP Declarado', accessorKey: 'alicFijaFFEPDeclarado', meta: { align: 'center'} },
+        { header: 'Alic. Var. Declarada', accessorKey: 'alicVarDeclarado', meta: { align: 'center'} },
+        { header: 'Premio A Pagar', accessorKey: 'premioAPagar', cell: info => formatCurrency(info.getValue() as number), meta: { align: 'center'} },
+        { header: 'Deducción Devengado', accessorKey: 'deduccionDevengado', cell: info => formatCurrency(info.getValue() as number), meta: { align: 'center'} },
+        { header: 'Total FFEP', accessorKey: 'totalFFEP', cell: info => formatCurrency(info.getValue() as number), meta: { align: 'center'} },
+        { header: 'Total S/RES', accessorKey: 'totalSRES', cell: info => formatCurrency(info.getValue() as number), meta: { align: 'center'} },
+        { header: 'Total Cuota a Pagar', accessorKey: 'totalCuotaAPagar', cell: info => formatCurrency(info.getValue() as number), meta: { align: 'center'} },
+        { header: 'Total Pagado Cuota', accessorKey: 'totalPagadoCuota', cell: info => formatCurrency(info.getValue() as number), meta: { align: 'center'} },
         { header: 'Saldo Mensual', accessorKey: 'saldoMensual', 
           cell: info => {
             const saldo = info.getValue() as number;
@@ -119,40 +189,58 @@ function CuentaCorrientePage() {
             const style = saldo < 0 ? { color: 'red', fontWeight: 'bold' } : {};
             return <span style={style}>{formatCurrency(saldo)}</span>;
           }
-        },
+        , meta: { align: 'center'} },
     ], []);
 
-    const [periodoFiltro, setPeriodoFiltro] = useState('Todos'); 
+    const columnsDDJJ: ColumnDef<DDJJRegistro>[] = useMemo(() => [
+        { header: 'Período DDJJ', accessorKey: 'periodoDDJJ', meta: { align: 'center'} },
+        { header: 'Presentación', accessorKey: 'presentacion', meta: { align: 'center'} },
+        { header: 'Tipo', accessorKey: 'tipo', meta: { align: 'center'} },
+        { header: 'Alic. Fija', accessorKey: 'alicFija', meta: { align: 'center'} },
+        { header: 'Alic. Variable', accessorKey: 'alicVariable', meta: { align: 'center'} },
+        { header: 'Cant. Trabajadores', accessorKey: 'cantTrabajadores', meta: { align: 'center'} },
+        { header: 'Masa Salarial', accessorKey: 'masaSalarial', cell: info => formatCurrency(info.getValue() as number), meta: { align: 'center'} },
+        
+    ], []);
+
+    const tabItems = [
+        {
+        label: 'Estado de Cuenta',
+        content: (
+             <DataTable
+                data={cuentaCorrienteData} 
+                columns={columns} 
+                size="mid"
+                isLoading={false}
+            />
+        ),
+        },
+        {
+        label: 'Últimas DDJJ',
+        content: (
+             <DataTable
+                data={ddjjData} 
+                columns={columnsDDJJ} 
+                size="mid"
+                isLoading={false}
+            />
+        ),
+        },
+  ];
+
+
+
 
     return (
         <div style={{ padding: '20px' }}>
-            <Typography variant="h3" component="h1" gutterBottom style={{ fontWeight: 'bold', marginBottom: '20px' }}>
-                Cuenta Corriente
-            </Typography>
-
-            {/* Encabezado con Botones */}
-            <Box mb={4} style={{ display: 'flex', gap: '15px' }}>
-                <CustomButton variant="contained" color="primary">
-                    Estado de Cuenta
-                </CustomButton>
-                <CustomButton variant="contained" color="secondary">
-                    Últimas DDJJ
-                </CustomButton>
-            </Box>
+            
+             <CustomTab tabs={tabItems} initialTabIndex={1} /> 
 
             {/* Mensaje de Advertencia */}
             <Typography variant="body1" gutterBottom style={{ marginBottom: '20px', fontSize: '0.9rem' }}>
                 En caso de presentar deuda tenga en cuenta que la misma se ajustará por intereses al momento de realizar el pago.
             </Typography>
 
-
-            {/* -------------------- TABLA DE CUENTA CORRIENTE -------------------- */}
-            <DataTable
-                data={cuentaCorrienteData} 
-                columns={columns} 
-                size="mid"
-                isLoading={false}
-            />
         </div>
     );
 }

@@ -26,7 +26,6 @@ const grisOscuro = getCssVariable('--grisOscuro', '#474747');
 const blanco = getCssVariable('--blanco', 'white');
 
 const font = getCssVariable('--font', 'Outfit, sans-serif');
-const fontSize = "2rem";
 
 const fontSizeMenu = getCssVariable('--font-size-sidebar', '1.5rem');
 const fontWeightMenu = getCssVariable('--font-weight-sidebar', '700');
@@ -61,7 +60,7 @@ const theme = createTheme({
       main: naranja,
     },
     secondary: {
-      main: verdeOscuro,
+      main: verde,
     },
     verdeClaroClaro: verdeClaroClaro,
     verdeClaro: verdeClaro,
@@ -132,7 +131,7 @@ const theme = createTheme({
     MuiTableHead: { /* Data Table HEADER */
       styleOverrides: {
         root: {
-          backgroundColor: verdeOscuro, /* Si en el module.css del DataTable tiene !IMPORTANT, entonces tomará esa definicion que es mas especifica*/
+          backgroundColor: verde, /* Si en el module.css del DataTable tiene !IMPORTANT, entonces tomará esa definicion que es mas especifica*/
         },
       },
     },
@@ -206,18 +205,7 @@ const theme = createTheme({
     MuiMenuItem: {
       styleOverrides: {
         root: {
-          '&.Mui-selected': {
-              color: blanco,
-              fontWeight: 'bold',
-              backgroundColor: naranja,
-               '&:hover': {
-                  backgroundColor: naranjaClaro,
-                },
-            },
-            '&:hover': {
-              backgroundColor: naranjaClaro,
-            },
-            fontSize: '1.2rem',
+          
         }, 
       },
     },
@@ -230,7 +218,18 @@ const theme = createTheme({
         },
       },
     },
-    
+
+   MuiTab: {
+      styleOverrides: {
+        root: {
+          '& .Mui-selected': {
+            background: naranjaOscuro,
+            backgroundColor: naranjaOscuro,
+          },
+        },
+      },
+    },
+
     MuiListItemButton: {
       styleOverrides: {
         root: {

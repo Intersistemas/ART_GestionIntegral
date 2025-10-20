@@ -38,7 +38,7 @@
 
 /* Nuevo estilo para el header cuando está bloqueado */
 .headerLocked {
-    border-bottom: 3px solid var(--naranja); /* Puedes ajustar el grosor y el color */
+    border-bottom: 2px solid var(--naranja); /* Puedes ajustar el grosor y el color */
 }
 
 .headerText {
@@ -147,6 +147,6 @@
 
 /* Estilo para el elemento de menú activo */
 .activeLink {
-    border-left: 6px solid var(--naranja) !important;
+    border-left: 4px solid var(--naranja) !important;
     background: linear-gradient(to right, var(--verdeClaro), transparent , transparent);
 }
