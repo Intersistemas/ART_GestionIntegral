@@ -33,8 +33,8 @@ import type {
   ResponsableItem,
   DetallePayload
 } from './types/rgrl';
-import { FaRegFilePdf } from "react-icons/fa";
-
+import { FaRegFilePdf, FaCopy, } from "react-icons/fa";
+import { MdEdit } from "react-icons/md";
 
 let _tiposCache: ApiTiposFormularios | null = null;
 //#region tipos-catalogos
@@ -365,7 +365,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
 
       {
         id: 'acciones',
-        header: 'Impresion',
+        header: 'Accion',
         //@ts-ignore
         cell: ({ row }) => {
           const onClick = async (e: any) => {
@@ -423,16 +423,27 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
           const onLeave = (e: React.MouseEvent<SVGSVGElement>) => {
             (e.currentTarget as SVGElement).style.opacity = '1';
           };
+          const onEdit = (e: any) => {
+            e.stopPropagation?.();
+            const interno = Number(row.original.InternoFormularioRGRL || 0);
+            if (!interno) return;
+            router.push(`/inicio/empleador/formularioRGRL/editar?id=${interno}`);
+          };
+
+          const onCopy = (e: any) => {
+            e.stopPropagation?.();
+            const interno = Number(row.original.InternoFormularioRGRL || 0);
+            if (!interno) return;
+            setReplicaDe(interno);
+            setOpenGenerar(true);
+          };
 
           return (
-            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', alignItems: 'center' }}>
-              <FaRegFilePdf 
-                title="Imprimir"
-                onClick={onClick}
-                onMouseEnter={onEnter}
-                onMouseLeave={onLeave}
-                style={{ fontSize: '20px', color: '#E4840C', cursor: 'pointer', transition: 'opacity 0.2s ease' }}
-              />
+
+            <div className={styles.iconActions}>
+              <FaRegFilePdf title="Imprimir" onClick={onClick} className={styles.iconButton} />
+              <MdEdit title="Editar" onClick={onEdit} className={styles.iconButton} />
+              <FaCopy title="Replicar" onClick={onCopy} className={styles.iconButton} />
             </div>
           );
         },
@@ -564,15 +575,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
 
           {/* Acciones: editar, generar, replicar y exportar */}
           <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-            <CustomButton onClick={handleClickEditar} disabled={!internoSeleccionado}>
-              EDITA FORMULARIO
-            </CustomButton>
-
             <CustomButton onClick={handleClickGenerar}>GENERA FORMULARIO</CustomButton>
-
-            <CustomButton onClick={handleReplicar} disabled={!internoSeleccionado}>
-              REPLICAR FORMULARIO
-            </CustomButton>
 
             <CustomButton onClick={handleExportExcel}>EXPORTAR A EXCEL</CustomButton>
           </div>
