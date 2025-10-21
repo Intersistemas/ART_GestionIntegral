@@ -11,6 +11,7 @@ import type { CabeceraData } from './impresionFormulario/types/impresion';
 
 import CustomModal from '@/utils/ui/form/CustomModal';
 import GenerarFormularioRGRL from './generar/GenerarFormularioRGRL';
+import { CUIP, Fecha, FechaHora } from '@/utils/Formato';
 
 import dayjs from 'dayjs';
 import styles from './FormulariosRGRL.module.css';
@@ -88,7 +89,7 @@ const dt = (iso: string | null | undefined) => {
 const mapApiToUi = (r: ApiFormularioRGRL): FormularioRGRL => ({
   // Normaliza el registro de cabecera de la API al shape de la grilla principal.
   InternoFormularioRGRL: r.interno ?? 0,
-  CUIT: String(r.cuit ?? ''),
+  CUIT: CUIP(r.cuit ?? ''),
   RazonSocial: r.razonSocial ?? '',
   Establecimiento: r.direccion ?? '',
   Formulario:
@@ -103,8 +104,8 @@ const mapApiToUi = (r: ApiFormularioRGRL): FormularioRGRL => ({
             ? `Formulario ${r.internoFormulario}`
             : ''),
   Estado: r.estado ?? '',
-  FechaHoraCreacion: dt(r.creacionFechaHora),
-  FechaHoraConfirmado: dt(r.completadoFechaHora),
+  FechaHoraCreacion: Fecha(r.creacionFechaHora),
+  FechaHoraConfirmado: Fecha(r.completadoFechaHora),
 });
 
 const CargarConsultaFormulariosRGRL = async (cuit: number): Promise<FormularioRGRL[]> => {
@@ -229,11 +230,11 @@ const CargarDetalleRGRL = async (id: number): Promise<DetallePayload> => {
     Nombre: g.nombre ?? ''
   }));
   const contratistas = (data.respuestasContratista ?? []).map(c => ({
-    CUIT: String(c.cuit ?? ''),
+    CUIT: CUIP(c.cuit),
     Contratista: c.contratista ?? c.nombre ?? ''
   }));
   const responsables = (data.respuestasResponsable ?? []).map(r => ({
-    CUITCUIL: r.cuit ?? '',
+    CUITCUIL: CUIP(r.cuit),   
     NombreApellido: r.responsable ?? '',
     Cargo: r.cargo ?? '',
     Representacion: r.representacion ?? '',
@@ -360,12 +361,12 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
       { accessorKey: 'Establecimiento', header: 'Establecimiento' },
       { accessorKey: 'Formulario', header: 'Formulario' },
       { accessorKey: 'Estado', header: 'Estado' },
-      { accessorKey: 'FechaHoraCreacion', header: 'Fecha Hora Creación' },
-      { accessorKey: 'FechaHoraConfirmado', header: 'Fecha Hora Confirmado' },
+      { accessorKey: 'FechaHoraCreacion', header: 'Fecha Creación' },
+      { accessorKey: 'FechaHoraConfirmado', header: 'Fecha Confirmado' },
 
       {
         id: 'acciones',
-        header: 'Accion',
+        header: 'Acciones',
         //@ts-ignore
         cell: ({ row }) => {
           const onClick = async (e: any) => {
@@ -382,7 +383,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
             const cabecera: CabeceraData = {
               empresa: {
                 razonSocial: row.original.RazonSocial,
-                cuit: row.original.CUIT,
+                cuit: CUIP(row.original.CUIT), 
                 contrato: '',
                 ciiu: estab?.ciiu != null ? String(estab.ciiu) : '',
               },
@@ -575,9 +576,9 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
 
           {/* Acciones: editar, generar, replicar y exportar */}
           <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-            <CustomButton onClick={handleClickGenerar}>GENERA FORMULARIO</CustomButton>
+            <CustomButton onClick={handleClickGenerar}>Generar Formulario</CustomButton>
 
-            <CustomButton onClick={handleExportExcel}>EXPORTAR A EXCEL</CustomButton>
+            <CustomButton onClick={handleExportExcel}>Exportar a Excel</CustomButton>
           </div>
 
           {/* Tabla principal: resultados de la búsqueda */}
