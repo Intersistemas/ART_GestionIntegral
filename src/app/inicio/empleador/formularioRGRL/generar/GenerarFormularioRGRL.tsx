@@ -226,27 +226,27 @@ const GenerarFormularioRGRL: React.FC<{
     try {
 
       // Actualiza Superficie y Cant. Trabajadores del Establecimiento antes de crear el formulario
-     {
-       const payloadEst = {
-         superficie: Number(estSuperficie) || 0,
-         cantTrabajadores: Number(estCantTrab) || 0,
-       };
-       const respEst = await fetch(`${API_BASE}/Establecimientos/${establecimientoSel}`, {
-         method: 'PATCH',
-         headers: { 'Content-Type': 'application/json' },
-         body: JSON.stringify(payloadEst),
-       });
-       const rawEst = await respEst.text().catch(() => '');
-       if (!respEst.ok) throw new Error(`Actualizar establecimiento -> ${respEst.status} ${rawEst}`);
-       // reflejamos en memoria
-       setEstablecimientos(prev =>
-         prev.map(e =>
-           e.interno === establecimientoSel
-             ? { ...e, superficie: payloadEst.superficie, cantTrabajadores: payloadEst.cantTrabajadores }
-             : e
-         )
-       );
-     }
+      {
+        const payloadEst = {
+          superficie: Number(estSuperficie) || 0,
+          cantTrabajadores: Number(estCantTrab) || 0,
+        };
+        const respEst = await fetch(`${API_BASE}/Establecimientos/${establecimientoSel}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payloadEst),
+        });
+        const rawEst = await respEst.text().catch(() => '');
+        if (!respEst.ok) throw new Error(`Actualizar establecimiento -> ${respEst.status} ${rawEst}`);
+        // reflejamos en memoria
+        setEstablecimientos(prev =>
+          prev.map(e =>
+            e.interno === establecimientoSel
+              ? { ...e, superficie: payloadEst.superficie, cantTrabajadores: payloadEst.cantTrabajadores }
+              : e
+          )
+        );
+      }
 
 
       const payload = {
@@ -701,8 +701,6 @@ const GenerarFormularioRGRL: React.FC<{
               <tbody>
                 {gremiosUI.map((g, i) => (
                   <tr key={i}>
-
-
                     <td className={styles.tdPad4}>
                       <TextField
                         type="number"
@@ -718,10 +716,6 @@ const GenerarFormularioRGRL: React.FC<{
                         fullWidth
                       />
                     </td>
-
-
-
-
                     <td><CustomButton onClick={() => removeRow(setGremiosUI, i)}>−</CustomButton></td>
                   </tr>
                 ))}
@@ -745,10 +739,6 @@ const GenerarFormularioRGRL: React.FC<{
               <tbody>
                 {contratistasUI.map((c, i) => (
                   <tr key={i}>
-
-
-
-
                     <td className={styles.tdPad4}>
                       <TextField
                         type="number"
@@ -758,10 +748,6 @@ const GenerarFormularioRGRL: React.FC<{
                       />
                     </td>
 
-
-
-
-
                     <td className={styles.tdPad4}>
                       <TextField
                         value={c.contratista ?? ''}
@@ -769,10 +755,6 @@ const GenerarFormularioRGRL: React.FC<{
                         fullWidth
                       />
                     </td>
-
-
-
-
 
                     <td><CustomButton onClick={() => removeRow(setContratistasUI, i)}>−</CustomButton></td>
                   </tr>
@@ -918,13 +900,6 @@ const GenerarFormularioRGRL: React.FC<{
   return (
     <div className={styles.container}>
       {/* Carga de datos inicial y botones para crear/replicar el formulario. */}
-
-
-
-
-
-
-
       <Box
         sx={{
           mb: 2,
@@ -946,14 +921,6 @@ const GenerarFormularioRGRL: React.FC<{
           CARGAR
         </CustomButton>
       </Box>
-
-
-
-
-
-
-
-
       <Box sx={{ mb: 2 }}>
         <TextField
           label="Razón Social"
@@ -963,10 +930,6 @@ const GenerarFormularioRGRL: React.FC<{
           InputProps={{ readOnly: true }}
         />
       </Box>
-
-
-
-
       <Box sx={{ mb: 2, maxWidth: 360 }}>
         <TextField
           label="Notificación Fecha"
@@ -977,11 +940,6 @@ const GenerarFormularioRGRL: React.FC<{
           InputLabelProps={{ shrink: true }}
         />
       </Box>
-
-
-
-
-
       <Box sx={{ mb: 2 }}>
         <FormControl fullWidth>
           <InputLabel>Establecimiento</InputLabel>
@@ -1012,12 +970,6 @@ const GenerarFormularioRGRL: React.FC<{
           </Select>
         </FormControl>
       </Box>
-
-
-
-
-
-
       {estActual && (
         <Box
           sx={{
@@ -1027,8 +979,6 @@ const GenerarFormularioRGRL: React.FC<{
             gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
           }}
         >
-
-
           <TextField
             label="Superficie"
             type="number"
@@ -1045,10 +995,6 @@ const GenerarFormularioRGRL: React.FC<{
             fullWidth
             inputProps={{ inputMode: 'numeric' }}
           />
-
-
-
-
           <TextField
             label="CIIU"
             value={estActual.ciiu ?? ''}
@@ -1057,12 +1003,6 @@ const GenerarFormularioRGRL: React.FC<{
           />
         </Box>
       )}
-
-
-
-
-
-
       <Box sx={{ mb: 2 }}>
         <FormControl fullWidth disabled={esReplica} title={esReplica ? 'Tipo fijado por replicación' : undefined}>
           <InputLabel>Formulario</InputLabel>
@@ -1078,20 +1018,20 @@ const GenerarFormularioRGRL: React.FC<{
           </Select>
         </FormControl>
       </Box>
-
-
-
-
-
-
       <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
-        <CustomButton onClick={() => router.back()}>VOLVER</CustomButton>
+        <CustomButton
+          onClick={() => {
+            if (isModal) {
+              onDone?.(0);
+            } else {
+              router.back();
+            }
+          }}
+        >
+          VOLVER
+        </CustomButton>
         <CustomButton onClick={crearFormulario} disabled={!cuit}>CREAR FORMULARIO</CustomButton>
       </Box>
-
-
-
-
     </div>
   );
 };
