@@ -625,8 +625,7 @@ export default function UsuarioForm({
             </div>
 
             {/* Credenciales de Acceso (Ocultas en View y Deleted)*/}
-            {isCreating ||
-              (isEditing && (
+            {(isCreating || isEditing) && (
                 <div className={styles.formSection}>
                   <Typography variant="h6" className={styles.sectionTitle}>
                     Credenciales de Acceso
@@ -685,7 +684,7 @@ export default function UsuarioForm({
                       : "Deje ambos campos vacíos para mantener la contraseña actual. Si desea cambiarla, complete ambos campos con la nueva contraseña."}
                   </Typography>
                 </div>
-              ))}
+              )}
             <div className={styles.formActions}>
               {/* Botón de acción principal (Oculto en 'view') */}
               {!isViewing && (
