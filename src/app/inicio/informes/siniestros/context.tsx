@@ -49,23 +49,28 @@ const fechaHoraFormatter: Formatter = (v) => Formato.FechaHora(v);
 
 
 const fechaFormatter: Formatter = (v) => {
-  if (v === null || v === undefined) return "";
+  if (v == null) return "";
+  const s = String(v).trim();
 
-  const n1 = Formato.Fecha(v);
-  if (n1 && String(n1).trim()) return n1;
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) return s;
 
-  try {
-    const d = new Date(v);
+
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return Formato.Fecha(s);
+
+
+  if (/^\d{10,13}$/.test(s)) {
+    const t = Number(s);
+    const d = new Date(s.length === 13 ? t : t * 1000);
     if (!isNaN(d.getTime())) {
-
-      const dd = String(d.getDate()).padStart(2, "0");
-      const mm = String(d.getMonth() + 1).padStart(2, "0");
-      const yyyy = d.getFullYear();
+      const dd = String(d.getUTCDate()).padStart(2, "0");
+      const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+      const yyyy = d.getUTCFullYear();
       return `${dd}/${mm}/${yyyy}`;
     }
-  } catch {}
+  }
 
-  return typeof v === "string" ? v.trim() : String(v);
+  const byUtils = Formato.Fecha(s);
+  return byUtils || s;
 };
 
 
