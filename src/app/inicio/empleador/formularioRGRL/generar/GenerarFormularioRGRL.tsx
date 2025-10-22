@@ -10,6 +10,7 @@ import CustomButton from '@/utils/ui/button/CustomButton';
 import CustomModal from '@/utils/ui/form/CustomModal';
 import dayjs from 'dayjs';
 import styles from './GenerarFormularioRGRL.module.css';
+import { CUIP } from '@/utils/Formato';
 
 import type {
   Establecimiento,
@@ -740,10 +741,22 @@ const GenerarFormularioRGRL: React.FC<{
                 {contratistasUI.map((c, i) => (
                   <tr key={i}>
                     <td className={styles.tdPad4}>
+
                       <TextField
-                        type="number"
-                        value={c.cuit ?? 0}
-                        onChange={(e) => changeRow(setContratistasUI, i, 'cuit', Number(e.target.value || 0))}
+                        value={
+                          String(c.cuit ?? '').replace(/\D/g, '').length === 11
+                            ? CUIP(c.cuit)
+                            : String(c.cuit ?? '')
+                        }
+                        onChange={(e) =>
+                          changeRow(
+                            setContratistasUI,
+                            i,
+                            'cuit',
+                            Number(e.target.value.replace(/[^\d]/g, '')) || 0
+                          )
+                        }
+                        inputMode="numeric"
                         fullWidth
                       />
                     </td>
@@ -791,9 +804,20 @@ const GenerarFormularioRGRL: React.FC<{
 
                     <td className={styles.tdPad4}>
                       <TextField
-                        type="number"
-                        value={r.cuit ?? 0}
-                        onChange={(e) => changeRow(setResponsablesUI, i, 'cuit', Number(e.target.value || 0))}
+                        value={
+                          String(r.cuit ?? '').replace(/\D/g, '').length === 11
+                            ? CUIP(r.cuit)
+                            : String(r.cuit ?? '')
+                        }
+                        onChange={(e) =>
+                          changeRow(
+                            setResponsablesUI,
+                            i,
+                            'cuit',
+                            Number(e.target.value.replace(/[^\d]/g, '')) || 0
+                          )
+                        }
+                        inputMode="numeric"
                         fullWidth
                       />
                     </td>
@@ -911,10 +935,17 @@ const GenerarFormularioRGRL: React.FC<{
       >
         <TextField
           label="CUIT"
-          value={cuit ? String(cuit) : ''}
-          onChange={(e) => setCuit(Number(e.target.value.replace(/[^\d]/g, '')) || undefined)}
+          value={
+            cuit
+              ? (String(cuit).replace(/\D/g, '').length === 11 ? CUIP(cuit) : String(cuit))
+              : ''
+          }
+          onChange={(e) => {
+            const digits = e.target.value.replace(/[^\d]/g, '');
+            setCuit(digits ? Number(digits) : undefined);
+          }}
           placeholder="Ingresá CUIT"
-          inputProps={{ inputMode: 'numeric' }}
+          inputMode="numeric"
           fullWidth
         />
         <CustomButton onClick={cargarTodoPaso1} disabled={!canBuscar}>
