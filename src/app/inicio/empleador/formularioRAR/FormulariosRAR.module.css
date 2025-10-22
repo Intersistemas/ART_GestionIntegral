@@ -179,3 +179,14 @@
 .detallesTable :global(.dataTableSearch) {
   display: none !important;
 }
+
+.iconButton {
+  font-size: 20px;
+  color: #E4840C;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.iconButton:hover {
+  opacity: 0.85;
+}
