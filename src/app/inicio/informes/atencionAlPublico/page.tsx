@@ -10,14 +10,9 @@
    Typography,
  } from "@mui/material";
  import { MdExpandMore } from "react-icons/md";
- import {
-   combinatorsExtended,
-   operators,
-   translations,
- } from "@/utils/ui/QueryBuilderDefaults";
  import { DataContextProvider, useDataContext } from "./dataContext";
  import DataTable from "@/utils/ui/table/DataTable";
- import CustomButton from '../../../../utils/ui/button/CustomButton';
+ import CustomButton from '@/utils/ui/button/CustomButton';
  import QueryBuilder from '@/utils/ui/QueryBuilder';
 
  function AtencionAlPublicoQueryBuilder() {

@@ -2,15 +2,15 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { useAuth } from '../../../../data/AuthContext';
-import Formato from '../../../../utils/Formato';
-import CustomButton from '../../../../utils/ui/button/CustomButton';
-import DataTableImport from '../../../../utils/ui/table/DataTable';
-import PDFModalViewer from '../../../../utils/PDF/PDFModalViewer';
-import BaseDocumentPDF from '../../../../utils/PDF/BaseDocumentPDF';
+import { useAuth } from '@/data/AuthContext';
+import Formato from '@/utils/Formato';
+import CustomButton from '@/utils/ui/button/CustomButton';
+import DataTableImport from '@/utils/ui/table/DataTable';
+import PDFModalViewer from '@/utils/PDF/PDFModalViewer';
+import BaseDocumentPDF from '@/utils/PDF/BaseDocumentPDF';
 import { Text, View } from '@react-pdf/renderer';
 //  MODIFICACIÓN 1: Importamos el componente de tabs personalizado
-import CustomTab from '../../../../utils/ui/tab/CustomTab';
+import CustomTab from '@/utils/ui/tab/CustomTab';
 
 import styles from './FormulariosRAR.module.css';
 
@@ -231,7 +231,7 @@ const FormulariosRAR: React.FC = () => {
       id: 'acciones',
       header: 'Acciones',
       cell: ({ row }: { row: any }) => (
-        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', alignItems: 'center' }}>
+        <div className={styles.actionButtonsContainer}>
           {/* Botón Editar dentro de la tabla */}
           <button
             onClick={(e: any) => {
@@ -253,18 +253,7 @@ const FormulariosRAR: React.FC = () => {
             }}
             disabled={cuit === 99999999999 || (!row.original.interno && !row.original.InternoFormularioRAR)}
             title="Editar formulario"
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: (cuit === 99999999999 || (!row.original.interno && !row.original.InternoFormularioRAR)) ? 'not-allowed' : 'pointer',
-              opacity: (cuit === 99999999999 || (!row.original.interno && !row.original.InternoFormularioRAR)) ? 0.5 : 1,
-              padding: '6px',
-              borderRadius: '4px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s ease'
-            }}
+            className={styles.actionButton}
             onMouseEnter={(e) => {
               if (!(cuit === 99999999999 || (!row.original.interno && !row.original.InternoFormularioRAR))) {
                 e.currentTarget.style.backgroundColor = '#e8f5e8';
@@ -284,23 +273,7 @@ const FormulariosRAR: React.FC = () => {
               handleAbrirPDF(row.original);
             }}
             title="Generar PDF"
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: '6px',
-              borderRadius: '4px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#ffe6e6';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-            }}
+            className={styles.pdfButton}
           >
             <FaRegFilePdf size={20} className={styles.iconButton} />
           </button>
@@ -529,50 +502,25 @@ const FormulariosRAR: React.FC = () => {
         <div>
           {/*  MODIFICACIÓN 3: Contenido del tab de detalles */}
           {!registroSeleccionado ? (
-            <div style={{ 
-              padding: '40px', 
-              textAlign: 'center', 
-              color: '#666',
-              backgroundColor: '#f9f9f9',
-              borderRadius: '8px',
-              border: '2px dashed #ddd'
-            }}>
-              <h3 style={{ marginBottom: '10px', color: '#999' }}>
+            <div className={styles.emptyStateContainer}>
+              <h3 className={styles.emptyStateTitle}>
                 📋 Selecciona un Formulario RAR
               </h3>
-              <p style={{ margin: 0, fontSize: '14px' }}>
+              <p className={styles.emptyStateText}>
                 Haz clic en cualquier fila de la tabla &quot;Formularios RAR&quot; para ver los detalles del formulario seleccionado aquí.
               </p>
             </div>
           ) : (
             <div>
               {/* Encabezado con información del formulario seleccionado */}
-              <div style={{ 
-                backgroundColor: '#f0f8ff', 
-                padding: '15px', 
-                borderRadius: '8px',
-                marginBottom: '20px',
-                border: '1px solid #e1e8ed'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
-                  <h3 style={{ margin: 0, color: '#2c5282' }}>
+              <div className={styles.formularioHeader}>
+                <div className={styles.formularioHeaderTop}>
+                  <h3 className={styles.formularioTitle}>
                     📄 Formulario RAR #{registroSeleccionado.interno || registroSeleccionado.InternoFormularioRAR}
                   </h3>
-                  {/*  MODIFICACIÓN 9: Botón para volver al tab de la tabla */}
-                  {/* <CustomButton
-                    onClick={() => setActiveTabIndex(0)}
-                    style={{ 
-                      backgroundColor: '#e2e8f0', 
-                      color: '#2d3748', 
-                      border: 'none',
-                      padding: '6px 12px',
-                      fontSize: '12px'
-                    }}
-                  >
-                    ← Volver a la tabla
-                  </CustomButton> */}
+                
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '10px', fontSize: '14px' }}>
+                <div className={styles.formularioGrid}>
                   <p><strong>Razón Social:</strong> {registroSeleccionado.razonSocial || '—'}</p>
                   <p><strong>CUIT:</strong> {cuipFormatter(registroSeleccionado.cuit) || '—'}</p>
                   <p><strong>Estado:</strong> {registroSeleccionado.estado || '—'}</p>
@@ -602,16 +550,8 @@ const FormulariosRAR: React.FC = () => {
               {/*  MODIFICACIÓN: Tabla de trabajadores usando DataTableImport */}
               {!loadingDetalles && !errorDetalles && detallesInterno.length > 0 && (
                 <div>
-                  <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'center',
-                    marginBottom: '15px',
-                    padding: '10px',
-                    backgroundColor: '#e8f5e8',
-                    borderRadius: '6px'
-                  }}>
-                    <p className={styles.detallesInfo} style={{ margin: 0 }}>
+                  <div className={styles.trabajadoresHeader}>
+                    <p className={`${styles.detallesInfo} ${styles.trabajadoresCount}`}>
                       <strong>👥 Trabajadores registrados: {detallesInterno.length}</strong>
                     </p>
                   </div>
