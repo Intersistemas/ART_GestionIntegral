@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, SyntheticEvent} from 'react';
 import { useAuth } from '@/data/AuthContext';
 import Formato from '@/utils/Formato';
 import CustomButton from '@/utils/ui/button/CustomButton';
@@ -76,8 +76,13 @@ const FormulariosRAR: React.FC = () => {
   const [errorDetalles, setErrorDetalles] = useState<string>('');
   const [registroSeleccionado, setRegistroSeleccionado] = useState<any>(null);
   
-  //  MODIFICACIÓN 5: Estado para controlar el tab activo
+  // Estado para controlar el tab activo (correcto)
   const [activeTabIndex, setActiveTabIndex] = useState<number>(0);
+
+  // Handler para cambiar el tab (necesario para el componente controlado)
+  const handleTabChange = (event: SyntheticEvent, newTabValue: number) => {
+      setActiveTabIndex(newTabValue);
+  };
 
   const fetchFormularios = useCallback(async () => {
     try {
@@ -476,6 +481,7 @@ const FormulariosRAR: React.FC = () => {
   const tabItems = [
     {
       label: 'Formularios',
+      value: 0, // Índice 0
       content: (
         <div>
           {/* MODIFICACIÓN: Botones de acción - removido "Editar" ya que ahora está en la tabla */}
@@ -498,6 +504,7 @@ const FormulariosRAR: React.FC = () => {
     },
     {
       label: 'Detalles',
+      value: 1, // Índice 1
       content: (
         <div>
           {/*  MODIFICACIÓN 3: Contenido del tab de detalles */}
@@ -579,10 +586,10 @@ const FormulariosRAR: React.FC = () => {
       {viewMode === 'list' ? (
         <div>
           {/*  MODIFICACIÓN 8: Usamos el estado activeTabIndex para controlar el tab activo */}
-          <CustomTab 
-            tabs={tabItems} 
-            initialTabIndex={activeTabIndex}  // Controlamos dinámicamente qué tab está activo
-            key={activeTabIndex} // Forzamos re-render cuando cambia el tab activo
+          <CustomTab
+              tabs={tabItems}
+              currentTab={activeTabIndex} // Usamos el estado
+              onTabChange={handleTabChange} // Usamos el handler
           />
         </div>
       ) : viewMode === 'crear' ? (

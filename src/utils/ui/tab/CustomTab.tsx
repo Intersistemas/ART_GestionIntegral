@@ -7,13 +7,17 @@ import styles from './CustomTab.module.css';
 // Define la estructura de cada "tab"
 interface TabItem {
   label: string;
-  content: ReactNode; // El contenido que se mostrará en el panel
+    value: number;         
+    content: ReactNode;    // El contenido que se mostrará en el panel
+    disabled?: boolean;    // para deshabilitar la pestaña
+  
 }
 
 // Define las propiedades del componente CustomTabs
 interface CustomTabsProps {
   tabs: TabItem[];
-  initialTabIndex?: number; // Opcional: el índice de la pestaña seleccionada por defecto
+  currentTab: number; // El valor actual de la pestaña DEBE venir del padre para ser controlado
+  onTabChange: (event: SyntheticEvent, newTabValue: number) => void;  // El manejador de cambio DEBE venir del padre
 }
 
 // Interfaz para el Panel de la pestaña
@@ -55,47 +59,38 @@ function a11yProps(index: number) {
 }
 
 // Componente principal CustomTabs
-const CustomTabs: React.FC<CustomTabsProps> = ({ tabs, initialTabIndex = 0 }) => {
-  const [value, setValue] = useState(initialTabIndex);
+const CustomTabs: React.FC<CustomTabsProps> = ({ tabs, currentTab, onTabChange }) => {
+  
+return (
 
-  const handleChange = (event: SyntheticEvent, newValue: number) => {
-    setValue(newValue);
-  };
-
-  return (
-    <Box sx={{ width: '100%' }}>
-      {/* El contenedor principal del Tabs. 
-        Aplicamos la clase styles.customTabsBar al componente MUI Tabs para estilizarlo.
-      */}
-      <Box className={styles.tabsContainer}>
-        <Tabs 
-          value={value} 
-          onChange={handleChange} 
-          aria-label="custom tabs"
-          className={styles.customTabsBar} 
-          // Opcional: Estilo del indicador (la línea inferior)
-          // La línea inferior se estiliza mejor con CSS Modules o el prop sx directamente.
-          // Aquí utilizaremos CSS Modules para el color principal.
-        >
-          {tabs.map((tab, index) => (
-            <Tab
-              key={index}
-              label={tab.label}
-              {...a11yProps(index)}
-              className={styles.customTab} // Clase para cada Tab individual
-            />
-          ))}
-        </Tabs>
-      </Box>
-      
-      {/* Renderizado de los Paneles de Contenido */}
-      {tabs.map((tab, index) => (
-        <TabPanel key={index} value={value} index={index}>
-          {tab.content}
-        </TabPanel>
-      ))}
-    </Box>
-  );
+        <Box sx={{ width: '100%' }}> 
+            <Box className={styles.tabsContainer}>
+                <Tabs 
+                    value={currentTab} // <-- Usa el valor del padre
+                    onChange={onTabChange} // <-- Usa la función del padre
+                    aria-label="custom tabs"
+                    className={styles.customTabsBar} 
+                >
+                    {tabs.map((tab) => (
+                        <Tab
+                            key={tab.value}
+                            label={tab.label}
+                            value={tab.value} 
+                            disabled={tab.disabled || false} // <-- Aplica la propiedad disabled
+                            {...a11yProps(tab.value)}
+                            className={styles.customTab} 
+                        />
+                    ))}
+                </Tabs>
+            </Box>
+            {/* Renderizado de los Paneles de Contenido */}
+            {tabs.map((tab) => (
+                <TabPanel key={tab.value} value={currentTab} index={tab.value}>
+                    {tab.content}
+                </TabPanel>
+            ))}
+        </Box>
+    );
 };
 
 export default CustomTabs;
