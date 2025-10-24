@@ -179,3 +179,125 @@
 .detallesTable :global(.dataTableSearch) {
   display: none !important;
 }
+
+.iconButton {
+  font-size: 20px;
+  color: #E4840C;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.iconButton:hover {
+  opacity: 0.85;
+}
+
+/* Botón de acción en tabla */
+.actionButton {
+  background: none;
+  border: none;
+  padding: 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.actionButton:not(:disabled) {
+  cursor: pointer;
+}
+
+.actionButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.actionButton:hover:not(:disabled) {
+  background-color: transparent;
+}
+
+/* Contenedor de botones de acción */
+.actionButtonsContainer {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Botón PDF */
+.pdfButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.pdfButton:hover {
+  background-color: #ffe6e6;
+}
+
+/* Estilos para el tab de detalles */
+.emptyStateContainer {
+  padding: 40px;
+  text-align: center;
+  color: #666;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  border: 2px dashed #ddd;
+}
+
+.emptyStateTitle {
+  margin-bottom: 10px;
+  color: #999;
+}
+
+.emptyStateText {
+  margin: 0;
+  font-size: 14px;
+}
+
+.formularioHeader {
+  background-color: #f0f8ff;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #e1e8ed;
+}
+
+.formularioHeaderTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.formularioTitle {
+  margin: 0;
+  color: #2c5282;
+}
+
+.formularioGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 10px;
+  font-size: 14px;
+}
+
+.trabajadoresHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: #e8f5e8;
+  border-radius: 6px;
+}
+
+.trabajadoresCount {
+  margin: 0;
+}

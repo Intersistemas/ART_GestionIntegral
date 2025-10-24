@@ -2,15 +2,20 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { useAuth } from '../../../../data/AuthContext';
-import Formato from '../../../../utils/Formato';
-import CustomButton from '../../../../utils/ui/button/CustomButton';
-import DataTableImport from '../../../../utils/ui/table/DataTable';
-import PDFModalViewer from '../../../../utils/PDF/PDFModalViewer';
-import BaseDocumentPDF from '../../../../utils/PDF/BaseDocumentPDF';
+import { useAuth } from '@/data/AuthContext';
+import Formato from '@/utils/Formato';
+import CustomButton from '@/utils/ui/button/CustomButton';
+import DataTableImport from '@/utils/ui/table/DataTable';
+import PDFModalViewer from '@/utils/PDF/PDFModalViewer';
+import BaseDocumentPDF from '@/utils/PDF/BaseDocumentPDF';
 import { Text, View } from '@react-pdf/renderer';
+//  MODIFICACIÓN 1: Importamos el componente de tabs personalizado
+import CustomTab from '@/utils/ui/tab/CustomTab';
 
 import styles from './FormulariosRAR.module.css';
+
+import { FaRegFilePdf, FaCopy, } from "react-icons/fa";
+import { MdEdit } from "react-icons/md";
 
 // Hijos
 import FormularioRARGenerar from './generar/FormularioRARGenerar';
@@ -70,6 +75,9 @@ const FormulariosRAR: React.FC = () => {
   const [loadingDetalles, setLoadingDetalles] = useState<boolean>(false);
   const [errorDetalles, setErrorDetalles] = useState<string>('');
   const [registroSeleccionado, setRegistroSeleccionado] = useState<any>(null);
+  
+  //  MODIFICACIÓN 5: Estado para controlar el tab activo
+  const [activeTabIndex, setActiveTabIndex] = useState<number>(0);
 
   const fetchFormularios = useCallback(async () => {
     try {
@@ -147,6 +155,8 @@ const FormulariosRAR: React.FC = () => {
     setRegistroSeleccionado(null);
     setDetallesInterno([]);
     setErrorDetalles('');
+    //  MODIFICACIÓN 7: Resetear el tab activo cuando se crea nuevo formulario
+    setActiveTabIndex(0);
   };
 
   const handleEdita = () => {
@@ -205,7 +215,7 @@ const FormulariosRAR: React.FC = () => {
     setDatosPDF(null);
   };
 
-  /* Columnas */
+  /* Columnas para tabla principal de formularios */
   const tableColumns = [
     { accessorKey: 'interno', header: 'Interno' },
     { accessorKey: 'cuit', header: 'CUIT', cell: (info: any) => cuipFormatter(info.getValue()) },
@@ -221,18 +231,127 @@ const FormulariosRAR: React.FC = () => {
       id: 'acciones',
       header: 'Acciones',
       cell: ({ row }: { row: any }) => (
-        <CustomButton
-          onClick={(e: any) => {
-            e.stopPropagation?.();
-            handleAbrirPDF(row.original);
-          }}
-          className={styles.tableBtnSmall}
-        >
-          Imprimir
-        </CustomButton>
+        <div className={styles.actionButtonsContainer}>
+          {/* Botón Editar dentro de la tabla */}
+          <button
+            onClick={(e: any) => {
+              e.stopPropagation?.();
+              // Seleccionar el registro y activar edición
+              const internoForm = Number(row.original.InternoFormularioRAR || row.original.interno || 0);
+              const internoEstab = Number(row.original.internoEstablecimiento || row.original.InternoEstablecimiento || 0);
+              const est = String(row.original.Estado || row.original.estado || '');
+              
+              seleccionaRegistro(internoForm, internoEstab, est);
+              setIdFormularioSeleccionado(internoForm);
+              
+              if (internoForm > 0) {
+                setEditaId(internoForm);
+                setViewMode('editar');
+              } else {
+                alert('No se pudo obtener el ID del formulario para editar.');
+              }
+            }}
+            disabled={cuit === 99999999999 || (!row.original.interno && !row.original.InternoFormularioRAR)}
+            title="Editar formulario"
+            className={styles.actionButton}
+            onMouseEnter={(e) => {
+              if (!(cuit === 99999999999 || (!row.original.interno && !row.original.InternoFormularioRAR))) {
+                e.currentTarget.style.backgroundColor = '#e8f5e8';
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
+          >
+            <MdEdit size={20} className={styles.iconButton} />
+          </button>
+
+          {/* Botón Imprimir */}
+          <button
+            onClick={(e: any) => {
+              e.stopPropagation?.();
+              handleAbrirPDF(row.original);
+            }}
+            title="Generar PDF"
+            className={styles.pdfButton}
+          >
+            <FaRegFilePdf size={20} className={styles.iconButton} />
+          </button>
+        </div>
       ),
       enableSorting: false,
+      size: 160, // Aumentamos el ancho para acomodar ambos botones
     },
+  ];
+
+  /*  MODIFICACIÓN: Columnas para tabla de detalles de trabajadores */
+  const detalleColumns = [
+    { 
+      accessorKey: 'id', 
+      header: '#',
+      meta: { align: 'center' },
+      size: 60
+    },
+    { 
+      accessorKey: 'cuil', 
+      header: 'CUIL',
+      cell: (info: any) => cuipFormatter(info.getValue()) || '—',
+      meta: { align: 'center' },
+      size: 120
+    },
+    { 
+      accessorKey: 'nombre', 
+      header: 'NOMBRE',
+      cell: (info: any) => info.getValue() || '—'
+    },
+    { 
+      accessorKey: 'sectorTarea', 
+      header: 'SECTOR/TAREA',
+      cell: (info: any) => info.getValue() || '—',
+      size: 150
+    },
+    { 
+      accessorKey: 'fechaIngreso', 
+      header: 'F. INGRESO',
+      cell: (info: any) => info.getValue() || '—',
+      meta: { align: 'center' },
+      size: 120
+    },
+    { 
+      accessorKey: 'fechaInicioExposicion', 
+      header: 'F. INICIO EXPOSICIÓN',
+      cell: (info: any) => info.getValue() || '—',
+      meta: { align: 'center' },
+      size: 140
+    },
+    { 
+      accessorKey: 'fechaFinExposicion', 
+      header: 'F. FIN EXPOSICIÓN',
+      cell: (info: any) => info.getValue() || '—',
+      meta: { align: 'center' },
+      size: 130
+    },
+    { 
+      accessorKey: 'horasExposicion', 
+      header: 'HORAS EXP.',
+      cell: (info: any) => info.getValue() || '—',
+      meta: { align: 'center' },
+      size: 80
+    },
+    { 
+      accessorKey: 'codigoAgente', 
+      header: 'CÓD. AGENTE',
+      cell: (info: any) => info.getValue() || '—',
+      meta: { align: 'center' },
+      size: 100
+    },
+    { 
+      accessorKey: 'fechaUltimoExamenMedico', 
+      header: 'ÚLTIMO EXAMEN MÉDICO',
+      cell: (info: any) => info.getValue() || '—',
+      meta: { align: 'center' },
+      size: 150
+    }
   ];
 
   const onRowClick = (row: any) => {
@@ -243,6 +362,10 @@ const FormulariosRAR: React.FC = () => {
     seleccionaRegistro(internoForm, internoEstab, est);
     setIdFormularioSeleccionado(idFormulario);
     setRegistroSeleccionado(row);
+    
+    //  MODIFICACIÓN 6: Cambiar automáticamente al tab de detalles cuando se selecciona un registro
+    setActiveTabIndex(1); // Cambiar al segundo tab (índice 1)
+    
     if (internoForm > 0) fetchDetallesInterno(internoForm);
     else {
       setDetallesInterno([]);
@@ -349,108 +472,118 @@ const FormulariosRAR: React.FC = () => {
     );
   };
 
-  return (
-    <div>
-      {viewMode === 'list' ? (
+  //  MODIFICACIÓN 2: Creamos la configuración de tabs
+  const tabItems = [
+    {
+      label: 'Formularios',
+      content: (
         <div>
+          {/* MODIFICACIÓN: Botones de acción - removido "Editar" ya que ahora está en la tabla */}
           <div className={`${styles.flex} ${styles.gap12} ${styles.mb16}`}>
-            <CustomButton onClick={handleEdita} disabled={disableEdita}>
-              Editar
-            </CustomButton>
             <CustomButton onClick={handleClickNuevo} disabled={disableGenera}>
               Generar formulario
             </CustomButton>
           </div>
 
+          {/* Tabla principal de formularios */}
           <div className={styles.compactTable}>
-            <DataTableImport columns={tableColumns} data={formulariosRAR} onRowClick={onRowClick} />
+            <DataTableImport 
+              columns={tableColumns} 
+              data={formulariosRAR} 
+              onRowClick={onRowClick} 
+            />
           </div>
-
-          {/* Tabla de detalles del interno seleccionado */}
-          {registroSeleccionado && (
-            <div className={`${styles.mt20}`}>
-              <h3>
-                Detalles del Formulario RAR #{registroSeleccionado.interno || registroSeleccionado.InternoFormularioRAR}
-                {registroSeleccionado.razonSocial && ` - ${registroSeleccionado.razonSocial}`}
+        </div>
+      ),
+    },
+    {
+      label: 'Detalles',
+      content: (
+        <div>
+          {/*  MODIFICACIÓN 3: Contenido del tab de detalles */}
+          {!registroSeleccionado ? (
+            <div className={styles.emptyStateContainer}>
+              <h3 className={styles.emptyStateTitle}>
+                📋 Selecciona un Formulario RAR
               </h3>
+              <p className={styles.emptyStateText}>
+                Haz clic en cualquier fila de la tabla &quot;Formularios RAR&quot; para ver los detalles del formulario seleccionado aquí.
+              </p>
+            </div>
+          ) : (
+            <div>
+              {/* Encabezado con información del formulario seleccionado */}
+              <div className={styles.formularioHeader}>
+                <div className={styles.formularioHeaderTop}>
+                  <h3 className={styles.formularioTitle}>
+                    📄 Formulario RAR #{registroSeleccionado.interno || registroSeleccionado.InternoFormularioRAR}
+                  </h3>
+                
+                </div>
+                <div className={styles.formularioGrid}>
+                  <p><strong>Razón Social:</strong> {registroSeleccionado.razonSocial || '—'}</p>
+                  <p><strong>CUIT:</strong> {cuipFormatter(registroSeleccionado.cuit) || '—'}</p>
+                  <p><strong>Estado:</strong> {registroSeleccionado.estado || '—'}</p>
+                  <p><strong>Dirección:</strong> {registroSeleccionado.direccion || '—'}</p>
+                </div>
+              </div>
 
+              {/* Estados de carga y error */}
               {loadingDetalles && (
                 <div className={styles.loadingMessage}>
-                  <span>Cargando detalles...</span>
+                  <span>🔄 Cargando detalles de trabajadores...</span>
                 </div>
               )}
 
               {errorDetalles && (
                 <div className={styles.errorMessage}>
-                  <span>Error: {errorDetalles}</span>
+                  <span>❌ Error: {errorDetalles}</span>
                 </div>
               )}
 
               {!loadingDetalles && !errorDetalles && detallesInterno.length === 0 && (
                 <div className={styles.noDataMessage}>
-                  <span>No se encontraron trabajadores registrados para este formulario.</span>
+                  <span>📝 No se encontraron trabajadores registrados para este formulario.</span>
                 </div>
               )}
 
+              {/*  MODIFICACIÓN: Tabla de trabajadores usando DataTableImport */}
               {!loadingDetalles && !errorDetalles && detallesInterno.length > 0 && (
-                <div className="detalleTable">
-                  <p className={styles.detallesInfo}>
-                    <strong>Trabajadores registrados: {detallesInterno.length}</strong>
-                  </p>
-                  <table>
-                    <thead>
-                      <tr>
-                        <th style={{ width: 60 }}>#</th>
-                        <th style={{ width: 120 }}>CUIL</th>
-                        <th>NOMBRE</th>
-                        <th style={{ width: 150 }}>SECTOR/TAREA</th>
-                        <th style={{ width: 120 }}>F. INGRESO</th>
-                        <th style={{ width: 140 }}>F. INICIO EXPOSICIÓN</th>
-                        <th style={{ width: 130 }}>F. FIN EXPOSICIÓN</th>
-                        <th style={{ width: 80 }}>HORAS EXP.</th>
-                        <th style={{ width: 100 }}>CÓD. AGENTE</th>
-                        <th style={{ width: 150 }}>ÚLTIMO EXAMEN MÉDICO</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {detallesInterno.map((trabajador, index) => (
-                        <tr key={trabajador.id || index}>
-                          <td>{index + 1}</td>
-                          <td>{cuipFormatter(trabajador.cuil) || '—'}</td>
-                          <td>{trabajador.nombre || '—'}</td>
-                          <td>{trabajador.sectorTarea || '—'}</td>
-                          <td>{trabajador.fechaIngreso || '—'}</td>
-                          <td>{trabajador.fechaInicioExposicion || '—'}</td>
-                          <td>{trabajador.fechaFinExposicion || '—'}</td>
-                          <td>{trabajador.horasExposicion || '—'}</td>
-                          <td>{trabajador.codigoAgente || '—'}</td>
-                          <td>{trabajador.fechaUltimoExamenMedico || '—'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-
-                  <style jsx>{`
-                    .detalleTable table {
-                      width: 100%;
-                      border-collapse: collapse;
-                      font-size: 12px;
-                    }
-                    .detalleTable th,
-                    .detalleTable td {
-                      border: 1px solid #999;
-                      padding: 6px 8px;
-                    }
-                    .detalleTable thead th {
-                      background: #f5f5f5;
-                      font-weight: 600;
-                      text-transform: uppercase;
-                    }
-                  `}</style>
+                <div>
+                  <div className={styles.trabajadoresHeader}>
+                    <p className={`${styles.detallesInfo} ${styles.trabajadoresCount}`}>
+                      <strong>👥 Trabajadores registrados: {detallesInterno.length}</strong>
+                    </p>
+                  </div>
+                  
+                  {/* Usando el mismo componente DataTableImport */}
+                  <div className={styles.compactTable}>
+                    <DataTableImport
+                      columns={detalleColumns}
+                      data={detallesInterno}
+                      size="small"
+                      isLoading={loadingDetalles}
+                    />
+                  </div>
                 </div>
               )}
             </div>
           )}
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <div>
+      {viewMode === 'list' ? (
+        <div>
+          {/*  MODIFICACIÓN 8: Usamos el estado activeTabIndex para controlar el tab activo */}
+          <CustomTab 
+            tabs={tabItems} 
+            initialTabIndex={activeTabIndex}  // Controlamos dinámicamente qué tab está activo
+            key={activeTabIndex} // Forzamos re-render cuando cambia el tab activo
+          />
         </div>
       ) : viewMode === 'crear' ? (
         <FormularioRARGenerar
