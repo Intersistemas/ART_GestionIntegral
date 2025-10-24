@@ -127,12 +127,12 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
   //#region RefCCMMMotivos
   useSWR(
     !isLoadingTablas && tables.RefCCMMMotivos && tables.View_ConsultaCCMM ?
-      swrExecute.Key({
+      swrExecute.key({
         select: tables.RefCCMMMotivos.map(f => ({ value: f.name })),
         from: [{ table: "RefCCMMMotivos" }],
         order: { by: ["Codigo"] },
       }) : null,
-    swrExecute.Fetcher,
+    swrExecute.fetcher,
     {
       revalidateOnFocus: false,
       onSuccess(motivos) {
@@ -152,12 +152,12 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
   //#region RefCCMMTipos
   useSWR(
     !isLoadingTablas && tables.RefCCMMTipos && tables.View_ConsultaCCMM ?
-      swrExecute.Key({
+      swrExecute.key({
         select: tables.RefCCMMTipos.map(f => ({ value: f.name })),
         from: [{ table: "RefCCMMTipos" }],
         order: { by: ["Codigo"] },
       }) : null,
-    swrExecute.Fetcher,
+    swrExecute.fetcher,
     {
       revalidateOnFocus: false,
       onSuccess(tipos) {
