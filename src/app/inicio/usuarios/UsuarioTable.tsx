@@ -11,6 +11,7 @@ import DataTable from "@/utils/ui/table/DataTable";
 import UsuarioRow from "./interfaces/UsuarioRow";
 import { useAuth } from "@/data/AuthContext";
 import { Delete, GroupAdd, GroupRemove } from "@mui/icons-material";
+import Formato from "@/utils/Formato";
 
 interface Props {
   data: UsuarioRow[];
@@ -29,13 +30,13 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
   
   const columns = useMemo<ColumnDef<UsuarioRow>[]>(
     () => [
-      { accessorKey: "cuit", header: "CUIT" },
-      { accessorKey: "nombre", header: "Nombre" },
-      { accessorKey: "email", header: "Email" },
-      { accessorKey: "rol", header: "Rol" },
-      { accessorKey: "cargoDescripcion", header: "Cargo/Funcion" },
-      { accessorKey: "estado", header: "Estado" },
-      { accessorKey: "phoneNumber", header: "Telefono" },
+      { accessorKey: "cuit", header: "CUIT", cell: (info: any) => Formato.CUIP(info.getValue()), meta: { align: 'center'} },
+      { accessorKey: "nombre", header: "Nombre", meta: { align: 'center'} },
+      { accessorKey: "email", header: "Email", meta: { align: 'center'} },
+      { accessorKey: "rol", header: "Rol", meta: { align: 'center'} },
+      { accessorKey: "cargoDescripcion", header: "Cargo/Función", meta: { align: 'center'} },
+      { accessorKey: "estado", header: "Estado", meta: { align: 'center'} },
+      { accessorKey: "phoneNumber", header: "Teléfono", meta: { align: 'center'} },
       {
         id: "actions",
         header: "Acciones",
@@ -204,7 +205,7 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
           );
         },
         size: 150,
-      },
+      meta: { align: 'center'} },
     ],
     [onEdit, onDelete, onView, onPermisos, onActivate, isAdmin]
   );

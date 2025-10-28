@@ -15,6 +15,7 @@ import {
   FormControl,
   CircularProgress,
 } from "@mui/material";
+import Formato from '@/utils/Formato';
 
 const Poliza = () => {
 
@@ -146,7 +147,7 @@ const Poliza = () => {
         <TextField
           label="Nº CUIT:"
           name="CUITEmpleador"
-          value={cuit}
+          value={Formato.CUIP(cuit)}
           fullWidth
           variant='standard'
         />

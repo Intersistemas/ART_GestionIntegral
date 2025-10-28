@@ -21,6 +21,7 @@ import BadgeIcon from '@mui/icons-material/Badge';
 import CodeIcon from '@mui/icons-material/Code';
 
 import styles from './perfil.module.css';
+import Formato from "@/utils/Formato";
 
 function ProfilePage() {
   const { data: session, status } = useSession();
@@ -81,7 +82,7 @@ function ProfilePage() {
                 <Box className={styles.dataItem}>
                   <BadgeIcon className={styles.icon} />
                   <Typography variant="body1" component="span">
-                    <span className={styles.label}>CUIT: {cuit ?? "N/A"}</span> 
+                    <span className={styles.label}>CUIT/CUIL: {Formato.CUIP(cuit) ?? "N/A"}</span> 
                   </Typography>
                 </Box>
                 

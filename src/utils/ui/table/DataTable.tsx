@@ -203,7 +203,7 @@ export function DataTable<TData extends object>({
 
             {resolvedProps.enableFiltering && (
                 <TextField
-                    label="Buscar en la tabla..."
+                    label="Buscar en la tabla:"
                     variant="outlined"
                     value={globalFilter ?? ''}
                     onChange={(e) => setGlobalFilter(String(e.target.value))}
@@ -225,11 +225,8 @@ export function DataTable<TData extends object>({
                                         <TableCell
                                             key={header.id}
                                             colSpan={header.colSpan}
-                                            // APLICAR CLASE DE ALINEACIÓN
                                             className={`${styles.tableHeaderCell} ${headerPaddingClass} ${alignClass}`}
-                                            // Clic para sorting (excluyendo la columna de selección)
                                             onClick={resolvedProps.enableSorting && header.id !== 'select' ? header.column.getToggleSortingHandler() : undefined}
-                                            // Estilo de cursor DEBE USARSE INLINE o 'style', ya que 'sx' se removió
                                             style={{ cursor: (resolvedProps.enableSorting && header.id !== 'select') || onRowClick || enableRowSelection ? 'pointer' : 'default' }} 
                                         >
                                             <Box sx={{ display: 'flex', alignItems: 'center' }}>

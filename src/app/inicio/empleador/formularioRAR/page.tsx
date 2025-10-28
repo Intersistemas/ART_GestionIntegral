@@ -222,16 +222,16 @@ const FormulariosRAR: React.FC = () => {
 
   /* Columnas para tabla principal de formularios */
   const tableColumns = [
-    { accessorKey: 'interno', header: 'Interno' },
-    { accessorKey: 'cuit', header: 'CUIT', cell: (info: any) => cuipFormatter(info.getValue()) },
-    { accessorKey: 'razonSocial', header: 'Razón Social' },
-    { accessorKey: 'direccion', header: 'Dirección' },
-    { accessorKey: 'estado', header: 'Estado' },
-    { accessorKey: 'fechaCreacion', header: 'F. Creación', cell: (info: any) => fechaFormatter(info.getValue()) },
-    { accessorKey: 'fechaPresentacion', header: 'F. Presentación', cell: (info: any) => fechaFormatter(info.getValue()) },
-    { accessorKey: 'internoEstablecimiento', header: 'Interno Establecimiento' },
-    { accessorKey: 'cantTrabajadoresExpuestos', header: 'Expuestos' },
-    { accessorKey: 'cantTrabajadoresNoExpuestos', header: 'No Expuestos' },
+    { accessorKey: 'interno', header: 'Interno', meta: { align: 'center'} },
+    { accessorKey: 'cuit', header: 'CUIT', cell: (info: any) => Formato.CUIP(info.getValue()), meta: { align: 'center'} },
+    { accessorKey: 'razonSocial', header: 'Razón Social', meta: { align: 'center'} },
+    { accessorKey: 'direccion', header: 'Dirección', meta: { align: 'center'} },
+    { accessorKey: 'estado', header: 'Estado', meta: { align: 'center'} },
+    { accessorKey: 'fechaCreacion', header: 'Fecha Creación', cell: (info: any) => fechaFormatter(info.getValue()), meta: { align: 'center'} },
+    { accessorKey: 'fechaPresentacion', header: 'Fecha Presentación', cell: (info: any) => fechaFormatter(info.getValue()), meta: { align: 'center'} },
+    { accessorKey: 'internoEstablecimiento', header: 'Interno Establecimiento', meta: { align: 'center'} },
+    { accessorKey: 'cantTrabajadoresExpuestos', header: 'Expuestos', meta: { align: 'center'} },
+    { accessorKey: 'cantTrabajadoresNoExpuestos', header: 'No Expuestos', meta: { align: 'center'} },
     {
       id: 'acciones',
       header: 'Acciones',
@@ -286,7 +286,7 @@ const FormulariosRAR: React.FC = () => {
       ),
       enableSorting: false,
       size: 160, // Aumentamos el ancho para acomodar ambos botones
-    },
+   meta: { align: 'center'} },
   ];
 
   /*  MODIFICACIÓN: Columnas para tabla de detalles de trabajadores */
@@ -306,53 +306,53 @@ const FormulariosRAR: React.FC = () => {
     },
     { 
       accessorKey: 'nombre', 
-      header: 'NOMBRE',
+      header: 'Nombre',
       cell: (info: any) => info.getValue() || '—'
     },
     { 
       accessorKey: 'sectorTarea', 
-      header: 'SECTOR/TAREA',
+      header: 'Sector/Tarea',
       cell: (info: any) => info.getValue() || '—',
       size: 150
     },
     { 
       accessorKey: 'fechaIngreso', 
-      header: 'F. INGRESO',
+      header: 'Fecha Ingreso',
       cell: (info: any) => info.getValue() || '—',
       meta: { align: 'center' },
       size: 120
     },
     { 
       accessorKey: 'fechaInicioExposicion', 
-      header: 'F. INICIO EXPOSICIÓN',
+      header: 'Fecha Inicio Exp.',
       cell: (info: any) => info.getValue() || '—',
       meta: { align: 'center' },
       size: 140
     },
     { 
       accessorKey: 'fechaFinExposicion', 
-      header: 'F. FIN EXPOSICIÓN',
+      header: 'Fecha Fin Exp.',
       cell: (info: any) => info.getValue() || '—',
       meta: { align: 'center' },
       size: 130
     },
     { 
       accessorKey: 'horasExposicion', 
-      header: 'HORAS EXP.',
+      header: 'Horas Exp.',
       cell: (info: any) => info.getValue() || '—',
       meta: { align: 'center' },
       size: 80
     },
     { 
       accessorKey: 'codigoAgente', 
-      header: 'CÓD. AGENTE',
+      header: 'Cod. Agente',
       cell: (info: any) => info.getValue() || '—',
       meta: { align: 'center' },
       size: 100
     },
     { 
       accessorKey: 'fechaUltimoExamenMedico', 
-      header: 'ÚLTIMO EXAMEN MÉDICO',
+      header: 'Último Examen Médico',
       cell: (info: any) => info.getValue() || '—',
       meta: { align: 'center' },
       size: 150
@@ -452,11 +452,11 @@ const FormulariosRAR: React.FC = () => {
                 <View style={{ marginTop: 10 }}>
                   <View style={{ flexDirection: 'row', backgroundColor: '#f0f0f0', padding: 5 }}>
                     <Text style={{ fontSize: 8, width: '15%', fontWeight: 'bold' }}>CUIL</Text>
-                    <Text style={{ fontSize: 8, width: '25%', fontWeight: 'bold' }}>NOMBRE</Text>
-                    <Text style={{ fontSize: 8, width: '20%', fontWeight: 'bold' }}>SECTOR/TAREA</Text>
-                    <Text style={{ fontSize: 8, width: '12%', fontWeight: 'bold' }}>F. INGRESO</Text>
-                    <Text style={{ fontSize: 8, width: '10%', fontWeight: 'bold' }}>HORAS EXP.</Text>
-                    <Text style={{ fontSize: 8, width: '18%', fontWeight: 'bold' }}>CÓD. AGENTE</Text>
+                    <Text style={{ fontSize: 8, width: '25%', fontWeight: 'bold' }}>Nombre</Text>
+                    <Text style={{ fontSize: 8, width: '20%', fontWeight: 'bold' }}>Sector/Tarea</Text>
+                    <Text style={{ fontSize: 8, width: '12%', fontWeight: 'bold' }}>Fecha Ingreso</Text>
+                    <Text style={{ fontSize: 8, width: '10%', fontWeight: 'bold' }}>Horas Exp.</Text>
+                    <Text style={{ fontSize: 8, width: '18%', fontWeight: 'bold' }}>Cod. Agente</Text>
                   </View>
                   {trabajadoresFormateados.map((trabajador: any, index: number) => (
                     <View key={index} style={{ flexDirection: 'row', padding: 3, borderBottom: '1px solid #ddd' }}>
