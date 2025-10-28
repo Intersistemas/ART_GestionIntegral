@@ -6,17 +6,23 @@ import UsuarioForm, { UsuarioFormFields } from "./UsuarioForm";
 import UsuarioTable from "./UsuarioTable";
 import Tareas from "./Tareas";
 import useUsuarios from "./useUsuarios";
-import styles from './Usuario.module.css';
+import styles from "./Usuario.module.css";
 import CustomButton from "@/utils/ui/button/CustomButton";
 import UsuarioRow from "./interfaces/UsuarioRow";
 import { useAuth } from "@/data/AuthContext";
 import IUsuarioDarDeBajaReactivar from "./interfaces/IUsuarioDarDeBajaReactivar";
 
-type RequestMethod = 'create' | 'edit' | 'view' | 'delete' | 'activate' | 'remove';
+type RequestMethod =
+  | "create"
+  | "edit"
+  | "view"
+  | "delete"
+  | "activate"
+  | "remove";
 
 interface RequestState {
-    method: RequestMethod | null;
-    userData: UsuarioFormFields | null; 
+  method: RequestMethod | null;
+  userData: UsuarioFormFields | null;
 }
 
 interface PermisosModulo {
@@ -26,9 +32,9 @@ interface PermisosModulo {
 }
 
 export default function UsuariosPage() {
-  const { user } = useAuth(); 
+  const { user } = useAuth();
 
-  const initialForm: UsuarioFormFields = { 
+  const initialForm: UsuarioFormFields = {
     cuit: "",
     email: "",
     password: "",
@@ -43,12 +49,25 @@ export default function UsuariosPage() {
     cargoId: undefined,
   };
 
-  const { usuarios, roles, cargos, refEmpleadores, loading, error, registrarUsuario, actualizarPermisosUsuario, usuarioUpdate, usuarioDarDeBaja, usuarioReactivar, usuarioReestablecer } = useUsuarios();
-  const [formError, setFormError] = useState<string | null>(null);  
-
+  const {
+    usuarios,
+    roles,
+    cargos,
+    refEmpleadores,
+    loading,
+    error,
+    registrarUsuario,
+    actualizarPermisosUsuario,
+    usuarioUpdate,
+    usuarioDarDeBaja,
+    usuarioReactivar,
+    usuarioReestablecer,
+    usuarioReenviarCorreo
+  } = useUsuarios();
+  const [formError, setFormError] = useState<string | null>(null);
   const [requestState, setRequestState] = useState<RequestState>({
-        method: null,
-        userData: null
+    method: null,
+    userData: null,
   });
 
   const [permisosModal, setPermisosModal] = useState<{
@@ -56,22 +75,21 @@ export default function UsuariosPage() {
     usuario: UsuarioRow | null;
   }>({
     open: false,
-    usuario: null
+    usuario: null,
   });
-    
+
   // Determina si el modal debe estar visible
   const showModal = requestState.method !== null;
 
-
   const handleOpenModal = (method: RequestMethod, row?: UsuarioRow) => {
-
-      // CORRECCIÓN 2: Mapeamos la fila (UsuarioRow) a datos del formulario (UsuarioFormFields)
-      const dataToForm: UsuarioFormFields = row ? {
+    // CORRECCIÓN 2: Mapeamos la fila (UsuarioRow) a datos del formulario (UsuarioFormFields)
+    const dataToForm: UsuarioFormFields = row
+      ? {
           cuit: row.cuit || "",
           email: row.email || "",
           // La contraseña y su confirmación deben ir vacías SIEMPRE en edición
-          password: method === 'edit' ? "" : "", 
-          confirmPassword: method === 'edit' ? "" : "",
+          password: method === "edit" ? "" : "",
+          confirmPassword: method === "edit" ? "" : "",
           rol: row.rol || "",
           phoneNumber: row.phoneNumber || "",
           nombre: row.nombre || "",
@@ -82,15 +100,15 @@ export default function UsuariosPage() {
           empresaId: row.empresaId || user?.empresaId || 0, 
           // Es crucial incluir el ID de usuario para edición/eliminación
           id: String(row.id), // <-- Aseguramos que el ID se convierte a string para el formulario
-      } : initialForm;
+        }
+      : initialForm;
 
-      setRequestState({
-          method,
-          userData: dataToForm,
-      });
-      setFormError(null);
+    setRequestState({
+      method,
+      userData: dataToForm,
+    });
+    setFormError(null);
   };
-
 
   const handleCloseModal = () => {
     setRequestState({ method: null, userData: null });
@@ -99,35 +117,38 @@ export default function UsuariosPage() {
   const handleOpenPermisos = (usuario: UsuarioRow) => {
     setPermisosModal({
       open: true,
-      usuario
+      usuario,
     });
   };
 
   const handleClosePermisos = () => {
     setPermisosModal({
       open: false,
-      usuario: null
+      usuario: null,
     });
   };
 
   const handleSavePermisos = async (permisos: PermisosModulo[]) => {
     if (!permisosModal.usuario?.id) {
-      alert('Error: No se pudo identificar el usuario');
+      alert("Error: No se pudo identificar el usuario");
       return;
     }
 
     try {
-      const result = await actualizarPermisosUsuario(String(permisosModal.usuario.id), permisos);
-      
+      const result = await actualizarPermisosUsuario(
+        String(permisosModal.usuario.id),
+        permisos
+      );
+
       if (result.success) {
-        alert('Permisos guardados exitosamente');
+        alert("Permisos guardados exitosamente");
         handleClosePermisos();
       } else {
         alert(`Error al guardar permisos: ${result.error}`);
       }
     } catch (error) {
-      console.error('Error al guardar permisos:', error);
-      alert('Ocurrió un error al guardar los permisos');
+      console.error("Error al guardar permisos:", error);
+      alert("Ocurrió un error al guardar los permisos");
     }
   };
 
@@ -135,82 +156,103 @@ export default function UsuariosPage() {
     try {
       const result = await usuarioReestablecer(String(row.email));
       if (result.success) {
-        alert('Se envió el correo para reestablecer la contraseña del usuario.');
+        alert(
+          "Se envió el correo para reestablecer la contraseña del usuario."
+        );
       } else {
         alert(`Error al reestablecer usuario: ${result.error}`);
       }
     } catch (error) {
-      console.error('Error al reestablecer usuario:', error);
-      alert('Ocurrió un error al reestablecer el usuario');
+      console.error("Error al reestablecer usuario:", error);
+      alert("Ocurrió un error al reestablecer el usuario");
     }
   };
 
-    const handleSubmit = async (data: UsuarioFormFields) => {
+  const handleReenviarCorreo = async (email: string) => {
+    try {
+      const result = await usuarioReenviarCorreo(String(email));
+      if (result.success) {
+        alert("Se reenviaron las instrucciones al correo del usuario.");
+      } else {
+        alert(`Error al reenviar correo: ${result.error}`);
+      }
+    } catch (error) {
+      console.error("Error al reenviar correo:", error);
+      alert("Ocurrió un error al reenviar el correo");
+    }
+  };
+
+  const handleSubmit = async (data: UsuarioFormFields) => {
     // Aquí se crea el objeto completo para la API, añadiendo empresaId
     // La lógica de envío debe considerar el modo (create, edit, delete)
-        const method = requestState.method;
-        console.log("handleSubmit method:", method);
-        let result: { success: boolean; error: string | null } = { success: false, error: null };
+    const method = requestState.method;
+    console.log("handleSubmit method:", method);
+    let result: { success: boolean; error: string | null } = {
+      success: false,
+      error: null,
+    };
 
-        if (method === 'view') {
-            handleCloseModal();
-            return;
-        }
-        
-        // Aquí se crea el objeto completo para la API...
-        const dataToSubmit = {
-            ...data,
-            // EmpresaId ya viene del formulario o de initialForm, aseguramos que se envíe
-            empresaId: data.empresaId || initialForm.empresaId, 
-            // Si es 'edit' o 'delete', el ID viene en `data`
+    if (method === "view") {
+      handleCloseModal();
+      return;
+    }
+
+    // Aquí se crea el objeto completo para la API...
+    const dataToSubmit = {
+      ...data,
+      // EmpresaId ya viene del formulario o de initialForm, aseguramos que se envíe
+      empresaId: data.empresaId || initialForm.empresaId,
+      // Si es 'edit' o 'delete', el ID viene en `data`
+    };
+
+    // TODO: Implementar lógica de API para EDITAR y ELIMINAR
+    if (method === "edit") {
+      // Lógica para editar usuario
+      {
+        const rawResult = await usuarioUpdate(String(data.id), dataToSubmit);
+        result = {
+          success: rawResult.success,
+          error: rawResult.error !== undefined ? rawResult.error : null,
         };
-        
-        // TODO: Implementar lógica de API para EDITAR y ELIMINAR
-        if (method === 'edit') {
-          // Lógica para editar usuario
-          {
-            const rawResult = await usuarioUpdate(String(data.id), dataToSubmit);
-            result = {
-              success: rawResult.success,
-              error: rawResult.error !== undefined ? rawResult.error : null
-            };
-          } 
-        } else if (method === 'activate') {
-          // Lógica para reactivar usuario
-          const reactivarBody: IUsuarioDarDeBajaReactivar = {
-            id: String(data.id),
-            deletedObs: "", // data.deletedObs || ""
-          };
-          {
-            const rawResult = await usuarioReactivar(reactivarBody);
-            result = {
-              success: rawResult.success,
-              error:
-                rawResult.error !== undefined ? String(rawResult.error) : null,
-            };
-          }
-        } else if (method === 'delete') {
-          // Lógica para eliminar usuario
-          const darDeBajaBody: IUsuarioDarDeBajaReactivar = {
-            id: String(data.id),
-            deletedObs: "" // data.deletedObs || ""
-          };
-          {
-            const rawResult = await usuarioDarDeBaja(darDeBajaBody);
-            result = {
-              success: rawResult.success,
-              error: rawResult.error !== undefined ? String(rawResult.error) : null
-            };
-          }
-        } else if (method === 'create') {
-          result = await registrarUsuario(dataToSubmit) as { success: boolean; error: string | null }; 
-        }
+      }
+    } else if (method === "activate") {
+      // Lógica para reactivar usuario
+      const reactivarBody: IUsuarioDarDeBajaReactivar = {
+        id: String(data.id),
+        deletedObs: "", // data.deletedObs || ""
+      };
+      {
+        const rawResult = await usuarioReactivar(reactivarBody);
+        result = {
+          success: rawResult.success,
+          error: rawResult.error !== undefined ? String(rawResult.error) : null,
+        };
+      }
+    } else if (method === "delete") {
+      // Lógica para eliminar usuario
+      const darDeBajaBody: IUsuarioDarDeBajaReactivar = {
+        id: String(data.id),
+        deletedObs: "", // data.deletedObs || ""
+      };
+      {
+        const rawResult = await usuarioDarDeBaja(darDeBajaBody);
+        result = {
+          success: rawResult.success,
+          error: rawResult.error !== undefined ? String(rawResult.error) : null,
+        };
+      }
+    } else if (method === "create") {
+      result = (await registrarUsuario(dataToSubmit)) as {
+        success: boolean;
+        error: string | null;
+      };
+    }
 
-        if (result.success) {
-            handleCloseModal();
-        } else {
-            setFormError(result.error || `Error al ${method} el usuario.`);
-        }
+    if (result.success) {
+      handleCloseModal();
+    } else {
+      setFormError(result.error || `Error al ${method} el usuario.`);
+    }
   };
 
   if (loading) {
@@ -218,9 +260,15 @@ export default function UsuariosPage() {
   }
 
   if (error) {
-    return <Typography color="error">Error: {error instanceof Error ? error.message : "Un error inesperado ha ocurrido."}</Typography>;
+    return (
+      <Typography color="error">
+        Error:{" "}
+        {error instanceof Error
+          ? error.message
+          : "Un error inesperado ha ocurrido."}
+      </Typography>
+    );
   }
-  
 
   // AHORA currentInitialData siempre será UsuarioFormFields o initialForm
   // Lo cual satisface la prop initialData de UsuarioForm
@@ -244,6 +292,7 @@ export default function UsuariosPage() {
         onRemove={(row) => handleOpenModal("remove", row)}
         onReestablecer={(row) => handleReestablecer(row)}
         onPermisos={handleOpenPermisos}
+        onReenviarCorreo={(row) =>handleReenviarCorreo(row.email)}
         isLoading={loading}
       />
 

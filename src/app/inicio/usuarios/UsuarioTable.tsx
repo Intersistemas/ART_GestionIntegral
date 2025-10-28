@@ -10,7 +10,8 @@ import SecurityIcon from "@mui/icons-material/Security";
 import DataTable from "@/utils/ui/table/DataTable";
 import UsuarioRow from "./interfaces/UsuarioRow";
 import { useAuth } from "@/data/AuthContext";
-import { Delete, GroupAdd, GroupRemove, Password } from "@mui/icons-material";
+import { Delete, GroupAdd, GroupRemove, Mail, Password } from "@mui/icons-material";
+import { BsEnvelopeArrowUpFill } from "react-icons/bs";
 import Formato from "@/utils/Formato";
 
 interface Props {
@@ -113,6 +114,27 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
                         <SecurityIcon fontSize="large" />
                       </IconButton>
                     </Tooltip>
+                    <Tooltip
+                      title="Restablecer contraseña"
+                      arrow
+                      slotProps={{
+                        tooltip: {
+                          sx: {
+                            fontSize: "1.2rem",
+                            fontWeight: 500,
+                          },
+                        },
+                      }}
+                    >
+                      <IconButton
+                        disabled={!hasTask("Usuarios_AccionRestablecer")}
+                        onClick={() => onReestablecer(row.original)}
+                        color="warning"
+                        size="small"
+                      >
+                        <Password fontSize="large" />
+                      </IconButton>
+                    </Tooltip>
                   </>
               {row.original.estado === "Inactivo" ? 
               (
@@ -135,7 +157,7 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
                       color="primary"
                       size="small"
                     >
-                      <GroupAdd fontSize="large" />
+                      <Mail fontSize="large" />
                     </IconButton>
                   </Tooltip>
                 </>
@@ -169,7 +191,7 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
               {row.original.estado.toLowerCase() === "pendiente activación" && (
                 <>
                     <Tooltip
-                      title="Restablecer contraseña"
+                      title="Reenviar Correo"
                       arrow
                       slotProps={{
                         tooltip: {
@@ -181,12 +203,12 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
                       }}
                     >
                       <IconButton
-                        disabled={!hasTask("Usuarios_AccionRestablecer")}
-                        onClick={() => onReestablecer(row.original)}
+                        disabled={!hasTask("Usuarios_AccionRenviarCorreo")}
+                        onClick={() => onReenviarCorreo(row.original)}
                         color="warning"
                         size="small"
                       >
-                        <Password fontSize="large" />
+                        <BsEnvelopeArrowUpFill fontSize="large" />
                       </IconButton>
                     </Tooltip>
                   </>
@@ -197,7 +219,7 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
         size: 150,
       meta: { align: 'center'} },
     ],
-    [onEdit, onDelete, onView, onPermisos, onActivate, onReestablecer, isAdmin]
+    [onEdit, onDelete, onView, onPermisos, onActivate, onReestablecer, onReenviarCorreo, isAdmin]
   );
 
   return <DataTable data={data} columns={columns}  isLoading={isLoading} />;

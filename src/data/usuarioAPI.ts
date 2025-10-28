@@ -380,6 +380,25 @@ export class UsuarioAPIClass extends ExternalAPI {
       this.cambiarClave(query)
     );
   //#endregion
+
+  //#region EnviarCorreo Usuario
+
+  readonly postReenviarCorreoURL = () =>
+    this.getURL({ path: `/api/Usuario/EnviarCorreo` }).toString();
+  reenviarCorreo = async (email: string) =>
+    tokenizable
+      .post(this.postReenviarCorreoURL(), { to: [email] })
+      .then(async (response) => {
+        if (response.status === 200) return response.data;
+        return Promise.reject(
+          new AxiosError(`Error en la petición: ${response.data}`)
+        );
+      });
+  useReenviarCorreo = (query: any = {}) =>
+    useSWR([this.postReenviarCorreoURL(), token.getToken()], () =>
+      this.reenviarCorreo(query)
+    );
+  //#endregion
 }
 
 const UsuarioAPI = Object.seal(new UsuarioAPIClass());
