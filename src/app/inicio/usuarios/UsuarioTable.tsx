@@ -10,7 +10,7 @@ import SecurityIcon from "@mui/icons-material/Security";
 import DataTable from "@/utils/ui/table/DataTable";
 import UsuarioRow from "./interfaces/UsuarioRow";
 import { useAuth } from "@/data/AuthContext";
-import { Delete, GroupAdd, GroupRemove, Password } from "@mui/icons-material";
+import { Delete, GroupAdd, GroupRemove, Mail, Password } from "@mui/icons-material";
 import Formato from "@/utils/Formato";
 
 interface Props {
@@ -203,10 +203,10 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
                     </Tooltip>
                   </>
                 )}
-              {isAdmin && row.original.estado.toLowerCase() === "pendiente activacion" && (
+              {isAdmin && row.original.estado === "Pendiente activación" && (
                 <>
                   <Tooltip
-                    title="Activar usuario"
+                    title="Reenviar correo"
                     arrow
                     slotProps={{
                       tooltip: {
@@ -218,11 +218,11 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
                     }}
                   >
                     <IconButton
-                      onClick={() => onActivate(row.original)}
+                      onClick={() => onReenviarCorreo(row.original)}
                       color="primary"
                       size="small"
                     >
-                      <GroupAdd fontSize="large" />
+                      <Mail fontSize="large" />
                     </IconButton>
                   </Tooltip>
                 </>
@@ -233,7 +233,7 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
         size: 150,
       meta: { align: 'center'} },
     ],
-    [onEdit, onDelete, onView, onPermisos, onActivate, onReestablecer, isAdmin]
+    [onEdit, onDelete, onView, onPermisos, onActivate, onReestablecer, onReenviarCorreo, isAdmin]
   );
 
   return <DataTable data={data} columns={columns}  isLoading={isLoading} />;
