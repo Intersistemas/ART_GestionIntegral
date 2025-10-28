@@ -98,13 +98,7 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
     ],
   });
 
-  // map de operadores por tipo, usando tu defaults locales si existen
-  const pickOperatorsByType = (t?: TablesField["type"]): DefaultOperators | undefined => {
-    // si el archivo "@/utils/ui/QueryBuilderDefaults" define por tipo, usarlos
-    if (t && operators && typeof operators === "object" && operators[t]) return operators[t];
-    // fallback: undefined => RQB usará sus defaults
-    return undefined;
-  };
+
 
   // Columnas + campos para QB (excluyo Interno del QB, como en tu implementación previa)
   const { columns, fields } = useMemo(() => {
@@ -125,7 +119,7 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
       name,
       label: label ?? name,
       // si el campo trae operators propios, los respeta; sino toma por tipo
-      operators: colOps ?? pickOperatorsByType(type),
+      operators: colOps,
       valueEditorType,
       values,
       inputType: type ? (type === "dateTime" ? "datetime-local" : type) : undefined,
