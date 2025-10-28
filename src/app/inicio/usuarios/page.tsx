@@ -39,7 +39,7 @@ export default function UsuariosPage() {
     nombre: "",
     // userName: "",
     // Usamos el `|| 1` como valor por defecto, aunque es mejor que el backend lo maneje si no existe
-    empresaId: user?.empresaId || 1, 
+    empresaId: user?.empresaId || 0, 
     cargoId: undefined,
   };
 
@@ -79,7 +79,7 @@ export default function UsuariosPage() {
           // Limpiar cargo si está vacío, es null, undefined, o contiene valores no deseados
           // cargo: (row.cargo && row.cargo.trim() !== "" && row.cargo !== "null" && row.cargo !== "undefined") ? row.cargo : "",
           // Mantenemos la empresaId de la fila o del usuario actual
-          empresaId: row.empresaId || user?.empresaId || 1, 
+          empresaId: row.empresaId || user?.empresaId || 0, 
           // Es crucial incluir el ID de usuario para edición/eliminación
           id: String(row.id), // <-- Aseguramos que el ID se convierte a string para el formulario
       } : initialForm;

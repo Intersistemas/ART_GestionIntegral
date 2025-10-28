@@ -4,13 +4,15 @@ import { useAuth } from '@/data/AuthContext';
 import ArtAPI from "@/data/artAPI";
 import IUsuarioDarDeBaja from "./interfaces/IUsuarioDarDeBajaReactivar";
 
+
 const { useGetAll, useGetRoles, registrar, tareasUpdate, update, darDeBaja, reactivar, useGetCargos } = UsuarioAPI;
 const { useGetRefEmpleadores } = ArtAPI;
 
 export default function useUsuarios() {
-  const { data: usuariosData, error: usuariosError, isLoading: usuariosLoading, mutate: mutateUsuarios } = useGetAll({ empresaId: 1 });
-  const { data: roles, error: rolesError, isLoading: rolesLoading } = useGetRoles();  
+  
   const { user, status } = useAuth();   
+  const { data: usuariosData, error: usuariosError, isLoading: usuariosLoading, mutate: mutateUsuarios } = useGetAll(user?.empresaId == 0 ? {}:{ empresaId: user?.empresaId});
+  const { data: roles, error: rolesError, isLoading: rolesLoading } = useGetRoles();  
   const {
     data: cargos,
     error: cargosError,
