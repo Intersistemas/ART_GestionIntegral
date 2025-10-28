@@ -9,6 +9,7 @@ import styles from './Navbar.module.css';
 import Image from 'next/image';
 import { useState } from 'react';
 import CustomButton from "@/utils/ui/button/CustomButton";
+import Formato from "@/utils/Formato";
 
 function Navbar() {
   const { data: session, status } = useSession();
@@ -96,7 +97,7 @@ function Navbar() {
               <div className={styles.userData}>
                 <p className={styles.userName}>{nombre || 'N/A'}</p>
                 <p className={styles.userEmail}>{user?.email}</p>
-                <p className={styles.userCuit}>CUIT/CUIL: {cuit || 'N/A'}</p> 
+                <p className={styles.userCuit}>CUIT/CUIL: {Formato.CUIP(cuit) || 'N/A'}</p> 
               </div>
 
               <Link href="/inicio/perfil" className={styles.profileButtonWrapper}>

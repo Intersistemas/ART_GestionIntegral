@@ -11,6 +11,7 @@ import CustomButton from '@/utils/ui/button/CustomButton';
 import { BsBoxArrowInLeft, BsBoxArrowInRight, BsDownload } from "react-icons/bs";
 import { Box, TextField, Typography } from '@mui/material';
 import Image from 'next/image';
+import Formato from '@/utils/Formato';
 
 const { useGetPersonal, useGetPoliza } = gestionEmpleadorAPI;
 
@@ -51,6 +52,8 @@ export default function CoberturaPage() {
         {
             header: 'CUIL',
             accessorKey: 'cuil',
+            cell: (info: any) => Formato.CUIP(info.getValue())
+            
         },
         {
             header: 'Nombre',
@@ -286,7 +289,7 @@ export default function CoberturaPage() {
                     {/* 🟢 Párrafos del certificado (Respetando negritas y párrafos) */}
                     <text>
                         Por intermedio del presente <strong>CERTIFICAMOS</strong> que la empresa bajo la denominación de {polizaData?.empleador_Denominacion || ""}
-                         con N° de CUIT: {polizaData?.cuit || ""} ha contratado la cobertura de <strong>ART MUTUAL RURAL DE SEGUROS DE RIESGOS DEL TRABAJO</strong>,
+                         con N° de CUIT: {Formato.CUIP(polizaData?.cuit) || ""} ha contratado la cobertura de <strong>ART MUTUAL RURAL DE SEGUROS DE RIESGOS DEL TRABAJO</strong>,
                           según los términos de la Ley Nro. 24.557 por lo que el personal declarado oportunamente por el/la mencionado/a se encuentra cubierto a partir
                            del {polizaData?.vigencia_Desde || ""} hasta el {polizaData?.vigencia_Hasta || ""}.
                     </text>

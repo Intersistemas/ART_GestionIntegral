@@ -18,6 +18,7 @@ import RefEmpleador from "./interfaces/RefEmpleador";
 import CustomModal from "@/utils/ui/form/CustomModal";
 import CustomButton from "@/utils/ui/button/CustomButton";
 import CargoInterface from "./interfaces/CargoInterface";
+import Formato from "@/utils/Formato";
 
 // Definición del modo de operación (replicada desde UsuariosPage)
 type RequestMethod = "create" | "edit" | "view" | "delete" | "activate" | "remove";
@@ -313,14 +314,29 @@ export default function UsuarioForm({
   // --- Handlers ---
 
   const handleTextFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+
     const { name, value } = e.target;
     const fieldName = name as keyof UsuarioFormFields;
 
-    setForm((prev: UsuarioFormFields) => ({
-      ...prev,
-      [name]: value,
-    }));
 
+      if (name == "cuit") {
+        const value = (e.target.value || '').replace(/[^0-9]/g, '');
+        if (value.length <= 11) {
+            let f = value;
+            if (value.length > 2) f = value.substring(0, 2) + '-' + value.substring(2);
+            if (value.length > 10) f = value.substring(0, 2) + '-' + value.substring(2, 10) + '-' + value.substring(10);
+            setForm((prev: UsuarioFormFields) => ({
+            ...prev,
+            [name]: f,
+          }));
+        }
+      }else{
+          setForm((prev: UsuarioFormFields) => ({
+            ...prev,
+            [name]: value,
+          }));
+      }
+        
     if (touched[fieldName]) {
       const error = validateField(fieldName, value);
       setErrors((prev) => ({

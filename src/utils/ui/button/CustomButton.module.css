@@ -8,7 +8,7 @@
   font-weight: 700 !important;
   cursor: pointer !important;
   transition: all 0.3s ease !important;
-  text-transform: uppercase !important;
+  /*text-transform: uppercase !important;*/
   letter-spacing: 0.5px !important;
   position: relative !important;
   overflow: hidden !important;

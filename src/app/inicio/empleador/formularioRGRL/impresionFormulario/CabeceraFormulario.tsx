@@ -2,6 +2,7 @@
 import React from 'react';
 import { Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import type { CabeceraData } from './types/impresion';
+import Formato from '@/utils/Formato';
 
 const headerPng = '/images/Header.png';
 
@@ -50,7 +51,7 @@ const CabeceraFormulario: React.FC<CabeceraData> = ({ empresa, establecimiento, 
       </View>
       <View>
         <Text style={styles.textoDatos}>Razón Social: {empresa.razonSocial || '—'}</Text>
-        <Text style={styles.textoDatos}>CUIT: {empresa.cuit || '—'}</Text>
+        <Text style={styles.textoDatos}>CUIT: {Formato.CUIP(empresa.cuit) || '—'}</Text>
         <Text style={styles.textoDatos}>CIIU: {empresa.ciiu || '—'}</Text>
       </View>
 
@@ -69,7 +70,7 @@ const CabeceraFormulario: React.FC<CabeceraData> = ({ empresa, establecimiento, 
       </View>
 
       <View>
-        <Text style={styles.textoDatos}>Fecha SRT: {fechaSRT || '—'}</Text>
+        <Text style={styles.textoDatos}>Fecha SRT: {Formato.Fecha(fechaSRT) || '—'}</Text>
       </View>
     </>
   );
