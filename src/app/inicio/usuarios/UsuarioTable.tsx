@@ -13,7 +13,6 @@ import { useAuth } from "@/data/AuthContext";
 import { Delete, GroupAdd, GroupRemove } from "@mui/icons-material";
 import Formato from "@/utils/Formato";
 
-
 interface Props {
   data: UsuarioRow[];
   onEdit: (row: UsuarioRow) => void;
