@@ -26,7 +26,9 @@ interface Props {
 
 export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivate, onRemove, onPermisos, isLoading }: Props) {
   const { user } = useAuth();  
-  const isAdmin = user?.rol?.toLowerCase() === "administrador";
+  const { hasTask } = useAuth();
+  const isAdmin = user?.rol?.toLowerCase() === "administrador"
+  const isAdminEmpleador = user?.rol?.toLowerCase() === "administradorempleador";
   
   const columns = useMemo<ColumnDef<UsuarioRow>[]>(
     () => [
@@ -37,17 +39,14 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
       { accessorKey: "cargoDescripcion", header: "Cargo/Función", meta: { align: 'center'} },
       { accessorKey: "estado", header: "Estado", meta: { align: 'center'} },
       { accessorKey: "phoneNumber", header: "Teléfono", meta: { align: 'center'} },
-      {
-        id: "actions",
+      { id: "actions",
         header: "Acciones",
         cell: ({ row }) => {
           const isRowUserAdmin = row.original.rol?.toLowerCase() === "administrador";
+          const isRowUserAdminEmpleador = row.original.rol?.toLowerCase() === "administradorempleador";
           
           return (
             <Box sx={{ display: "flex", gap: 0.5 }}>
-              {isAdmin &&
-                isRowUserAdmin &&
-                row.original.estado === "Activo" && (
                   <>
                     <Tooltip
                       title="Editar usuario"
@@ -62,6 +61,7 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
                       }}
                     >
                       <IconButton
+                        disabled={!hasTask("Usuarios_AccionEditar")}
                         onClick={() => onEdit(row.original)}
                         color="warning"
                         size="small"
@@ -82,6 +82,7 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
                       }}
                     >
                       <IconButton
+                      disabled={!hasTask("Usuarios_AccionVer")}
                         onClick={() => onView(row.original)}
                         color="primary"
                         size="small"
@@ -89,52 +90,7 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
                         <VisibilityIcon fontSize="large" />
                       </IconButton>
                     </Tooltip>                    
-                  </>
-                )}
-              {isAdmin &&
-                !isRowUserAdmin &&
-                row.original.estado === "Activo" && (
-                  <>
-                    <Tooltip
-                      title="Editar usuario"
-                      arrow
-                      slotProps={{
-                        tooltip: {
-                          sx: {
-                            fontSize: "1.2rem",
-                            fontWeight: 500,
-                          },
-                        },
-                      }}
-                    >
-                      <IconButton
-                        onClick={() => onEdit(row.original)}
-                        color="warning"
-                        size="small"
-                      >
-                        <EditIcon fontSize="large" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip
-                      title="Ver detalles"
-                      arrow
-                      slotProps={{
-                        tooltip: {
-                          sx: {
-                            fontSize: "1.2rem",
-                            fontWeight: 500,
-                          },
-                        },
-                      }}
-                    >
-                      <IconButton
-                        onClick={() => onView(row.original)}
-                        color="primary"
-                        size="small"
-                      >
-                        <VisibilityIcon fontSize="large" />
-                      </IconButton>
-                    </Tooltip>
+
                     <Tooltip
                       title="Configurar permisos"
                       arrow
@@ -148,6 +104,7 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
                       }}
                     >
                       <IconButton
+                        disabled={!hasTask("Usuarios_AccionConfigurar")}
                         onClick={() => onPermisos(row.original)}
                         color="success"
                         size="small"
@@ -155,29 +112,9 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
                         <SecurityIcon fontSize="large" />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip
-                      title="Desactivar usuario"
-                      arrow
-                      slotProps={{
-                        tooltip: {
-                          sx: {
-                            fontSize: "1.2rem",
-                            fontWeight: 500,
-                          },
-                        },
-                      }}
-                    >
-                      <IconButton
-                        onClick={() => onDelete(row.original)}
-                        color="error"
-                        size="small"
-                      >
-                        <GroupRemove fontSize="large" />
-                      </IconButton>
-                    </Tooltip>
                   </>
-                )}
-              {isAdmin && row.original.estado === "Inactivo" && (
+              {row.original.estado === "Inactivo" ? 
+              (
                 <>
                   <Tooltip
                     title="Activar usuario"
@@ -192,6 +129,7 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
                     }}
                   >
                     <IconButton
+                      disabled={!hasTask("Usuarios_AccionActivar")}
                       onClick={() => onActivate(row.original)}
                       color="primary"
                       size="small"
@@ -200,7 +138,34 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
                     </IconButton>
                   </Tooltip>
                 </>
-              )}
+              ) 
+              :
+              (
+              <>
+                <Tooltip
+                  title="Desactivar usuario"
+                  arrow
+                  slotProps={{
+                    tooltip: {
+                      sx: {
+                        fontSize: "1.2rem",
+                        fontWeight: 500,
+                      },
+                    },
+                  }}
+                >
+                  <IconButton
+                    disabled={!hasTask("Usuarios_AccionDesactivar")}
+                    onClick={() => onDelete(row.original)}
+                    color="error"
+                    size="small"
+                  >
+                    <GroupRemove fontSize="large" />
+                  </IconButton>
+                </Tooltip>
+              </>
+              ) 
+              }
             </Box>
           );
         },
