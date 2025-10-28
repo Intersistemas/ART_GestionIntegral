@@ -10,21 +10,23 @@ import SecurityIcon from "@mui/icons-material/Security";
 import DataTable from "@/utils/ui/table/DataTable";
 import UsuarioRow from "./interfaces/UsuarioRow";
 import { useAuth } from "@/data/AuthContext";
-import { Delete, GroupAdd, GroupRemove } from "@mui/icons-material";
+import { Delete, GroupAdd, GroupRemove, Password } from "@mui/icons-material";
 import Formato from "@/utils/Formato";
 
 interface Props {
   data: UsuarioRow[];
   onEdit: (row: UsuarioRow) => void;
-  onDelete: (row: UsuarioRow) => void; 
+  onDelete: (row: UsuarioRow) => void;
   onView: (row: UsuarioRow) => void;
   onPermisos: (row: UsuarioRow) => void;
   onActivate: (row: UsuarioRow) => void;
   onRemove: (row: UsuarioRow) => void;
+  onReestablecer: (row: UsuarioRow) => void;
+  onReenviarCorreo: (row: UsuarioRow) => void;
   isLoading: boolean;
 }
 
-export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivate, onRemove, onPermisos, isLoading }: Props) {
+export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivate, onRemove, onPermisos, onReestablecer, onReenviarCorreo, isLoading }: Props) {
   const { user } = useAuth();  
   const { hasTask } = useAuth();
   const isAdmin = user?.rol?.toLowerCase() === "administrador"
@@ -90,7 +92,6 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
                         <VisibilityIcon fontSize="large" />
                       </IconButton>
                     </Tooltip>                    
-
                     <Tooltip
                       title="Configurar permisos"
                       arrow
@@ -164,15 +165,39 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
                   </IconButton>
                 </Tooltip>
               </>
-              ) 
-              }
+              )}
+              {row.original.estado.toLowerCase() === "pendiente activación" && (
+                <>
+                    <Tooltip
+                      title="Restablecer contraseña"
+                      arrow
+                      slotProps={{
+                        tooltip: {
+                          sx: {
+                            fontSize: "1.2rem",
+                            fontWeight: 500,
+                          },
+                        },
+                      }}
+                    >
+                      <IconButton
+                        disabled={!hasTask("Usuarios_AccionRestablecer")}
+                        onClick={() => onReestablecer(row.original)}
+                        color="warning"
+                        size="small"
+                      >
+                        <Password fontSize="large" />
+                      </IconButton>
+                    </Tooltip>
+                  </>
+                )}
             </Box>
           );
         },
         size: 150,
       meta: { align: 'center'} },
     ],
-    [onEdit, onDelete, onView, onPermisos, onActivate, isAdmin]
+    [onEdit, onDelete, onView, onPermisos, onActivate, onReestablecer, isAdmin]
   );
 
   return <DataTable data={data} columns={columns}  isLoading={isLoading} />;

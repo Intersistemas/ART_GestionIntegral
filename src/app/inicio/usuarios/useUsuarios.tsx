@@ -4,8 +4,7 @@ import { useAuth } from '@/data/AuthContext';
 import ArtAPI from "@/data/artAPI";
 import IUsuarioDarDeBaja from "./interfaces/IUsuarioDarDeBajaReactivar";
 
-
-const { useGetAll, useGetRoles, registrar, tareasUpdate, update, darDeBaja, reactivar, useGetCargos } = UsuarioAPI;
+const { useGetAll, useGetRoles, registrar, tareasUpdate, update, darDeBaja, reactivar, useGetCargos, reestablecer } = UsuarioAPI;
 const { useGetRefEmpleadores } = ArtAPI;
 
 export default function useUsuarios() {
@@ -123,6 +122,17 @@ export default function useUsuarios() {
     }
   };
 
+  const usuarioReestablecer = async (email: string) => {
+    try {
+      await reestablecer(email);
+
+      return { success: true };
+    } catch (err) {
+      const error = (err instanceof AxiosError) ? err : new AxiosError("Error desconocido al reestablecer el usuario");
+      return { success: false, error: error.response?.data?.Mensaje ?? "Ocurrió un error al reestablecer el usuario." };
+    }
+  };
+
   return {
     usuarios: usuariosData?.data || [],
     roles: roles || [],
@@ -134,6 +144,7 @@ export default function useUsuarios() {
     actualizarPermisosUsuario,
     usuarioUpdate,
     usuarioDarDeBaja,
-    usuarioReactivar
+    usuarioReactivar,
+    usuarioReestablecer
   };
 };

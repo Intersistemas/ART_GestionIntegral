@@ -43,7 +43,7 @@ export default function UsuariosPage() {
     cargoId: undefined,
   };
 
-  const { usuarios, roles, cargos, refEmpleadores, loading, error, registrarUsuario, actualizarPermisosUsuario, usuarioUpdate, usuarioDarDeBaja, usuarioReactivar } = useUsuarios();
+  const { usuarios, roles, cargos, refEmpleadores, loading, error, registrarUsuario, actualizarPermisosUsuario, usuarioUpdate, usuarioDarDeBaja, usuarioReactivar, usuarioReestablecer } = useUsuarios();
   const [formError, setFormError] = useState<string | null>(null);  
 
   const [requestState, setRequestState] = useState<RequestState>({
@@ -128,6 +128,20 @@ export default function UsuariosPage() {
     } catch (error) {
       console.error('Error al guardar permisos:', error);
       alert('Ocurrió un error al guardar los permisos');
+    }
+  };
+
+  const handleReestablecer = async (row: UsuarioRow) => {
+    try {
+      const result = await usuarioReestablecer(String(row.email));
+      if (result.success) {
+        alert('Se envió el correo para reestablecer la contraseña del usuario.');
+      } else {
+        alert(`Error al reestablecer usuario: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error al reestablecer usuario:', error);
+      alert('Ocurrió un error al reestablecer el usuario');
     }
   };
 
@@ -228,6 +242,7 @@ export default function UsuariosPage() {
         onDelete={(row) => handleOpenModal("delete", row)}
         onActivate={(row) => handleOpenModal("activate", row)}
         onRemove={(row) => handleOpenModal("remove", row)}
+        onReestablecer={(row) => handleReestablecer(row)}
         onPermisos={handleOpenPermisos}
         isLoading={loading}
       />
