@@ -87,6 +87,8 @@ export interface UsuarioVm {
   token: TokenDTO;
   rol?: string;
   empresaId?: number;
+  empresaCUIT: number;
+  empresaRazonSocial: string;
   modulos?: Modulo[]; //ToDo: verificar el tipo de arreglo
   exclusiones?: UsuarioExclusionVm[];
 }
@@ -364,7 +366,7 @@ export class UsuarioAPIClass extends ExternalAPI {
 
   readonly postCambiarClaveURL = () =>
     this.getURL({ path: `/api/Usuario/ReestablecerClave` }).toString();
-  cambiarClave = async (data: { email: string, password: string, token: string, confirmPassword: string }) =>
+  cambiarClave = async (data: { email?: string, password?: string, token?: string, confirmPassword?: string }) =>
     tokenizable
       .post(this.postCambiarClaveURL(), {
         email: data.email, 
