@@ -364,10 +364,13 @@ export class UsuarioAPIClass extends ExternalAPI {
 
   readonly postCambiarClaveURL = () =>
     this.getURL({ path: `/api/Usuario/ReestablecerClave` }).toString();
-  cambiarClave = async (query: any = {}) =>
+  cambiarClave = async (data: { email: string, password: string, token: string, confirmPassword: string }) =>
     tokenizable
       .post(this.postCambiarClaveURL(), {
-        data: query,
+        email: data.email, 
+        token: data.token, 
+        password: data.password, 
+        confirmPassword: data.confirmPassword 
       })
       .then(async (response) => {
         if (response.status === 200) return response.data;
@@ -375,7 +378,7 @@ export class UsuarioAPIClass extends ExternalAPI {
           new AxiosError(`Error en la petición: ${response.data}`)
         );
       });
-  useCambiarClave = (query: any = {}) =>
+  useCambiarClave = (query: any) =>
     useSWR([this.postCambiarClaveURL(), token.getToken()], () =>
       this.cambiarClave(query)
     );
@@ -384,7 +387,7 @@ export class UsuarioAPIClass extends ExternalAPI {
   //#region EnviarCorreo Usuario
 
   readonly postReenviarCorreoURL = () =>
-    this.getURL({ path: `/api/Usuario/EnviarCorreo` }).toString();
+    this.getURL({ path: `/api/Usuario/EnviarCorreoActivacion` }).toString();
   reenviarCorreo = async (email: string) =>
     tokenizable
       .post(this.postReenviarCorreoURL(), { to: [email] })
@@ -399,6 +402,25 @@ export class UsuarioAPIClass extends ExternalAPI {
       this.reenviarCorreo(query)
     );
   //#endregion
+
+  //#region Confirmar Email
+  readonly confirmarEmailURL = () =>
+    this.getURL({ path: `/api/Usuario/ConfirmarEmail` }).toString();
+  confirmarEmail = async (token: string, email: string) =>
+    tokenizable
+      .post(this.confirmarEmailURL(), { email, token })
+      .then(async (response) => {
+        if (response.status === 200) return response.data;
+        return Promise.reject(
+          new AxiosError(`Error en la petición: ${response.data}`)
+        );
+      });
+  useConfirmarEmail = (query: any) =>
+    useSWR(
+      [this.confirmarEmailURL(), token.getToken()],
+      () => this.confirmarEmail(query.token, query.email)
+    );
+
 }
 
 const UsuarioAPI = Object.seal(new UsuarioAPIClass());
