@@ -308,7 +308,7 @@ const ResetPassword = ({ onSuccess, errorMsg }: Props) => {
                       helperText={touched.password && errors.password}
                       fullWidth
                       required
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || isSuccess}
                       placeholder="••••••••"
                       className={styles.fullRowField}
                       margin="normal"
@@ -331,7 +331,7 @@ const ResetPassword = ({ onSuccess, errorMsg }: Props) => {
                       }
                       fullWidth
                       required
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || isSuccess}
                       placeholder="••••••••"
                       className={styles.fullRowField}
                       margin="normal"
@@ -353,11 +353,13 @@ const ResetPassword = ({ onSuccess, errorMsg }: Props) => {
                   <Box sx={{ width: "100%" }}>
                     <CustomButton
                       type="submit"
-                      disabled={isSubmitting || !form.token}
+                      disabled={isSubmitting || !form.token || isSuccess}
                       style={{ width: "100%" }}
                     >
                       {isSubmitting ? (
                         <CircularProgress size={24} color="inherit" />
+                      ) : isSuccess ? (
+                        "Contraseña Cambiada ✓"
                       ) : (
                         "Establecer Contraseña"
                       )}
