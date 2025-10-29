@@ -220,7 +220,7 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
         size: 150,
       meta: { align: 'center'} },
     ],
-    [onEdit, onDelete, onView, onPermisos, onActivate, onReestablecer, onReenviarCorreo, isAdmin]
+    [onEdit, onDelete, onView, onPermisos, onActivate, onReestablecer, onReenviarCorreo, hasTask]
   );
 
   return <DataTable data={data} columns={columns}  isLoading={isLoading} />;

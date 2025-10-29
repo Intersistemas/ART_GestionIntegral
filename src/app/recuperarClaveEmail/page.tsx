@@ -10,7 +10,7 @@ import {
   Card,
   CardContent,
 } from "@mui/material";
-import styles from "./Usuario.module.css";
+import styles from "./recuperarClaveEmail.module.css";
 import CustomButton from "@/utils/ui/button/CustomButton";
 import UsuarioAPI from "@/data/usuarioAPI";
 

@@ -87,6 +87,8 @@ export interface UsuarioVm {
   token: TokenDTO;
   rol?: string;
   empresaId?: number;
+  empresaCUIT: number;
+  empresaRazonSocial: string;
   modulos?: Modulo[]; //ToDo: verificar el tipo de arreglo
   exclusiones?: UsuarioExclusionVm[];
 }
