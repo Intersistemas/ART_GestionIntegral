@@ -12,7 +12,7 @@ import type { CabeceraData } from './impresionFormulario/types/impresion';
 import CustomModal from '@/utils/ui/form/CustomModal';
 import GenerarFormularioRGRL from './generar/GenerarFormularioRGRL';
 import { CUIP, Fecha, FechaHora } from '@/utils/Formato';
-
+import { useAuth } from '@/data/AuthContext';
 import dayjs from 'dayjs';
 import styles from './FormulariosRGRL.module.css';
 import type {
@@ -286,6 +286,10 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
   const [openGenerar, setOpenGenerar] = useState<boolean>(false);
   const [replicaDe, setReplicaDe] = useState<number | undefined>(undefined);
 
+  const { user } = useAuth();
+      // Accede a las propiedades de la sesión con seguridad
+  const {empresaCUIT } = user as any;
+
   const isFilaVacia = (r: FormularioRGRLDetalle) =>
     !(
       (r.Pregunta && r.Pregunta.trim()) ||
@@ -314,14 +318,14 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
     if (detallePage > totalPages) setDetallePage(totalPages);
   }, [totalPages, detallePage]);
 
-  const [cuitBusqueda, setCuitBusqueda] = useState<string>(String(cuit ?? ''));
+  const [cuitBusqueda, setCuitBusqueda] = useState<string>(String(empresaCUIT ?? ''));
 
   const fetchFormularios = useCallback(
     // Busca cabeceras por CUIT; si CUIT inválido, limpia la grilla.
     async (cuitParam?: number) => {
       try {
         setLoading(true);
-        const c = Number(cuitParam ?? cuit);
+        const c = Number(cuitParam ?? empresaCUIT);
         if (!c || Number.isNaN(c)) {
           setFormulariosRGRL([]);
           return;
@@ -332,12 +336,12 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
         setLoading(false);
       }
     },
-    [cuit]
+    [empresaCUIT]
   );
   // Carga inicial y recarga cuando cambian "cuit" o "referenteDatos".
   useEffect(() => {
-    fetchFormularios(cuit);
-  }, [fetchFormularios, referenteDatos, cuit]);
+    fetchFormularios(empresaCUIT);
+  }, [fetchFormularios, referenteDatos, empresaCUIT]);
 
   // Ejecuta búsqueda por CUIT ingresado y resetea selección/tabs/detalle.
   const onBuscar = async () => {
@@ -551,12 +555,14 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
   return (
     <div>
       {/* Contenedor principal: buscador, acciones, tabla y detalle */}
+      
       {!cargarFormulario ? (
         <div>
           {/* Buscador: input para CUIT y tecla Enter para buscar */}
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <input
               type="text"
+              disabled={empresaCUIT != 0}
               placeholder="Ingresá CUIT/CUIL (solo números)"
               value={cuitBusqueda}
               onChange={(e) => setCuitBusqueda(e.target.value.replace(/[^\d]/g, ''))}
@@ -569,7 +575,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
                 width: 280,
               }}
             />
-            <CustomButton onClick={onBuscar}>BUSCAR</CustomButton>
+            <CustomButton disabled={empresaCUIT != 0} onClick={onBuscar}>BUSCAR</CustomButton>
           </div>
 
           <br />

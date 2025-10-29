@@ -53,7 +53,8 @@ type ViewMode = 'list' | 'crear' | 'editar';
 
 const FormulariosRAR: React.FC = () => {
   const { user } = useAuth();
-  const cuit = Number(user?.cuit ?? 0);
+    // Accede a las propiedades de la sesión con seguridad
+  const {empresaCUIT, cuit } = user as any;
 
   const [loading, setLoading] = useState<boolean>(true);
   const [internoFormularioRAR, setInternoFormularioRAR] = useState<number>(0);
@@ -86,9 +87,9 @@ const FormulariosRAR: React.FC = () => {
 
   const fetchFormularios = useCallback(async () => {
     try {
-      const cuitUsuario = cuit;
-      const response = await fetch(
-        `http://arttest.intersistemas.ar:8302/api/FormulariosRAR?CUIL=${cuitUsuario}&PageSize=500`
+      const response = await fetch( empresaCUIT == 0 ?
+        `http://arttest.intersistemas.ar:8302/api/FormulariosRAR` :
+        `http://arttest.intersistemas.ar:8302/api/FormulariosRAR?CUIT=${empresaCUIT}`
       );
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
@@ -103,7 +104,7 @@ const FormulariosRAR: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [cuit]);
+  }, [empresaCUIT]);
 
   const fetchDetallesInterno = useCallback(async (internoId: number) => {
     if (!internoId || internoId === 0) {
