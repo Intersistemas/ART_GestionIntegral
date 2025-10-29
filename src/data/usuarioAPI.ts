@@ -366,7 +366,7 @@ export class UsuarioAPIClass extends ExternalAPI {
 
   readonly postCambiarClaveURL = () =>
     this.getURL({ path: `/api/Usuario/ReestablecerClave` }).toString();
-  cambiarClave = async (data: { email: string, password: string, token: string, confirmPassword: string }) =>
+  cambiarClave = async (data: { email?: string, password?: string, token?: string, confirmPassword?: string }) =>
     tokenizable
       .post(this.postCambiarClaveURL(), {
         email: data.email, 
