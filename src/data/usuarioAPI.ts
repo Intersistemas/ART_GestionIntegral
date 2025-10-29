@@ -63,7 +63,7 @@ export type Modulo = {
   codigo: number;
   nombre: string;
   habilitado: boolean;
-  tareas: Tarea[]; 
+  tareas: Tarea[];
 };
 
 export interface UsuarioVm {
@@ -229,9 +229,8 @@ export class UsuarioAPIClass extends ExternalAPI {
 
   //#region tablas
   readonly tablasURL = this.getURL({ path: "/api/Tablas" }).toString();
-  tablas = async () => tokenizable.get<Tabla[]>(
-    this.tablasURL
-  ).then(({ data }) => data);
+  tablas = async () =>
+    tokenizable.get<Tabla[]>(this.tablasURL).then(({ data }) => data);
   swrTablas = Object.freeze({
     Key: [this.tablasURL, token.getToken()],
     Fetcher: this.tablas,
@@ -242,14 +241,21 @@ export class UsuarioAPIClass extends ExternalAPI {
   //#region tablasUsuario
   readonly tablasUsuarioURL = ({ usuarioId }: TablasUsuarioParams) =>
     this.getURL({ path: `/api/Tablas/Usuario/${usuarioId}` }).toString();
-  tablasUsuario = async (params: TablasUsuarioParams) => tokenizable.get<Tabla[]>(
-    this.tablasUsuarioURL(params)
-  ).then(({ data }) => data);
+  tablasUsuario = async (params: TablasUsuarioParams) =>
+    tokenizable
+      .get<Tabla[]>(this.tablasUsuarioURL(params))
+      .then(({ data }) => data);
   swrTablasUsuario = Object.freeze({
-    Key: (params: TablasUsuarioParams): TablasUsuarioSWRKey => [this.tablasUsuarioURL(params), token.getToken(), JSON.stringify(params)],
-    Fetcher: (key: TablasUsuarioSWRKey) => this.tablasUsuario(JSON.parse(key[2])),
+    Key: (params: TablasUsuarioParams): TablasUsuarioSWRKey => [
+      this.tablasUsuarioURL(params),
+      token.getToken(),
+      JSON.stringify(params),
+    ],
+    Fetcher: (key: TablasUsuarioSWRKey) =>
+      this.tablasUsuario(JSON.parse(key[2])),
   });
-  useTablasUsuario = (params: TablasUsuarioParams) => useSWR(this.swrTablasUsuario.Key(params), this.swrTablasUsuario.Fetcher);
+  useTablasUsuario = (params: TablasUsuarioParams) =>
+    useSWR(this.swrTablasUsuario.Key(params), this.swrTablasUsuario.Fetcher);
   //#endregion tablasUsuario
 
   //#region actualizarTareas
@@ -312,10 +318,13 @@ export class UsuarioAPIClass extends ExternalAPI {
 
   //#region Cargos
 
-  readonly getCargosUrl = (empresaId: number) => this.getURL({ path: `/api/Cargos/Empresa/${empresaId}` }).toString();
+  readonly getCargosUrl = (empresaId: number) =>
+    this.getURL({ path: `/api/Cargos/Empresa/${empresaId}` }).toString();
   getCargos = async (query: any = {}) =>
     tokenizable
-      .get<CargoInterface[]>(this.getCargosUrl(query.empresaId), { data: query })
+      .get<CargoInterface[]>(this.getCargosUrl(query.empresaId), {
+        data: query,
+      })
       .then(async (response) => {
         if (response.status === 200) return response.data;
         return Promise.reject(
@@ -323,8 +332,72 @@ export class UsuarioAPIClass extends ExternalAPI {
         );
       });
   useGetCargos = (query: any = {}) =>
-    useSWR([this.getCargosUrl(query.empresaId), token.getToken()], () => this.getCargos(query));
+    useSWR([this.getCargosUrl(query.empresaId), token.getToken()], () =>
+      this.getCargos(query)
+    );
 
+  //#endregion
+
+  //#region Reestablecer Usuario
+
+  readonly postReestablecerURL = () =>
+    this.getURL({ path: `/api/Usuario/RecuperarClaveEmail` }).toString();
+  reestablecer = async (email: string) =>
+    tokenizable
+      .post(this.postReestablecerURL(), { email })
+      .then(async (response) => {
+        if (response.status === 200) return response.data;
+        return Promise.reject(
+          new AxiosError(`Error en la petición: ${response.data}`)
+        );
+      });
+  useReestablecer = (query: any = {}) => {
+    console.log("endpoint", this.postReestablecerURL());
+    return useSWR([this.postReestablecerURL(), token.getToken()], () =>
+      this.reestablecer(query)
+    );
+  };
+
+  //#endregion
+
+  //#region CambiarClave Usuario
+
+  readonly postCambiarClaveURL = () =>
+    this.getURL({ path: `/api/Usuario/ReestablecerClave` }).toString();
+  cambiarClave = async (query: any = {}) =>
+    tokenizable
+      .post(this.postCambiarClaveURL(), {
+        data: query,
+      })
+      .then(async (response) => {
+        if (response.status === 200) return response.data;
+        return Promise.reject(
+          new AxiosError(`Error en la petición: ${response.data}`)
+        );
+      });
+  useCambiarClave = (query: any = {}) =>
+    useSWR([this.postCambiarClaveURL(), token.getToken()], () =>
+      this.cambiarClave(query)
+    );
+  //#endregion
+
+  //#region EnviarCorreo Usuario
+
+  readonly postReenviarCorreoURL = () =>
+    this.getURL({ path: `/api/Usuario/EnviarCorreo` }).toString();
+  reenviarCorreo = async (email: string) =>
+    tokenizable
+      .post(this.postReenviarCorreoURL(), { to: [email] })
+      .then(async (response) => {
+        if (response.status === 200) return response.data;
+        return Promise.reject(
+          new AxiosError(`Error en la petición: ${response.data}`)
+        );
+      });
+  useReenviarCorreo = (query: any = {}) =>
+    useSWR([this.postReenviarCorreoURL(), token.getToken()], () =>
+      this.reenviarCorreo(query)
+    );
   //#endregion
 }
 
