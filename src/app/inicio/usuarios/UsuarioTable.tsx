@@ -85,7 +85,7 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
                       }}
                     >
                       <IconButton
-                      disabled={!hasTask("Usuarios_AccionVer")}
+                        disabled={!hasTask("Usuarios_AccionVer")}
                         onClick={() => onView(row.original)}
                         color="primary"
                         size="small"
@@ -114,6 +114,7 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
                         <SecurityIcon fontSize="large" />
                       </IconButton>
                     </Tooltip>
+
                     <Tooltip
                       title="Restablecer contraseña"
                       arrow
@@ -203,7 +204,7 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
                       }}
                     >
                       <IconButton
-                        disabled={!hasTask("Usuarios_AccionRenviarCorreo")}
+                        disabled={!hasTask("Usuarios_AccionReenviarCorreo")}
                         onClick={() => onReenviarCorreo(row.original)}
                         color="warning"
                         size="small"
