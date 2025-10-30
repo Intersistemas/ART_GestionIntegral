@@ -83,7 +83,7 @@ export type TiposIndexItem = {
 
 export type ApiFormularioRGRL = {
   interno: number;
-  cuit: number;
+  cuit: string; //lo dejo como string porque de lo contrario no puedo mostrarlo en la datagrid. y me da error en la impresion, no puedo pasar el CUIT con guiones para que consulta en una query.
   razonSocial: string;
   direccion: string | null;
   descripcion: string | null;

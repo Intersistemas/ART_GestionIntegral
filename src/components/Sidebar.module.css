@@ -38,7 +38,7 @@
 
 /* Nuevo estilo para el header cuando está bloqueado */
 .headerLocked {
-    border-bottom: 2px solid var(--naranja); /* Puedes ajustar el grosor y el color */
+    border-bottom: 3px solid var(--naranja); /* Puedes ajustar el grosor y el color */
 }
 
 .headerText {

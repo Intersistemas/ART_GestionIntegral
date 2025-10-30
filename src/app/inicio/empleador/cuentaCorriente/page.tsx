@@ -5,6 +5,7 @@ import CustomButton from '@/utils/ui/button/CustomButton';
 import { ColumnDef } from '@tanstack/react-table';
 import { Box, Typography, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import CustomTab from '@/utils/ui/tab/CustomTab';
+import Formato from '@/utils/Formato';
 
 
 type CuentaCorrienteRegistro = {
@@ -97,11 +98,11 @@ function CuentaCorrientePage() {
         setCurrentTab(newTabValue as number); 
     };
 
-
+ 
     const columns: ColumnDef<CuentaCorrienteRegistro>[] = useMemo(() => [
-        { header: 'Período Cobertura', accessorKey: 'periodoCobertura', meta: { align: 'center'} },
-        { header: 'Período DDJJ', accessorKey: 'periodoDDJJ', meta: { align: 'center'} },
-        { header: 'Fecha de Presentación', accessorKey: 'fechaPresentacion', meta: { align: 'center'} },
+        { header: 'Período Cobertura', accessorKey: 'periodoCobertura', cell: (info: any) => Formato.Fecha(info.getValue(),"MM-YYYY"), meta: { align: 'center'} },
+        { header: 'Período DDJJ', accessorKey: 'periodoDDJJ', cell: (info: any) => Formato.Fecha(info.getValue(),"MM-YYYY"), meta: { align: 'center'} },
+        { header: 'Fecha de Presentación', accessorKey: 'fechaPresentacion', cell: (info: any) => Formato.Fecha(info.getValue()), meta: { align: 'center'} },
         { header: 'Tipo', accessorKey: 'tipo', meta: { align: 'center'} },
         { header: 'Masa Salarial', accessorKey: 'masaSalarial', cell: info => formatCurrency(info.getValue() as number), meta: { align: 'center'} },
         { header: 'Cant. Trabajadores', accessorKey: 'cantTrabajadores', meta: { align: 'center'} },
@@ -125,9 +126,8 @@ function CuentaCorrientePage() {
     ], []);
 
     const columnsDDJJ: ColumnDef<DDJJRegistro>[] = useMemo(() => [
-        // ... definición de columnas (se mantienen igual) ...
-        { header: 'Período DDJJ', accessorKey: 'periodoDDJJ', meta: { align: 'center'} },
-        { header: 'Presentación', accessorKey: 'presentacion', meta: { align: 'center'} },
+        { header: 'Período DDJJ', accessorKey: 'periodoDDJJ', cell: (info: any) => Formato.Fecha(info.getValue(),"MM-YYYY"), meta: { align: 'center'} },
+        { header: 'Presentación', accessorKey: 'presentacion', cell: (info: any) => Formato.Fecha(info.getValue()), meta: { align: 'center'} },
         { header: 'Tipo', accessorKey: 'tipo', meta: { align: 'center'} },
         { header: 'Alic. Fija', accessorKey: 'alicFija', meta: { align: 'center'} },
         { header: 'Alic. Variable', accessorKey: 'alicVariable', meta: { align: 'center'} },

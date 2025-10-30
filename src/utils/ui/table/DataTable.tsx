@@ -133,10 +133,6 @@ export function DataTable<TData extends object>({
                 }}
             />
         ),
-        // Usamos meta para la alineación
-        meta: {
-            align: 'center', 
-        },
         size: 50,
         minSize: 50,
         maxSize: 50,

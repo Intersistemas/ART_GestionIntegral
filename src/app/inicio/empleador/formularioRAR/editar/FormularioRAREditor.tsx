@@ -478,6 +478,7 @@ const FormulariosRAREditar: React.FC<EditarProps> = ({ edita, finalizaCarga }) =
                     </div>
                   );
                 },
+                meta: { align: 'center'}, 
                 enableSorting: false,
               },
             ]}

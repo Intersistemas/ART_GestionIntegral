@@ -248,7 +248,8 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
             />
           </div>
         );
-      }
+      },
+      meta: { align: 'center'} 
     }
   ], [filas, modoEdicion, editandoIndex, handleEditarTrabajador, handleEliminarTrabajador]);
 

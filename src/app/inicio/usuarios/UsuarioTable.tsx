@@ -35,13 +35,13 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
   
   const columns = useMemo<ColumnDef<UsuarioRow>[]>(
     () => [
-      { accessorKey: "cuit", header: "CUIT", cell: (info: any) => Formato.CUIP(info.getValue()), meta: { align: 'center'} },
-      { accessorKey: "nombre", header: "Nombre", meta: { align: 'center'} },
-      { accessorKey: "email", header: "Email", meta: { align: 'center'} },
-      { accessorKey: "rol", header: "Rol", meta: { align: 'center'} },
-      { accessorKey: "cargoDescripcion", header: "Cargo/Función", meta: { align: 'center'} },
-      { accessorKey: "estado", header: "Estado", meta: { align: 'center'} },
-      { accessorKey: "phoneNumber", header: "Teléfono", meta: { align: 'center'} },
+      { accessorKey: "cuit", header: "CUIT", cell: (info: any) => Formato.CUIP(info.getValue())},
+      { accessorKey: "nombre", header: "Nombre"},
+      { accessorKey: "email", header: "Email"},
+      { accessorKey: "rol", header: "Rol"},
+      { accessorKey: "cargoDescripcion", header: "Cargo/Función"},
+      { accessorKey: "estado", header: "Estado"},
+      { accessorKey: "phoneNumber", header: "Teléfono"},
       { id: "actions",
         header: "Acciones",
         cell: ({ row }) => {
@@ -49,7 +49,7 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
           const isRowUserAdminEmpleador = row.original.rol?.toLowerCase() === "administradorempleador";
           
           return (
-            <Box sx={{ display: "flex", gap: 0.5 }}>
+            <Box sx={{ display: "flex"}}>
                   <>
                     <Tooltip
                       title="Editar usuario"
@@ -128,7 +128,7 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
                       }}
                     >
                       <IconButton
-                        disabled={!hasTask("Usuarios_AccionRestablecer")}
+                        disabled={!hasTask("Usuarios_AccionRestablecerClave")}
                         onClick={() => onReestablecer(row.original)}
                         color="warning"
                         size="small"
@@ -217,8 +217,8 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
             </Box>
           );
         },
-        size: 150,
-      meta: { align: 'center'} },
+        meta: { align: 'center'},
+  },
     ],
     [onEdit, onDelete, onView, onPermisos, onActivate, onReestablecer, onReenviarCorreo, hasTask]
   );

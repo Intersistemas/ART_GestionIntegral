@@ -392,7 +392,7 @@ export class UsuarioAPIClass extends ExternalAPI {
     this.getURL({ path: `/api/Usuario/EnviarCorreoActivacion` }).toString();
   reenviarCorreo = async (email: string) =>
     tokenizable
-      .post(this.postReenviarCorreoURL(), { to: [email] })
+      .post(this.postReenviarCorreoURL(), { email: email })
       .then(async (response) => {
         if (response.status === 200) return response.data;
         return Promise.reject(

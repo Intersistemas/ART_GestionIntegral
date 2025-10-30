@@ -11,7 +11,7 @@ import type { CabeceraData } from './impresionFormulario/types/impresion';
 
 import CustomModal from '@/utils/ui/form/CustomModal';
 import GenerarFormularioRGRL from './generar/GenerarFormularioRGRL';
-import { CUIP, Fecha, FechaHora } from '@/utils/Formato';
+import Formato, { CUIP, Fecha, FechaHora } from '@/utils/Formato';
 import { useAuth } from '@/data/AuthContext';
 import dayjs from 'dayjs';
 import styles from './FormulariosRGRL.module.css';
@@ -89,7 +89,7 @@ const dt = (iso: string | null | undefined) => {
 const mapApiToUi = (r: ApiFormularioRGRL): FormularioRGRL => ({
   // Normaliza el registro de cabecera de la API al shape de la grilla principal.
   InternoFormularioRGRL: r.interno ?? 0,
-  CUIT: CUIP(r.cuit ?? ''),
+  CUIT: r.cuit ?? '',
   RazonSocial: r.razonSocial ?? '',
   Establecimiento: r.direccion ?? '',
   Formulario:
@@ -360,25 +360,29 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
   // Definición de columnas de la grilla principal y handlers asociados.
   const tableColumns = useMemo(
     () => [
-      { accessorKey: 'CUIT', header: 'CUIT' },
+      { accessorKey: 'CUIT', header: 'CUIT', cell: (info: any) => Formato.CUIP(info.getValue())},
       { accessorKey: 'RazonSocial', header: 'Razón Social' },
       { accessorKey: 'Establecimiento', header: 'Establecimiento' },
       { accessorKey: 'Formulario', header: 'Formulario' },
       { accessorKey: 'Estado', header: 'Estado' },
-      { accessorKey: 'FechaHoraCreacion', header: 'Fecha Creación' },
-      { accessorKey: 'FechaHoraConfirmado', header: 'Fecha Confirmado' },
+      { accessorKey: 'FechaHoraCreacion', header: 'Fecha Creación', meta: { align: "center"}},
+      { accessorKey: 'FechaHoraConfirmado', header: 'Fecha Confirmado', meta: { align: "center"}},
 
       {
         id: 'acciones',
         header: 'Acciones',
         //@ts-ignore
         cell: ({ row }) => {
+          console.log("row",row)
           const onClick = async (e: any) => {
+            console.log("row",row)
             e.stopPropagation?.();
             const interno = Number(row.original.InternoFormularioRGRL || 0);
+            console.log("interno",interno)
             if (!interno) return;
 
             const data = await CargarDetalleRGRL(interno);
+            console.log("data",data)
             const establecimientos = await CargarEstablecimientosEmpresa(Number(row.original.CUIT));
             const estab =
               establecimientos.find(e => e.interno === Number(data.internoEstablecimiento ?? 0)) ||
@@ -421,13 +425,6 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
             });
             setPrintOpen(true);
           };
-
-          const onEnter = (e: React.MouseEvent<SVGSVGElement>) => {
-            (e.currentTarget as SVGElement).style.opacity = '0.85';
-          };
-          const onLeave = (e: React.MouseEvent<SVGSVGElement>) => {
-            (e.currentTarget as SVGElement).style.opacity = '1';
-          };
           const onEdit = (e: any) => {
             e.stopPropagation?.();
             const interno = Number(row.original.InternoFormularioRGRL || 0);
@@ -452,6 +449,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
             </div>
           );
         },
+        meta: { align: 'center'},
         enableSorting: false,
       },
     ],
@@ -533,6 +531,8 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
   //#endregion table-and-handlers
   const handleExportExcel = async () => {
     const columns: Record<string, TableColumn> = {
+
+      
       CUIT: { header: 'CUIT', key: 'CUIT' },
       RazonSocial: { header: 'Razón Social', key: 'RazonSocial' },
       Establecimiento: { header: 'Establecimiento', key: 'Establecimiento' },

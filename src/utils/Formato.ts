@@ -1,3 +1,65 @@
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+dayjs.extend(utc);
+dayjs.extend(customParseFormat);
+
+// Tipos base de Day.js para referencia
+type FormatType = "date" | "time" | "datetime" | string;
+
+/**
+ * Formatea una cadena ISO a fecha/hora usando Day.js.
+ * @param isoString Cadena de fecha ISO.
+ * @param type Tipo de formato o un string de formato Day.js personalizado (ej: 'DD/MM/YYYY').
+ */
+export function FechaHora(isoString: any, type: any = "datetime"): string {
+    if (isoString == null) return "";
+
+    let date;
+    const s = `${isoString}`;
+
+    // 1. Detección y parsing especial para cadenas YYYY-MM (Ej: "2021-11")
+    if (/^\d{4}-\d{2}$/.test(s)) {
+        // Usamos dayjs sin .utc() inicialmente, especificando el formato 'YYYY-MM'
+        // Esto le dice a Day.js: "La cadena es YYYY-MM, porséala como tal."
+        date = dayjs(s, "YYYY-MM"); 
+		
+    } else if (/^\d{6}$/.test(s)) {
+        // Indica a Day.js que la cadena de 6 dígitos es YYYYMM
+        date = dayjs(s, "YYYYMM"); 
+    } else {
+        // 2. Para el resto de formatos (ISO completos, Date objects, etc.), usamos el método original (con UTC)
+        date = dayjs.utc(s);
+    }
+    
+    if (!date.isValid()) return "";
+
+    let formatString = "";
+    // Aseguramos que la fecha esté en la zona horaria local antes de aplicar el formato
+    const localDate = date.local();
+
+    // Mapeo simple de tus tipos existentes a tokens de Day.js
+    const lowerType = typeof type === "string" ? type.toLowerCase() : "";
+
+    switch (lowerType) {
+        case "date":
+            formatString = "DD/MM/YYYY"; // Formato de fecha estándar
+            break;
+        case "time":
+            formatString = "HH:mm:ss"; // Formato de hora estándar
+            break;
+        case "datetime":
+            formatString = "DD/MM/YYYY HH:mm:ss"; // Formato completo
+            break;
+        default:
+            // Permite pasar un string de formato Day.js personalizado
+            formatString = type;
+            break;
+    }
+
+    return localDate.format(formatString);
+}
+
 export function Mascara(numero: any, patron: string) {
 	let r = "";
 	if (!numero) return r;
@@ -16,9 +78,13 @@ export function Mascara(numero: any, patron: string) {
 	return r;
 }
 
-export function Numero(numero: any) {
-	if (numero == null) return "";
-	return Intl.NumberFormat("es-AR").format(numero);
+export function Numero(numero: number | string | null | undefined): string {
+    if (numero == null) return "";
+    // Aseguramos que el argumento de format sea un número
+    const numValue = typeof numero === 'string' ? parseFloat(numero) : numero; 
+    if (isNaN(numValue)) return "";
+    
+    return Intl.NumberFormat("es-AR").format(numValue);
 }
 
 export function Porcentaje(numero: any) {
@@ -38,12 +104,15 @@ export function Unidad(numero: any, unidad?: string | undefined, display: "short
 	}).format(numero);
 }
 
-export function Moneda(numero: any, codigo = "ARS") {
-	if (numero == null) return "";
-	return Intl.NumberFormat("es-AR", {
-		style: "currency",
-		currency: codigo,
-	}).format(numero);
+export function Moneda(numero: number | string | null | undefined, codigo = "ARS"): string {
+    if (numero == null) return "";
+    const numValue = typeof numero === 'string' ? parseFloat(numero) : numero; 
+    if (isNaN(numValue)) return "";
+
+    return Intl.NumberFormat("es-AR", {
+        style: "currency",
+        currency: codigo,
+    }).format(numValue);
 }
 
 export function Booleano(valor: any) {
@@ -52,39 +121,29 @@ export function Booleano(valor: any) {
 	return "No";
 }
 
-export function Fecha(isoString: any) {
-	return FechaHora(isoString, "date");
+
+/**
+ * Formatea una cadena ISO a fecha.
+ * @param isoString Cadena de fecha ISO.
+ * @param format Opcional. Puede ser un token de formato Day.js personalizado (ej: 'D/M/YY').
+ */
+export function Fecha(isoString: any, format: string = "DD/MM/YYYY"): string {
+    if (isoString == null) return "";
+
+        // Día, Mes y Año (Default)
+    return FechaHora(isoString, format);
 }
 
-export function Hora(isoString: any) {
-	return FechaHora(isoString, "time");
+export function Hora(isoString: any): string {
+    return FechaHora(isoString, "time"); 
 }
 
-export function FechaHora(isoString: any, type: any = "datetime") {
-	if (isoString == null) return "";
-	let ms = Date.parse(isoString);
-	if (isNaN(ms)) return "";
-
-	const options: Intl.DateTimeFormatOptions = typeof type === "object" ? type : {};
-	if (typeof type === "string") {
-		type = type?.toLowerCase();
-		if (["date", "datetime"].includes(type)) {
-			options.day = "2-digit";
-			options.month = "2-digit";
-			options.year = "numeric";
-		}
-		if (["time", "datetime"].includes(type)) {
-			options.hour = "2-digit";
-			options.minute = "2-digit";
-			options.second = "2-digit";
-		}
-	}
-	options.timeZone ??= "UTC"
-	return Intl.DateTimeFormat("es-AR", options).format(new Date(ms));
+export function Periodo(numero: any): string {
+    return Mascara(numero, "####-##"); 
 }
 
-export function Periodo(numero: any) {
-	return Mascara(numero, "####-##");
+export function PeriodoMA(numero: any): string {
+    return Mascara(numero, "##-####"); 
 }
 
 export function CUIP(numero: any) {
@@ -122,6 +181,7 @@ class _Formato {
 	Hora = Hora;
 	FechaHora = FechaHora;
 	Periodo = Periodo;
+	PeriodoMA = PeriodoMA;
 	CUIP = CUIP;
 	Entero = Entero;
 	Decimal = Decimal;

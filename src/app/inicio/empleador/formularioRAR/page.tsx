@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useState, SyntheticEvent} from 'react';
+import { IconButton, Box, Tooltip } from "@mui/material"; 
 import { useAuth } from '@/data/AuthContext';
 import Formato from '@/utils/Formato';
 import CustomButton from '@/utils/ui/button/CustomButton';
@@ -15,7 +16,8 @@ import CustomTab from '@/utils/ui/tab/CustomTab';
 import styles from './FormulariosRAR.module.css';
 
 import { FaRegFilePdf, FaCopy, } from "react-icons/fa";
-import { MdEdit } from "react-icons/md";
+import EditIcon from "@mui/icons-material/Edit";
+
 
 // Hijos
 import FormularioRARGenerar from './generar/FormularioRARGenerar';
@@ -223,71 +225,86 @@ const FormulariosRAR: React.FC = () => {
 
   /* Columnas para tabla principal de formularios */
   const tableColumns = [
-    { accessorKey: 'interno', header: 'Interno', meta: { align: 'center'} },
-    { accessorKey: 'cuit', header: 'CUIT', cell: (info: any) => Formato.CUIP(info.getValue()), meta: { align: 'center'} },
-    { accessorKey: 'razonSocial', header: 'Razón Social', meta: { align: 'center'} },
-    { accessorKey: 'direccion', header: 'Dirección', meta: { align: 'center'} },
-    { accessorKey: 'estado', header: 'Estado', meta: { align: 'center'} },
-    { accessorKey: 'fechaCreacion', header: 'Fecha Creación', cell: (info: any) => fechaFormatter(info.getValue()), meta: { align: 'center'} },
-    { accessorKey: 'fechaPresentacion', header: 'Fecha Presentación', cell: (info: any) => fechaFormatter(info.getValue()), meta: { align: 'center'} },
-    { accessorKey: 'internoEstablecimiento', header: 'Interno Establecimiento', meta: { align: 'center'} },
-    { accessorKey: 'cantTrabajadoresExpuestos', header: 'Expuestos', meta: { align: 'center'} },
-    { accessorKey: 'cantTrabajadoresNoExpuestos', header: 'No Expuestos', meta: { align: 'center'} },
-    {
-      id: 'acciones',
+    { accessorKey: 'interno', header: 'Interno'},
+    { accessorKey: 'cuit', header: 'CUIT', cell: (info: any) => Formato.CUIP(info.getValue())},
+    { accessorKey: 'razonSocial', header: 'Razón Social'},
+    { accessorKey: 'direccion', header: 'Dirección'},
+    { accessorKey: 'estado', header: 'Estado'},
+    { accessorKey: 'fechaCreacion', header: 'Fecha Creación', cell: (info: any) => fechaFormatter(info.getValue()), meta: { align: "center"}},
+    { accessorKey: 'fechaPresentacion', header: 'Fecha Presentación', cell: (info: any) => fechaFormatter(info.getValue()), meta: { align: "center"}},
+    { accessorKey: 'internoEstablecimiento', header: 'Interno Establecimiento', meta: { align: "center"}},
+    { accessorKey: 'cantTrabajadoresExpuestos', header: 'Expuestos', meta: { align: "center"}},
+    { accessorKey: 'cantTrabajadoresNoExpuestos', header: 'No Expuestos', meta: { align: "center"}},
+    { id: 'acciones',
       header: 'Acciones',
       cell: ({ row }: { row: any }) => (
-        <div className={styles.actionButtonsContainer}>
-          {/* Botón Editar dentro de la tabla */}
-          <button
-            onClick={(e: any) => {
-              e.stopPropagation?.();
-              // Seleccionar el registro y activar edición
-              const internoForm = Number(row.original.InternoFormularioRAR || row.original.interno || 0);
-              const internoEstab = Number(row.original.internoEstablecimiento || row.original.InternoEstablecimiento || 0);
-              const est = String(row.original.Estado || row.original.estado || '');
-              
-              seleccionaRegistro(internoForm, internoEstab, est);
-              setIdFormularioSeleccionado(internoForm);
-              
-              if (internoForm > 0) {
-                setEditaId(internoForm);
-                setViewMode('editar');
-              } else {
-                alert('No se pudo obtener el ID del formulario para editar.');
-              }
-            }}
-            disabled={cuit === 99999999999 || (!row.original.interno && !row.original.InternoFormularioRAR)}
-            title="Editar formulario"
-            className={styles.actionButton}
-            onMouseEnter={(e) => {
-              if (!(cuit === 99999999999 || (!row.original.interno && !row.original.InternoFormularioRAR))) {
-                e.currentTarget.style.backgroundColor = '#e8f5e8';
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-            }}
-          >
-            <MdEdit size={20} className={styles.iconButton} />
-          </button>
-
-          {/* Botón Imprimir */}
-          <button
-            onClick={(e: any) => {
-              e.stopPropagation?.();
-              handleAbrirPDF(row.original);
-            }}
-            title="Generar PDF"
-            className={styles.pdfButton}
-          >
-            <FaRegFilePdf size={20} className={styles.iconButton} />
-          </button>
-        </div>
-      ),
-      enableSorting: false,
-      size: 160, // Aumentamos el ancho para acomodar ambos botones
-   meta: { align: 'center'} },
+                <Box sx={{ display: "flex"}}>
+                  <>
+                    <Tooltip
+                      title="Editar Formulario"
+                      arrow
+                      slotProps={{
+                        tooltip: {
+                          sx: {
+                            fontSize: "1.2rem",
+                            fontWeight: 500,
+                          },
+                        },
+                      }}
+                    >
+                      <IconButton
+                        onClick={(e: any) => {
+                          e.stopPropagation?.();
+                          // Seleccionar el registro y activar edición
+                          const internoForm = Number(row.original.InternoFormularioRAR || row.original.interno || 0);
+                          const internoEstab = Number(row.original.internoEstablecimiento || row.original.InternoEstablecimiento || 0);
+                          const est = String(row.original.Estado || row.original.estado || '');
+                          
+                          seleccionaRegistro(internoForm, internoEstab, est);
+                          setIdFormularioSeleccionado(internoForm);
+                          
+                          if (internoForm > 0) {
+                            setEditaId(internoForm);
+                            setViewMode('editar');
+                          } else {
+                            alert('No se pudo obtener el ID del formulario para editar.');
+                          }
+                        }}
+                        disabled={cuit === 99999999999 || (!row.original.interno && !row.original.InternoFormularioRAR)}
+                        color="warning"
+                        size="small"
+                      >
+                        <EditIcon fontSize="large" />
+                      </IconButton>
+                    </Tooltip>
+                    {/* Botón Imprimir */}
+                    <Tooltip
+                      title="Generar PDF"
+                      arrow
+                      slotProps={{
+                        tooltip: {
+                          sx: {
+                            fontSize: "1.2rem",
+                            fontWeight: 500,
+                          },
+                        },
+                      }}
+                    >
+                      <IconButton
+                        onClick={(e: any) => {
+                          e.stopPropagation?.();
+                          handleAbrirPDF(row.original);
+                        }}
+                        color="warning"
+                        size="small"
+                      >
+                        <FaRegFilePdf fontSize="large"/>
+                      </IconButton>
+                    </Tooltip> 
+                    </>
+            </Box>
+          )
+        },
   ];
 
   /*  MODIFICACIÓN: Columnas para tabla de detalles de trabajadores */
@@ -295,14 +312,12 @@ const FormulariosRAR: React.FC = () => {
     { 
       accessorKey: 'id', 
       header: '#',
-      meta: { align: 'center' },
       size: 60
     },
     { 
       accessorKey: 'cuil', 
       header: 'CUIL',
       cell: (info: any) => cuipFormatter(info.getValue()) || '—',
-      meta: { align: 'center' },
       size: 120
     },
     { 
@@ -320,42 +335,36 @@ const FormulariosRAR: React.FC = () => {
       accessorKey: 'fechaIngreso', 
       header: 'Fecha Ingreso',
       cell: (info: any) => info.getValue() || '—',
-      meta: { align: 'center' },
       size: 120
     },
     { 
       accessorKey: 'fechaInicioExposicion', 
       header: 'Fecha Inicio Exp.',
       cell: (info: any) => info.getValue() || '—',
-      meta: { align: 'center' },
       size: 140
     },
     { 
       accessorKey: 'fechaFinExposicion', 
       header: 'Fecha Fin Exp.',
       cell: (info: any) => info.getValue() || '—',
-      meta: { align: 'center' },
       size: 130
     },
     { 
       accessorKey: 'horasExposicion', 
       header: 'Horas Exp.',
       cell: (info: any) => info.getValue() || '—',
-      meta: { align: 'center' },
       size: 80
     },
     { 
       accessorKey: 'codigoAgente', 
       header: 'Cod. Agente',
       cell: (info: any) => info.getValue() || '—',
-      meta: { align: 'center' },
       size: 100
     },
     { 
       accessorKey: 'fechaUltimoExamenMedico', 
       header: 'Último Examen Médico',
       cell: (info: any) => info.getValue() || '—',
-      meta: { align: 'center' },
       size: 150
     }
   ];
