@@ -5,15 +5,20 @@ import Persona, { Parameters } from "@/app/inicio/empleador/cobertura/types/pers
 import dayjs from "dayjs";
 import { toURLSearch } from "@/utils/utils";
 
-//const getCurrentPeriodo = (): number => Number(dayjs().format('YYYYMM'));
-
 const tokenizable = token.configure();
 
 const getCurrentPeriodo = (): number => {
     return Number(dayjs().subtract(2, 'month').format('YYYYMM'));
 };
 
+export interface UsuarioGetAllParams {
+  Sort?: string;
+  Page?: string;
+}
+
 export class GestionEmpleadorAPIClass extends ExternalAPI {
+
+
   readonly basePath = process.env.NEXT_PUBLIC_API_EMPLEADOR_URL || 'http://fallback-prod.url'; 
   //#region Persona
   readonly getPersonalURL = (params: Parameters = {}) => {
@@ -42,7 +47,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
   );
   //#endregion
 
-    //#region SiniestrosEmpleador
+  //#region SiniestrosEmpleador
   readonly getVEmpleadorSiniestrosURL = (params: Parameters = {}) => {
     return this.getURL({ path: "/api/VEmpleadorSiniestros", search: toURLSearch(params) }).toString();
   };
@@ -55,7 +60,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
   //#endregion
 
 
-    //#region SiniestrosEmpleador
+  //#region SiniestrosEmpleador
   readonly getVEmpleadorSiniestrosInstanciasURL = (params: Parameters = {}) => {
     return this.getURL({ path: "/api/VEmpleadorSiniestrosInstancias", search: toURLSearch(params) }).toString();
   };
@@ -67,6 +72,17 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
   );
   //#endregion
 
+  //#region AvisoObra
+  readonly getAvisoObraURL = (params: UsuarioGetAllParams = {}) => {
+    return this.getURL({ path: "/api/AvisoObra/ultimos/?Sort=-ObraNumero&Page=0,1000", search: toURLSearch(params) }).toString();
+  };
+  getAvisoObra = async (params: UsuarioGetAllParams = {}) => tokenizable.get(
+    this.getAvisoObraURL(params),
+  ).then(({ data }) => data);
+  useGetAvisoObra = (params: UsuarioGetAllParams = {}) => useSWR(
+    [this.getAvisoObraURL(params), token.getToken()], () => this.getAvisoObra(params)
+  );
+  //#endregion
   
 }
 

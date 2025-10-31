@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react'; 
-import { useAuth } from '@/data/AuthContext'; 
 import gestionEmpleadorAPI from "@/data/gestionEmpleadorAPI";
 import Persona from './types/persona';
 import DataTable from '@/utils/ui/table/DataTable';

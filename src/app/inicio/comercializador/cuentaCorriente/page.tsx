@@ -1,6 +1,6 @@
 function CuentacorrientePage() {
   return (
-    <div>cuentacorriente comercializador</div>
+    <div>En desarrollo...</div>
   )
 }
 

@@ -52,3 +52,9 @@ https://github.com/iamkun/dayjs/blob/HEAD/docs/es-es/README-es-es.md
     _EXCEL:
 
 **Estados Globales: si no tenemos lo necesario en useSession, utilizamos Zustand.
+
+
+**ELIMINAR:
+pdf-lib
+pdf-lib/fontkit
+js-base64

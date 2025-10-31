@@ -237,8 +237,9 @@ const FormulariosRAR: React.FC = () => {
     { accessorKey: 'cantTrabajadoresNoExpuestos', header: 'No Expuestos', meta: { align: "center"}},
     { id: 'acciones',
       header: 'Acciones',
+      meta: { align: "center"},
       cell: ({ row }: { row: any }) => (
-                <Box sx={{ display: "flex"}}>
+                <Box >
                   <>
                     <Tooltip
                       title="Editar Formulario"

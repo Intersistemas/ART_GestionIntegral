@@ -1,6 +1,6 @@
 function PolizasPage() {
   return (
-    <div>polizas  comercializador</div>
+    <div>En desarrollo...</div>
   )
 }
 

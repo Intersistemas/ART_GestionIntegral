@@ -91,6 +91,7 @@ export default function SiniestrosPage() {
   );
   useEffect(() => {
     const raw = token.getToken?.();
+    console.log("raw",raw)
     const masked =
       typeof raw === 'string'
         ? `Bearer ${raw.slice(0, 6)}…${raw.slice(-6)}`
