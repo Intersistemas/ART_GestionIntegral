@@ -15,7 +15,7 @@ import CustomTab from '@/utils/ui/tab/CustomTab';
 
 import styles from './FormulariosRAR.module.css';
 
-import { FaRegFilePdf, FaCopy, } from "react-icons/fa";
+import { BsFileEarmarkPdfFill} from "react-icons/bs";
 import EditIcon from "@mui/icons-material/Edit";
 
 
@@ -299,7 +299,7 @@ const FormulariosRAR: React.FC = () => {
                         color="warning"
                         size="small"
                       >
-                        <FaRegFilePdf fontSize="large"/>
+                        <BsFileEarmarkPdfFill fontSize="large"/>
                       </IconButton>
                     </Tooltip> 
                     </>
