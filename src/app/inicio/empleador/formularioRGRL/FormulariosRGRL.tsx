@@ -34,9 +34,7 @@ import type {
   ResponsableItem,
   DetallePayload
 } from './types/rgrl';
-import { BsFileEarmarkPdfFill } from "react-icons/bs";
-import {  FaCopy, } from "react-icons/fa";
-import { MdEdit } from "react-icons/md";
+import { BsFileEarmarkPdfFill, BsPencilFill,BsFront  } from "react-icons/bs";
 
 let _tiposCache: ApiTiposFormularios | null = null;
 //#region tipos-catalogos
@@ -445,8 +443,8 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
 
             <div className={styles.iconActions}>
               <BsFileEarmarkPdfFill title="Imprimir" onClick={onClick} className={styles.iconButton} />
-              <MdEdit title="Editar" onClick={onEdit} className={styles.iconButton} />
-              <FaCopy title="Replicar" onClick={onCopy} className={styles.iconButton} />
+              <BsPencilFill title="Editar" onClick={onEdit} className={styles.iconButton} />
+              <BsFront  title="Replicar" onClick={onCopy} className={styles.iconButton} />
             </div>
           );
         },

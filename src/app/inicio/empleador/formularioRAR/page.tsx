@@ -15,8 +15,7 @@ import CustomTab from '@/utils/ui/tab/CustomTab';
 
 import styles from './FormulariosRAR.module.css';
 
-import { BsFileEarmarkPdfFill} from "react-icons/bs";
-import EditIcon from "@mui/icons-material/Edit";
+import { BsFileEarmarkPdfFill, BsPencilFill} from "react-icons/bs";
 
 
 // Hijos
@@ -275,7 +274,7 @@ const FormulariosRAR: React.FC = () => {
                         color="warning"
                         size="small"
                       >
-                        <EditIcon fontSize="large" />
+                        <BsPencilFill fontSize="large" />
                       </IconButton>
                     </Tooltip>
                     {/* Botón Imprimir */}
