@@ -1,0 +1,78 @@
+/* CustomModalMessage.module.css */
+
+.modal {
+    /* Centrado y z-index si fuera necesario */
+}
+
+.paper {
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    min-width: 350px;
+    max-width: 500px;
+    /* Usa un color base para el fondo de la tarjeta */
+    background-color: var(--blanco); 
+    border-top: 8px solid; /* Usamos esto para el color de énfasis */
+}
+
+/* -------------------------------------- */
+/* ESTILOS DE TIPO DE MENSAJE (COLOR)   */
+/* -------------------------------------- */
+
+.success {
+    border-color: var(--verde); /* Color principal: Verde */
+}
+
+.error {
+    border-color: var(--rojo); /* Color principal: Rojo */
+}
+
+.alert {
+    border-color: var(--naranja); /* Color principal: Naranja */
+}
+
+
+/* -------------------------------------- */
+/* COMPONENTES INTERNOS                   */
+/* -------------------------------------- */
+
+.title {
+    text-align: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--grisClaroClaro);
+}
+
+.titleText {
+    font-weight: 700;
+    color: var(--grisOscuro);
+    font-size: var(--font-size-sidebar); /* Reutilizamos la variable de fuente grande */
+}
+
+.icon {
+    /* El color del ícono debe coincidir con el color del borde superior */
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+    /* La herencia del color se maneja con la clase específica */
+}
+
+/* Colores de ícono específicos */
+.success .icon {
+    color: var(--verde); 
+}
+.error .icon {
+    color: var(--rojo);
+}
+.alert .icon {
+    color: var(--naranja);
+}
+
+
+.content {
+    padding-top: 2rem !important;
+    text-align: center;
+}
+
+.messageText {
+    color: var(--gris);
+    font-size: 1.6rem;
+}
