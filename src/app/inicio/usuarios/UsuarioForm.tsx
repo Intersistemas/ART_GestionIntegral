@@ -26,7 +26,7 @@ type RequestMethod = "create" | "edit" | "view" | "delete" | "activate" | "remov
 export interface UsuarioFormFields {
   nombre: string;
   email: string;
-  cuit: string;
+  cuit: string; // Keep as string for form input, will convert to number on submit
   phoneNumber: string;
   cargoId?: number;
   password?: string;
@@ -38,10 +38,17 @@ export interface UsuarioFormFields {
   id?: string;
 }
 
+// Interface for submitted data with CUIT as number
+export interface UsuarioSubmitData extends Omit<UsuarioFormFields, 'cuit'> {
+  cuit: number;
+  userName: string;
+  tipo: string;
+}
+
 interface Props {
   open: boolean;
   onClose: () => void;
-  onSubmit: (formData: UsuarioFormFields) => void;
+  onSubmit: (formData: UsuarioSubmitData) => void;
   roles: RolesInterface[];
   cargos: CargoInterface[];
   refEmpleadores: RefEmpleador[];
@@ -412,13 +419,20 @@ export default function UsuarioForm({
 
     // Manejo directo para 'delete' (no requiere validación de formulario)
     if (isDeleting || isActivating) {
-      onSubmit(form);
+      const deleteData: UsuarioSubmitData = {
+        ...form,
+        cuit: parseInt(form.cuit.replace(/[^\d]/g, ''), 10),
+        userName: form.email,
+        tipo: ""
+      };
+      onSubmit(deleteData);
       return;
     }
 
     // Set default values for hidden fields
     const formDataWithDefaults = {
       ...form,
+      cuit: parseInt(form.cuit.replace(/[^\d]/g, ''), 10), // Parse CUIT as integer, removing all non-digits
       userName: form.email, // Use email as username
       tipo: "", // Default type
       rol: form.rol || (roles.length > 0 ? roles[0].nombre : ""), // Default to first role
