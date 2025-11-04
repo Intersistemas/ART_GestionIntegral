@@ -34,22 +34,15 @@ export interface UsuarioFormFields {
   confirmPassword?: string;
   rol: string;
   // tipo: string;
-  // userName: string;
+  userName: string;
   empresaId: number;
   id?: string;
-}
-
-// Interface for submitted data with CUIT as number
-export interface UsuarioSubmitData extends Omit<UsuarioFormFields, 'cuit'> {
-  cuit: number;
-  userName: string;
-  tipo: string;
 }
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  onSubmit: (formData: UsuarioSubmitData) => void;
+  onSubmit: (formData: UsuarioFormFields) => void;
   roles: RolesInterface[];
   cargos: CargoInterface[];
   refEmpleadores: RefEmpleador[];
@@ -57,6 +50,7 @@ interface Props {
   errorMsg?: string | null;
   method: RequestMethod; // MODO DE OPERACIÓN
   isSubmitting?: boolean;
+  isAdmin?: boolean; // Nuevo parámetro para determinar si el usuario es admin
 }
 
 const initialFormState: UsuarioFormFields = {
@@ -64,12 +58,12 @@ const initialFormState: UsuarioFormFields = {
   email: "",
   cuit: "",
   phoneNumber: "",
-  cargoId: 0,
+  cargoId: undefined,
   password: "",
   confirmPassword: "",
   rol: "",
   // tipo: "",
-  // userName: "",
+  userName: "",
   empresaId: 0,
 };
 
@@ -115,6 +109,7 @@ export default function UsuarioForm({
   errorMsg,
   method,
   isSubmitting = false,
+  isAdmin = false,
 }: Props) {
   const [form, setForm] = useState<UsuarioFormFields>(initialFormState);
   const [errors, setErrors] = useState<ValidationErrors>({});
@@ -128,24 +123,38 @@ export default function UsuarioForm({
   const isActivating = method === "activate";
   const isDisabled = isViewing || isDeleting || isActivating;
 
+  // Función helper para formatear CUIT
+  const formatCuit = (cuit: string): string => {
+    if (!cuit) return "";
+    const cleanCuit = cuit.replace(/[^0-9]/g, '');
+    if (cleanCuit.length <= 2) return cleanCuit;
+    if (cleanCuit.length <= 10) {
+      return cleanCuit.substring(0, 2) + '-' + cleanCuit.substring(2);
+    }
+    return cleanCuit.substring(0, 2) + '-' + cleanCuit.substring(2, 10) + '-' + cleanCuit.substring(10);
+  };
+
   useEffect(() => {
     // Restablecer el formulario y los estados de error/tocado al abrir o cambiar los datos
     if (initialData) {
       const processedData = { ...initialData };
+      
+      // Aplicar formato al CUIT
+      console.log("Initial:", processedData);
+      if (processedData.userName) {
+        processedData.cuit = formatCuit(processedData.userName);
+      }
+
+      // Asegurar que cargoId tenga un valor válido - solo para edición/vista
+      if ((!processedData.cargoId || processedData.cargoId === 0) && !isCreating) {
+        processedData.cargoId = cargos.length > 0 ? cargos[0].id : undefined;
+      }
       
       // En modo edición, limpiar campos que deben aparecer vacíos
       if (isEditing) {
         // Siempre limpiar contraseñas en modo edición
         processedData.password = "";
         processedData.confirmPassword = "";
-        
-        // Limpiar campo cargo si viene como undefined, null, cadena vacía, o valores por defecto no deseados
-        // if (!processedData.cargo || 
-        //     processedData.cargo.trim() === "" || 
-        //     processedData.cargo === "null" || 
-        //     processedData.cargo === "undefined") {
-        //   processedData.cargo = "";
-        // }
       }
       
       setForm(processedData);
@@ -155,7 +164,7 @@ export default function UsuarioForm({
     
     setErrors({});
     setTouched({});
-  }, [initialData, open, isEditing]);
+  }, [initialData, open, isEditing, isCreating, cargos]);
 
   const modalTitle = useMemo(() => {
     switch (method) {
@@ -322,31 +331,27 @@ export default function UsuarioForm({
   // --- Handlers ---
 
   const handleTextFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-
     const { name, value } = e.target;
     const fieldName = name as keyof UsuarioFormFields;
 
-
-      if (name == "cuit") {
-        const value = (e.target.value || '').replace(/[^0-9]/g, '');
-        if (value.length <= 11) {
-            let f = value;
-            if (value.length > 2) f = value.substring(0, 2) + '-' + value.substring(2);
-            if (value.length > 10) f = value.substring(0, 2) + '-' + value.substring(2, 10) + '-' + value.substring(10);
-            setForm((prev: UsuarioFormFields) => ({
-            ...prev,
-            [name]: f,
-          }));
-        }
-      }else{
-          setForm((prev: UsuarioFormFields) => ({
-            ...prev,
-            [name]: value,
-          }));
+    if (name === "cuit") {
+      const cleanValue = (value || '').replace(/[^0-9]/g, '');
+      if (cleanValue.length <= 11) {
+        const formattedCuit = formatCuit(cleanValue);
+        setForm((prev: UsuarioFormFields) => ({
+          ...prev,
+          [name]: formattedCuit,
+        }));
       }
+    } else {
+      setForm((prev: UsuarioFormFields) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
         
     if (touched[fieldName]) {
-      const error = validateField(fieldName, value);
+      const error = validateField(fieldName, name === "cuit" ? formatCuit(value.replace(/[^0-9]/g, '')) : value);
       setErrors((prev) => ({
         ...prev,
         [fieldName]: error,
@@ -374,16 +379,17 @@ export default function UsuarioForm({
 
 
 
-  const handleCargoChange = (e: SelectChangeEvent<number>) => {
+  const handleCargoChange = (e: SelectChangeEvent<number | "">) => {
     const { value } = e.target;
+    const cargoId = value === "" ? undefined : Number(value);
 
     setForm((prev: UsuarioFormFields) => ({
       ...prev,
-      cargoId: Number(value),
+      cargoId: cargoId,
     }));
 
     if (touched.cargoId) {
-      const error = validateField("cargoId", String(value));
+      const error = validateField("cargoId", String(cargoId || ""));
       setErrors((prev) => ({
         ...prev,
         cargoId: error,
@@ -405,27 +411,27 @@ export default function UsuarioForm({
 
     // Manejo directo para 'delete' (no requiere validación de formulario)
     if (isDeleting || isActivating) {
-      const deleteData: UsuarioSubmitData = {
+      const deleteData: UsuarioFormFields = {
         ...form,
-        cuit: parseInt(form.cuit.replace(/[^\d]/g, ''), 10),
-        userName: form.email,
-        tipo: ""
+        cuit: form.cuit.replace(/[^\d]/g, ""),
+        userName: form.cuit.replace(/[^\d]/g, ""),        
       };
       onSubmit(deleteData);
       return;
     }
 
-    // Set default values for hidden fields
+    // Set default values for hidden fields    
+    console.log("Submitting form data:", form);
     const formDataWithDefaults = {
       ...form,
-      cuit: parseInt(form.cuit.replace(/[^\d]/g, ''), 10), // Parse CUIT as integer, removing all non-digits
-      userName: form.email, // Use email as username
+      cuit: form.cuit.replace("-", ""), // Parse CUIT as integer, removing all non-digits
+      userName: form.cuit.replace("-", ""), // Use email as username
       tipo: "", // Default type
       rol: form.rol || (roles.length > 0 ? roles[0].nombre : ""), // Default to first role
       empresaId:
         form.empresaId ||
         (refEmpleadores.length > 0 ? refEmpleadores[0].interno : 0),
-    };
+    };    
 
     // Mark all fields as touched
     const allTouched: TouchedFields = Object.keys(form).reduce((acc, key) => {
@@ -450,7 +456,7 @@ export default function UsuarioForm({
   return (
     <CustomModal
       open={open}
-      onClose={onClose}
+      onClose={isSubmitting ? () => {} : onClose}
       title={modalTitle}
       size={isCreating ? "large" : "mid"}
     >
@@ -544,11 +550,15 @@ export default function UsuarioForm({
                   <InputLabel>Cargo/Función</InputLabel>
                   <Select
                     name="cargoId"
-                    value={form.cargoId}
+                    value={form.cargoId || ""}
                     label="Cargo/Función..."
                     onChange={handleCargoChange}
                     onBlur={() => handleBlur("cargoId")}
+                    displayEmpty
                   >
+                    <MenuItem value="" disabled>
+                      Seleccione un cargo...
+                    </MenuItem>
                     {cargos.map((cargo) => (
                       <MenuItem key={cargo.id} value={cargo.id}>
                         {cargo.descripcion}
@@ -623,7 +633,7 @@ export default function UsuarioForm({
                       }
                     }}
                     onBlur={() => handleBlur("empresaId")}
-                    disabled={isDisabled || form.empresaId !== 0}
+                    disabled={isDisabled || (form.empresaId !== 0 && !isAdmin)}
                     renderInput={(params) => (
                       <TextField
                         {...params}
@@ -708,17 +718,29 @@ export default function UsuarioForm({
             <div className={styles.formActions}>
               {/* Botón de acción principal (Oculto en 'view') */}
               {!isViewing && (
-                <CustomButton type="submit" disabled={isSubmitting}>
+                <CustomButton 
+                  type="submit" 
+                  disabled={isSubmitting}
+                  style={{ 
+                    opacity: isSubmitting ? 0.7 : 1,
+                    cursor: isSubmitting ? 'not-allowed' : 'pointer'
+                  }}
+                >
                   {isSubmitting ? (
-                    <CircularProgress size={24} color="inherit" />
-                  ) : isEditing ? (
-                    "Guardar Cambios"
-                  ) : isDeleting ? (
-                    "Dar de baja Usuario"
-                  ) : isActivating ? (
-                    "Activar Usuario"
+                    <>
+                      <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
+                      {isEditing ? "Guardando..." 
+                       : isDeleting ? "Procesando..." 
+                       : isActivating ? "Activando..." 
+                       : "Registrando..."}
+                    </>
                   ) : (
-                    "Registrar Usuario"
+                    <>
+                      {isEditing ? "Guardar Cambios"
+                       : isDeleting ? "Dar de baja Usuario"
+                       : isActivating ? "Activar Usuario"
+                       : "Registrar Usuario"}
+                    </>
                   )}
                 </CustomButton>
               )}
@@ -727,6 +749,10 @@ export default function UsuarioForm({
                 onClick={onClose}
                 color="secondary"
                 disabled={isSubmitting}
+                style={{ 
+                  opacity: isSubmitting ? 0.7 : 1,
+                  cursor: isSubmitting ? 'not-allowed' : 'pointer'
+                }}
               >
                 {isViewing ? "Cerrar" : "Cancelar"}
               </CustomButton>
