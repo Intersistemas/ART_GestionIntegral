@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { IconButton, Box, Tooltip } from "@mui/material"; 
 import EditIcon from "@mui/icons-material/Edit";
@@ -22,8 +22,8 @@ interface Props {
   onPermisos: (row: UsuarioRow) => void;
   onActivate: (row: UsuarioRow) => void;
   onRemove: (row: UsuarioRow) => void;
-  onReestablecer: (row: UsuarioRow) => void;
-  onReenviarCorreo: (row: UsuarioRow) => void;
+  onReestablecer: (row: UsuarioRow) => Promise<void>;
+  onReenviarCorreo: (row: UsuarioRow) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -32,6 +32,83 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
   const { hasTask } = useAuth();
   const isAdmin = user?.rol?.toLowerCase() === "administrador"
   const isAdminEmpleador = user?.rol?.toLowerCase() === "administradorempleador";
+  
+  // Estado para rastrear los botones deshabilitados
+  const [disabledButtons, setDisabledButtons] = useState<{
+    reestablecer: Set<string>;
+    reenviarCorreo: Set<string>;
+  }>({
+    reestablecer: new Set(),
+    reenviarCorreo: new Set()
+  });
+
+  // Función para reactivar el botón de Reestablecer contraseña
+  const enableReestablecerButton = useCallback((userId: string) => {
+    setDisabledButtons(prev => {
+      const newReestablecer = new Set(prev.reestablecer);
+      newReestablecer.delete(userId);
+      return {
+        ...prev,
+        reestablecer: newReestablecer
+      };
+    });
+  }, []);
+
+  // Función para reactivar el botón de Reenviar correo
+  const enableReenviarCorreoButton = useCallback((userId: string) => {
+    setDisabledButtons(prev => {
+      const newReenviarCorreo = new Set(prev.reenviarCorreo);
+      newReenviarCorreo.delete(userId);
+      return {
+        ...prev,
+        reenviarCorreo: newReenviarCorreo
+      };
+    });
+  }, []);
+
+  // Función para manejar click en Reestablecer contraseña
+  const handleReestablecerClick = useCallback(async (row: UsuarioRow) => {
+    const userId = row.id.toString();
+    
+    // Deshabilitar el botón
+    setDisabledButtons(prev => {
+      const newReestablecer = new Set(prev.reestablecer);
+      newReestablecer.add(userId);
+      return {
+        ...prev,
+        reestablecer: newReestablecer
+      };
+    });
+
+    try {
+      await onReestablecer(row);
+    } finally {
+      // Reactivar el botón después del proceso, exitoso o no
+      enableReestablecerButton(userId);
+    }
+  }, [onReestablecer, enableReestablecerButton]);
+
+  // Función para manejar click en Reenviar correo
+  const handleReenviarCorreoClick = useCallback(async (row: UsuarioRow) => {
+    const userId = row.id.toString();
+    
+    // Deshabilitar el botón
+    setDisabledButtons(prev => {
+      const newReenviarCorreo = new Set(prev.reenviarCorreo);
+      newReenviarCorreo.add(userId);
+      return {
+        ...prev,
+        reenviarCorreo: newReenviarCorreo
+      };
+    });
+
+    try {
+      await onReenviarCorreo(row);
+    } finally {
+      // Reactivar el botón después del proceso, exitoso o no
+      enableReenviarCorreoButton(userId);
+    }
+  }, [onReenviarCorreo, enableReenviarCorreoButton]);
   
   const columns = useMemo<ColumnDef<UsuarioRow>[]>(
     () => [
@@ -128,8 +205,8 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
                       }}
                     >
                       <IconButton
-                        disabled={!hasTask("Usuarios_AccionRestablecerClave")}
-                        onClick={() => onReestablecer(row.original)}
+                        disabled={!hasTask("Usuarios_AccionRestablecerClave") || disabledButtons.reestablecer.has(row.original.id.toString())}
+                        onClick={() => handleReestablecerClick(row.original)}
                         color="warning"
                         size="small"
                       >
@@ -204,8 +281,8 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
                       }}
                     >
                       <IconButton
-                        disabled={!hasTask("Usuarios_AccionReenviarCorreo")}
-                        onClick={() => onReenviarCorreo(row.original)}
+                        disabled={!hasTask("Usuarios_AccionReenviarCorreo") || disabledButtons.reenviarCorreo.has(row.original.id.toString())}
+                        onClick={() => handleReenviarCorreoClick(row.original)}
                         color="warning"
                         size="small"
                       >
@@ -220,7 +297,7 @@ export default function UsuarioTable({ data, onEdit, onDelete, onView, onActivat
         meta: { align: 'center'},
   },
     ],
-    [onEdit, onDelete, onView, onPermisos, onActivate, onReestablecer, onReenviarCorreo, hasTask]
+    [onEdit, onDelete, onView, onPermisos, onActivate, hasTask, disabledButtons.reestablecer, disabledButtons.reenviarCorreo, handleReestablecerClick, handleReenviarCorreoClick]
   );
 
   return <DataTable data={data} columns={columns}  isLoading={isLoading} />;

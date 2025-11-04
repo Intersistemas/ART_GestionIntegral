@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Box, Typography } from "@mui/material";
-import UsuarioForm, { UsuarioFormFields, UsuarioSubmitData } from "./UsuarioForm";
+import UsuarioForm, { UsuarioFormFields } from "./UsuarioForm";
 import UsuarioTable from "./UsuarioTable";
 import Tareas from "./Tareas";
 import useUsuarios from "./useUsuarios";
@@ -34,6 +34,9 @@ interface PermisosModulo {
 
 export default function UsuariosPage() {
   const { user } = useAuth();
+  
+  // Determinar si el usuario es administrador
+  const isAdmin = user?.rol?.toLowerCase() === "administrador";
 
   const initialForm: UsuarioFormFields = {
     cuit: "",
@@ -44,7 +47,7 @@ export default function UsuariosPage() {
     // tipo: "",
     phoneNumber: "",
     nombre: "",
-    // userName: "",
+    userName: "",
     // Usamos el `|| 1` como valor por defecto, aunque es mejor que el backend lo maneje si no existe
     empresaId: user?.empresaId || 0, 
     cargoId: undefined,
@@ -66,6 +69,7 @@ export default function UsuariosPage() {
     usuarioReenviarCorreo
   } = useUsuarios();
   const [formError, setFormError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [requestState, setRequestState] = useState<RequestState>({
     method: null,
     userData: null,
@@ -121,6 +125,7 @@ export default function UsuariosPage() {
           phoneNumber: row.phoneNumber || "",
           nombre: row.nombre || "",
           cargoId: row.cargoId || 1,
+          userName: row.userName || "",
           // Limpiar cargo si está vacío, es null, undefined, o contiene valores no deseados
           // cargo: (row.cargo && row.cargo.trim() !== "" && row.cargo !== "null" && row.cargo !== "undefined") ? row.cargo : "",
           // Mantenemos la empresaId de la fila o del usuario actual
@@ -179,7 +184,7 @@ export default function UsuariosPage() {
     }
   };
 
-  const handleReestablecer = async (row: UsuarioRow) => {
+  const handleReestablecer = async (row: UsuarioRow): Promise<void> => {
     try {
       const result = await usuarioReestablecer(String(row.email));
       if (result.success) {
@@ -196,9 +201,9 @@ export default function UsuariosPage() {
     }
   };
 
-  const handleReenviarCorreo = async (email: string) => {
+  const handleReenviarCorreo = async (row: UsuarioRow): Promise<void> => {
     try {
-      const result = await usuarioReenviarCorreo(String(email));
+      const result = await usuarioReenviarCorreo(String(row.email));
       if (result.success) {
         showModalMessage("Se reenviaron las instrucciones al correo del usuario.", "success");
       } else {
@@ -210,20 +215,25 @@ export default function UsuariosPage() {
     }
   };
 
-const handleSubmit = async (data: UsuarioSubmitData) => {
-  // Aquí se crea el objeto completo para la API, añadiendo empresaId
-  // La lógica de envío debe considerar el modo (create, edit, delete)
-  const method = requestState.method;
-  console.log("handleSubmit method:", method);
-  let result: { success: boolean; error: string | null } = {
-    success: false,
-    error: null,
-  };
+const handleSubmit = async (data: UsuarioFormFields) => {
+  // Activar estado de carga
+  setIsSubmitting(true);
+  setFormError(null);
 
-  if (method === "view") {
-    handleCloseModal();
-    return;
-  }
+  try {
+    // Aquí se crea el objeto completo para la API, añadiendo empresaId
+    // La lógica de envío debe considerar el modo (create, edit, delete)
+    const method = requestState.method;
+    console.log("handleSubmit method:", method);
+    let result: { success: boolean; error: string | null } = {
+      success: false,
+      error: null,
+    };
+
+    if (method === "view") {
+      handleCloseModal();
+      return;
+    }
 
   // Aquí se crea el objeto completo para la API...
   const dataToSubmit = {
@@ -276,20 +286,29 @@ const handleSubmit = async (data: UsuarioSubmitData) => {
     };
   }
 
-  if (result.success) {
-    const successMessages = {
-      create: "Usuario creado exitosamente",
-      edit: "Usuario actualizado exitosamente", 
-      delete: "Usuario dado de baja exitosamente",
-      activate: "Usuario reactivado exitosamente"
-    };
-    
-    showModalMessage(successMessages[method as keyof typeof successMessages] || "Operación completada exitosamente", "success");
-    handleCloseModal();
-  } else {
-    const errorMessage = result.error || `Error al ${method} el usuario.`;
+    if (result.success) {
+      const successMessages = {
+        create: "Usuario creado exitosamente",
+        edit: "Usuario actualizado exitosamente", 
+        delete: "Usuario dado de baja exitosamente",
+        activate: "Usuario reactivado exitosamente"
+      };
+      
+      showModalMessage(successMessages[method as keyof typeof successMessages] || "Operación completada exitosamente", "success");
+      handleCloseModal();
+    } else {
+      const errorMessage = result.error || `Error al ${method} el usuario.`;
+      showModalMessage(errorMessage, "error");
+      setFormError(errorMessage);
+    }
+  } catch (error) {
+    console.error("Error en handleSubmit:", error);
+    const errorMessage = "Ocurrió un error inesperado al procesar la solicitud";
     showModalMessage(errorMessage, "error");
     setFormError(errorMessage);
+  } finally {
+    // Desactivar estado de carga
+    setIsSubmitting(false);
   }
 };
 
@@ -330,7 +349,7 @@ const handleSubmit = async (data: UsuarioSubmitData) => {
         onRemove={(row) => handleOpenModal("remove", row)}
         onReestablecer={(row) => handleReestablecer(row)}
         onPermisos={handleOpenPermisos}
-        onReenviarCorreo={(row) =>handleReenviarCorreo(row.email)}
+        onReenviarCorreo={handleReenviarCorreo}
         isLoading={loading}
       />
 
@@ -344,6 +363,8 @@ const handleSubmit = async (data: UsuarioSubmitData) => {
         initialData={currentInitialData}
         errorMsg={formError}
         method={requestState.method || "create"}
+        isAdmin={isAdmin}
+        isSubmitting={isSubmitting}
       />
 
       <Tareas
