@@ -10,6 +10,7 @@ import {
   InputLabel,
   FormControl,
   CircularProgress,
+  Autocomplete,
 } from "@mui/material";
 import RolesInterface from "./interfaces/RolesInterface";
 import styles from "./Usuario.module.css";
@@ -26,7 +27,7 @@ type RequestMethod = "create" | "edit" | "view" | "delete" | "activate" | "remov
 export interface UsuarioFormFields {
   nombre: string;
   email: string;
-  cuit: string;
+  cuit: string; // Keep as string for form input, will convert to number on submit
   phoneNumber: string;
   cargoId?: number;
   password?: string;
@@ -38,10 +39,17 @@ export interface UsuarioFormFields {
   id?: string;
 }
 
+// Interface for submitted data with CUIT as number
+export interface UsuarioSubmitData extends Omit<UsuarioFormFields, 'cuit'> {
+  cuit: number;
+  userName: string;
+  tipo: string;
+}
+
 interface Props {
   open: boolean;
   onClose: () => void;
-  onSubmit: (formData: UsuarioFormFields) => void;
+  onSubmit: (formData: UsuarioSubmitData) => void;
   roles: RolesInterface[];
   cargos: CargoInterface[];
   refEmpleadores: RefEmpleador[];
@@ -364,22 +372,7 @@ export default function UsuarioForm({
     }
   };
 
-  const handleEmpresaChange = (e: SelectChangeEvent<number>) => {
-    const { value } = e.target;
 
-    setForm((prev: UsuarioFormFields) => ({
-      ...prev,
-      empresaId: Number(value),
-    }));
-
-    if (touched.empresaId) {
-      const error = validateField("empresaId", String(value));
-      setErrors((prev) => ({
-        ...prev,
-        empresaId: error,
-      }));
-    }
-  };
 
   const handleCargoChange = (e: SelectChangeEvent<number>) => {
     const { value } = e.target;
@@ -412,13 +405,20 @@ export default function UsuarioForm({
 
     // Manejo directo para 'delete' (no requiere validación de formulario)
     if (isDeleting || isActivating) {
-      onSubmit(form);
+      const deleteData: UsuarioSubmitData = {
+        ...form,
+        cuit: parseInt(form.cuit.replace(/[^\d]/g, ''), 10),
+        userName: form.email,
+        tipo: ""
+      };
+      onSubmit(deleteData);
       return;
     }
 
     // Set default values for hidden fields
     const formDataWithDefaults = {
       ...form,
+      cuit: parseInt(form.cuit.replace(/[^\d]/g, ''), 10), // Parse CUIT as integer, removing all non-digits
       userName: form.email, // Use email as username
       tipo: "", // Default type
       rol: form.rol || (roles.length > 0 ? roles[0].nombre : ""), // Default to first role
@@ -601,41 +601,45 @@ export default function UsuarioForm({
                     )}
                   </FormControl>
 
-                  {/* Empresa (Select) */}
-                  <FormControl
+                  {/* Empresa (Autocomplete con búsqueda) */}
+                  <Autocomplete
                     fullWidth
-                    required={!isDisabled}
-                    error={touched.empresaId && !!errors.empresaId}
-                    disabled={isDisabled}
-                  >
-                    <InputLabel>Empresa</InputLabel>
-                    <Select
-                      name="empresaId"
-                      value={form.empresaId}
-                      label="Empresa"
-                      onChange={handleEmpresaChange}
-                      onBlur={() => handleBlur("empresaId")}
-                      disabled={isDisabled || form.empresaId !== 0}
-                    >
-                      {refEmpleadores.map((refEmpleador) => (
-                        <MenuItem
-                          key={refEmpleador.interno}
-                          value={refEmpleador.interno}
-                        >
-                          {refEmpleador.nombre1}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    {touched.empresaId && errors.empresaId && (
-                      <Typography
-                        variant="caption"
-                        color="error"
-                        sx={{ ml: 2, mt: 0.5 }}
-                      >
-                        {errors.empresaId}
-                      </Typography>
+                    options={refEmpleadores}
+                    getOptionLabel={(option) => option.razonSocial || ""}
+                    value={refEmpleadores.find(emp => emp.interno === form.empresaId) || null}
+                    onChange={(event, newValue) => {
+                      const empresaId = newValue ? newValue.interno : 0;
+                      setForm((prev: UsuarioFormFields) => ({
+                        ...prev,
+                        empresaId: empresaId,
+                      }));
+                      
+                      if (touched.empresaId) {
+                        const error = validateField("empresaId", String(empresaId));
+                        setErrors((prev) => ({
+                          ...prev,
+                          empresaId: error,
+                        }));
+                      }
+                    }}
+                    onBlur={() => handleBlur("empresaId")}
+                    disabled={isDisabled || form.empresaId !== 0}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Empresa *"
+                        error={touched.empresaId && !!errors.empresaId}
+                        helperText={touched.empresaId && errors.empresaId}
+                        placeholder="Buscar empresa..."
+                      />
                     )}
-                  </FormControl>
+                    filterOptions={(options, { inputValue }) => {
+                      return options.filter(option =>
+                        option.razonSocial.toLowerCase().includes(inputValue.toLowerCase())
+                      );
+                    }}
+                    noOptionsText="No se encontraron empresas"
+                  />
                 </div>
               )}
             </div>
