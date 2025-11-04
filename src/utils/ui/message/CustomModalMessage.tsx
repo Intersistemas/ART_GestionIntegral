@@ -1,4 +1,4 @@
-// CustomModalMessage.tsx
+// @/utils/ui/message/CustomModalMessage/CustomModalMessage.tsx
 "use client";
 
 import React from 'react';
@@ -6,16 +6,8 @@ import { Dialog, DialogContent, DialogTitle, Typography, Box } from '@mui/materi
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-
-// Importa los estilos CSS
 import styles from './CustomModalMessage.module.css';
-
-// ----------------------------------------------------------------------
-// TIPOS
-// ----------------------------------------------------------------------
-
 export type MessageType = 'success' | 'error' | 'alert';
-
 interface CustomModalMessageProps {
   open: boolean;
   message: string;
@@ -23,10 +15,6 @@ interface CustomModalMessageProps {
   onClose: () => void;
   title?: string;
 }
-
-// ----------------------------------------------------------------------
-// LÓGICA DEL COMPONENTE
-// ----------------------------------------------------------------------
 
 const CustomModalMessage: React.FC<CustomModalMessageProps> = ({
   open,
@@ -58,7 +46,6 @@ const CustomModalMessage: React.FC<CustomModalMessageProps> = ({
     }
   }, [type]);
   
-  // Clase de color para el modal
   const colorClass = styles[type];
 
   return (
@@ -93,5 +80,4 @@ const CustomModalMessage: React.FC<CustomModalMessageProps> = ({
     </Dialog>
   );
 };
-
 export default CustomModalMessage;

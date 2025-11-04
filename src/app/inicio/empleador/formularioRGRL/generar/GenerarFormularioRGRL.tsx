@@ -7,10 +7,12 @@ import Grid from '@mui/material/Grid';
 import { TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { useSearchParams, useRouter } from 'next/navigation';
 import CustomButton from '@/utils/ui/button/CustomButton';
-import CustomModal from '@/utils/ui/form/CustomModal';
 import dayjs from 'dayjs';
 import styles from './GenerarFormularioRGRL.module.css';
 import { CUIP } from '@/utils/Formato';
+import CustomModal from '@/utils/ui/form/CustomModal';
+import CustomModalMessage, { MessageType } from '@/utils/ui/message/CustomModalMessage'; // Asumiendo esta ruta
+
 
 import type {
   Establecimiento,
@@ -131,6 +133,14 @@ const GenerarFormularioRGRL: React.FC<{
     [establecimientos, establecimientoSel]
   );
 
+  //ESTADOS PARA EL MODAL DE MENSAJE
+  const [modalMsgOpen, setModalMsgOpen] = useState(false);
+  const [modalMsg, setModalMsg] = useState('');
+  const [modalMsgType, setModalMsgType] = useState<MessageType>('alert');
+
+  // Función para cerrar el modal de mensaje
+  const handleCloseModalMsg = () => setModalMsgOpen(false);
+
   useEffect(() => {
     if (estActual) {
       setEstSuperficie(estActual.superficie ?? 0);
@@ -159,6 +169,22 @@ const GenerarFormularioRGRL: React.FC<{
     setError('');
     try {
       const [rs, ests, tfs] = await Promise.all([fetchRazonSocial(cuit!), fetchEstablecimientos(cuit!), fetchTipos()]);
+      // LÓGICA DE ALERTA A IMPLEMENTAR
+      let alertMessage = '';
+      if (!rs) {
+          alertMessage += 'No se encontró la Razón Social para el CUIT ingresado.';
+      }
+      if (!ests || ests.length === 0) {
+          if (alertMessage) alertMessage += '\n\n';
+          alertMessage += 'No se encontraron Establecimientos asociados al CUIT.';
+      }
+
+      if (alertMessage) {
+        setModalMsg(alertMessage);
+        setModalMsgType('alert');
+        setModalMsgOpen(true);
+      }
+
       setRazonSocial(rs);
       setEstablecimientos(ests);
       setTipos(tfs);
@@ -166,6 +192,7 @@ const GenerarFormularioRGRL: React.FC<{
       setTipoSel(tfs?.[0]?.interno);
     } catch (e: any) {
       setError(e?.message ?? 'Error al cargar datos');
+      console.log("e**",e)
     } finally {
       setLoading(false);
     }
@@ -798,10 +825,6 @@ const GenerarFormularioRGRL: React.FC<{
               <tbody>
                 {responsablesUI.map((r, i) => (
                   <tr key={i}>
-
-
-
-
                     <td className={styles.tdPad4}>
                       <TextField
                         value={
@@ -821,9 +844,6 @@ const GenerarFormularioRGRL: React.FC<{
                         fullWidth
                       />
                     </td>
-
-
-
                     <td className={styles.tdPad4}>
                       <TextField
                         value={r.responsable ?? ''}
@@ -831,10 +851,6 @@ const GenerarFormularioRGRL: React.FC<{
                         fullWidth
                       />
                     </td>
-
-
-
-
                     <td className={styles.tdPad4}>
                       <TextField
                         value={r.cargo ?? ''}
@@ -842,10 +858,6 @@ const GenerarFormularioRGRL: React.FC<{
                         fullWidth
                       />
                     </td>
-
-
-
-
                     <td className={styles.tdPad4}>
                       <TextField
                         type="number"
@@ -854,9 +866,6 @@ const GenerarFormularioRGRL: React.FC<{
                         fullWidth
                       />
                     </td>
-
-
-
                     <td className={styles.tdPad4}>
                       <TextField
                         type="number"
@@ -865,9 +874,6 @@ const GenerarFormularioRGRL: React.FC<{
                         fullWidth
                       />
                     </td>
-
-
-
                     <td className={styles.tdPad4}>
                       <input
                         type="text"
@@ -988,7 +994,6 @@ const GenerarFormularioRGRL: React.FC<{
                 },
               },
             }}
-
           >
             <MenuItem value="" disabled>
               Seleccioná...
@@ -1063,6 +1068,13 @@ const GenerarFormularioRGRL: React.FC<{
         </CustomButton>
         <CustomButton onClick={crearFormulario} disabled={!cuit}>CREAR FORMULARIO</CustomButton>
       </Box>
+      <CustomModalMessage
+        open={modalMsgOpen}
+        onClose={handleCloseModalMsg}
+        message={modalMsg}
+        type={modalMsgType}
+        title="Datos faltantes" // Título personalizado para esta alerta
+      />
     </div>
   );
 };
