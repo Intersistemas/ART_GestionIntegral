@@ -26,14 +26,14 @@ const Poliza = () => {
   }
 
   // Accede a las propiedades de la sesión con seguridad
-  const { email, nombre, cuit } = user as any;
+  const { email, empresaCUIT, empresaRazonSocial } = user as any;
 
   return (
     <div>
       {/* Sección de Razón Social */}
       <div className={styles.sectionHeader}>
         <h2 className={styles.headerTitle}>Razón Social</h2>
-        <p className={styles.headerData}>{nombre}</p>
+        <p className={styles.headerData}>{empresaRazonSocial ?? "Usuario sin Empresa"}</p>
       </div>
 
       {/* Sección de Datos de la Aseguradora */}
@@ -147,7 +147,7 @@ const Poliza = () => {
         <TextField
           label="Nº CUIT:"
           name="CUITEmpleador"
-          value={Formato.CUIP(cuit)}
+          value={Formato.CUIP(empresaCUIT)}
           fullWidth
           variant='standard'
         />

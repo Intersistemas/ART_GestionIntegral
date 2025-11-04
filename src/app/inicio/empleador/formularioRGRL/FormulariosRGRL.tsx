@@ -452,7 +452,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
         enableSorting: false,
       },
     ],
-    []
+    [router]
   );
   // Re-define DataTable con tipado específico para este componente.
   const DataTable = DataTableImport as unknown as React.FC<{

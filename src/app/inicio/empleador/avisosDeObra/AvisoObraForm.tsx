@@ -2,18 +2,17 @@
 import React, { useState, FC } from "react";
 // 🚨 Importar ChangeEvent ya no es necesario
 import { Control as UIControl } from "./Control"; // Asumo que UIControl es el componente de input/select
-import { Card, CardContent, Typography, Grid } from "@mui/material";
+import { Card, CardContent, Typography, Grid, Box } from "@mui/material";
 // Asumo que Provincias y AvisosObraTipos son arrays de objetos con campos Codigo y Descripcion
 import { AvisosObraTipos } from './avisosObraTipos'; 
 import { Provincias } from './provincias';
 import CustomModal from "@/utils/ui/form/CustomModal";
 import { AvisoObraRecord, AvisoTipo, Provincia, Request, Response } from "./types";
+import CustomButton from "@/utils/ui/button/CustomButton";
 
-// 1. Tipos de Utilidad
 // El tipo SelectConfig se usa para mapear la descripción a un valor (string o number)
 type SelectConfig = Record<string, string | number>;
 
-// ** CORRECCIÓN DE TIPOS **
 // Define el tipo para la prop 'type' de los controles, resolviendo el error de asignación de tipo.
 type ControlType = "text" | "number" | "date" | "checkbox" | "select" | "textarea";
 
@@ -59,8 +58,6 @@ const initData = (initialData: Partial<AvisoObraRecord> = {}): AvisoObraRecord =
     return { ...defaultData, ...initialData } as AvisoObraRecord;
 };
 
-// ====================================================================================================
-
 const AvisoObraForm: FC<AvisoObraFormProps> = ({
     request,
     data: initialData = {},
@@ -100,25 +97,16 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
 };
 
     const deshabilitaConfirmacionFecha = (d: AvisoObraRecord = data): boolean => {
-        // Campos requeridos (Ajustar según la regla de negocio real si es necesario)
         if (d.direccionCalleRuta === "") return true;
-        // Asumiendo que direccionPciaCodigo debe ser un string no vacío o no nulo
         if (!d.direccionPciaCodigo) return true; 
         if (d.direccionCPA === "") return true;
-        // Usar !d.actividadInicioFecha funciona para null, undefined y ""
         if (!d.actividadInicioFecha) return true; 
-
-        // Validación condicional para Excavación
         if (d.actExcavacion === "S" && (!d.excavacionInicioFecha || !d.excavacionFinFecha)) return true;
-
-        // Validación condicional para Demolición
         if (d.actDemolicion === "S" && (!d.demolicionInicioFecha || !d.demolicionFinFecha)) return true;
-
         return false;
     };
     
-    // 6. Título del Modal
-    const finalAction = action || (() => {
+    const finalAction = action || (() => {// 6. Título del Modal
         switch (request) {
             case Request.Insert: return "Agrega";
             case Request.View: return "Consulta";
@@ -141,7 +129,6 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
         [key: string]: any;
     }
     
-    // CAMBIO IMPORTANTE: Usar un componente FC (función de componente) en lugar de una función simple
     const Control: FC<ControlProps> = ({
         name,
         type = "text", // Usamos el valor por defecto
@@ -152,8 +139,7 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
         ...p
     }) => {
         const controlConfig = { ...config };
-        
-        // Ajuste para checkbox
+
         if (type === "checkbox") {
             controlConfig.trueValue = controlConfig.trueValue ?? "S";
             controlConfig.falseValue = controlConfig.falseValue ?? "N";
@@ -182,7 +168,6 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
                 // Si se desactiva, se pone null
                 newData.confirmacionFecha = null;
             }
-            
             setData(newData);
         };
         
@@ -203,7 +188,7 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
 
     // 8. Lógica de Cierre y Conversión de Tipos
     const handleOnClose = (req: Request, res: Response) => {
-        // Copiamos los datos para la conversión de tipos antes de llamar a onClose
+        // Copiamos los datos para la conversión de tipos
         const record: AvisoObraRecord = { ...data };
 
         // Aplicamos la lógica de conversión a number/null
@@ -211,7 +196,6 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
             let value = record[field];
             
             switch (field) {
-                // Campos Date/DateTime: string vacío a null
                 case "recepcionFecha":
                 case "actividadInicioFecha":
                 case "actividadFinFecha":
@@ -222,43 +206,90 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
                 case "demolicionInicioFecha":
                 case "demolicionFinFecha":
                 case "confirmacionFecha":
-                    // El valor puede ser null o una string. Si es una string vacía, lo hacemos null.
                     if (value === "") {
                         (record as any)[field] = null;
                     }
                     break;
                     
-                // Campos enteros/decimales: string vacío a null, string a number
                 case "obraNumero":
                 case "obraSecuencia":
                 case "direccionPciaCodigo":
                 case "superficie":
                 case "plantas":
-                case "empleadorCUIT": // Asumo que es entero o flotante
+                case "empleadorCUIT":
                     if (value === "" || value === null) {
                         (record as any)[field] = null;
                     } else {
-                        // Usar parseFloat para ambos, ya que parseInt puede fallar con floats.
-                        // Si se espera un entero, se podría usar parseInt.
                         const parsedValue = parseFloat(value as string);
                         (record as any)[field] = isNaN(parsedValue) ? null : parsedValue;
                     }
                     break;
-                    
                 default:
-                    // Dejamos otros campos (strings, checkboxes 'S'/'N') tal cual
                     break;
             }
         });
-
         onClose(req, res, record);
     };
 
+    const handleCancel = () => {
+        handleOnClose(request, Response.Cancelled);
+    };
+
+    const handleConfirm = () => {
+        // Si es una acción de Inserción/Modificación, chequeamos la bandera de confirmación.
+        // El handler padre (AvisosObraHandler) se encargará de la validación final.
+        if (
+            (request === Request.Insert || request === Request.Change) && 
+            !data.confirmacionFecha
+        ) {
+            // Si el checkbox "Formulario listo para envío" no está marcado, 
+            // no lo permitimos (o podríamos abrir un error, pero el handler padre ya lo valida)
+            console.error("Debe marcar 'Formulario listo para envío' antes de confirmar.");
+            return;
+        }
+        
+        handleOnClose(request, Response.Completed);
+    };
+
+    // Determinar si el formulario es solo de lectura
+    const isReadOnly = request === Request.View;
+
+    const modalActions = (
+        <Box sx={{ display: 'flex', gap: 2, padding: 2 }}>
+            <CustomButton 
+                variant="outlined" 
+                onClick={handleCancel} 
+                color="secondary"
+            >
+                Cancelar
+            </CustomButton>
+            
+            {/* El botón Confirmar solo se muestra si NO es solo de lectura */}
+            {!isReadOnly && (
+                <CustomButton 
+                    variant="contained" 
+                    onClick={handleConfirm} 
+                    color="primary"
+                    // Deshabilitado si estamos en Insert/Change y la confirmación no está lista.
+                    disabled={request !== Request.Delete && deshabilitaConfirmacionFecha()}
+                >
+                    {request === Request.Delete ? "Confirmar Eliminación" : "Confirmar Envío"}
+                </CustomButton>
+            )}
+        </Box>
+    );
+
     // 9. Renderizado del componente (JSX)
     return (
-        
         // Se corrigió el uso de la prop 'open'
-        <CustomModal title={title} open={open} onClose={() => handleOnClose(request, Response.Cancelled)}size="large">
+       <CustomModal 
+            title={title} 
+            open={open} 
+            // Reemplazamos el onClose con nuestro handler de cancelar
+            onClose={handleCancel} 
+            actions={modalActions} // Pasamos los botones al modal
+            size="large"
+        >
             <Grid container rowSpacing={2} columnSpacing={2}>
                 <Grid >
                     <Control label="Tipo" name="obraTipo" type="select" config={avisosObraTipos} />
@@ -270,7 +301,6 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
                     <Control label="Plantas" name="plantas" type="number" />
                 </Grid>
                 
-                {/* --- SECCIÓN DIRECCIÓN --- */}
                 <Grid >
                     <Card variant="outlined">
                         <CardContent>
@@ -300,8 +330,6 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
                         </CardContent>
                     </Card>
                 </Grid>
-                
-                {/* --- SECCIÓN FECHAS: ACTIVIDAD --- */}
                 <Grid  >
                     <Card variant="outlined">
                         <CardContent>
@@ -317,8 +345,6 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
                         </CardContent>
                     </Card>
                 </Grid>
-
-                {/* --- SECCIÓN FECHAS: SUSPENSIÓN --- */}
                 <Grid  >
                     <Card variant="outlined">
                         <CardContent>
@@ -334,15 +360,6 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
                         </CardContent>
                     </Card>
                 </Grid>
-                
-                {/* Las siguientes secciones de Grid las optimicé para usar `   `
-                    o `xs={12}` para un mejor diseño responsive dentro del modal. 
-                    Reemplazo el uso de `{Control({ ... })}` por `<Control ... />`
-                    y añado `item` a cada `Grid` para un diseño de Material-UI correcto.
-                    Se revierte la modificación de las props de Grid según la solicitud del usuario.
-                */}
-                
-                {/* --- SECCIÓN OBRAS: INGENIERÍA CIVIL --- */}
                 <Grid  >
                     <Card variant="outlined">
                         <CardContent>
@@ -363,8 +380,6 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
                         </CardContent>
                     </Card>
                 </Grid>
-
-                {/* --- SECCIÓN OBRAS: ARQUITECTURA --- */}
                 <Grid  >
                     <Card variant="outlined">
                         <CardContent>
@@ -382,8 +397,6 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
                         </CardContent>
                     </Card>
                 </Grid>
-                
-                {/* --- SECCIONES: MONTAJE, DUCTOS, REDES, OTRAS CONST. (Se pueden agrupar o seguir expandiendo) --- */}
                 <Grid  >
                     <Card variant="outlined">
                         <CardContent>
@@ -398,7 +411,6 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
                         </CardContent>
                     </Card>
                 </Grid>
-
                 <Grid  >
                     <Card variant="outlined">
                         <CardContent>
@@ -414,8 +426,6 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
                         </CardContent>
                     </Card>
                 </Grid>
-                
-                {/* --- SECCIÓN ACTIVIDAD A DESARROLLAR (Detallada) --- */}
                 <Grid >
                     <Card variant="outlined">
                         <CardContent>
@@ -445,7 +455,6 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
                                         </CardContent>
                                     </Card>
                                 </Grid>
-                                
                                 {/* Otros Checkboxes */}
                                 <Grid ><Control label="Albañilería" name="actAlbanileria" type="checkbox" /></Grid>
                                 <Grid ><Control label="H A" name="actHA" type="checkbox" /></Grid>
@@ -464,7 +473,6 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
                         </CardContent>
                     </Card>
                 </Grid>
-                
                 {/* --- SECCIÓN CONFIRMACIÓN FINAL --- */}
                 <Grid >
                     <div style={{ textAlign: "left" }}>

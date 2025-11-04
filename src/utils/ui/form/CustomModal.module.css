@@ -96,3 +96,22 @@
   gap: 1rem;
   padding: 0 2rem 1.5rem 2rem; /* Padding para los botones, incluyendo el de abajo */
 }
+
+/* === Sección de Acciones (Botones) === */
+.modalActions {
+    /* Mantiene la misma alineación de padding horizontal que el header y el body */
+    padding: 1.5rem 2rem; 
+    
+    /* Separador visual opcional */
+    border-top: 1px solid var(--grisClaro, #eee); 
+    
+    /* Configuración de Flexbox para alinear botones */
+    display: flex;
+    justify-content: flex-end; /* **Alinea los botones a la derecha** */
+    gap: 1rem; /* Espacio entre los botones */
+
+    /* Aplica el radio inferior si no hay border-top (y el modal es pequeño), 
+       aunque normalmente el padding lo empuja al borde inferior. */
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+}

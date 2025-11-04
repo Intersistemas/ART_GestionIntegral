@@ -11,6 +11,7 @@ interface CustomModalProps {
   title?: string;
   size?: 'small' | 'mid' | 'large';
   children: React.ReactNode;
+  actions?: React.ReactNode;
 }
 
 const CustomModal: React.FC<CustomModalProps> = ({
@@ -19,6 +20,7 @@ const CustomModal: React.FC<CustomModalProps> = ({
   title,
   size = 'large',
   children,
+  actions,
 }) => {
   const modalSizeClass = styles[size];
 
@@ -38,6 +40,11 @@ const CustomModal: React.FC<CustomModalProps> = ({
         <div className={styles.modalBody}>
           {children}
         </div>
+        {actions && (
+          <div className={styles.modalActions}>
+            {actions}
+          </div>
+        )}
       </Box>
     </Modal>
   );
