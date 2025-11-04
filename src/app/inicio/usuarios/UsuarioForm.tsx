@@ -623,7 +623,7 @@ export default function UsuarioForm({
                       }
                     }}
                     onBlur={() => handleBlur("empresaId")}
-                    // disabled={isDisabled || form.empresaId !== 0}
+                    disabled={isDisabled || form.empresaId !== 0}
                     renderInput={(params) => (
                       <TextField
                         {...params}
