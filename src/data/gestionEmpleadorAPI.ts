@@ -4,6 +4,7 @@ import { token } from "./usuarioAPI";
 import Persona, { Parameters } from "@/app/inicio/empleador/cobertura/types/persona";
 import dayjs from "dayjs";
 import { toURLSearch } from "@/utils/utils";
+import { useAuth } from '@/data/AuthContext';
 
 const tokenizable = token.configure();
 
@@ -21,7 +22,10 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
 
   readonly basePath = process.env.NEXT_PUBLIC_API_EMPLEADOR_URL || 'http://fallback-prod.url'; 
   //#region Persona
+  
   readonly getPersonalURL = (params: Parameters = {}) => {
+      
+    params.CUIT ??= useAuth().user?.empresaCUIT ?? 0;
     params.periodo ??= getCurrentPeriodo();
     params.page ??= "1,1";
     return this.getURL({ path: "/api/AfiliadoCuentaCorriente/", search: toURLSearch(params) }).toString();
@@ -29,9 +33,20 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
   getPersonal = async (params: Parameters = {}) => tokenizable.get<Persona[]>(
     this.getPersonalURL(params),
   ).then(({ data }) => data);
+
   useGetPersonal = (params: Parameters = {}) => useSWR(
-    [this.getPersonalURL(params), token.getToken()], () => this.getPersonal(params) 
+    [this.getPersonalURL(params), token.getToken()], () => this.getPersonal(params),
+     {
+      // No volver a revalidar al volver al foco, reconectar o al montar si ya hay cache
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      //revalidateOnMount: false,
+      // Tiempo en ms durante el cual SWR deduplica solicitudes iguales (evita re-fetch frecuente)
+      //dedupingInterval: 1000 * 60 * 60, // 1 hora (ajusta si hace falta)
+      // Si quieres que la clave no dispare fetch hasta que exista token, puedes usar: (token.getToken() ? key : null)
+    }    
   );
+  
   //#endregion
 
 
