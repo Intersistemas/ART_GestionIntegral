@@ -2,7 +2,7 @@ import React, { createContext, type ReactNode, useCallback, useContext, useMemo,
 import { type Field, formatQuery, type RuleGroupType, type ValueEditorType, type DefaultOperators, defaultOperators } from 'react-querybuilder';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { type GridColType } from '@mui/x-data-grid';
-import QueriesAPI, { type Query } from '@/data/queryAPI';
+import QueriesAPI, { FiltroVm, type Query } from '@/data/queryAPI';
 import UsuarioAPI from '@/data/usuarioAPI';
 import Formato from '@/utils/Formato';
 import propositionFormat from '@/utils/PropositionFormatQuery';
@@ -10,6 +10,10 @@ import { type ColumnDef } from '@tanstack/react-table';
 import moment from 'moment';
 import { saveTable, type TableColumn, type AddTableOptions } from '@/utils/excelUtils';
 import useSWR from 'swr';
+import { FiltrosTable, FiltrosTableContextProvider } from '../../../../components/filtros/FiltrosTable';
+import CustomModal from '@/utils/ui/form/CustomModal';
+import parsePropositionGroup from '@/utils/PropositionParseQuery';
+import FiltroForm from '../../../../components/filtros/FiltroForm';
 
 //#region types
 type Row = Record<string, any>;
@@ -33,7 +37,12 @@ interface DataContextType {
   columns: ColumnDef<Row>[];
   rows: Row[];
   query: { state: RuleGroupType, setState: React.Dispatch<React.SetStateAction<RuleGroupType>> };
+  proposition?: string;
+  filtro?: FiltroVm;
   dialog?: ReactNode;
+  onLookupFiltro: () => void;
+  onGuardaFiltro: () => void;
+  onEliminaFiltro: () => void;
   onAplicaFiltro: () => void;
   onLimpiaFiltro: () => void;
   onLimpiaTabla: () => void;
@@ -174,6 +183,11 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
     }
   );
   //#endregion RefCCMMTipos
+  const [rows, setRows] = useState<Row[]>([]);
+  const [query, setQuery] = useState(defaultQuery);
+  const [dialog, setDialog] = useState<ReactNode>();
+  const [filtro, setFiltro] = useState<FiltroVm | undefined>();
+
   const { columns, fields, headers } = useMemo(() => {
     const columns: ColumnDef<Row>[] = [];
     const headers: Headers = { columns: {}, options: { formatters: { row: {} } } };
@@ -193,9 +207,7 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
     }) ?? [];
     return ({ columns, fields, headers });
   }, [tables.View_ConsultaCCMM]);
-  const [rows, setRows] = useState<Row[]>([]);
-  const [query, setQuery] = useState(defaultQuery);
-  const [dialog, setDialog] = useState<ReactNode>();
+  const proposition = useMemo(() => formatQuery(query, propositionFormat({ fields })), [query, fields]);
 
   const onCloseDialog = useCallback(() => setDialog(null), []);
   const errorDialog = useCallback((prop: { title?: string, message: any }) => setDialog(
@@ -210,29 +222,76 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
       <DialogContent dividers>
         <DialogContentText id="scroll-dialog-description" tabIndex={-1}>{prop.message}</DialogContentText>
       </DialogContent>
-      <DialogActions><Button onClick={onCloseDialog}>Cierra</Button></DialogActions>
+      <DialogActions>
+        <Button onClick={onCloseDialog}>Cierra</Button>
+      </DialogActions>
     </Dialog>
   ), []);
 
+  const onLookupFiltro = useCallback(() => {
+    setDialog(
+      <FiltrosLookup
+        onClose={onCloseDialog}
+        onSelect={(filtro) => {
+          setFiltro(filtro);
+          setQuery(parsePropositionGroup(filtro.proposition));
+          onCloseDialog();
+        }}
+      />
+    );
+  }, []);
+
+  const onGuardaFiltro = useCallback(() => {
+    setDialog(
+      <FiltroForm
+        action={filtro == null ? "Create" : "Update"}
+        title="Guardando filtro"
+        init={{
+          ...filtro,
+          modulo: "Informes_CCMM",
+          proposition
+        }}
+        onClose={(completed, filtro) => {
+          if (completed) setFiltro(filtro);
+          onCloseDialog();
+        }}
+      />
+    );
+  }, [filtro, proposition]);
+
+  const onEliminaFiltro = useCallback(() => {
+    setDialog(
+      <FiltroForm
+        action="Delete"
+        title="Borrando filtro"
+        init={filtro}
+        onClose={(completed) => {
+          if (completed) setFiltro(undefined);
+          onCloseDialog();
+        }}
+      />
+    );
+  }, [filtro]);
+
   const onAplicaFiltro = useCallback(async () => {
-    const proposition = formatQuery(query, propositionFormat({ fields }));
+    console.log("onAplicaFiltro", { proposition });
     const table = "View_ConsultaCCMM";
     if (!tables[table]) return;
-    const apiQuery: Query = {
+    const query: Query = {
       select: tables[table].map(c => ({ value: c.name })),
       from: [{ table }],
       order: { by: ["CCMMCas_Interno"] }
     };
-    if (proposition) apiQuery.where = proposition;
+    if (proposition) query.where = proposition;
     async function onConfirm() {
-      await execute<Row>(apiQuery).then((ok) => {
+      await execute<Row>(query).then((ok) => {
         setRows(ok.data ?? []);
         onCloseDialog();
       }).catch((error) => errorDialog(
         { message: typeof error === "string" ? error : error.detail ?? error.message ?? JSON.stringify(error) }
       ));
     };
-    await analyze(apiQuery).then(async (ok) => (ok.count > 90)
+    await analyze(query).then(async (ok) => (ok.count > 90)
       ? setDialog(
         <Dialog
           open
@@ -257,9 +316,12 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
     ).catch((error) => errorDialog(
       { message: typeof error === "string" ? error : error.detail ?? error.message ?? JSON.stringify(error) }
     ));
-  }, [query, fields, onCloseDialog, errorDialog]);
+  }, [proposition, onCloseDialog, errorDialog]);
 
-  const onLimpiaFiltro = useCallback(() => setQuery(defaultQuery), []);
+  const onLimpiaFiltro = useCallback(() => {
+    setFiltro(undefined);
+    setQuery(defaultQuery);
+  }, []);
 
   const onLimpiaTabla = useCallback(() => setRows([]), []);
 
@@ -290,16 +352,50 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
     );
   }, [headers, rows, onCloseDialog, errorDialog]);
 
-  const value: DataContextType = {
-    fields, columns, rows, dialog,
-    query: { state: query, setState: setQuery },
-    onAplicaFiltro, onLimpiaFiltro, onLimpiaTabla, onExport
-  };
-  return <CCMMContext.Provider value={value}>{children}</CCMMContext.Provider>
+  return <CCMMContext.Provider
+    value={{
+      fields, columns, rows, dialog, filtro,
+      query: { state: query, setState: setQuery }, proposition,
+      onLookupFiltro, onGuardaFiltro, onEliminaFiltro, onAplicaFiltro, onLimpiaFiltro,
+      onLimpiaTabla, onExport,
+    }}
+    children={children}
+  />
 }
 
 export function useCCMMContext() {
   const context = useContext(CCMMContext)
   if (context === undefined) throw new Error('useCCMMContext must be used within a CCMMContextProvider');
   return context
+}
+
+function FiltrosTableModal({
+  onSelect,
+  onClose,
+}: {
+  onSelect: (filtro: FiltroVm) => void;
+  onClose: () => void;
+}) {
+  return (
+    <CustomModal
+      open={true}
+      onClose={onClose}
+      size="large"
+      title="Elige filtro"
+    >
+      <FiltrosTable actions={["Select"]} onSelect={onSelect} />
+    </CustomModal>
+  );
+}
+
+function FiltrosLookup({
+  onSelect,
+  onClose,
+}: {
+  onSelect: (filtro: FiltroVm) => void;
+  onClose: () => void;
+}) {
+  return <FiltrosTableContextProvider deleted={false} modulo="Informes_CCMM" >
+    <FiltrosTableModal onSelect={onSelect} onClose={onClose} />
+  </FiltrosTableContextProvider>
 }

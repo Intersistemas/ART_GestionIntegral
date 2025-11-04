@@ -102,7 +102,7 @@ export type FiltroVm = {
   proposition?: string,
   nombre?: string,
   modulo?: string,
-  ambito?: string,
+  ambito?: Ambito,
   ambitoUserId?: GUIDString,
   ambitoRolId?: GUIDString,
   propietarioUserId?: GUIDString,
@@ -140,6 +140,17 @@ export type DeleteFilterCommand = {
 }
 export type DeleteFilterSWRKey = [url: string, token: string];
 //#endregion deleteFilter
+
+//#region getDisponibilidad
+export type GetDisponibilidadParams = {
+  modulo: string,
+  nombre: string,
+}
+export type GetDisponibilidadResponse = {
+  disponible: boolean,
+}
+export type GetDisponibilidadSWRKey = [url: string, token: string, params: string];
+//#endregion getDisponibilidad
 
 //#endregion filters
 
@@ -224,8 +235,8 @@ export class QueriesAPIClass extends ExternalAPI {
 
   //#region deleteFilter
   readonly deleteFilterURL = this.getURL({ path: "/api/filters" }).toString();
-  deleteFilter = async (filter: DeleteFilterCommand) => tokenizable.post<FiltroVm>(
-    this.deleteFilterURL, filter
+  deleteFilter = async (filter: DeleteFilterCommand) => tokenizable.delete<FiltroVm>(
+    this.deleteFilterURL, { data: filter }
   ).then(({ data }) => data, (error) => reject<FiltroVm>(error));
   swrDeleteFilter: {
     key: DeleteFilterSWRKey,
@@ -243,6 +254,20 @@ export class QueriesAPIClass extends ExternalAPI {
     );
   }
   //#endregion deleteFilter
+
+  //#region getDisponibilidad
+  readonly getDisponibilidadURL = (params: GetDisponibilidadParams) =>
+    this.getURL({ path: "/api/filters/disponibilidad", search: toURLSearch(params) }).toString();
+  getDisponibilidad = async (params: GetDisponibilidadParams) => tokenizable.get<GetDisponibilidadResponse>(
+    this.getDisponibilidadURL(params)
+  ).then(({ data }) => data, (error) => reject<GetDisponibilidadResponse>(error));
+  swrGetDisponibilidad = Object.freeze({
+    key: (params: GetDisponibilidadParams): GetDisponibilidadSWRKey => [this.getDisponibilidadURL(params), token.getToken(), JSON.stringify(params)],
+    fetcher: (key: GetDisponibilidadSWRKey) => this.getDisponibilidad(JSON.parse(key[2])),
+  });
+  useGetDisponibilidad = (params: GetDisponibilidadParams) =>
+    useSWR<GetDisponibilidadResponse, APIError>(this.swrGetDisponibilidad.key(params), this.swrGetDisponibilidad.fetcher);
+  //#endregion getDisponibilidad
 
   //#endregion filters
 }
