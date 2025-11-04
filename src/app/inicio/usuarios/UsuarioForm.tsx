@@ -424,8 +424,8 @@ export default function UsuarioForm({
     console.log("Submitting form data:", form);
     const formDataWithDefaults = {
       ...form,
-      cuit: form.cuit.replace(/[^\d]/g, ''), // Parse CUIT as integer, removing all non-digits
-      userName: form.cuit.replace("-", ""), // Use email as username
+      cuit: form.cuit.replace(/[^\d]/g, ""), // Parse CUIT as integer, removing all non-digits
+      userName: form.cuit.replace(/[^\d]/g, ""), // Use email as username
       tipo: "", // Default type
       rol: form.rol || (roles.length > 0 ? roles[0].nombre : ""), // Default to first role
       empresaId:
