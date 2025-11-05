@@ -23,23 +23,56 @@ export default function Signin() {
   const [rememberSession, setRememberSession] = useState(false);
   const router = useRouter();
 
+// ...existing code...
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    // Evita reentradas
+    if (isLoading) {
+      console.warn("handleSubmit: ya se está enviando, ignorando nuevo submit");
+      return;
+    }
+
     setIsLoading(true);
     setError("");
 
-    const formData = new FormData(event.currentTarget);
-    const res = await signIn("credentials", {
-      loginUser: formData.get("loginUser"),
-      loginPassword: formData.get("loginPassword"),
-      redirect: false,
-    });
+    try {
+      const formData = new FormData(event.currentTarget);
+      // Forzar strings y trim para evitar FormDataEntryValue u objetos inesperados
+      const loginUser = String(formData.get("loginUser") ?? "").trim();
+      const loginPassword = String(formData.get("loginPassword") ?? "");
 
-    if (res?.error) setError(res.error as string);
-    if (res?.ok) return router.push("/");
+      console.debug("[Login] enviar credenciales", { loginUser, hasPassword: !!loginPassword });
 
-    setIsLoading(false);
+      const res = await signIn("credentials", {
+        loginUser,
+        loginPassword,
+        redirect: false,
+      });
+
+      console.debug("[Login] signIn result:", res);
+
+      if (res?.error) {
+        // Mostrar el error tal cual lo devuelve next-auth
+        setError(String(res.error));
+        // También registrar para comparar primer/segundo click
+        console.warn("[Login] error de signIn:", res.error);
+      } else if (res?.ok) {
+        // Éxito
+        return router.push("/");
+      } else {
+        // Caso inesperado
+        setError("Error desconocido en el proceso de autenticación");
+        console.warn("[Login] signIn retornó resultado inesperado:", res);
+      }
+    } catch (err: any) {
+      console.error("[Login] excepción en handleSubmit:", err);
+      setError(err?.message ?? "Error inesperado al iniciar sesión");
+    } finally {
+      setIsLoading(false);
+    }
   };
+// ...existing code...
 
   return (
     <Box className={styles.loginContainer}>

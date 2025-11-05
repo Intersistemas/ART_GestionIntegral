@@ -7,7 +7,7 @@ export type Persona = {
 }
 
 export type Parameters = {
-  cuit?: number;
+  CUIT?: number;
   periodo?: number;
   page?: string;
   sort?: string;
