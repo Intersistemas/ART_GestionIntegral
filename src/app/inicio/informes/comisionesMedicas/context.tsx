@@ -36,6 +36,7 @@ interface DataContextType {
   fields: Field[];
   columns: ColumnDef<Row>[];
   rows: Row[];
+  isLoadingData: boolean,
   query: { state: RuleGroupType, setState: React.Dispatch<React.SetStateAction<RuleGroupType>> };
   proposition?: string;
   filtro?: FiltroVm;
@@ -184,6 +185,7 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
   );
   //#endregion RefCCMMTipos
   const [rows, setRows] = useState<Row[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState<boolean>(false);
   const [query, setQuery] = useState(defaultQuery);
   const [dialog, setDialog] = useState<ReactNode>();
   const [filtro, setFiltro] = useState<FiltroVm | undefined>();
@@ -276,6 +278,7 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
   const onAplicaFiltro = useCallback(async () => {
     const table = "View_ConsultaCCMM";
     if (!tables[table]) return;
+    setIsLoadingData(true);
     const query: Query = {
       select: tables[table].map(c => ({ value: c.name })),
       from: [{ table }],
@@ -290,22 +293,27 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
       errorDialog({
         message: typeof error === "string" ? error : error.detail ?? error.message ?? JSON.stringify(error)
       });
+      setIsLoadingData(false);
     }
     async function onExecute() {
       await execute<Row>(query).then(
         (ok) => {
           setRows(ok.data ?? []);
-          onCloseDialog();
+          onClose();
         },
         (error) => onError(error)
       );
     };
+    function onClose() {
+      onCloseDialog();
+      setIsLoadingData(false);
+    }
     function setDialogRegistros(count: number) {
       setDialog(
         <Dialog
           open
           scroll="paper"
-          onClose={onCloseDialog}
+          onClose={onClose}
           aria-labelledby="scroll-dialog-title"
           aria-describedby="scroll-dialog-description"
         >
@@ -316,7 +324,7 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={onCloseDialog}>Cancela</Button>
+            <Button onClick={onClose}>Cancela</Button>
             <Button onClick={onExecute}>Continúa</Button>
           </DialogActions>
         </Dialog>
@@ -360,7 +368,7 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
 
   return <CCMMContext.Provider
     value={{
-      fields, columns, rows, dialog, filtro,
+      fields, columns, rows, isLoadingData, dialog, filtro,
       query: { state: query, setState: setQuery }, proposition,
       onLookupFiltro, onGuardaFiltro, onEliminaFiltro, onAplicaFiltro, onLimpiaFiltro,
       onLimpiaTabla, onExport,

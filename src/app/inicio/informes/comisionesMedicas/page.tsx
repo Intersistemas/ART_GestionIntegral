@@ -13,8 +13,8 @@ function CCMMQueryBuilder() {
 }
 
 function CCMMTable() {
-  const { columns, rows } = useCCMMContext();
-  return (<DataTable data={rows} columns={columns} />);
+  const { columns, rows, isLoadingData } = useCCMMContext();
+  return (<DataTable data={rows} columns={columns} isLoading={isLoadingData}/>);
 }
 
 function Informe() {
