@@ -100,23 +100,23 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
       addTable("View_ConsultaCCMM", (addField) => {
         addField({ name: "CCMMCas_Interno", label: "Interno", type: "number" });
         addField({ name: "Den_SiniestroNro", label: "Siniestro", type: "number", formatter: numeroSiniestroFormatter });
-        addField({ name: "CCMMCas_MotivoCodigo", label: "Motivo Expediente", type: "number" });
-        addField({ name: "CCMMCas_TipoCodigo", label: "Tipo Expediente", type: "number" });
+        addField({ name: "CCMMCas_MotivoCodigo", label: "Motivo de Expediente", type: "number" });
+        addField({ name: "CCMMCas_TipoCodigo", label: "Tipo de Expediente", type: "number" });
         addField({ name: "CCMMCas_Estado", label: "Estado Actual", type: "number", ...optionsSelect(estadoOptions, blankOptionsFormatter) });
-        addField({ name: "SiniestroTipo", label: "Tipo Siniestro", ...optionsSelect(tipoSiniestroOptions) });
-        addField({ name: "SiniestroFechaHora", label: "Fecha denuncia", type: "dateTime", formatter: fechaHoraFormatter });
+        addField({ name: "SiniestroTipo", label: "Tipo de Siniestro", ...optionsSelect(tipoSiniestroOptions) });
+        addField({ name: "SiniestroFechaHora", label: "Fecha de Denuncia", type: "dateTime", formatter: fechaHoraFormatter });
         addField({ name: "Den_AfiCUIL", label: "Cuil", type: "number", formatter: cuipFormatter });
-        addField({ name: "Den_AfiNombre", label: "Apellido Nombre" });
+        addField({ name: "Den_AfiNombre", label: "Apellido y Nombre" });
         addField({ name: "Den_EmpCuit", label: "Cuit", type: "number", formatter: cuipFormatter });
-        addField({ name: "Den_EmpRazonSocial", label: "Razon Social" });
-        addField({ name: "SRTPol_Numero", label: "Poliza", type: "number", formatter: numeroFormatter });
-        addField({ name: "CCMMCasTipValDan_JunMediFecha", label: "Fecha Junta Medica", type: "date", formatter: fechaFormatter });
+        addField({ name: "Den_EmpRazonSocial", label: "Razón Social" });
+        addField({ name: "SRTPol_Numero", label: "Póliza", type: "number", formatter: numeroFormatter });
+        addField({ name: "CCMMCasTipValDan_JunMediFecha", label: "Fecha de Junta Médica", type: "date", formatter: fechaFormatter });
         addField({ name: "CCMMCasTipValDan_JunMediAcuerdo", label: "Acuerdo Resultado", ...optionsSelect(SNOptions) });
         addField({ name: "CCMMCasTipValDan_JunMediLetrado", label: "Letrado Interviniente" });
-        addField({ name: "CCMMCasTipValDan_AudHomoFechaHora", label: "Fecha Homologacion", type: "date", formatter: fechaHoraFormatter });
+        addField({ name: "CCMMCasTipValDan_AudHomoFechaHora", label: "Fecha de Homologación", type: "date", formatter: fechaHoraFormatter });
         addField({ name: "CCMMCasTipValDan_AudHomoMontoHomologado", label: "Monto Homologado", type: "number", formatter: numeroFormatter });
-        addField({ name: "CCMMCasTipValDan_AcuHomoNotificacionFecha", label: "Fecha Acuerdo", type: "date", formatter: fechaFormatter });
-        addField({ name: "CCMMCasTipValDan_AcuHomoPagoFecha", label: "Fecha Pago", type: "date", formatter: fechaFormatter });
+        addField({ name: "CCMMCasTipValDan_AcuHomoNotificacionFecha", label: "Fecha de Acuerdo", type: "date", formatter: fechaFormatter });
+        addField({ name: "CCMMCasTipValDan_AcuHomoPagoFecha", label: "Fecha de Pago", type: "date", formatter: fechaFormatter });
       });
       setTables(tables);
       function addTable(table: TablesName, addFieldsCallback?: (addField: (field: TablesField) => boolean) => void) {
