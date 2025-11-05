@@ -2,7 +2,7 @@ import React, { createContext, type ReactNode, useCallback, useContext, useMemo,
 import { type Field, formatQuery, type RuleGroupType, type ValueEditorType, type DefaultOperators, defaultOperators } from 'react-querybuilder';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { type GridColType } from '@mui/x-data-grid';
-import QueriesAPI, { type Query } from '@/data/queryAPI';
+import QueriesAPI, { FiltroVm, type Query } from '@/data/queryAPI';
 import UsuarioAPI from '@/data/usuarioAPI';
 import Formato from '@/utils/Formato';
 import propositionFormat from '@/utils/PropositionFormatQuery';
@@ -10,6 +10,10 @@ import { type ColumnDef } from '@tanstack/react-table';
 import moment from 'moment';
 import { saveTable, type TableColumn, type AddTableOptions } from '@/utils/excelUtils';
 import useSWR from 'swr';
+import { FiltrosTable, FiltrosTableContextProvider } from '../../../../components/filtros/FiltrosTable';
+import CustomModal from '@/utils/ui/form/CustomModal';
+import parsePropositionGroup from '@/utils/PropositionParseQuery';
+import FiltroForm from '../../../../components/filtros/FiltroForm';
 
 //#region types
 type Row = Record<string, any>;
@@ -32,8 +36,14 @@ interface DataContextType {
   fields: Field[];
   columns: ColumnDef<Row>[];
   rows: Row[];
+  isLoadingData: boolean,
   query: { state: RuleGroupType, setState: React.Dispatch<React.SetStateAction<RuleGroupType>> };
+  proposition?: string;
+  filtro?: FiltroVm;
   dialog?: ReactNode;
+  onLookupFiltro: () => void;
+  onGuardaFiltro: () => void;
+  onEliminaFiltro: () => void;
   onAplicaFiltro: () => void;
   onLimpiaFiltro: () => void;
   onLimpiaTabla: () => void;
@@ -90,23 +100,23 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
       addTable("View_ConsultaCCMM", (addField) => {
         addField({ name: "CCMMCas_Interno", label: "Interno", type: "number" });
         addField({ name: "Den_SiniestroNro", label: "Siniestro", type: "number", formatter: numeroSiniestroFormatter });
-        addField({ name: "CCMMCas_MotivoCodigo", label: "Motivo Expediente", type: "number" });
-        addField({ name: "CCMMCas_TipoCodigo", label: "Tipo Expediente", type: "number" });
+        addField({ name: "CCMMCas_MotivoCodigo", label: "Motivo de Expediente", type: "number" });
+        addField({ name: "CCMMCas_TipoCodigo", label: "Tipo de Expediente", type: "number" });
         addField({ name: "CCMMCas_Estado", label: "Estado Actual", type: "number", ...optionsSelect(estadoOptions, blankOptionsFormatter) });
-        addField({ name: "SiniestroTipo", label: "Tipo Siniestro", ...optionsSelect(tipoSiniestroOptions) });
-        addField({ name: "SiniestroFechaHora", label: "Fecha denuncia", type: "dateTime", formatter: fechaHoraFormatter });
+        addField({ name: "SiniestroTipo", label: "Tipo de Siniestro", ...optionsSelect(tipoSiniestroOptions) });
+        addField({ name: "SiniestroFechaHora", label: "Fecha de Denuncia", type: "dateTime", formatter: fechaHoraFormatter });
         addField({ name: "Den_AfiCUIL", label: "Cuil", type: "number", formatter: cuipFormatter });
-        addField({ name: "Den_AfiNombre", label: "Apellido Nombre" });
+        addField({ name: "Den_AfiNombre", label: "Apellido y Nombre" });
         addField({ name: "Den_EmpCuit", label: "Cuit", type: "number", formatter: cuipFormatter });
-        addField({ name: "Den_EmpRazonSocial", label: "Razon Social" });
-        addField({ name: "SRTPol_Numero", label: "Poliza", type: "number", formatter: numeroFormatter });
-        addField({ name: "CCMMCasTipValDan_JunMediFecha", label: "Fecha Junta Medica", type: "date", formatter: fechaFormatter });
+        addField({ name: "Den_EmpRazonSocial", label: "Razón Social" });
+        addField({ name: "SRTPol_Numero", label: "Póliza", type: "number", formatter: numeroFormatter });
+        addField({ name: "CCMMCasTipValDan_JunMediFecha", label: "Fecha de Junta Médica", type: "date", formatter: fechaFormatter });
         addField({ name: "CCMMCasTipValDan_JunMediAcuerdo", label: "Acuerdo Resultado", ...optionsSelect(SNOptions) });
         addField({ name: "CCMMCasTipValDan_JunMediLetrado", label: "Letrado Interviniente" });
-        addField({ name: "CCMMCasTipValDan_AudHomoFechaHora", label: "Fecha Homologacion", type: "date", formatter: fechaHoraFormatter });
+        addField({ name: "CCMMCasTipValDan_AudHomoFechaHora", label: "Fecha de Homologación", type: "date", formatter: fechaHoraFormatter });
         addField({ name: "CCMMCasTipValDan_AudHomoMontoHomologado", label: "Monto Homologado", type: "number", formatter: numeroFormatter });
-        addField({ name: "CCMMCasTipValDan_AcuHomoNotificacionFecha", label: "Fecha Acuerdo", type: "date", formatter: fechaFormatter });
-        addField({ name: "CCMMCasTipValDan_AcuHomoPagoFecha", label: "Fecha Pago", type: "date", formatter: fechaFormatter });
+        addField({ name: "CCMMCasTipValDan_AcuHomoNotificacionFecha", label: "Fecha de Acuerdo", type: "date", formatter: fechaFormatter });
+        addField({ name: "CCMMCasTipValDan_AcuHomoPagoFecha", label: "Fecha de Pago", type: "date", formatter: fechaFormatter });
       });
       setTables(tables);
       function addTable(table: TablesName, addFieldsCallback?: (addField: (field: TablesField) => boolean) => void) {
@@ -127,12 +137,12 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
   //#region RefCCMMMotivos
   useSWR(
     !isLoadingTablas && tables.RefCCMMMotivos && tables.View_ConsultaCCMM ?
-      swrExecute.Key({
+      swrExecute.key({
         select: tables.RefCCMMMotivos.map(f => ({ value: f.name })),
         from: [{ table: "RefCCMMMotivos" }],
         order: { by: ["Codigo"] },
       }) : null,
-    swrExecute.Fetcher,
+    swrExecute.fetcher,
     {
       revalidateOnFocus: false,
       onSuccess(motivos) {
@@ -152,12 +162,12 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
   //#region RefCCMMTipos
   useSWR(
     !isLoadingTablas && tables.RefCCMMTipos && tables.View_ConsultaCCMM ?
-      swrExecute.Key({
+      swrExecute.key({
         select: tables.RefCCMMTipos.map(f => ({ value: f.name })),
         from: [{ table: "RefCCMMTipos" }],
         order: { by: ["Codigo"] },
       }) : null,
-    swrExecute.Fetcher,
+    swrExecute.fetcher,
     {
       revalidateOnFocus: false,
       onSuccess(tipos) {
@@ -174,6 +184,12 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
     }
   );
   //#endregion RefCCMMTipos
+  const [rows, setRows] = useState<Row[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState<boolean>(false);
+  const [query, setQuery] = useState(defaultQuery);
+  const [dialog, setDialog] = useState<ReactNode>();
+  const [filtro, setFiltro] = useState<FiltroVm | undefined>();
+
   const { columns, fields, headers } = useMemo(() => {
     const columns: ColumnDef<Row>[] = [];
     const headers: Headers = { columns: {}, options: { formatters: { row: {} } } };
@@ -193,9 +209,7 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
     }) ?? [];
     return ({ columns, fields, headers });
   }, [tables.View_ConsultaCCMM]);
-  const [rows, setRows] = useState<Row[]>([]);
-  const [query, setQuery] = useState(defaultQuery);
-  const [dialog, setDialog] = useState<ReactNode>();
+  const proposition = useMemo(() => formatQuery(query, propositionFormat({ fields })), [query, fields]);
 
   const onCloseDialog = useCallback(() => setDialog(null), []);
   const errorDialog = useCallback((prop: { title?: string, message: any }) => setDialog(
@@ -210,56 +224,119 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
       <DialogContent dividers>
         <DialogContentText id="scroll-dialog-description" tabIndex={-1}>{prop.message}</DialogContentText>
       </DialogContent>
-      <DialogActions><Button onClick={onCloseDialog}>Cierra</Button></DialogActions>
+      <DialogActions>
+        <Button onClick={onCloseDialog}>Cierra</Button>
+      </DialogActions>
     </Dialog>
   ), []);
 
+  const onLookupFiltro = useCallback(() => {
+    setDialog(
+      <FiltrosLookup
+        onClose={onCloseDialog}
+        onSelect={(filtro) => {
+          setFiltro(filtro);
+          setQuery(parsePropositionGroup(filtro.proposition));
+          onCloseDialog();
+        }}
+      />
+    );
+  }, []);
+
+  const onGuardaFiltro = useCallback(() => {
+    setDialog(
+      <FiltroForm
+        action={filtro == null ? "Create" : "Update"}
+        title="Guardando filtro"
+        init={{
+          ...filtro,
+          modulo: "Informes_CCMM",
+          proposition
+        }}
+        onClose={(completed, filtro) => {
+          if (completed) setFiltro(filtro);
+          onCloseDialog();
+        }}
+      />
+    );
+  }, [filtro, proposition]);
+
+  const onEliminaFiltro = useCallback(() => {
+    setDialog(
+      <FiltroForm
+        action="Delete"
+        title="Borrando filtro"
+        init={filtro}
+        disabled={{ nombre: true, ambito: true }}
+        onClose={(completed) => {
+          if (completed) setFiltro(undefined);
+          onCloseDialog();
+        }}
+      />
+    );
+  }, [filtro]);
+
   const onAplicaFiltro = useCallback(async () => {
-    const proposition = formatQuery(query, propositionFormat({ fields }));
     const table = "View_ConsultaCCMM";
     if (!tables[table]) return;
-    const apiQuery: Query = {
+    setIsLoadingData(true);
+    const query: Query = {
       select: tables[table].map(c => ({ value: c.name })),
       from: [{ table }],
+      where: proposition,
       order: { by: ["CCMMCas_Interno"] }
     };
-    if (proposition) apiQuery.where = proposition;
-    async function onConfirm() {
-      await execute<Row>(apiQuery).then((ok) => {
-        setRows(ok.data ?? []);
-        onCloseDialog();
-      }).catch((error) => errorDialog(
-        { message: typeof error === "string" ? error : error.detail ?? error.message ?? JSON.stringify(error) }
-      ));
+    await analyze(query).then(
+      (ok) => (ok.count > 9000) ? setDialogRegistros(ok.count) : onExecute(),
+      (error) => onError(error)
+    );
+    function onError(error: any) {
+      errorDialog({
+        message: typeof error === "string" ? error : error.detail ?? error.message ?? JSON.stringify(error)
+      });
+      setIsLoadingData(false);
+    }
+    async function onExecute() {
+      await execute<Row>(query).then(
+        (ok) => {
+          setRows(ok.data ?? []);
+          onClose();
+        },
+        (error) => onError(error)
+      );
     };
-    await analyze(apiQuery).then(async (ok) => (ok.count > 90)
-      ? setDialog(
+    function onClose() {
+      onCloseDialog();
+      setIsLoadingData(false);
+    }
+    function setDialogRegistros(count: number) {
+      setDialog(
         <Dialog
           open
           scroll="paper"
-          onClose={onCloseDialog}
+          onClose={onClose}
           aria-labelledby="scroll-dialog-title"
           aria-describedby="scroll-dialog-description"
         >
           <DialogTitle id="scroll-dialog-title">Consulta con muchos registros.</DialogTitle>
           <DialogContent dividers>
             <DialogContentText id="scroll-dialog-description" tabIndex={-1}>
-              La consulta generará {ok.count} registros.
+              La consulta generará {count} registros.
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={onCloseDialog}>Cancela</Button>
-            <Button onClick={onConfirm}>Continúa</Button>
+            <Button onClick={onClose}>Cancela</Button>
+            <Button onClick={onExecute}>Continúa</Button>
           </DialogActions>
         </Dialog>
-      )
-      : onConfirm()
-    ).catch((error) => errorDialog(
-      { message: typeof error === "string" ? error : error.detail ?? error.message ?? JSON.stringify(error) }
-    ));
-  }, [query, fields, onCloseDialog, errorDialog]);
+      );
+    }
+  }, [proposition, tables, onCloseDialog, errorDialog]);
 
-  const onLimpiaFiltro = useCallback(() => setQuery(defaultQuery), []);
+  const onLimpiaFiltro = useCallback(() => {
+    setFiltro(undefined);
+    setQuery(defaultQuery);
+  }, []);
 
   const onLimpiaTabla = useCallback(() => setRows([]), []);
 
@@ -290,16 +367,49 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
     );
   }, [headers, rows, onCloseDialog, errorDialog]);
 
-  const value: DataContextType = {
-    fields, columns, rows, dialog,
-    query: { state: query, setState: setQuery },
-    onAplicaFiltro, onLimpiaFiltro, onLimpiaTabla, onExport
-  };
-  return <CCMMContext.Provider value={value}>{children}</CCMMContext.Provider>
+  return <CCMMContext.Provider
+    value={{
+      fields, columns, rows, isLoadingData, dialog, filtro,
+      query: { state: query, setState: setQuery }, proposition,
+      onLookupFiltro, onGuardaFiltro, onEliminaFiltro, onAplicaFiltro, onLimpiaFiltro,
+      onLimpiaTabla, onExport,
+    }}
+    children={children}
+  />
 }
 
 export function useCCMMContext() {
   const context = useContext(CCMMContext)
   if (context === undefined) throw new Error('useCCMMContext must be used within a CCMMContextProvider');
   return context
+}
+
+function FiltrosTableModal({
+  onSelect,
+  onClose,
+}: {
+  onSelect: (filtro: FiltroVm) => void;
+  onClose: () => void;
+}) {
+  return (
+    <CustomModal
+      open={true}
+      onClose={onClose}
+      title="Elige filtro"
+    >
+      <FiltrosTable actions={["Select"]} onSelect={onSelect} />
+    </CustomModal>
+  );
+}
+
+function FiltrosLookup({
+  onSelect,
+  onClose,
+}: {
+  onSelect: (filtro: FiltroVm) => void;
+  onClose: () => void;
+}) {
+  return <FiltrosTableContextProvider deleted={false} modulo="Informes_CCMM" >
+    <FiltrosTableModal onSelect={onSelect} onClose={onClose} />
+  </FiltrosTableContextProvider>
 }
