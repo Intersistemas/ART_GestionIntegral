@@ -274,25 +274,34 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
   }, [filtro]);
 
   const onAplicaFiltro = useCallback(async () => {
-    console.log("onAplicaFiltro", { proposition });
     const table = "View_ConsultaCCMM";
     if (!tables[table]) return;
     const query: Query = {
       select: tables[table].map(c => ({ value: c.name })),
       from: [{ table }],
+      where: proposition,
       order: { by: ["CCMMCas_Interno"] }
     };
-    if (proposition) query.where = proposition;
-    async function onConfirm() {
-      await execute<Row>(query).then((ok) => {
-        setRows(ok.data ?? []);
-        onCloseDialog();
-      }).catch((error) => errorDialog(
-        { message: typeof error === "string" ? error : error.detail ?? error.message ?? JSON.stringify(error) }
-      ));
+    await analyze(query).then(
+      (ok) => (ok.count > 9000) ? setDialogRegistros(ok.count) : onExecute(),
+      (error) => onError(error)
+    );
+    function onError(error: any) {
+      errorDialog({
+        message: typeof error === "string" ? error : error.detail ?? error.message ?? JSON.stringify(error)
+      });
+    }
+    async function onExecute() {
+      await execute<Row>(query).then(
+        (ok) => {
+          setRows(ok.data ?? []);
+          onCloseDialog();
+        },
+        (error) => onError(error)
+      );
     };
-    await analyze(query).then(async (ok) => (ok.count > 90)
-      ? setDialog(
+    function setDialogRegistros(count: number) {
+      setDialog(
         <Dialog
           open
           scroll="paper"
@@ -303,20 +312,17 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
           <DialogTitle id="scroll-dialog-title">Consulta con muchos registros.</DialogTitle>
           <DialogContent dividers>
             <DialogContentText id="scroll-dialog-description" tabIndex={-1}>
-              La consulta generará {ok.count} registros.
+              La consulta generará {count} registros.
             </DialogContentText>
           </DialogContent>
           <DialogActions>
             <Button onClick={onCloseDialog}>Cancela</Button>
-            <Button onClick={onConfirm}>Continúa</Button>
+            <Button onClick={onExecute}>Continúa</Button>
           </DialogActions>
         </Dialog>
-      )
-      : onConfirm()
-    ).catch((error) => errorDialog(
-      { message: typeof error === "string" ? error : error.detail ?? error.message ?? JSON.stringify(error) }
-    ));
-  }, [proposition, onCloseDialog, errorDialog]);
+      );
+    }
+  }, [proposition, tables, onCloseDialog, errorDialog]);
 
   const onLimpiaFiltro = useCallback(() => {
     setFiltro(undefined);
@@ -380,7 +386,6 @@ function FiltrosTableModal({
     <CustomModal
       open={true}
       onClose={onClose}
-      size="large"
       title="Elige filtro"
     >
       <FiltrosTable actions={["Select"]} onSelect={onSelect} />

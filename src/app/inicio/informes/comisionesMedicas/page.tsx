@@ -39,14 +39,16 @@ function Informe() {
               <Grid size={12}>
                 <CCMMQueryBuilder />
               </Grid>
-              <Grid container size={12} spacing={2}>
-                <Grid container size="grow">
+              <Grid container size={12} spacing={2} justifyContent="space-between">
+                <Grid container spacing={2}>
                   <CustomButton onClick={onLookupFiltro}>Carga</CustomButton>
                   <CustomButton onClick={onGuardaFiltro} disabled={!proposition}>Guarda</CustomButton>
                   <CustomButton onClick={onEliminaFiltro} disabled={filtro == null}>Elimina</CustomButton>
                 </Grid>
-                <CustomButton onClick={onAplicaFiltro}>Aplica</CustomButton>
-                <CustomButton onClick={onLimpiaFiltro}>Limpia</CustomButton>
+                <Grid container spacing={2}>
+                  <CustomButton onClick={onAplicaFiltro}>Aplica</CustomButton>
+                  <CustomButton onClick={onLimpiaFiltro}>Limpia</CustomButton>
+                </Grid>
               </Grid>
             </Grid>
           </AccordionDetails>
@@ -55,10 +57,12 @@ function Informe() {
           <AccordionSummary expandIcon={<MdExpandMore />} aria-controls="panel1-content" id="panel1-header">
             <Typography component="span">Resultados</Typography>
           </AccordionSummary>
-          <AccordionActions>
-            <CustomButton width="auto" onClick={onExport} disabled={!habilita}>Exportar a Excel</CustomButton>
-            <CustomButton width="auto" onClick={onLimpiaTabla}>Limpia</CustomButton>
-          </AccordionActions>
+          <AccordionDetails>
+            <Grid container size={12} spacing={2} justifyContent="end">
+              <CustomButton width="auto" onClick={onExport} disabled={!habilita}>Exportar a Excel</CustomButton>
+              <CustomButton width="auto" onClick={onLimpiaTabla}>Limpia</CustomButton>
+            </Grid>
+          </AccordionDetails>
         </Accordion>
         <Paper>
           <CCMMTable />

@@ -66,6 +66,12 @@ export function useFiltrosTableContext() {
   return context
 }
 
+const ambitos = {
+  todos: "Todos",
+  rol: "Rol",
+  usuario: "Usuario",
+}
+function getAmbitoDescripcion(ambito: any) { return ambitos[`${ambito}`] ?? ambito }
 export function FiltrosTable({
   actions = [],
   onCreate = () => {},
@@ -80,14 +86,13 @@ export function FiltrosTable({
   onUpdate?: (record: FiltroVm) => void;
   onDelete?: (record: FiltroVm) => void;
   onSelect?: (record: FiltroVm) => void;
-
 }) {
   const { isLoading, data: { data: rows } } = useFiltrosTableContext();
   const { columns } = useMemo(
     () => {
       const columns: ColumnDef<FiltroVm>[] = [
-        { accessorKey: "nombre", header: "Nombre" },
-        { accessorKey: "ambito", header: "Ambito" },
+        { accessorKey: "nombre", header: () => <div style={{ width: "756px" }}>Nombre</div> },
+        { accessorKey: "ambito", header: "Ámbito", cell: ({ getValue }) => getAmbitoDescripcion(getValue()) },
       ];
       const isCRUD = actions.filter(a => CRUDActions.includes(a)).length > 0;
       if (actions.length) {
@@ -95,8 +100,13 @@ export function FiltrosTable({
           id: "actions",
           size: 150,
           header: () => (
-            <Box sx={{ display: "flex", gap: .5 }}>
-              <Typography>Acciones</Typography>
+            <div style={{
+              display: "flex",
+              width: "-webkit-fill-available",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}>
+              <>Acciones</>
               {isCRUD
                 ? <Tooltip title="Agrega" arrow slotProps={slotProps} >
                     <IconButton
@@ -110,10 +120,14 @@ export function FiltrosTable({
                   </Tooltip>
                 : null
               }
-            </Box>
+            </div>
           ),
           cell: ({ row }) => (
-            <Box sx={{ display: "flex", gap: .5 }}>
+            <div style={{
+              display: "flex",
+              justifyContent: "end",
+              paddingRight: "6px",
+            }}>
               {actions.includes("Select")
                 ? <Tooltip title="Elige" arrow slotProps={slotProps} >
                     <IconButton
@@ -161,7 +175,7 @@ export function FiltrosTable({
                   </>
                 : null
               }
-            </Box>
+            </div>
           )
         })
       }
