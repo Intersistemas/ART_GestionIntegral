@@ -147,7 +147,7 @@ export default function FiltroForm({
                 </FormControl>
                 {/* ToDo selección de rol cuando ámbito es "rol" */}
               </Row>
-              {action !== "Delete" ? null :
+              {!["Read", "Delete"].includes(action!) ? null :
                 <TextField
                   name="deletedObs"
                   label="Observaciones"
@@ -184,7 +184,7 @@ export default function FiltroForm({
     </CustomModal>
   );
   function isReadonly(field: string) {
-    if (["Read", "Delete"].includes(action!)) return true;
+    if (action === "Read") return true;
     if (!(field in readonly)) return false;
     return readonly[field as keyof FiltroVm] ?? false;
   }

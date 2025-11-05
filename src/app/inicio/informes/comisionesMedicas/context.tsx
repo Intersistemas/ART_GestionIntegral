@@ -267,6 +267,7 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
         action="Delete"
         title="Borrando filtro"
         init={filtro}
+        disabled={{ nombre: true, ambito: true }}
         onClose={(completed) => {
           if (completed) setFiltro(undefined);
           onCloseDialog();
