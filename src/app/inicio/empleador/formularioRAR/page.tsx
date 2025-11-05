@@ -10,13 +10,11 @@ import DataTableImport from '@/utils/ui/table/DataTable';
 import PDFModalViewer from '@/utils/PDF/PDFModalViewer';
 import BaseDocumentPDF from '@/utils/PDF/BaseDocumentPDF';
 import { Text, View } from '@react-pdf/renderer';
-//  MODIFICACIÓN 1: Importamos el componente de tabs personalizado
 import CustomTab from '@/utils/ui/tab/CustomTab';
-
 import styles from './FormulariosRAR.module.css';
-
 import { BsFileEarmarkPdfFill, BsPencilFill} from "react-icons/bs";
-
+import FormularioRAR from './types/TformularioRar';
+import ArtAPI from "@/data/artAPI";
 
 // Hijos
 import FormularioRARGenerar from './generar/FormularioRARGenerar';
@@ -34,22 +32,6 @@ const Spinner: React.FC = () => (
   </div>
 );
 
-/* Tipos (para datos de la tabla) */
-export type FormularioRAR = {
-  InternoFormularioRAR: number;
-  CUIT: string;
-  RazonSocial: string;
-  Establecimiento: string;
-  CantTrabExpuestos: number;
-  CantTrabNoExpuestos: number;
-  Estado: string;
-  FechaHoraCreacion: string;
-  FechaHoraConfirmado: string;
-};
-
-/** ===========================
- *   CONTENEDOR (página)
- *  =========================== */
 type ViewMode = 'list' | 'crear' | 'editar';
 
 const FormulariosRAR: React.FC = () => {
@@ -86,26 +68,36 @@ const FormulariosRAR: React.FC = () => {
       setActiveTabIndex(newTabValue);
   };
 
-  const fetchFormularios = useCallback(async () => {
-    try {
-      const response = await fetch( empresaCUIT == 0 ?
-        `http://arttest.intersistemas.ar:8302/api/FormulariosRAR` :
-        `http://arttest.intersistemas.ar:8302/api/FormulariosRAR?CUIT=${empresaCUIT}`
-      );
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
-      let formularios: any[] = [];
-      if (data?.data) formularios = Array.isArray(data.data) ? data.data : [data.data];
-      else if (Array.isArray(data)) formularios = data;
-      else if (data) formularios = [data];
-      setFormulariosRAR(formularios);
-    } catch (error) {
-      console.error('Error al consultar la API de FormulariosRAR:', error);
-      setFormulariosRAR([]);
-    } finally {
-      setLoading(false);
+// Usamos el hook SWR del API (solo hace fetch si existe token y respeta las opciones de revalidate)
+  const { data: formulariosData, error: formulariosError, isValidating,  mutate: mutateFormularios } =
+   ArtAPI.useGetFormulariosRARURL(empresaCUIT ? { CUIT: empresaCUIT, PageIndex: 0 } : {}); //SE DEBE CORREGIR! para pasar dinamicamente la pagina segun el paginado
+
+  // Una sola vez: cuando llegan datos, los mapeamos al estado local
+  useEffect(() => {
+    // mantener spinner mientras llega la primera respuesta
+    if (!formulariosData && !formulariosError) {
+      setLoading(true);
+      return;
     }
-  }, [empresaCUIT]);
+
+    if (formulariosError) {
+      console.error('Error al cargar formularios (SWR):', formulariosError);
+      setFormulariosRAR([]);
+      setLoading(false);
+      return;
+    }
+
+    // Normalizar respuesta (igual que antes)
+    let formularios: any[] = [];
+    const data = formulariosData;
+    if (data?.data) formularios = Array.isArray(data.data) ? data.data : [data.data];
+    else if (Array.isArray(data)) formularios = data;
+    else if (data) formularios = [data];
+
+    setFormulariosRAR(formularios);
+    setLoading(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formulariosData, formulariosError]);
 
   const fetchDetallesInterno = useCallback(async (internoId: number) => {
     if (!internoId || internoId === 0) {
@@ -146,10 +138,6 @@ const FormulariosRAR: React.FC = () => {
     }
   }, []);
 
-  useEffect(() => {
-    setLoading(true);
-    fetchFormularios();
-  }, [fetchFormularios]);
 
   /* Handlers de navegación */
   const handleClickNuevo = () => {
@@ -187,7 +175,7 @@ const FormulariosRAR: React.FC = () => {
     setEstado('');
     if (ret) {
       setLoading(true);
-      await fetchFormularios();
+      await mutateFormularios?.();
     }
   };
 

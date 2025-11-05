@@ -7,37 +7,9 @@ import { Box, Typography, Select, MenuItem, FormControl, InputLabel } from '@mui
 import CustomTab from '@/utils/ui/tab/CustomTab';
 import Formato from '@/utils/Formato';
 import gestionEmpleadorAPI from "@/data/gestionEmpleadorAPI";
+import type { CuentaCorrienteRegistro, DDJJRegistro } from './types/cuentaCorriente';
 
 
-type CuentaCorrienteRegistro = {
-    periodoCobertura: string;
-    periodoDDJJ: string;
-    fechaPresentacion: string;
-    tipo: 'R' | 'O';
-    masaSalarial: number;
-    cantTrabajadores: number;
-    alicFija: number;
-    alicVar: number;
-    alicFijaFFEPDeclarado: number;
-    alicVarDeclarado: number;
-    premioAPagar: number;
-    deduccionDevengado: number;
-    totalFFEP: number;
-    totalSRES: number;
-    totalCuotaAPagar: number;
-    totalPagadoCuota: number;
-    saldoMensual: number;
-}
-
-type DDJJRegistro = {
-    periodoDDJJ: string;
-    presentacion: string;    
-    tipo: string;    
-    alicFija: string;    
-    alicVariable: string;
-    cantTrabajadores: string;
-    masaSalarial: string;
-}
 
 // Función auxiliar para formatear a moneda
 const formatCurrency = (value: number | string) => {
@@ -92,9 +64,7 @@ function CuentaCorrientePage() {
         
         return `${nuevoAnio}${nuevoMes}`;
     }
-    
 
- 
     const columns: ColumnDef<CuentaCorrienteRegistro>[] = useMemo(() => [
         { header: 'Período Cobertura', accessorKey: 'periodo', cell: (info: any) => Formato.Fecha(sumarleUnMesAlPeriodo(info.getValue()),"MM-YYYY"), meta: { align: 'center'} }, //DEBO RESTAR UN MES AL VALOR
         { header: 'Período DDJJ', accessorKey: 'periodo', cell: (info: any) => Formato.Fecha(info.getValue(),"MM-YYYY"), meta: { align: 'center'} },

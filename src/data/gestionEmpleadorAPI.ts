@@ -71,7 +71,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
   );
   //#endregion
 
-    //#region CtaCTe y DDJJ
+  //#region CtaCTe y DDJJ
   readonly getVEmpleadorDDJJURL = (params: Parameters = {}) => {
     params.CUIT ??= useAuth().user?.empresaCUIT ?? 0;
     return this.getURL({ path: "/api/VEmpleadorDDJJ/?Sort=-Periodo&Page=0,1000", search: toURLSearch(params) }).toString();
