@@ -73,8 +73,7 @@ export default function SiniestrosPage() {
   const params: Parameters = {};
 
 
-  const { data, error, isLoading } =
-    gestionEmpleadorAPI.useGetVEmpleadorSiniestros(params);
+  const { data, error, isLoading } =  gestionEmpleadorAPI.useGetVEmpleadorSiniestros(params);
 
   const {
     data: instanciasData,
