@@ -19,10 +19,9 @@ export interface UsuarioGetAllParams {
 
 export class GestionEmpleadorAPIClass extends ExternalAPI {
 
-
   readonly basePath = process.env.NEXT_PUBLIC_API_EMPLEADOR_URL || 'http://fallback-prod.url'; 
-  //#region Persona
-  
+
+  //#region AfiliadoCuentaCorriente
   readonly getPersonalURL = (params: Parameters = {}) => {
       
     params.CUIT ??= useAuth().user?.empresaCUIT ?? 0;
@@ -46,9 +45,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
       // Si quieres que la clave no dispare fetch hasta que exista token, puedes usar: (token.getToken() ? key : null)
     }    
   );
-  
   //#endregion
-
 
   //#region Persona
   readonly getPolizaURL = (params: Parameters = {}) => {
@@ -74,6 +71,27 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
   );
   //#endregion
 
+    //#region CtaCTe y DDJJ
+  readonly getVEmpleadorDDJJURL = (params: Parameters = {}) => {
+    params.CUIT ??= useAuth().user?.empresaCUIT ?? 0;
+    return this.getURL({ path: "/api/VEmpleadorDDJJ/?Sort=-Periodo&Page=0,1000", search: toURLSearch(params) }).toString();
+  };
+  getVEmpleadorDDJJ = async (params: Parameters = {}) => tokenizable.get(
+    this.getVEmpleadorDDJJURL(params),
+  ).then(({ data }) => data);
+  useGetVEmpleadorDDJJ = (params: Parameters = {}) => useSWR(
+    [this.getVEmpleadorDDJJURL(params), token.getToken()], () => this.getVEmpleadorDDJJ(params),
+     {
+      // No volver a revalidar al volver al foco, reconectar o al montar si ya hay cache
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      //revalidateOnMount: false,
+      // Tiempo en ms durante el cual SWR deduplica solicitudes iguales (evita re-fetch frecuente)
+      //dedupingInterval: 1000 * 60 * 60, // 1 hora (ajusta si hace falta)
+      // Si quieres que la clave no dispare fetch hasta que exista token, puedes usar: (token.getToken() ? key : null)
+    }     
+  );
+  //#endregion
 
   //#region SiniestrosEmpleador
   readonly getVEmpleadorSiniestrosInstanciasURL = (params: Parameters = {}) => {
