@@ -19,12 +19,9 @@ function CCMMTable() {
 
 function Informe() {
   const {
-    dialog,
-    rows: { length: habilita },
-    onAplicaFiltro,
-    onLimpiaFiltro,
-    onLimpiaTabla,
-    onExport
+    dialog, rows: { length: habilita }, proposition, filtro,
+    onLookupFiltro, onGuardaFiltro, onEliminaFiltro, onAplicaFiltro, onLimpiaFiltro,
+    onLimpiaTabla, onExport
   } = useCCMMContext();
 
   return (
@@ -35,12 +32,24 @@ function Informe() {
             <Typography component="span">Filtros</Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <CCMMQueryBuilder />
+            <Grid container spacing={1} size="grow">
+              <Grid size={12}>
+                <Typography variant="h6" color={filtro == null ? "info" : "success"}>{filtro?.nombre ?? "Sin filtro seleccionado"}</Typography>
+              </Grid>
+              <Grid size={12}>
+                <CCMMQueryBuilder />
+              </Grid>
+              <Grid container size={12} spacing={2}>
+                <Grid container size="grow">
+                  <CustomButton onClick={onLookupFiltro}>Carga</CustomButton>
+                  <CustomButton onClick={onGuardaFiltro} disabled={!proposition}>Guarda</CustomButton>
+                  <CustomButton onClick={onEliminaFiltro} disabled={filtro == null}>Elimina</CustomButton>
+                </Grid>
+                <CustomButton onClick={onAplicaFiltro}>Aplica</CustomButton>
+                <CustomButton onClick={onLimpiaFiltro}>Limpia</CustomButton>
+              </Grid>
+            </Grid>
           </AccordionDetails>
-          <AccordionActions>
-            <CustomButton width="auto" onClick={onAplicaFiltro}>Aplica</CustomButton>
-            <CustomButton width="auto" onClick={onLimpiaFiltro}>Limpia</CustomButton>
-          </AccordionActions>
         </Accordion>
         <Accordion>
           <AccordionSummary expandIcon={<MdExpandMore />} aria-controls="panel1-content" id="panel1-header">
