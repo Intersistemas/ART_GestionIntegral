@@ -48,12 +48,29 @@ const changeRow = <T extends object>(
 
 // Llamadas a la API para obtener datos (razón social, establecimientos, tipos, formulario)
 const fetchRazonSocial = async (cuit: number): Promise<string> => {
-  const url = `${API_BASE}/FormulariosRGRL/CUIT/${encodeURIComponent(cuit)}`;
-  const res = await fetch(url, { cache: 'no-store', headers: { Accept: 'application/json, text/json' } });
+  const url = `${API_BASE}/FormulariosRGRL?CUIT=${encodeURIComponent(cuit)}`;
+  const res = await fetch(
+    url,
+    { 
+      cache: 'no-store',
+      headers: { Accept: 'application/json, text/json' }
+     }
+  );
   if (res.status === 404) return '';
+  
   if (!res.ok) throw new Error(`GET ${url} -> ${res.status}`);
-  const data = (await res.json()) as Array<{ razonSocial?: string }>;
-  return (data?.[0]?.razonSocial ?? '').toString();
+  
+  // Parse robusto: la API puede devolver { DATA: [...] } o { data: [...] } o el array directamente
+  const body = await res.json().catch(() => null);
+  const arr =
+    Array.isArray(body?.DATA) ? body.DATA :
+    Array.isArray(body?.data) ? body.data :
+    Array.isArray(body) ? body :
+    [];
+
+  // Si no hay elementos, devolver cadena vacía
+  const razon = (arr[0]?.razonSocial ?? arr[0]?.razon ?? '') as string;
+  return (razon ?? '').toString();
 };
 
 const fetchEstablecimientos = async (cuit: number): Promise<Establecimiento[]> => {
@@ -170,6 +187,7 @@ const GenerarFormularioRGRL: React.FC<{
     try {
       const [rs, ests, tfs] = await Promise.all([fetchRazonSocial(cuit!), fetchEstablecimientos(cuit!), fetchTipos()]);
       // LÓGICA DE ALERTA A IMPLEMENTAR
+      console.log("rs",rs)
       let alertMessage = '';
       if (!rs) {
           alertMessage += 'No se encontró la Razón Social para el CUIT ingresado.';

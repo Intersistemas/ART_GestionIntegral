@@ -109,8 +109,8 @@ const mapApiToUi = (r: ApiFormularioRGRL): FormularioRGRL => ({
 
 const CargarConsultaFormulariosRGRL = async (cuit: number): Promise<FormularioRGRL[]> => {
 
-  // GET /FormulariosRGRL/CUIT/{cuit}: obtiene lista de formularios para la grilla.
-  const url = `http://arttest.intersistemas.ar:8302/api/FormulariosRGRL/CUIT/${encodeURIComponent(
+  // GET /FormulariosRGRL/{cuit}: obtiene lista de formularios para la grilla.
+  const url = `http://arttest.intersistemas.ar:8302/api/FormulariosRGRL?CUIT=${encodeURIComponent(
     cuit
   )}`;
   const res = await fetch(url, {
@@ -122,12 +122,22 @@ const CargarConsultaFormulariosRGRL = async (cuit: number): Promise<FormularioRG
     console.info('[RGRL] CUIT sin formularios aún:', cuit);
     return [];
   }
+
+  
   if (!res.ok) {
     const raw = await res.text().catch(() => '');
     throw new Error(`GET ${url} -> ${res.status} ${raw}`);
   }
-  const data: ApiFormularioRGRL[] = await res.json();
-  return (data ?? []).map(mapApiToUi);
+  // La API puede devolver { DATA: [...] } o { data: [...] } o directamente el array.
+  const body = await res.json().catch(() => null);
+  const arr =
+    Array.isArray(body?.DATA) ? body.DATA :
+    Array.isArray(body?.data) ? body.data :
+    Array.isArray(body) ? body :
+    [];
+
+  const data: ApiFormularioRGRL[] = (arr ?? []) as ApiFormularioRGRL[];
+  return data.map(mapApiToUi);
 
 };
 
