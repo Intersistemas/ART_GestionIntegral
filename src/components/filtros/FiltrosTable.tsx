@@ -55,8 +55,9 @@ export function FiltrosTableContextProvider({
   return (
     <FiltrosTableContext.Provider
       value={{ isLoading, data }}
-      children={children}
-    />
+    >
+      {children}
+    </FiltrosTableContext.Provider>
   );
 }
 

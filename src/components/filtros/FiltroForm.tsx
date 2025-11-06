@@ -24,7 +24,7 @@ type State = {
 const { swrGetDisponibilidad, swrSaveFilter, swrDeleteFilter } = QueriesAPI;
 
 function Row({ children }: { children?: ReactNode }) {
-  return (<Grid className={styles.formRow} container size={12} spacing={2} children={children} />);
+  return (<Grid className={styles.formRow} container size={12} spacing={2} >{children}</Grid>);
 }
 function Section({ title, children }: { title?: ReactNode, children?: ReactNode }) {
   return (
