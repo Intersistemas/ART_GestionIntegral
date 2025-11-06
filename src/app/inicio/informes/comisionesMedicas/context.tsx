@@ -374,8 +374,7 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
       onLookupFiltro, onGuardaFiltro, onEliminaFiltro, onAplicaFiltro, onLimpiaFiltro,
       onLimpiaTabla, onExport,
     }}
-    children={children}
-  />
+  >{children}</CCMMContext.Provider>
 }
 
 export function useCCMMContext() {
