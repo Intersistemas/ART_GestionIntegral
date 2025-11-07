@@ -66,3 +66,11 @@ export function toURLSearch(o: any, execute = false): URLSearchParams | undefine
     s.append(k, v);
   }
 }
+
+export function isObjectKey<T extends object>(key: any, obj: T): key is keyof T {
+  return key in obj;
+}
+
+export function getObjectKeys<T extends object>(o: T): Array<keyof T> {
+  return Object.keys(o).map(k => isObjectKey(k, o) ? k : null).filter(a => a != null);
+}

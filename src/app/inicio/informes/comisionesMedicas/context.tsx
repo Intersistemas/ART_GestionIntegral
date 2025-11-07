@@ -10,10 +10,10 @@ import { type ColumnDef } from '@tanstack/react-table';
 import moment from 'moment';
 import { saveTable, type TableColumn, type AddTableOptions } from '@/utils/excelUtils';
 import useSWR from 'swr';
-import { FiltrosTable, FiltrosTableContextProvider } from '../../../../components/filtros/FiltrosTable';
+import { FiltrosTable, FiltrosTableContextProvider } from '@/components/filtros/FiltrosTable';
 import CustomModal from '@/utils/ui/form/CustomModal';
 import parsePropositionGroup from '@/utils/PropositionParseQuery';
-import FiltroForm from '../../../../components/filtros/FiltroForm';
+import FiltroForm from '@/components/filtros/FiltroForm';
 
 //#region types
 type Row = Record<string, any>;
@@ -383,7 +383,7 @@ export function useCCMMContext() {
   return context
 }
 
-function FiltrosTableModal({
+function FiltrosLookup({
   onSelect,
   onClose,
 }: {
@@ -396,19 +396,9 @@ function FiltrosTableModal({
       onClose={onClose}
       title="Elige filtro"
     >
-      <FiltrosTable actions={["Select"]} onSelect={onSelect} />
+      <FiltrosTableContextProvider deleted={false} modulo="Informes_CCMM" >
+        <FiltrosTable onSelect={onSelect} />
+      </FiltrosTableContextProvider>
     </CustomModal>
   );
-}
-
-function FiltrosLookup({
-  onSelect,
-  onClose,
-}: {
-  onSelect: (filtro: FiltroVm) => void;
-  onClose: () => void;
-}) {
-  return <FiltrosTableContextProvider deleted={false} modulo="Informes_CCMM" >
-    <FiltrosTableModal onSelect={onSelect} onClose={onClose} />
-  </FiltrosTableContextProvider>
 }
