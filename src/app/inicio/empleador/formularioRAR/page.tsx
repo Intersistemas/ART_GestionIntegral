@@ -6,7 +6,7 @@ import { IconButton, Box, Tooltip } from "@mui/material";
 import { useAuth } from '@/data/AuthContext';
 import Formato from '@/utils/Formato';
 import CustomButton from '@/utils/ui/button/CustomButton';
-import DataTableImport from '@/utils/ui/table/DataTable';
+import DataTable from '@/utils/ui/table/DataTable';
 import PDFModalViewer from '@/utils/PDF/PDFModalViewer';
 import BaseDocumentPDF from '@/utils/PDF/BaseDocumentPDF';
 import { Text, View } from '@react-pdf/renderer';
@@ -46,6 +46,11 @@ const FormulariosRAR: React.FC = () => {
   const [formulariosRAR, setFormulariosRAR] = useState<FormularioRAR[]>([]);
   const [idFormularioSeleccionado, setIdFormularioSeleccionado] = useState<number>(0);
 
+  // PAGINACIÓN controlada por componente
+  const [PageIndex, setPageIndex] = useState<number>(0);
+  const [PageSize, setPageSize] = useState<number>(10);
+  const [pageCount, setPageCount] = useState<number>(0);
+  
   // modos
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [editaId, setEditaId] = useState<number>(0);
@@ -68,9 +73,11 @@ const FormulariosRAR: React.FC = () => {
       setActiveTabIndex(newTabValue);
   };
 
-// Usamos el hook SWR del API (solo hace fetch si existe token y respeta las opciones de revalidate)
-  const { data: formulariosData, error: formulariosError, isValidating,  mutate: mutateFormularios } =
-   ArtAPI.useGetFormulariosRARURL(empresaCUIT ? { CUIT: empresaCUIT, PageIndex: 0 } : {}); //SE DEBE CORREGIR! para pasar dinamicamente la pagina segun el paginado
+  // Usamos el hook SWR del API (solo hace fetch si existe token y respeta las opciones de revalidate)
+  // Pasamos PageIndex y PageSize al hook (cambia la clave de SWR y dispara fetch)
+  const apiPageIndex = PageIndex + 1;
+  const { data: formulariosData, error: formulariosError, isValidating, mutate: mutateFormularios } =
+    ArtAPI.useGetFormulariosRARURL(empresaCUIT ? { CUIT: empresaCUIT, PageIndex: apiPageIndex, PageSize: PageSize } : {});
 
   // Una sola vez: cuando llegan datos, los mapeamos al estado local
   useEffect(() => {
@@ -96,8 +103,36 @@ const FormulariosRAR: React.FC = () => {
 
     setFormulariosRAR(formularios);
     setLoading(false);
+     // Si la API devuelve total/totalRecords/TotalCount calcula pageCount
+    const total =
+      typeof data?.total === 'number' ? data.total :
+      typeof data?.totalCount === 'number' ? data.totalCount :
+      typeof data?.TotalCount === 'number' ? data.TotalCount :
+      typeof data?.TOTAL === 'number' ? data.TOTAL :
+      typeof data?.count === 'number' ? data.count :
+      typeof data?.meta?.total === 'number' ? data.meta.total :
+      undefined;
+
+    if (typeof total === 'number' && PageSize > 0) {
+      setPageCount(Math.ceil(total / PageSize));
+    } else {
+      // fallback: si no hay total, estimar una página (evita pageCount=0)
+      setPageCount(formularios.length > 0 ? Math.ceil(formularios.length / PageSize) : 1);
+    }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formulariosData, formulariosError]);
+
+  // Handler que se pasa al DataTable para solicitar otra página
+  const handlePageChange = (newPageIndex: number) => {
+    // actualizar estado -> la clave SWR cambia y fetch se ejecuta
+    setPageIndex(newPageIndex);
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setPageIndex(0); // volver a primera página cuando cambia tamaño
+  };
 
   const fetchDetallesInterno = useCallback(async (internoId: number) => {
     if (!internoId || internoId === 0) {
@@ -491,10 +526,17 @@ const FormulariosRAR: React.FC = () => {
 
           {/* Tabla principal de formularios */}
           <div className={styles.compactTable}>
-            <DataTableImport 
-              columns={tableColumns} 
-              data={formulariosRAR} 
-              onRowClick={onRowClick} 
+             <DataTable
+              columns={tableColumns}
+              data={formulariosRAR}
+              onRowClick={onRowClick}
+              isLoading={loading}
+              manualPagination={true}
+              pageIndex={PageIndex}
+              pageSize={PageSize}
+              pageCount={pageCount}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
             />
           </div>
         </div>
@@ -552,7 +594,7 @@ const FormulariosRAR: React.FC = () => {
                 </div>
               )}
 
-              {/*  MODIFICACIÓN: Tabla de trabajadores usando DataTableImport */}
+              {/*  MODIFICACIÓN: Tabla de trabajadores usando DataTable */}
               {!loadingDetalles && !errorDetalles && detallesInterno.length > 0 && (
                 <div>
                   <div className={styles.trabajadoresHeader}>
@@ -561,9 +603,9 @@ const FormulariosRAR: React.FC = () => {
                     </p>
                   </div>
                   
-                  {/* Usando el mismo componente DataTableImport */}
+                  {/* Usando el mismo componente DataTable*/}
                   <div className={styles.compactTable}>
-                    <DataTableImport
+                    <DataTable
                       columns={detalleColumns}
                       data={detallesInterno}
                       size="small"

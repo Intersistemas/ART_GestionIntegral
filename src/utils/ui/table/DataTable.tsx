@@ -61,6 +61,14 @@ interface DataTableProps<TData extends object> {
     enableRowSelection?: boolean;
     initialRowSelection?: RowSelectionState;
     onRowSelectionChange?: (selectedRows: TData[]) => void;
+
+    // Server-side / controlled pagination
+    manualPagination?: boolean;
+    pageIndex?: number;
+    pageSize?: number;
+    pageCount?: number;
+    onPageChange?: (newPageIndex: number) => void;
+    onPageSizeChange?: (newPageSize: number) => void;
 }
 
 export function DataTable<TData extends object>({
@@ -75,6 +83,14 @@ export function DataTable<TData extends object>({
     enableRowSelection = false,
     initialRowSelection = {},
     onRowSelectionChange,
+
+     // pagination props
+    manualPagination = false,
+    pageIndex: pageIndexProp,
+    pageSize: pageSizeProp,
+    pageCount: pageCountProp,
+    onPageChange,
+    onPageSizeChange,
 }: DataTableProps<TData>) {
 
     const defaultProps = {
@@ -104,6 +120,32 @@ export function DataTable<TData extends object>({
     const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
     const [rowSelection, setRowSelection] = useState<RowSelectionState>(initialRowSelection);
 
+       // Estado local de paginación (sin controlar o sincronizado cuando viene prop)
+    const [localPagination, setLocalPagination] = useState({
+        pageIndex: pageIndexProp ?? 0,
+        pageSize: pageSizeProp ?? (resolvedProps.pageSizeOptions?.[0] ?? 10),
+    });
+
+    // Sincronizar props controladas hacia estado local
+    useEffect(() => {
+        if (typeof pageIndexProp === "number" && pageIndexProp !== localPagination.pageIndex) {
+            setLocalPagination(p => ({ ...p, pageIndex: pageIndexProp! }));
+        }
+    }, [pageIndexProp]);
+
+    useEffect(() => {
+        if (typeof pageSizeProp === "number" && pageSizeProp !== localPagination.pageSize) {
+            setLocalPagination(p => ({ ...p, pageSize: pageSizeProp! }));
+        }
+    }, [pageSizeProp]);
+
+    // Cuando la paginación local cambia, notificar al padre si corresponde
+    const handlePaginationChange = (updater: any) => {
+        const next = typeof updater === "function" ? updater(localPagination) : updater;
+        setLocalPagination(next);
+        if (typeof next.pageIndex === "number" && onPageChange) onPageChange(next.pageIndex);
+        if (typeof next.pageSize === "number" && onPageSizeChange) onPageSizeChange(next.pageSize);
+    };
 
     const handleRowSelectionChange = (updater: RowSelectionState | ((old: RowSelectionState) => RowSelectionState)) => {
         setRowSelection(updater);
@@ -144,30 +186,35 @@ export function DataTable<TData extends object>({
         ? [selectionColumn, ...columns]
         : columns, [enableRowSelection, columns]);
 
-    const table = useReactTable({
+   const table = useReactTable({
         data,
-        // Casteamos para que useReactTable acepte el tipo de columna
         columns: finalColumns as ColumnDef<TData, any>[],
         state: {
             sorting,
             columnFilters,
             columnVisibility,
             globalFilter,
-            rowSelection, 
+            rowSelection,
+            pagination: localPagination,
         },
         onSortingChange: setSorting,
         onColumnFiltersChange: setColumnFilters,
         onColumnVisibilityChange: setColumnVisibility,
         onGlobalFilterChange: setGlobalFilter,
-        onRowSelectionChange: handleRowSelectionChange, 
+        onRowSelectionChange: handleRowSelectionChange,
+        onPaginationChange: handlePaginationChange,
         getCoreRowModel: getCoreRowModel(),
+        // Usar paginación real del motor (si manualPagination true, le pasamos pageCount)
         getPaginationRowModel: getPaginationRowModel(),
         getSortedRowModel: getSortedRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
         enableRowSelection: enableRowSelection,
+        manualPagination: manualPagination, // tanstack v8 prop to indicate server-side paging
+        pageCount: manualPagination ? (pageCountProp ?? Math.ceil(data.length / localPagination.pageSize)) : undefined,
         initialState: {
             pagination: {
-                pageSize: resolvedProps.pageSizeOptions?.[0] ?? 10
+                pageIndex: localPagination.pageIndex,
+                pageSize: localPagination.pageSize,
             }
         }
     });
@@ -298,16 +345,51 @@ export function DataTable<TData extends object>({
             {/* Controles de paginación */}
             <Box className={styles.paginationContainer}>
                 <Box className={styles.paginationIcons}>
-                    <IconButton onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()} aria-label="primera-página">
+                    <IconButton
+                        onClick={() => {
+                            const target = 0;
+                            table.setPageIndex(target);
+                            if (onPageChange) onPageChange(target);
+                        }}
+                        disabled={!table.getCanPreviousPage()}
+                        aria-label="primera-página"
+                    >
                         <FirstPage />
                     </IconButton>
-                    <IconButton onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()} aria-label="página-anterior">
+                    <IconButton
+                        onClick={() => {
+                            const current = table.getState().pagination.pageIndex ?? 0;
+                            const target = Math.max(0, current - 1);
+                            table.setPageIndex(target);
+                            if (onPageChange) onPageChange(target);
+                        }}
+                        disabled={!table.getCanPreviousPage()}
+                        aria-label="página-anterior"
+                    >
                         <KeyboardArrowLeft />
                     </IconButton>
-                    <IconButton onClick={() => table.nextPage()} disabled={!table.getCanNextPage()} aria-label="página-siguiente">
+                    <IconButton
+                        onClick={() => {
+                            const current = table.getState().pagination.pageIndex ?? 0;
+                            const last = table.getPageCount() > 0 ? table.getPageCount() - 1 : 0;
+                            const target = Math.min(last, current + 1);
+                            table.setPageIndex(target);
+                            if (onPageChange) onPageChange(target);
+                        }}
+                        disabled={!table.getCanNextPage()}
+                        aria-label="página-siguiente"
+                    >
                         <KeyboardArrowRight />
                     </IconButton>
-                    <IconButton onClick={() => table.setPageIndex(table.getPageCount() - 1)} disabled={!table.getCanNextPage()} aria-label="última-página">
+                    <IconButton
+                        onClick={() => {
+                            const target = table.getPageCount() > 0 ? table.getPageCount() - 1 : 0;
+                            table.setPageIndex(target);
+                            if (onPageChange) onPageChange(target);
+                        }}
+                        disabled={!table.getCanNextPage()}
+                        aria-label="última-página"
+                    >
                         <LastPage />
                     </IconButton>
                 </Box>
@@ -315,7 +397,7 @@ export function DataTable<TData extends object>({
                     <span>
                         Página{" "}
                         <strong>
-                            {table.getState().pagination.pageIndex + 1} de {table.getPageCount()}
+                            { (table.getState().pagination.pageIndex ?? 0) + 1 } de { manualPagination ? (pageCountProp ?? table.getPageCount()) : table.getPageCount() }
                         </strong>
                     </span>
                 </Box>
