@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react'; 
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'; 
 import gestionEmpleadorAPI from "@/data/gestionEmpleadorAPI";
 import Persona from './types/persona';
 import DataTable from '@/utils/ui/table/DataTable';
@@ -8,16 +8,12 @@ import { ColumnDef } from '@tanstack/react-table';
 import styles from "./cobertura.module.css";
 import CustomButton from '@/utils/ui/button/CustomButton';
 import { BsBoxArrowInLeft, BsBoxArrowInRight, BsDownload } from "react-icons/bs";
-import { Box, TextField, Typography } from '@mui/material';
+import { Box, Checkbox, FormControlLabel, TextField, Typography } from '@mui/material';
 import Image from 'next/image';
 import Formato from '@/utils/Formato';
+import Cobertura_PDF from './Cobertura_PDF';
 
 const { useGetPersonal, useGetPoliza } = gestionEmpleadorAPI;
-
-const handleDownload = () => {
-    alert("Iniciando descarga del certificado...");
-    // Aquí iría la lógica real para generar/descargar el PDF
-};
 
 export default function CoberturaPage() {
    
@@ -27,8 +23,17 @@ export default function CoberturaPage() {
     // Estados para las dos tablas: Pendiente (Origen) y Cubierto (Destino)
     const [personalPendiente, setPersonalPendiente] = useState<Persona[]>([]);
     const [personalCubierto, setPersonalCubierto] = useState<Persona[]>([]);
+    const inputReference = useRef<HTMLInputElement | null>(null);
 
     const [presentadoA, setPresentadoA] = useState<string>('');
+    const [abrirPDF, setAbrirPDF] = useState<boolean>(false);
+    const [clausula, setClausula] = useState<boolean>(false);
+
+
+    // Fecha y hora actuales (formato local es-AR)
+    const now = new Date();
+    const dia = now.toLocaleDateString('es-AR'); // ej. "07/11/2025"
+    const hora = now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }); // ej. "14:35"
 
     // Estados para las selecciones de filas en cada tabla
     const [selectedPendiente, setSelectedPendiente] = useState<Persona[]>([]);
@@ -38,6 +43,15 @@ export default function CoberturaPage() {
     const [newCuil, setNewCuil] = useState<number | null>(null); 
     const [newNombre, setNewNombre] = useState<string>('');
 
+    const handleDownload = () => {
+        // Si no hay destinatario, poner foco en el campo "Para ser presentado a"
+        if (!presentadoA?.trim()) {
+            inputReference.current?.focus();
+            return;
+        }
+        // continuar con la descarga / abrir PDF
+        setAbrirPDF(true);
+    };
 
     console.log("polizaData",polizaData)
     // Inicializa personalPendiente con los datos crudos cuando se cargan
@@ -258,7 +272,11 @@ export default function CoberturaPage() {
             </div>
             <div className={styles.certificadoContainer}>
                 {/* Contenido del Certificado */}
+                <div className={styles.lugarFecha}>
+                    Ciudad Autónoma de Buenos Aires, {dia ?? ''}
+                </div>
                 <div className={styles.certificadoContent}>
+                    
                     <h2 className={styles.certificadoTitle}>CERTIFICADO DE COBERTURA</h2>
                     
                     <Image
@@ -270,22 +288,23 @@ export default function CoberturaPage() {
                         priority
                     />
                    
-                    
-                    <div className={styles.presentadoA}>
-                        <text>
-                            Para ser presentado a:
-                        </text>
-                        <TextField
-                            variant="standard"
-                            placeholder="Ingrese destinatario"
-                            value={presentadoA}
-                            onChange={(e) => setPresentadoA(e.target.value)}
-                            className={styles.inputDestinatario}
-                        />
+                    <div className={styles.certificadoText}>
+                        <div className={styles.presentadoA}>
+                            <label>
+                                Para ser presentado a:
+                            </label>
+                            <TextField
+                                variant="standard"
+                                placeholder="Ingrese destinatario"
+                                inputRef={inputReference}
+                                value={presentadoA}
+                                onChange={(e) => setPresentadoA(e.target.value)}
+                                className={styles.inputDestinatario}
+                            />
+                        </div>
                     </div>
-                     <br/>    
+                <br/>    
 
-                    {/* 🟢 Párrafos del certificado (Respetando negritas y párrafos) */}
                     <text>
                         Por intermedio del presente <strong>CERTIFICAMOS</strong> que la empresa bajo la denominación de {polizaData?.empleador_Denominacion || ""}
                          con N° de CUIT: {Formato.CUIP(polizaData?.cuit) || ""} ha contratado la cobertura de <strong>ART MUTUAL RURAL DE SEGUROS DE RIESGOS DEL TRABAJO</strong>,
@@ -297,28 +316,38 @@ export default function CoberturaPage() {
                         El N° del contrato es el {polizaData?.nroContrato || ""}.
                     </text>
                      <br/>
-                    <text>
-                        Consta por la presente que <strong>ART MUTUAL RURAL DE SEGUROS DE RIESGOS DEL TRABAJO</strong>, renuncia en forma expresa a reclamar o iniciar toda acción de 
-                        repetición o de regreso contra: A quien corresponda, sus funcionarios, empleados u obreros; sea con fundamento en el art. 39, ap. 5, de la Ley 
-                        N° 24.557, sea en cualquier otra norma jurídica, con motivo de las prestaciones en especie o dinerarias que se vea obligada a abonar, contratar
-                        u otorgar al personal dependiente o ex dependiente de {polizaData?.empleador_Denominacion || ""}, amparados por la cobertura del Contrato de
-                        Afiliación N° {polizaData?.nroContrato || ""}, por accidentes del trabajo o enfermedades profesionales, ocurridos o contraídos por el hecho 
-                        o en ocasión del trabajo. Esta <strong>Cláusula de no repetición</strong> cesará en sus efectos si el empresario comitente a favor de quien 
-                        se emite, no cumple estrictamente con las medidas de prevención e higiene y seguridad en el trabajo, o de cualquier manera infringe la Ley 
-                        N° 19.587, su Decreto Reglamentario N° 351/79 y las normativas que sobre el particular ha dictado la Superintendencia de Riesgos del Trabajo,
-                        las Provincias y la Ciudad Autónoma de la Ciudad de Buenos Aires en el ámbito de su competencia.
-                    </text>
-                     <br/>
-                    <text>
-                        Fuera de las causales que expresamente prevé la normativa vigente, el contrato de afiliación no podrá ser modificado o enmendado sin previa
-                         notificación fehaciente a quien corresponda, en un plazo no inferior a quince (15) días corridos.
-                    </text>
-                    <br/>
-                    <text>
-                        Se deja constancia por la presente que la empresa de referencia se encuentra asegurada en <strong>ART MUTUAL RURAL DE SEGUROS DE RIESGOS DEL TRABAJO</strong>.
-                        El presente certificado tiene una validez de 30 días corridos a partir de la fecha de emisión. En ningún caso ART MUTUAL RURAL DE SEGUROS DE RIESGOS
-                        DEL TRABAJO será responsable de las consecuencias del uso del certificado una vez vencido el plazo de validez.
-                    </text>
+
+                     <div className={styles.clausulaToggle}>
+                        <Checkbox size="large" checked={clausula} onChange={(e) => setClausula(e.target.checked)} />
+                        Incluir cláusula de no repetición
+                    </div>
+                    {clausula && 
+                    <>
+                        <text>
+                            Consta por la presente que <strong>ART MUTUAL RURAL DE SEGUROS DE RIESGOS DEL TRABAJO</strong>, renuncia en forma expresa a reclamar o iniciar toda acción de 
+                            repetición o de regreso contra: A quien corresponda, sus funcionarios, empleados u obreros; sea con fundamento en el art. 39, ap. 5, de la Ley 
+                            N° 24.557, sea en cualquier otra norma jurídica, con motivo de las prestaciones en especie o dinerarias que se vea obligada a abonar, contratar
+                            u otorgar al personal dependiente o ex dependiente de {polizaData?.empleador_Denominacion || ""}, amparados por la cobertura del Contrato de
+                            Afiliación N° {polizaData?.nroContrato || ""}, por accidentes del trabajo o enfermedades profesionales, ocurridos o contraídos por el hecho 
+                            o en ocasión del trabajo. Esta <strong>Cláusula de no repetición</strong> cesará en sus efectos si el empresario comitente a favor de quien 
+                            se emite, no cumple estrictamente con las medidas de prevención e higiene y seguridad en el trabajo, o de cualquier manera infringe la Ley 
+                            N° 19.587, su Decreto Reglamentario N° 351/79 y las normativas que sobre el particular ha dictado la Superintendencia de Riesgos del Trabajo,
+                            las Provincias y la Ciudad Autónoma de la Ciudad de Buenos Aires en el ámbito de su competencia.
+                        </text>
+                        <br/>
+                        <text>
+                            Fuera de las causales que expresamente prevé la normativa vigente, el contrato de afiliación no podrá ser modificado o enmendado sin previa
+                            notificación fehaciente a quien corresponda, en un plazo no inferior a quince (15) días corridos.
+                        </text>
+                        <br/>
+                        <text>
+                            Se deja constancia por la presente que la empresa de referencia se encuentra asegurada en <strong>ART MUTUAL RURAL DE SEGUROS DE RIESGOS DEL TRABAJO</strong>.
+                            El presente certificado tiene una validez de 30 días corridos a partir de la fecha de emisión. En ningún caso ART MUTUAL RURAL DE SEGUROS DE RIESGOS
+                            DEL TRABAJO será responsable de las consecuencias del uso del certificado una vez vencido el plazo de validez.
+                        </text>
+                    </>
+                    }
+                    
                      <br/>
                     <text>
                         Sin otro particular, saludo a Ud. muy atentamente.
@@ -341,6 +370,22 @@ export default function CoberturaPage() {
                     </div>
                 </div>
             </div>
+            <div>
+                {abrirPDF && presentadoA != "" ? (
+               <Cobertura_PDF
+                    open={abrirPDF}
+                    handleVentanaImpresion={(open: boolean) => setAbrirPDF(open)}
+                    presentadoA={presentadoA}
+                    poliza={polizaData}                     // pasa tu objeto poliza
+                    dia={dia}                           // opcional
+                    hora={hora}                         // opcional
+                    fechaDesde={polizaData?.vigencia_Desde}             // opcional
+                    fechaHasta={polizaData?.vigencia_Desde}             // opcional
+                    clausula={clausula}       // opcional
+                    nominasSeleccionadas={selectedCubierto} // si aplicable
+                />
+                ) : null}
+          </div>
         </div>
     );
 }
