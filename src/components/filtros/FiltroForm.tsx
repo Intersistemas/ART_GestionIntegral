@@ -272,7 +272,7 @@ export default function FiltroForm({
       error.data.modulo = "Dato requerido";
     }
     if (!data.proposition) {
-      faltantes.push("Poposición");
+      faltantes.push("Proposición");
       error.data.proposition = "Dato requerido";
     }
     if (faltantes.length > 0) {
