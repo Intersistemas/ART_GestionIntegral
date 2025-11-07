@@ -474,9 +474,7 @@ export default function UsuarioForm({
       return;
     }
 
-    // Set default values for hidden fields    
-    console.log("Submitting form data:", form);
-    
+    // Set default values for hidden fields       
     // Determinar empresaId según si es administrador
     let finalEmpresaId = form.empresaId || (refEmpleadores.length > 0 ? refEmpleadores[0].interno : 0);
     if (isCreating && isAdminUser) {
@@ -500,7 +498,7 @@ export default function UsuarioForm({
     setTouched(allTouched);
 
     if (validateAllFields()) {
-      console.log("Submitting form data:", formDataWithDefaults);
+      // console.log("Submitting form data:", formDataWithDefaults);
       // Limpiamos los campos de password/confirmPassword si están vacíos al editar
       const dataToSubmit = { ...formDataWithDefaults };
       if (isEditing && !dataToSubmit.password) {

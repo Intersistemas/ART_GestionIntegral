@@ -196,7 +196,6 @@ export default function UsuariosPage() {
         showModalMessage(`Error al reestablecer usuario: ${result.error}`, "error");
       }
     } catch (error) {
-      console.error("Error al reestablecer usuario:", error);
       showModalMessage("Ocurrió un error al reestablecer el usuario", "error");
     }
   };
@@ -210,7 +209,6 @@ export default function UsuariosPage() {
         showModalMessage(`Error al reenviar correo: ${result.error}`, "error");
       }
     } catch (error) {
-      console.error("Error al reenviar correo:", error);
       showModalMessage("Ocurrió un error al reenviar el correo", "error");
     }
   };
@@ -224,7 +222,6 @@ const handleSubmit = async (data: UsuarioFormFields) => {
     // Aquí se crea el objeto completo para la API, añadiendo empresaId
     // La lógica de envío debe considerar el modo (create, edit, delete)
     const method = requestState.method;
-    console.log("handleSubmit method:", method);
     let result: { success: boolean; error: string | null } = {
       success: false,
       error: null,
