@@ -72,5 +72,9 @@ export function isObjectKey<T extends object>(key: any, obj: T): key is keyof T 
 }
 
 export function getObjectKeys<T extends object>(o: T): Array<keyof T> {
-  return Object.keys(o).map(k => isObjectKey(k, o) ? k : null).filter(a => a != null);
+  // Usamos reduce + type guard para construir Array<keyof T> sin casts inseguros
+  return Object.keys(o).reduce<Array<keyof T>>((acc, k) => {
+    if (isObjectKey(k, o)) acc.push(k);
+    return acc;
+  }, []);
 }

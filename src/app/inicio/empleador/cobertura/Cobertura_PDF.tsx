@@ -41,31 +41,6 @@ export default function Cobertura_PDF(props: CoberturaPDFProps) {
   useEffect(() => {
     if (!open) return;
 
-    const addCanvasToPdf = (pdf: any, canvas: HTMLCanvasElement, opts?: { addFirstPage?: boolean }) => {
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = pageWidth;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      const imgData = canvas.toDataURL('image/png');
-
-      // Si opts.addFirstPage true -> añadimos sin crear nueva página
-      if (opts?.addFirstPage) {
-        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-      } else {
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-      }
-
-      // Si la imagen es mayor que una página, agregar páginas adicionales mostrando el resto
-      let heightLeft = imgHeight - pageHeight;
-      while (heightLeft > -0.1) {
-        pdf.addPage();
-        // posicion negativa para desplazar la imagen y mostrar la siguiente porción
-        pdf.addImage(imgData, 'PNG', 0, - (imgHeight - pageHeight - heightLeft), imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-    };
-
     const generate = async () => {
       try {
         const html2canvas = (await import('html2canvas')).default;
@@ -81,7 +56,8 @@ export default function Cobertura_PDF(props: CoberturaPDFProps) {
         });
 
         // escala para mejorar calidad (ajusta si el PDF pesa mucho)
-        const scale = 2;
+        const scale = 3;
+        const jpegQuality = 0.85;
 
         // Render primer bloque (certificado)
         if (firstRef.current) {
@@ -95,8 +71,9 @@ export default function Cobertura_PDF(props: CoberturaPDFProps) {
           const pageWidth = pdf.internal.pageSize.getWidth();
           const imgWidth = pageWidth;
           const imgHeight = (canvas1.height * imgWidth) / canvas1.width;
-          const imgData1 = canvas1.toDataURL('image/png');
-          pdf.addImage(imgData1, 'PNG', 0, 0, imgWidth, imgHeight);
+          // usar JPEG en lugar de PNG para contenido (mejor compresión)
+          const imgData1 = canvas1.toDataURL('image/jpeg', jpegQuality);
+          pdf.addImage(imgData1, 'JPEG', 0, 0, imgWidth, imgHeight);
 
           // Si canvas1 ocupa más de una página, agregar las siguientes porciones
           let heightLeft1 = imgHeight - pdf.internal.pageSize.getHeight();
@@ -119,7 +96,7 @@ export default function Cobertura_PDF(props: CoberturaPDFProps) {
           const pageWidth = pdf.internal.pageSize.getWidth();
           const imgWidth = pageWidth;
           const imgHeight = (canvas2.height * imgWidth) / canvas2.width;
-          const imgData2 = canvas2.toDataURL('image/png');
+          const imgData2 = canvas2.toDataURL('image/jpeg', jpegQuality);
 
           // Si el primer contenido ya ocupó todo, la siguiente adición debe ser nueva página
           // Añadimos canvas2 y lo fragmentamos en páginas según altura
@@ -128,13 +105,13 @@ export default function Cobertura_PDF(props: CoberturaPDFProps) {
 
           // Añadimos primer trozo de canvas2 en nueva(s) página(s)
           pdf.addPage();
-          pdf.addImage(imgData2, 'PNG', 0, 0, imgWidth, imgHeight);
+          pdf.addImage(imgData2, 'JPEG', 0, 0, imgWidth, imgHeight);
           heightLeft -= pdf.internal.pageSize.getHeight();
 
           while (heightLeft > -0.1) {
             pdf.addPage();
             // posicion negativa para desplazar la imagen y mostrar la siguiente porción
-            pdf.addImage(imgData2, 'PNG', 0, -(imgHeight - pdf.internal.pageSize.getHeight() - heightLeft), imgWidth, imgHeight);
+            pdf.addImage(imgData2, 'JPEG', 0, -(imgHeight - pdf.internal.pageSize.getHeight() - heightLeft), imgWidth, imgHeight);
             heightLeft -= pdf.internal.pageSize.getHeight();
           }
         }
@@ -159,7 +136,8 @@ export default function Cobertura_PDF(props: CoberturaPDFProps) {
         {/* Cabecera: fecha alineada a la derecha */}
         <div className={styles.pdfHeader}>
           <div className={styles.pdfLogo}>
-            <img src="/icons/LogoTexto.svg" alt="Logo" style={{ width: 120, height: 'auto' }} />
+            <Image src="/icons/LogoTexto.svg" alt="Logo" width={130} height={130} />
+
           </div>
 
           <div className={styles.pdfLugarFecha}>Ciudad Autónoma de Buenos Aires, {dia ?? ''}</div>
