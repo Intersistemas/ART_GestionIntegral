@@ -11,6 +11,8 @@ import {
   FormControl,
   CircularProgress,
   Autocomplete,
+  Checkbox,
+  FormControlLabel,
 } from "@mui/material";
 import RolesInterface from "./interfaces/RolesInterface";
 import styles from "./Usuario.module.css";
@@ -114,6 +116,7 @@ export default function UsuarioForm({
   const [form, setForm] = useState<UsuarioFormFields>(initialFormState);
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [touched, setTouched] = useState<TouchedFields>({});
+  const [isAdminUser, setIsAdminUser] = useState<boolean>(false);
 
   // --- Lógica de Modos y Estado ---
   const isViewing = method === "view";
@@ -164,6 +167,7 @@ export default function UsuarioForm({
     
     setErrors({});
     setTouched({});
+    setIsAdminUser(false); // Resetear el checkbox cuando se abre el modal
   }, [initialData, open, isEditing, isCreating, cargos]);
 
   const modalTitle = useMemo(() => {
@@ -297,10 +301,18 @@ export default function UsuarioForm({
       // case "tipo":
       //   return validateRequired(value, "Tipo");
       case "rol":
+        // No validar rol si está marcado como administrador en modo creación
+        if (isCreating && isAdminUser) {
+          return undefined;
+        }
         return validateRequired(value, "Rol");
       case "cargoId":
         return validateRequired(String(value), "Cargo");
       case "empresaId":
+        // No validar empresa si está marcado como administrador en modo creación
+        if (isCreating && isAdminUser) {
+          return undefined;
+        }
         return validateRequired(String(value), "Empresa");
       default:
         return undefined;
@@ -397,6 +409,48 @@ export default function UsuarioForm({
     }
   };
 
+  const handleIsAdminUserChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = event.target.checked;
+    setIsAdminUser(checked);
+    
+    if (checked) {
+      // Si se marca como administrador, limpiar la empresa y establecer rol
+      setForm((prev: UsuarioFormFields) => ({
+        ...prev,
+        empresaId: 0,
+        rol: "Administrador",
+      }));
+      
+      // Limpiar errores de empresa y rol si existen
+      setErrors((prev) => ({
+        ...prev,
+        empresaId: undefined,
+        rol: undefined,
+      }));
+    } else {
+      // Si se desmarca, limpiar el rol y validar empresa y rol si ya fueron tocados
+      setForm((prev: UsuarioFormFields) => ({
+        ...prev,
+        rol: "",
+      }));
+      
+      if (touched.empresaId) {
+        const empresaError = validateField("empresaId", String(form.empresaId || ""));
+        setErrors((prev) => ({
+          ...prev,
+          empresaId: empresaError,
+        }));
+      }
+      if (touched.rol) {
+        const rolError = validateField("rol", "");
+        setErrors((prev) => ({
+          ...prev,
+          rol: rolError,
+        }));
+      }
+    }
+  };
+
   const handleBlur = (fieldName: keyof UsuarioFormFields) => {
     setTouched((prev) => ({ ...prev, [fieldName]: true }));
     const error = validateField(fieldName, String(form[fieldName] ?? ""));
@@ -420,18 +474,20 @@ export default function UsuarioForm({
       return;
     }
 
-    // Set default values for hidden fields    
-    console.log("Submitting form data:", form);
+    // Set default values for hidden fields       
+    // Determinar empresaId según si es administrador
+    let finalEmpresaId = form.empresaId || (refEmpleadores.length > 0 ? refEmpleadores[0].interno : 0);
+    if (isCreating && isAdminUser) {
+      finalEmpresaId = 0; // Si es administrador, empresaId debe ser 0
+    }
+    
     const formDataWithDefaults = {
       ...form,
       cuit: form.cuit.replace(/[^\d]/g, ""), // Parse CUIT as integer, removing all non-digits
       userName: form.cuit.replace(/[^\d]/g, ""), // Use email as username
-
       tipo: "", // Default type
       rol: form.rol || (roles.length > 0 ? roles[0].nombre : ""), // Default to first role
-      empresaId:
-        form.empresaId ||
-        (refEmpleadores.length > 0 ? refEmpleadores[0].interno : 0),
+      empresaId: finalEmpresaId,
     };    
 
     // Mark all fields as touched
@@ -442,7 +498,7 @@ export default function UsuarioForm({
     setTouched(allTouched);
 
     if (validateAllFields()) {
-      console.log("Submitting form data:", formDataWithDefaults);
+      // console.log("Submitting form data:", formDataWithDefaults);
       // Limpiamos los campos de password/confirmPassword si están vacíos al editar
       const dataToSubmit = { ...formDataWithDefaults };
       if (isEditing && !dataToSubmit.password) {
@@ -581,9 +637,9 @@ export default function UsuarioForm({
                   {/* Rol (Select) */}
                   <FormControl
                     fullWidth
-                    required={!isDisabled}
-                    error={touched.rol && !!errors.rol}
-                    disabled={isDisabled}
+                    required={!isDisabled && !isAdminUser}
+                    error={touched.rol && !!errors.rol && !isAdminUser}
+                    disabled={isDisabled || isAdminUser}
                   >
                     <InputLabel>Rol</InputLabel>
                     <Select
@@ -599,7 +655,7 @@ export default function UsuarioForm({
                         </MenuItem>
                       ))}
                     </Select>
-                    {touched.rol && errors.rol && (
+                    {touched.rol && errors.rol && !isAdminUser && (
                       <Typography
                         variant="caption"
                         color="error"
@@ -615,7 +671,7 @@ export default function UsuarioForm({
                     fullWidth
                     options={refEmpleadores}
                     getOptionLabel={(option) => option.razonSocial || ""}
-                    value={refEmpleadores.find(emp => emp.interno === form.empresaId) || null}
+                    value={isAdminUser ? null : (refEmpleadores.find(emp => emp.interno === form.empresaId) || null)}
                     onChange={(event, newValue) => {
                       const empresaId = newValue ? newValue.interno : 0;
                       setForm((prev: UsuarioFormFields) => ({
@@ -632,14 +688,14 @@ export default function UsuarioForm({
                       }
                     }}
                     onBlur={() => handleBlur("empresaId")}
-                    disabled={isDisabled || (form.empresaId !== 0 && !isAdmin)}
+                    disabled={isDisabled || (form.empresaId !== 0 && !isAdmin) || isAdminUser}
                     renderInput={(params) => (
                       <TextField
                         {...params}
-                        label="Empresa *"
-                        error={touched.empresaId && !!errors.empresaId}
-                        helperText={touched.empresaId && errors.empresaId}
-                        placeholder="Buscar empresa..."
+                        label={isAdminUser ? "Empresa" : "Empresa *"}
+                        error={touched.empresaId && !!errors.empresaId && !isAdminUser}
+                        helperText={touched.empresaId && errors.empresaId && !isAdminUser ? errors.empresaId : ""}
+                        placeholder={isAdminUser ? "No aplica para administradores" : "Buscar empresa..."}
                       />
                     )}
                     filterOptions={(options, { inputValue }) => {
@@ -648,6 +704,21 @@ export default function UsuarioForm({
                       );
                     }}
                     noOptionsText="No se encontraron empresas"
+                  />
+                  
+                  {/* Checkbox Es Administrador - solo en modo crear */}
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={isAdminUser}
+                        onChange={handleIsAdminUserChange}
+                        disabled={isDisabled}
+                        color="primary"
+                        hidden={!!!isAdminUser}
+                      />
+                    }
+                    label="Es Administrador"
+                    sx={{ mt: 2 }}
                   />
                 </div>
               )}

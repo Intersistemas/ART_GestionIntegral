@@ -46,11 +46,11 @@ const ConfirmarEmailPage = () => {
         await UsuarioAPI.confirmarEmail(tokenFromUrl, emailFromUrl);
         setState("success");
       } catch (error: any) {
-        console.error("Error al confirmar email:", error);
+         console.error("Error al confirmar email:", error);
         setState("error");
         setErrorMessage(
-          error?.response?.data?.message ||
-          error?.message ||
+          error?.response?.data?.mensaje ||
+          error?.mensaje ||
           "Error al confirmar el email. El enlace puede haber expirado o ser inválido."
         );
       }
