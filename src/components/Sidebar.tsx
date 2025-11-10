@@ -3,7 +3,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { useState, Dispatch, SetStateAction } from 'react';
 import { usePathname } from 'next/navigation';
-import { BsFillStarFill, BsLayoutSplit, BsBriefcaseFill, BsPersonFillGear, BsFolder, BsHouseGear, BsCalendar2Plus, BsBarChartLineFill, BsList, BsChevronDown, BsChevronRight, BsFileText, BsCardChecklist, BsGraphUpArrow, BsClipboard2Data } from 'react-icons/bs';
+import { BsFillStarFill, BsLayoutSplit, BsBriefcaseFill, BsPersonFillGear, BsFolder, BsFillChatRightQuoteFill , BsHouseGear, BsCalendar2Plus, BsBarChartLineFill, BsList, BsChevronDown, BsChevronRight, BsFileText, BsCardChecklist, BsGraphUpArrow, BsClipboard2Data } from 'react-icons/bs';
 import { FaFileInvoiceDollar } from "react-icons/fa6";
 import { IconType } from 'react-icons';
 import { Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Collapse } from '@mui/material';
@@ -73,6 +73,11 @@ const menuItems: MenuItem[] = [
             { name: "Siniestros", icon: BsGraphUpArrow, link: "/inicio/informes/siniestros", permissionTask: "Informes_Siniestros" },
             { name: "Atención Al Público", icon: BsGraphUpArrow, link: "/inicio/informes/atencionAlPublico", permissionTask: "Informes_AtencionAlPublico" },
         ],
+    },
+     {
+        name: "Denuncias",
+        icon: BsFillChatRightQuoteFill ,
+        permissionTask: "Denuncias",
     },
     {
         name: "Usuarios",
