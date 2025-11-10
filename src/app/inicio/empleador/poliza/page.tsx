@@ -146,7 +146,7 @@ const Poliza = () => {
         <TextField
           label="Nº CUIT:"
           name="CUITEmpleador"
-          value={Formato.CUIP(polizaRawData.cuit) || ""}
+          value={Formato.CUIP(polizaRawData?.cuit) || ""}
           fullWidth
           variant='standard'
         />
