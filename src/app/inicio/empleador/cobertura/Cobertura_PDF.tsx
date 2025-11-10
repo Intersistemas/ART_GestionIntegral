@@ -3,6 +3,7 @@
 import React, { useEffect, useRef } from 'react';
 import styles from './cobertura.module.css';
 import Image from 'next/image';
+import Formato from '@/utils/Formato';
 
 type CoberturaPDFProps = {
   poliza?: any;
@@ -157,21 +158,21 @@ export default function Cobertura_PDF(props: CoberturaPDFProps) {
                 Por intermedio del presente <strong>CERTIFICAMOS</strong> que la empresa bajo la denominación de{' '}
                 <strong>{p.empleador_Denominacion ?? ''}</strong> con N° de CUIT:{' '}
                 <strong>{p.cuit ?? ''}</strong> ha contratado la cobertura de <strong>ART MUTUAL RURAL DE SEGUROS DE RIESGOS DEL TRABAJO</strong>,
-                según los términos de la Ley Nro. 24.557 por lo que el personal declarado oportunamente se encuentra cubierto a partir del{' '}
-                {fechaDesde ?? ''} hasta el {fechaHasta ?? ''}.
+                según los términos de la Ley Nro. 24.557 por lo que el personal declarado oportunamente se encuentra <strong> cubierto a partir del{' '}
+                {Formato.Fecha(p?.vigencia_Desde) || ""} hasta el {Formato.Fecha(p?.vigencia_Hasta) || ""}.</strong>
               </div>
             </div>
 
             {clausula && (
               <>
-                <div className={styles.pdfSection}>El N° del contrato es el {p.nroContrato ?? p.numero ?? ''}.</div>
+                <div className={styles.pdfSection}>El N° del contrato es el <strong>{p.numero ?? ''}</strong>.</div>
 
                 <div className={styles.pdfSection} style={{ lineHeight: 1.4 }}>
                   Consta por la presente que <strong>ART MUTUAL RURAL DE SEGUROS DE RIESGOS DEL TRABAJO</strong>, renuncia en forma expresa a reclamar o iniciar toda acción de
                   repetición o de regreso contra: A quien corresponda, sus funcionarios, empleados u obreros; sea con fundamento en el art. 39, ap. 5, de la Ley
                   N° 24.557, sea en cualquier otra norma jurídica, con motivo de las prestaciones en especie o dinerarias que se vea obligada a abonar, contratar
-                  u otorgar al personal dependiente o ex dependiente de {p.empleador_Denominacion ?? ''}, amparados por la cobertura del Contrato de
-                  Afiliación N° {p.nroContrato ?? p.numero ?? ''}, por accidentes del trabajo o enfermedades profesionales, ocurridos o contraídos por el hecho
+                  u otorgar al personal dependiente o ex dependiente de <strong>{p.empleador_Denominacion ?? ''}</strong>, amparados por la cobertura del Contrato de
+                  Afiliación N° <strong>{p.numero ?? ''}</strong>, por accidentes del trabajo o enfermedades profesionales, ocurridos o contraídos por el hecho
                   o en ocasión del trabajo. Esta <strong>Cláusula de no repetición</strong> cesará en sus efectos si el empresario comitente a favor de quien
                   se emite, no cumple estrictamente con las medidas de prevención e higiene y seguridad en el trabajo, o de cualquier manera infringe la Ley
                   N° 19.587, su Decreto Reglamentario N° 351/79 y las normativas que sobre el particular ha dictado la Superintendencia de Riesgos del Trabajo.

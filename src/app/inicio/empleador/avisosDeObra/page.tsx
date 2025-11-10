@@ -13,8 +13,6 @@ import {
     CircularProgress // Para mostrar el estado de carga
 } from "@mui/material";
 import { AddCircleOutline } from "@mui/icons-material";
-
-// 🚨 Asegúrate de que las rutas de importación sean correctas:
 import AvisosObraList from "./AvisosObraList";
 import AvisoObraForm from "./AvisoObraForm";
 import { createForm } from "./PDForm"; // Asumo que esto es para generar PDF
@@ -273,7 +271,7 @@ const AvisosObraHandler: React.FC = () => {
                 const method = apiQuery.action === Request.Insert ? "post" : apiQuery.action === Request.Change ? "put" : "delete";
                 const urlSuffix = apiQuery.action === Request.Insert ? "AvisoObra" : `AvisoObra/${data.interno}`;
                 
-                // 🚀 USANDO AXIOS PARA MUTACIONES
+                
                 axios.request({
                     method: method,
                     url: `http://arttest.intersistemas.ar:8670/api/${urlSuffix}`,

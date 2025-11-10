@@ -5,21 +5,20 @@ import React from 'react';
 import styles from './poliza.module.css';
 import { useAuth } from "@/data/AuthContext";
 import {
-  Box,
-  Input,
   TextField,
-  Typography,
-  MenuItem,
-  Select,
-  InputLabel,
-  FormControl,
-  CircularProgress,
 } from "@mui/material";
 import Formato from '@/utils/Formato';
+import gestionEmpleadorAPI from "@/data/gestionEmpleadorAPI";
+
+const { useGetPoliza } = gestionEmpleadorAPI;
 
 const Poliza = () => {
 
   const { user } = useAuth(); 
+
+  const { data: polizaRawData, isLoading: isPersonalLoading } = useGetPoliza(); 
+
+  console.log("poliza",polizaRawData)
 
   if (!user) {
     return <p>Error: Sesión no válida o no encontrada.</p>;
@@ -140,70 +139,70 @@ const Poliza = () => {
         <TextField
           label="Nº Póliza Digital:"
           name="NroPoliza"
-          value="5013033"
+          value={polizaRawData?.numero || ""}
           fullWidth
           variant='standard'
         />
         <TextField
           label="Nº CUIT:"
           name="CUITEmpleador"
-          value={Formato.CUIP(empresaCUIT)}
+          value={Formato.CUIP(polizaRawData.cuit) || ""}
           fullWidth
           variant='standard'
         />
         <TextField
           label="Vigencia Desde:"
           name="desde"
-          value="2023-10-01"
+          value={Formato.Fecha(polizaRawData?.vigencia_Desde) || ""}
           fullWidth
           variant='standard'
         />
          <TextField
           label="Vigencia Hasta:"
           name="hasta"
-          value="2026-10-01"
+          value={Formato.Fecha(polizaRawData?.vigencia_Hasta) || ""}
           fullWidth
           variant='standard'
         />
         <TextField
           label="Localidad:"
           name="Localidad"
-          value="CAPITAL FEDERAL - CP:1003"
+          value={`${polizaRawData?.empleador_Domicilio_Localidad_Descripcion || ""} - CP:${polizaRawData?.empleador_Domicilio_CP || ""}`}
           fullWidth
           variant='standard'
         />
         <TextField
           label="Provincia:"
           name="Provincia"
-          value="C.A.B.A"
+          value={polizaRawData?.empleador_Domicilio_Provincia_Descripcion || ""}
           fullWidth
           variant='standard'
         />
         <TextField
           label="Calle:"
           name="Calle"
-          value="Reconquista Nro: 6306"
+          value={`${polizaRawData?.empleador_Domicilio_Calle || ""} ${polizaRawData?.empleador_Domicilio_Altura || ""} ${polizaRawData?.empleador_Domicilio_Piso || ""} ${polizaRawData?.empleador_Domicilio_Depto || ""}`}
           fullWidth
           variant='standard'
         />
         <TextField
           label="Email:"
           name="EmailEmpleador"
-          value={email}
+          value={polizaRawData?.empleador_Email || ""}
           fullWidth
           variant='standard'
         />
         <TextField
           label="Telefono:"
           name="TelefonoEmpleador"
-          value="(011)43155800"
+          value={polizaRawData?.empleador_Telefono || ""}
           fullWidth
           variant='standard'
         />
         <TextField
           label="Movil:"
           name="MovilEmpleador"
-          value="(011)1550602474"
+          value={polizaRawData?.empleador_Movil || ""}
           fullWidth
           variant='standard'
         />

@@ -18,7 +18,7 @@ const { useGetPersonal, useGetPoliza } = gestionEmpleadorAPI;
 export default function CoberturaPage() {
    
     const { data: personalRawData, isLoading: isPersonalLoading } = useGetPersonal(); 
-    const { data: polizaData, isLoading: isPolizaLoading } = useGetPoliza(); 
+    const { data: polizaData, isLoading: isPolizaLoading } = useGetPoliza();
     
     // Estados para las dos tablas: Pendiente (Origen) y Cubierto (Destino)
     const [personalPendiente, setPersonalPendiente] = useState<Persona[]>([]);
@@ -52,8 +52,6 @@ export default function CoberturaPage() {
         // continuar con la descarga / abrir PDF
         setAbrirPDF(true);
     };
-
-    console.log("polizaData",polizaData)
     // Inicializa personalPendiente con los datos crudos cuando se cargan
     useEffect(() => {
         if (personalRawData && personalRawData.length > 0) {
@@ -306,14 +304,14 @@ export default function CoberturaPage() {
                 <br/>    
 
                     <text>
-                        Por intermedio del presente <strong>CERTIFICAMOS</strong> que la empresa bajo la denominación de {polizaData?.empleador_Denominacion || ""}
-                         con N° de CUIT: {Formato.CUIP(polizaData?.cuit) || ""} ha contratado la cobertura de <strong>ART MUTUAL RURAL DE SEGUROS DE RIESGOS DEL TRABAJO</strong>,
-                          según los términos de la Ley Nro. 24.557 por lo que el personal declarado oportunamente por el/la mencionado/a se encuentra cubierto a partir
-                           del {polizaData?.vigencia_Desde || ""} hasta el {polizaData?.vigencia_Hasta || ""}.
+                        Por intermedio del presente <strong>CERTIFICAMOS</strong> que la empresa bajo la denominación de <strong>{polizaData?.empleador_Denominacion || "" } </strong>
+                          con N° de CUIT: <strong>{Formato.CUIP(polizaData?.cuit) || ""} </strong> ha contratado la cobertura de <strong>ART MUTUAL RURAL DE SEGUROS DE RIESGOS DEL TRABAJO</strong>,
+                          según los términos de la Ley Nro. 24.557 por lo que el personal declarado oportunamente por el/la mencionado/a se encuentra <strong> cubierto a partir
+                           del {Formato.Fecha(polizaData?.vigencia_Desde) || ""} hasta el {Formato.Fecha(polizaData?.vigencia_Hasta) || ""}.</strong>
                     </text>
                     <br/>
                     <text>
-                        El N° del contrato es el {polizaData?.nroContrato || ""}.
+                        El N° del contrato es el <strong>{polizaData?.numero || ""}.</strong>
                     </text>
                      <br/>
 
@@ -327,8 +325,8 @@ export default function CoberturaPage() {
                             Consta por la presente que <strong>ART MUTUAL RURAL DE SEGUROS DE RIESGOS DEL TRABAJO</strong>, renuncia en forma expresa a reclamar o iniciar toda acción de 
                             repetición o de regreso contra: A quien corresponda, sus funcionarios, empleados u obreros; sea con fundamento en el art. 39, ap. 5, de la Ley 
                             N° 24.557, sea en cualquier otra norma jurídica, con motivo de las prestaciones en especie o dinerarias que se vea obligada a abonar, contratar
-                            u otorgar al personal dependiente o ex dependiente de {polizaData?.empleador_Denominacion || ""}, amparados por la cobertura del Contrato de
-                            Afiliación N° {polizaData?.nroContrato || ""}, por accidentes del trabajo o enfermedades profesionales, ocurridos o contraídos por el hecho 
+                            u otorgar al personal dependiente o ex dependiente de <strong>{polizaData?.empleador_Denominacion || ""}</strong>, amparados por la cobertura del Contrato de
+                            Afiliación N° <strong>{polizaData?.numero || ""}</strong>, por accidentes del trabajo o enfermedades profesionales, ocurridos o contraídos por el hecho 
                             o en ocasión del trabajo. Esta <strong>Cláusula de no repetición</strong> cesará en sus efectos si el empresario comitente a favor de quien 
                             se emite, no cumple estrictamente con las medidas de prevención e higiene y seguridad en el trabajo, o de cualquier manera infringe la Ley 
                             N° 19.587, su Decreto Reglamentario N° 351/79 y las normativas que sobre el particular ha dictado la Superintendencia de Riesgos del Trabajo,
