@@ -313,8 +313,6 @@ export default function CoberturaPage() {
                     <text>
                         El N° del contrato es el <strong>{polizaData?.numero || ""}.</strong>
                     </text>
-                     <br/>
-
                      <div className={styles.clausulaToggle}>
                         <Checkbox size="large" checked={clausula} onChange={(e) => setClausula(e.target.checked)} />
                         Incluir cláusula de no repetición
@@ -337,16 +335,15 @@ export default function CoberturaPage() {
                             Fuera de las causales que expresamente prevé la normativa vigente, el contrato de afiliación no podrá ser modificado o enmendado sin previa
                             notificación fehaciente a quien corresponda, en un plazo no inferior a quince (15) días corridos.
                         </text>
-                        <br/>
-                        <text>
-                            Se deja constancia por la presente que la empresa de referencia se encuentra asegurada en <strong>ART MUTUAL RURAL DE SEGUROS DE RIESGOS DEL TRABAJO</strong>.
-                            El presente certificado tiene una validez de 30 días corridos a partir de la fecha de emisión. En ningún caso ART MUTUAL RURAL DE SEGUROS DE RIESGOS
-                            DEL TRABAJO será responsable de las consecuencias del uso del certificado una vez vencido el plazo de validez.
-                        </text>
                     </>
                     }
-                    
-                     <br/>
+                    <br/>
+                    <text>
+                        Se deja constancia por la presente que la empresa de referencia se encuentra asegurada en <strong>ART MUTUAL RURAL DE SEGUROS DE RIESGOS DEL TRABAJO</strong>.
+                        El presente certificado tiene una validez de 30 días corridos a partir de la fecha de emisión. En ningún caso ART MUTUAL RURAL DE SEGUROS DE RIESGOS
+                        DEL TRABAJO será responsable de las consecuencias del uso del certificado una vez vencido el plazo de validez.
+                    </text>
+                    <br/>
                     <text>
                         Sin otro particular, saludo a Ud. muy atentamente.
                     </text>

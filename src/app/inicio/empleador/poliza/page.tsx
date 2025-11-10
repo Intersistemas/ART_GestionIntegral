@@ -139,70 +139,70 @@ const Poliza = () => {
         <TextField
           label="Nº Póliza Digital:"
           name="NroPoliza"
-          value={polizaRawData?.numero || ""}
+          value={polizaRawData?.numero || "---"}
           fullWidth
           variant='standard'
         />
         <TextField
           label="Nº CUIT:"
           name="CUITEmpleador"
-          value={Formato.CUIP(polizaRawData?.cuit) || ""}
+          value={Formato.CUIP(polizaRawData?.cuit) || "---"}
           fullWidth
           variant='standard'
         />
         <TextField
           label="Vigencia Desde:"
           name="desde"
-          value={Formato.Fecha(polizaRawData?.vigencia_Desde) || ""}
+          value={Formato.Fecha(polizaRawData?.vigencia_Desde) || "---"}
           fullWidth
           variant='standard'
         />
          <TextField
           label="Vigencia Hasta:"
           name="hasta"
-          value={Formato.Fecha(polizaRawData?.vigencia_Hasta) || ""}
+          value={Formato.Fecha(polizaRawData?.vigencia_Hasta) || "---"}
           fullWidth
           variant='standard'
         />
         <TextField
           label="Localidad:"
           name="Localidad"
-          value={`${polizaRawData?.empleador_Domicilio_Localidad_Descripcion || ""} - CP:${polizaRawData?.empleador_Domicilio_CP || ""}`}
+          value={`${polizaRawData?.empleador_Domicilio_Localidad_Descripcion || "---"} - CP:${polizaRawData?.empleador_Domicilio_CP || "---"}`}
           fullWidth
           variant='standard'
         />
         <TextField
           label="Provincia:"
           name="Provincia"
-          value={polizaRawData?.empleador_Domicilio_Provincia_Descripcion || ""}
+          value={polizaRawData?.empleador_Domicilio_Provincia_Descripcion || "---"}
           fullWidth
           variant='standard'
         />
         <TextField
           label="Calle:"
           name="Calle"
-          value={`${polizaRawData?.empleador_Domicilio_Calle || ""} ${polizaRawData?.empleador_Domicilio_Altura || ""} ${polizaRawData?.empleador_Domicilio_Piso || ""} ${polizaRawData?.empleador_Domicilio_Depto || ""}`}
+          value={`${polizaRawData?.empleador_Domicilio_Calle || "---"} ${polizaRawData?.empleador_Domicilio_Altura || "---"} ${polizaRawData?.empleador_Domicilio_Piso || ""} ${polizaRawData?.empleador_Domicilio_Depto || ""}`}
           fullWidth
           variant='standard'
         />
         <TextField
           label="Email:"
           name="EmailEmpleador"
-          value={polizaRawData?.empleador_Email || ""}
+          value={polizaRawData?.empleador_Email || "---"}
           fullWidth
           variant='standard'
         />
         <TextField
           label="Telefono:"
           name="TelefonoEmpleador"
-          value={polizaRawData?.empleador_Telefono || ""}
+          value={polizaRawData?.empleador_Telefono || "---"}
           fullWidth
           variant='standard'
         />
         <TextField
           label="Movil:"
           name="MovilEmpleador"
-          value={polizaRawData?.empleador_Movil || ""}
+          value={polizaRawData?.empleador_Movil || "---"}
           fullWidth
           variant='standard'
         />
@@ -214,21 +214,21 @@ const Poliza = () => {
         <TextField
           label="CIIU:"
           name="CIIU"
-          value="942000"
+          value={polizaRawData?.ciiu || "---"}
           fullWidth
           variant='standard'
         />
         <TextField
           label="Alicuota:"
           name="Alicuota"
-          value="ILT: 1 - Valor Fijo: $0 - Valor Variable: %2.1"
+          value={`ILT: ${polizaRawData?.alicuota_PagoILT} - Valor Fijo: $${polizaRawData?.alicuota_SumaFija}`}
           fullWidth
           variant='standard'
         />
         <TextField
           label="Alicuota:"
           name="Alicuota"
-          value="Nivel: 2 - FFE: 928"
+          value={`Valor Variable: %${polizaRawData?.alicuota_CuotaVariable ?? 0} - Nivel: ${polizaRawData?.alicuota_Nivel} - FFE: ${polizaRawData?.alicuota_FFE}`}
           fullWidth
           variant='standard'
         />
@@ -236,7 +236,7 @@ const Poliza = () => {
         <TextField
           label="Nº Solicitud:"
           name="Solicitud"
-          value="265112"
+          value={polizaRawData?.numeroSolicitud || "---"}
           fullWidth
           variant='standard'
         />
@@ -244,7 +244,7 @@ const Poliza = () => {
         <TextField
           label="Codigo Operación:"
           name="Operacion"
-          value="44"
+          value={polizaRawData?.codigoOperacion || "---"}
           fullWidth
           variant='standard'
         />
@@ -252,7 +252,7 @@ const Poliza = () => {
         <TextField
           label="Codigo Motivo Sorteo:"
           name="Sorteo"
-          value="0"
+          value={polizaRawData?.codigoMotivoSorteo || "---"}
           fullWidth
           variant='standard'
         />
@@ -260,15 +260,21 @@ const Poliza = () => {
         <TextField
           label="Referencia ART:"
           name="Referencia"
-          value="38.734.824,34"
+          value={polizaRawData?.referenciaART || "---"}
           fullWidth
           variant='standard'
         />
-        
+        <TextField
+          label="Cuota Resultante:"
+          name="CuotaResultante"
+          value={polizaRawData?.cuotaResultante || "---"}
+          fullWidth
+          variant='standard'
+        />
         <TextField
           label="Cantidad de Trabajadores:"
           name="CantTrabajadores"
-          value="1.345"
+          value={polizaRawData?.cantTrabajadores || "---"}
           fullWidth
           variant='standard'
         />
@@ -276,49 +282,35 @@ const Poliza = () => {
         <TextField
           label="Masa Salarial:"
           name="Masa"
-          value="785.079.254,09"
+          value={polizaRawData?.masaSalarial || "---"}
           fullWidth
           variant='standard'
         />
         <TextField
           label="Bonificación:"
           name="Bonificacion"
-          value="No Aplica"
+          value={polizaRawData?.bonificacion || "---"}
           fullWidth
           variant='standard'
         />
         <TextField
           label="Clausula Penal"
           name="Clausula"
-          value="1345"
-          fullWidth
-          variant='standard'
-        />
-        <TextField
-          label="Cantidad de Trabajadores:"
-          name="CantTrabajadores"
-          value="Por incumplimiento de denuncias del empleador, consistente en límite mínimo de la base imponible para el cálculo de los aportes y contribuciones al SIPA, establecidos en el art 9 de la ley 24241 y sus modif."
+          value={polizaRawData?.clausulaPenal || "---"}
           fullWidth
           variant='standard'
         />
         <TextField
           label="Unico Establecimiento"
           name="Establecimiento"
-          value="0"
+          value={polizaRawData?.unicoEstablecimiento || "---"}
           fullWidth
           variant='standard'
         />
         <TextField
-          label="Prestador Medico"
+          label="Prestador Médico"
           name="Prestador"
-          value="0"
-          fullWidth
-          variant='standard'
-        />
-        <TextField
-          label="Clausula Penal"
-          name="Clausula"
-          value="1345"
+          value={polizaRawData?.prestadorMedico ? "Si" : "No"}
           fullWidth
           variant='standard'
         />

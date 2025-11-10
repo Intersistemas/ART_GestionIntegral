@@ -158,7 +158,7 @@ export default function Cobertura_PDF(props: CoberturaPDFProps) {
                 Por intermedio del presente <strong>CERTIFICAMOS</strong> que la empresa bajo la denominación de{' '}
                 <strong>{p.empleador_Denominacion ?? ''}</strong> con N° de CUIT:{' '}
                 <strong>{p.cuit ?? ''}</strong> ha contratado la cobertura de <strong>ART MUTUAL RURAL DE SEGUROS DE RIESGOS DEL TRABAJO</strong>,
-                según los términos de la Ley Nro. 24.557 por lo que el personal declarado oportunamente se encuentra <strong> cubierto a partir del{' '}
+                según los términos de la Ley Nro. 24.557 por lo que el personal declarado oportunamente por el/la mencionado/a se encuentra <strong> cubierto a partir del{' '}
                 {Formato.Fecha(p?.vigencia_Desde) || ""} hasta el {Formato.Fecha(p?.vigencia_Hasta) || ""}.</strong>
               </div>
             </div>
@@ -182,13 +182,13 @@ export default function Cobertura_PDF(props: CoberturaPDFProps) {
                   Fuera de las causales que expresamente prevé la normativa vigente, el contrato de afiliación no podrá ser modificado o enmendado sin previa
                   notificación fehaciente a quien corresponda, en un plazo no inferior a quince (15) días corridos.
                 </div>
-
-                <div className={styles.pdfSection}>
-                  Se deja constancia por la presente que la empresa de referencia se encuentra asegurada en <strong>ART MUTUAL RURAL DE SEGUROS DE RIESGOS DEL TRABAJO</strong>.
-                  El presente certificado tiene una validez de 30 días corridos a partir de la fecha de emisión.
-                </div>
               </>
             )}
+            
+             <div className={styles.pdfSection}>
+                Se deja constancia por la presente que la empresa de referencia se encuentra asegurada en <strong>ART MUTUAL RURAL DE SEGUROS DE RIESGOS DEL TRABAJO</strong>.
+                El presente certificado tiene una validez de 30 días corridos a partir de la fecha de emisión.
+            </div>
             <br/>
             <div className={styles.pdfSection}>
                 Sin otro particular, saludo a Ud. muy atentamente.

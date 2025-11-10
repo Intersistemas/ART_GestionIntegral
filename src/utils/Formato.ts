@@ -29,7 +29,7 @@ export function FechaHora(isoString: any, type: any = "datetime"): string {
         date = dayjs(s, "YYYYMM"); 
     } else {
         // 2. Para el resto de formatos (ISO completos, Date objects, etc.), usamos el método original (con UTC)
-        date = dayjs.utc(s);
+        date = dayjs(s);
     }
     
     if (!date.isValid()) return "";
