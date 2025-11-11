@@ -26,6 +26,7 @@ import {
 } from "./types";
 import gestionEmpleadorAPI from "@/data/gestionEmpleadorAPI";
 import CustomButton from "@/utils/ui/button/CustomButton";
+import { useAuth } from "@/data/AuthContext";
 
 const { useGetAvisoObra } = gestionEmpleadorAPI;
 
@@ -38,7 +39,7 @@ const getNewAvisoObraRecord = (): AvisoObraRecord => ({
     obraNumero: null,
     obraSecuencia: null,
     empleadorCUIT: null,
-    
+    empleadorRazonSocial: "",
     // Campos obligatorios inicializados
     obraTipo: "", // String vacío para seleccionar el tipo
     direccionCalleRuta: "",
@@ -50,8 +51,8 @@ const getNewAvisoObraRecord = (): AvisoObraRecord => ({
 
     recepcionFecha: null,
     
-    superficie: "",
-    plantas: "",
+    superficie: null,
+    plantas: null,
 
     actividadInicioFecha: null,
     actividadFinFecha: null,
@@ -98,6 +99,7 @@ const getNewAvisoObraRecord = (): AvisoObraRecord => ({
 
 const AvisosObraHandler: React.FC = () => {
 
+
     const { 
         data: avisoObraRawData, 
         isLoading: isDataLoading, 
@@ -135,6 +137,11 @@ const AvisosObraHandler: React.FC = () => {
     // HANDLERS
     // ----------------------------------------------------------
 
+    const { user } = useAuth(); 
+    const empresaCUIT = user?.empresaCUIT;
+    const empresaRazonSocial = user?.empresaRazonSocial;
+
+
     const handleFormOpen = (request: Request, record: AvisoObraRecord) => {
         let currentRecord: AvisoObraRecord = { ...record }; 
         
@@ -159,6 +166,9 @@ const AvisosObraHandler: React.FC = () => {
                 break;
         }
         // ✅ La interfaz FormDataState tipa esto correctamente
+        // Rellenar los datos estáticos del empleador si vienen vacíos
+        currentRecord.empleadorCUIT = empresaCUIT ?? currentRecord.empleadorCUIT;
+        currentRecord.empleadorRazonSocial = empresaRazonSocial ?? currentRecord.empleadorRazonSocial;
         setFormData({ request: request, data: currentRecord });
     };
 
@@ -271,7 +281,12 @@ const AvisosObraHandler: React.FC = () => {
                 const method = apiQuery.action === Request.Insert ? "post" : apiQuery.action === Request.Change ? "put" : "delete";
                 const urlSuffix = apiQuery.action === Request.Insert ? "AvisoObra" : `AvisoObra/${data.interno}`;
                 
-                
+                // preparar payload: NO enviar 'interno' en INSERT
+                const payload: Partial<AvisoObraRecord> = { ...data };
+                if (apiQuery.action === Request.Insert) {
+                  // eliminar propiedad para que no llegue al backend
+                  delete (payload as any).interno;
+                }
                 axios.request({
                     method: method,
                     url: `http://arttest.intersistemas.ar:8670/api/${urlSuffix}`,
@@ -279,7 +294,7 @@ const AvisosObraHandler: React.FC = () => {
                         "Content-Type": "application/json",
                         // IMPORTANTE: Aquí se debería inyectar el Authorization Bearer
                     },
-                    data: data, 
+                    data: apiQuery.action === Request.Delete ? undefined : payload,
                 })
                 .then(async (response) => {
                     // Si se confirmó la fecha, asumimos que debe imprimir
@@ -332,7 +347,13 @@ const AvisosObraHandler: React.FC = () => {
                         <AvisosObraList
                             // En este punto, avisosObrasArray es un array (vacío o con datos)
                             data={avisosObrasArray} 
-                            onInsert={(r) => handleFormOpen(Request.Insert, r)}
+                             onInsert={() =>
+                                handleFormOpen(Request.Insert, {
+                                    ...getNewAvisoObraRecord(),
+                                    empleadorCUIT: empresaCUIT ?? 0,
+                                    empleadorRazonSocial: empresaRazonSocial ?? "",
+                                })
+                            }
                             onChange={(r) => handleFormOpen(Request.Change, r)}
                             onDelete={(r) => handleFormOpen(Request.Delete, r)}
                             onView={(r) => handleFormOpen(Request.View, r)}

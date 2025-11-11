@@ -4,6 +4,7 @@ export interface AvisoObraRecord {
     obraNumero?: number | null;
     obraSecuencia?: number | null;
     empleadorCUIT?: number | null; 
+    empleadorRazonSocial?: string | null;
     
     obraTipo: string;
 
@@ -16,8 +17,8 @@ export interface AvisoObraRecord {
 
     recepcionFecha: string | null; // Fechas pueden ser string (ISO) o null
     
-    superficie: number | string;
-    plantas: number | string;
+    superficie: number | string | null;
+    plantas: number | string | null;
 
     actividadInicioFecha: string | null;
     actividadFinFecha: string | null;

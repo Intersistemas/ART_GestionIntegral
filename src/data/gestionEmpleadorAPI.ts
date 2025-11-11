@@ -13,6 +13,7 @@ const getCurrentPeriodo = (): number => {
 };
 
 export interface UsuarioGetAllParams {
+  CUIT?: number;
   Sort?: string;
   Page?: string;
 }
@@ -120,13 +121,20 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
 
   //#region AvisoObra
   readonly getAvisoObraURL = (params: UsuarioGetAllParams = {}) => {
+    params.CUIT ??= useAuth().user?.empresaCUIT ?? 0;
     return this.getURL({ path: "/api/AvisoObra/ultimos/?Sort=-ObraNumero&Page=0,1000", search: toURLSearch(params) }).toString();
   };
   getAvisoObra = async (params: UsuarioGetAllParams = {}) => tokenizable.get(
     this.getAvisoObraURL(params),
   ).then(({ data }) => data);
   useGetAvisoObra = (params: UsuarioGetAllParams = {}) => useSWR(
-    [this.getAvisoObraURL(params), token.getToken()], () => this.getAvisoObra(params)
+    [this.getAvisoObraURL(params), token.getToken()], () => this.getAvisoObra(params),
+      {
+      // No volver a revalidar al volver al foco, reconectar o al montar si ya hay cache
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      
+      }
   );
   //#endregion
   

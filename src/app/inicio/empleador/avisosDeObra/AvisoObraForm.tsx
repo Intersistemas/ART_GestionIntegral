@@ -33,7 +33,7 @@ const initData = (initialData: Partial<AvisoObraRecord> = {}): AvisoObraRecord =
     const defaultData: AvisoObraRecord = {
         obraTipo: "", direccionCalleRuta: "", direccionNumero: "", direccionLocalidad: "",
         direccionDeptoPartido: "", direccionPciaCodigo: "", // string para el select
-        direccionCPA: "", superficie: "", plantas: "", actOtros: "", operacionTipo: "A",
+        direccionCPA: "", superficie: null, plantas: null, actOtros: "", operacionTipo: "A",
         // Campos que deben ser 'null' en lugar de "" si están vacíos
         recepcionFecha: null, actividadInicioFecha: null, actividadFinFecha: null,
         suspensionFecha: null, reinicioFecha: null, excavacionInicioFecha: null,
@@ -215,15 +215,16 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
                 case "obraSecuencia":
                 case "direccionPciaCodigo":
                 case "superficie":
-                case "plantas":
-                case "empleadorCUIT":
-                    if (value === "" || value === null) {
+                case "plantas":{
+                    const v = (record as any)[field];
+                    if (v === "" || v === null || v === undefined) {
                         (record as any)[field] = null;
                     } else {
-                        const parsedValue = parseFloat(value as string);
-                        (record as any)[field] = isNaN(parsedValue) ? null : parsedValue;
+                        const n = Number(v);
+                        (record as any)[field] = Number.isNaN(n) ? null : n;
                     }
                     break;
+                }
                 default:
                     break;
             }
