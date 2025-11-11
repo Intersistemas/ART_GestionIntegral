@@ -11,7 +11,6 @@ const tokenizable = token.configure();
 export class ArtAPIClass extends ExternalAPI {
   readonly basePath = process.env.NEXT_PUBLIC_API_ART_URL || 'http://fallback-prod.url'; 
 
-
   //#region RefEmpleadores
   readonly refEmpleadoresURL = () => this.getURL({ path: "/api/Empresas" }).toString();
   getRefEmpleadores = async () => tokenizable.get<RefEmpleador[]>(

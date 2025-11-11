@@ -187,7 +187,8 @@ export default function Cobertura_PDF(props: CoberturaPDFProps) {
             
              <div className={styles.pdfSection}>
                 Se deja constancia por la presente que la empresa de referencia se encuentra asegurada en <strong>ART MUTUAL RURAL DE SEGUROS DE RIESGOS DEL TRABAJO</strong>.
-                El presente certificado tiene una validez de 30 días corridos a partir de la fecha de emisión.
+                El presente certificado tiene una validez de 30 días corridos a partir de la fecha de emisión. En ningún caso ART MUTUAL RURAL DE SEGUROS DE RIESGOS
+                DEL TRABAJO será responsable de las consecuencias del uso del certificado una vez vencido el plazo de validez.
             </div>
             <br/>
             <div className={styles.pdfSection}>

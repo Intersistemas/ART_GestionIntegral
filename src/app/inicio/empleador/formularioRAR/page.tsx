@@ -77,7 +77,7 @@ const FormulariosRAR: React.FC = () => {
   // Pasamos PageIndex y PageSize al hook (cambia la clave de SWR y dispara fetch)
   const apiPageIndex = PageIndex + 1;
   const { data: formulariosData, error: formulariosError, isValidating, mutate: mutateFormularios } =
-    ArtAPI.useGetFormulariosRARURL(empresaCUIT ? { CUIT: empresaCUIT, PageIndex: apiPageIndex, PageSize: PageSize } : {});
+    ArtAPI.useGetFormulariosRARURL(empresaCUIT ? { CUIT: empresaCUIT, PageIndex: apiPageIndex, PageSize: PageSize } : {PageIndex: apiPageIndex, PageSize: PageSize});
 
   // Una sola vez: cuando llegan datos, los mapeamos al estado local
   useEffect(() => {
@@ -625,7 +625,6 @@ const FormulariosRAR: React.FC = () => {
     <div>
       {viewMode === 'list' ? (
         <div>
-          {/*  MODIFICACIÓN 8: Usamos el estado activeTabIndex para controlar el tab activo */}
           <CustomTab
               tabs={tabItems}
               currentTab={activeTabIndex} // Usamos el estado
