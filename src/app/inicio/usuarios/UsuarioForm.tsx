@@ -506,6 +506,7 @@ export default function UsuarioForm({
         delete dataToSubmit.confirmPassword;
       }
 
+      console.log("Submitting form data:", dataToSubmit);
       onSubmit(dataToSubmit);
     }
   };
@@ -707,19 +708,20 @@ export default function UsuarioForm({
                   />
                   
                   {/* Checkbox Es Administrador - solo en modo crear */}
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={isAdminUser}
-                        onChange={handleIsAdminUserChange}
-                        disabled={isDisabled}
-                        color="primary"
-                        hidden={!!!isAdminUser}
-                      />
-                    }
-                    label="Es Administrador"
-                    sx={{ mt: 2 }}
-                  />
+                  {isAdmin && (
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={isAdminUser}
+                          onChange={handleIsAdminUserChange}
+                          disabled={isDisabled}
+                          color="primary"
+                        />
+                      }
+                      label="Es Administrador"
+                      sx={{ mt: 2 }}
+                    />
+                  )}
                 </div>
               )}
             </div>
