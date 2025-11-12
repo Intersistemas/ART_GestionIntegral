@@ -9,9 +9,11 @@ import * as rtl from "@/utils/ui/queryBuilder/QueryBuilderDefaults"
 import theme from '@/styles/theme';
 import "./QueryBuilder.css"
 import CustomNotToggle from './CustomNotToggle';
+import CustomCombinatorSelector from './CustomCombinatorSelector'; // <-- ¡NUEVA IMPORTACIÓN!
 
 const customControlElements = {
     notToggle: CustomNotToggle,
+    combinatorSelector: CustomCombinatorSelector,
 }
 export interface QueryBuilderProperties<RG extends RuleGroupTypeAny, F extends FullField, O extends FullOperator, C extends FullCombinator> {
 
