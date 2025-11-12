@@ -3,7 +3,7 @@ import React from 'react';
 import { ThemeProvider } from '@mui/material';
 import QueryBuilderComponent, { FullCombinator, FullField, FullOperator, QueryBuilderProps, RuleGroupTypeAny } from 'react-querybuilder';
 import { QueryBuilderMaterial } from '@react-querybuilder/material';
-import * as rtl from "@/utils/ui/QueryBuilderDefaults"
+import * as rtl from "@/utils/ui/queryBuilder/QueryBuilderDefaults"
 import theme from '@/styles/theme';
 import "./QueryBuilder.css"
 
@@ -36,7 +36,7 @@ export default function QueryBuilder(
           controlClassnames={controlClassnames}
           showNotToggle
           listsAsArrays
-          showShiftActions
+          //showShiftActions
           {...rest}
         />
       </QueryBuilderMaterial>

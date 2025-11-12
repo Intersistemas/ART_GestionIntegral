@@ -1,7 +1,7 @@
 import type { Classnames, FlexibleOptionListProp, FullCombinator, FullOperator, Translations } from "react-querybuilder";
 
 export const classnames: Partial<Classnames> = {
-  queryBuilder: 'queryBuilder-branches',
+  queryBuilder: 'queryBuilder-branches', //queryBuilder-justified
 }
 
 export const combinators: FlexibleOptionListProp<FullCombinator> = [

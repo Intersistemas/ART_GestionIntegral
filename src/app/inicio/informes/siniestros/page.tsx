@@ -5,7 +5,7 @@ import { MdExpandMore } from "react-icons/md";
 import { SiniestrosContextProvider, useSiniestrosContext } from './context';
 import DataTable from '@/utils/ui/table/DataTable';
 import CustomButton from '@/utils/ui/button/CustomButton';
-import QueryBuilder from '@/utils/ui/QueryBuilder';
+import QueryBuilder from '@/utils/ui/queryBuilder/QueryBuilder';
 
 function SiniestrosQueryBuilder() {
   const { fields, query: { state: query, setState: setQuery } } = useSiniestrosContext();

@@ -11,7 +11,7 @@
 
   /*PALETA DE ART*/
   
-  --naranjaClaroClaro: #ffecc2; /*ffd3525e;*/ 
+  --naranjaClaroClaro: #ffecc2;
   --naranjaClaro: #ffaf4c;
   --naranja: #E4840C; 
   --naranjaOscuro: #b66400; 
@@ -57,12 +57,14 @@
   --content-padding: 20px;
   --main-content-margin: 5px;
 
+
+
   /* React-QueryBuilder */
   --rqb-spacing: 0.5rem;
   --rqb-border-width: 1px;
-  --rqb-base-color: var(--verdeClaro);
-  --rqb-background-color: var(--naranjaClaroClaro);
-  --rqb-border-color: var(--naranjaOscuro);
+  --rqb-base-color: #ffaf4c;
+  --rqb-background-color: color-mix(in srgb, transparent, var(--rqb-base-color) 30%);
+  --rqb-border-color: #b66400;
   --rqb-border-style: solid;
   --rqb-border-radius: 0.25rem;
   --rqb-branch-indent: var(--rqb-spacing);

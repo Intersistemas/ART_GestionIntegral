@@ -5,7 +5,7 @@ import { MdExpandMore } from "react-icons/md";
 import { CCMMContextProvider, useCCMMContext } from './context';
 import DataTable from '@/utils/ui/table/DataTable';
 import CustomButton from '@/utils/ui/button/CustomButton';
-import QueryBuilder from '@/utils/ui/QueryBuilder';
+import QueryBuilder from '@/utils/ui/queryBuilder/QueryBuilder';
 import styles from './comisionesMedicas.module.css';
 import { BsSliders } from "react-icons/bs";
 
