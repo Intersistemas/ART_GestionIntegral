@@ -1,3 +1,4 @@
+//src/app/inicio/informes/comisionesMedicas/page.tsx
 "use client"
 import React from 'react';
 import { Accordion, AccordionDetails, AccordionSummary, Grid, Paper, Typography } from '@mui/material';

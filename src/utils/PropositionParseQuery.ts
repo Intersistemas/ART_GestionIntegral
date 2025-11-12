@@ -1,3 +1,4 @@
+//src/utils/PropositionParseQuery.ts
 import type {
   RuleGroupType,
   RuleType,

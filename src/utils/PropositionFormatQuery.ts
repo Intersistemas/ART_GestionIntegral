@@ -1,3 +1,5 @@
+// src/utils/PropositionFormatQuery.ts
+
 import type {
   FormatQueryOptions,
   RuleGroupProcessor,

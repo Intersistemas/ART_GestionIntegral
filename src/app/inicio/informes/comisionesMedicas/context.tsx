@@ -1,3 +1,4 @@
+// src/app/inicio/informes/comisionesMedicas/context.tsx
 import React, { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from 'react';
 import { type Field, formatQuery, type RuleGroupType, type ValueEditorType, type DefaultOperators, defaultOperators } from 'react-querybuilder';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';

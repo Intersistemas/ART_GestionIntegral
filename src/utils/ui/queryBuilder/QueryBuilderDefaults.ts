@@ -1,3 +1,5 @@
+// src/utils/ui/queryBuilder/QueryBuilderDefaults.tsx
+
 import type { Classnames, FlexibleOptionListProp, FullCombinator, FullOperator, Translations } from "react-querybuilder";
 
 export const classnames: Partial<Classnames> = {
@@ -57,26 +59,26 @@ export const translations: Partial<Translations> = {
   } as const,
   removeRule: {
     label: 'X',
-    title: 'Quita regla',
+    title: 'Quitar regla',
   } as const,
   removeGroup: {
     label: 'X',
-    title: 'Quita grupo',
+    title: 'Quitar grupo',
   } as const,
   addRule: {
     label: 'Agregar Regla',
-    title: 'Agrega regla',
+    title: 'Agregar regla',
   } as const,
   addGroup: {
     label: 'Agregar Grupo',
-    title: 'Agrega grupo',
+    title: 'Agregar grupo',
   } as const,
   combinators: {
     title: 'Combinadores',
   } as const,
   notToggle: {
-    label: 'Contiene/No contiene',
-    title: 'Contiene/No contiene',
+    label: 'Si Contiene/No Contiene',
+    title: 'Si Contiene/No Contiene',
   } as const,
   cloneRule: {
     label: '⧉',
