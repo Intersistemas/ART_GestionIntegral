@@ -20,71 +20,137 @@ export interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-    {
-        name: "Favoritos",
-        icon: BsFillStarFill,
-        link: "/inicio/favoritos",
-        permissionTask: "Favoritos",
-    },
-    {
-        name: "Inicio",
-        icon: BsLayoutSplit,
-        link: "/inicio",
-        permissionTask: "inicio",
-    },
-    {
-        name: "Empleador",
-        icon: BsBriefcaseFill,
-        permissionTask: "Empleador",
-        children: [
-            { name: "Póliza", icon: BsFileText, link: "/inicio/empleador/poliza", permissionTask: "empleador_Poliza"},
-            { name: "Cobertura", icon: BsCardChecklist, link: "/inicio/empleador/cobertura", permissionTask: "empleador_Cobertura"},
-            { name: "Cuenta Corriente", icon: BsGraphUpArrow, link: "/inicio/empleador/cuentaCorriente", permissionTask: "empleador_CuentaCorriente" },
-            { name: "Formulario RGRL", icon: BsClipboard2Data, link: "/inicio/empleador/formularioRGRL", permissionTask: "empleador_FormularioRGRL" },
-            { name: "Formulario RAR", icon: BsClipboard2Data, link: "/inicio/empleador/formularioRAR", permissionTask: "empleador_FormularioRAR" },
-            { name: "Siniestros", icon: BsCalendar2Plus, link: "/inicio/empleador/siniestros", permissionTask: "empleador_Siniestros" },
-            { name: "Avisos de Obra", icon: BsHouseGear, link: "/inicio/empleador/avisosDeObra", permissionTask: "empleador_AvisoDeObra" },
-            { name: "SVCC", icon: BsFolder, link: "/inicio/empleador/svcc", permissionTask: "empleador_SVCC" },
-           // { name: "Credenciales", icon: BsCreditCard, link: "/inicio/empleador/credenciales", permissionTask: "empleador_Credenciales"},
-        ],
-    },
-    {
-        name: "Comercializador",
-        icon: BsBriefcaseFill,
-        permissionTask: "Comercializador",
-        children: [
-            { name: "Cuenta Corriente", icon: BsGraphUpArrow, link: "/inicio/comercializador/cuentaCorriente", permissionTask: "Comercializador_CuentaCorriente" },
-            { name: "Polizas", icon: BsFileText, link: "/inicio/comercializador/polizas",permissionTask: "Comercializador_Polizas" },
-        ],
-    },
-    {
-        name: "Cotizaciones",
-        icon: FaFileInvoiceDollar,
-        //link: "/inicio/cotizaciones",
-        link: "http://arttest.intersistemas.ar:8687/Cotizador",
-        permissionTask: "Cotizaciones",
-    },
-    {
-        name: "Informes",
-        icon: BsBarChartLineFill,
-        permissionTask: "Informes",
-        children: [
-            { name: "Comisiones Médicas", icon: BsGraphUpArrow, link: "/inicio/informes/comisionesMedicas", permissionTask: "Informes_ComisionesMedicas" },
-            { name: "Siniestros", icon: BsGraphUpArrow, link: "/inicio/informes/siniestros", permissionTask: "Informes_Siniestros" },
-            { name: "Atención Al Público", icon: BsGraphUpArrow, link: "/inicio/informes/atencionAlPublico", permissionTask: "Informes_AtencionAlPublico" },
-        ],
-    },
-     {
-        name: "Denuncias",
-        icon: BsFillChatRightQuoteFill ,
-        permissionTask: "Denuncias",
-    },
-    {
-        name: "Usuarios",
-        icon: BsPersonFillGear,
-        link: "/inicio/usuarios",
-        permissionTask: "Usuarios",
-    },
+  {
+    name: "Favoritos",
+    icon: BsFillStarFill,
+    link: "/inicio/favoritos",
+    permissionTask: "Favoritos",
+  },
+  {
+    name: "Inicio",
+    icon: BsLayoutSplit,
+    link: "/inicio",
+    permissionTask: "inicio",
+  },
+  {
+    name: "Empleador",
+    icon: BsBriefcaseFill,
+    permissionTask: "Empleador",
+    children: [
+      {
+        name: "Póliza",
+        icon: BsFileText,
+        link: "/inicio/empleador/poliza",
+        permissionTask: "empleador_Poliza",
+      },
+      {
+        name: "Cobertura",
+        icon: BsCardChecklist,
+        link: "/inicio/empleador/cobertura",
+        permissionTask: "empleador_Cobertura",
+      },
+      {
+        name: "Cuenta Corriente",
+        icon: BsGraphUpArrow,
+        link: "/inicio/empleador/cuentaCorriente",
+        permissionTask: "empleador_CuentaCorriente",
+      },
+      {
+        name: "Formulario RGRL",
+        icon: BsClipboard2Data,
+        link: "/inicio/empleador/formularioRGRL",
+        permissionTask: "empleador_FormularioRGRL",
+      },
+      {
+        name: "Formulario RAR",
+        icon: BsClipboard2Data,
+        link: "/inicio/empleador/formularioRAR",
+        permissionTask: "empleador_FormularioRAR",
+      },
+      {
+        name: "Siniestros",
+        icon: BsCalendar2Plus,
+        link: "/inicio/empleador/siniestros",
+        permissionTask: "empleador_Siniestros",
+      },
+      {
+        name: "Avisos de Obra",
+        icon: BsHouseGear,
+        link: "/inicio/empleador/avisosDeObra",
+        permissionTask: "empleador_AvisoDeObra",
+      },
+      {
+        name: "SVCC",
+        icon: BsFolder,
+        link: "/inicio/empleador/svcc",
+        permissionTask: "empleador_SVCC",
+      },
+      // { name: "Credenciales", icon: BsCreditCard, link: "/inicio/empleador/credenciales", permissionTask: "empleador_Credenciales"},
+    ],
+  },
+  {
+    name: "Comercializador",
+    icon: BsBriefcaseFill,
+    permissionTask: "Comercializador",
+    children: [
+      {
+        name: "Cuenta Corriente",
+        icon: BsGraphUpArrow,
+        link: "/inicio/comercializador/cuentaCorriente",
+        permissionTask: "Comercializador_CuentaCorriente",
+      },
+      {
+        name: "Polizas",
+        icon: BsFileText,
+        link: "/inicio/comercializador/polizas",
+        permissionTask: "Comercializador_Polizas",
+      },
+    ],
+  },
+  {
+    name: "Cotizaciones",
+    icon: FaFileInvoiceDollar,
+    //link: "/inicio/cotizaciones",
+    link: "http://arttest.intersistemas.ar:8687/Cotizador",
+    permissionTask: "Cotizaciones",
+  },
+  {
+    name: "Informes",
+    icon: BsBarChartLineFill,
+    permissionTask: "Informes",
+    children: [
+      {
+        name: "Comisiones Médicas",
+        icon: BsGraphUpArrow,
+        link: "/inicio/informes/comisionesMedicas",
+        permissionTask: "Informes_ComisionesMedicas",
+      },
+      {
+        name: "Siniestros",
+        icon: BsGraphUpArrow,
+        link: "/inicio/informes/siniestros",
+        permissionTask: "Informes_Siniestros",
+      },
+      {
+        name: "Atención Al Público",
+        icon: BsGraphUpArrow,
+        link: "/inicio/informes/atencionAlPublico",
+        permissionTask: "Informes_AtencionAlPublico",
+      },
+    ],
+  },
+  {
+    name: "Denuncias",
+    icon: BsFillChatRightQuoteFill,
+    link: "/inicio/denuncias",
+    permissionTask: "Denuncias",
+  },
+  {
+    name: "Usuarios",
+    icon: BsPersonFillGear,
+    link: "/inicio/usuarios",
+    permissionTask: "Usuarios",
+  },
 ];
 
 

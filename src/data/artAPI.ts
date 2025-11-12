@@ -6,42 +6,75 @@ import FormularioRAR, { ParametersFormularioRar } from "@/app/inicio/empleador/f
 import { useAuth } from '@/data/AuthContext';
 import { toURLSearch } from "@/utils/utils";
 import type { ApiFormularioRGRL, ApiEstablecimientoEmpresa } from "@/app/inicio/empleador/formularioRGRL/types/rgrl";
+import { DenunciaQueryParams, DenunciasApiResponse } from "@/app/inicio/denuncias/types/tDenuncias";
 
 const tokenizable = token.configure();
 
 export class ArtAPIClass extends ExternalAPI {
-  readonly basePath = process.env.NEXT_PUBLIC_API_ART_URL || 'http://fallback-prod.url';
-
+  readonly basePath =
+    process.env.NEXT_PUBLIC_API_ART_URL || "http://fallback-prod.url";
 
   //#region RefEmpleadores
-  readonly refEmpleadoresURL = () => this.getURL({ path: "/api/Empresas" }).toString();
-  getRefEmpleadores = async () => tokenizable.get<RefEmpleador[]>(
-    this.refEmpleadoresURL()
-  ).then(({ data }) => data);
-  useGetRefEmpleadores = () => useSWR(
-    [this.refEmpleadoresURL(), token.getToken()], () => this.getRefEmpleadores()
-  );
+  readonly refEmpleadoresURL = () =>
+    this.getURL({ path: "/api/Empresas" }).toString();
+  getRefEmpleadores = async () =>
+    tokenizable
+      .get<RefEmpleador[]>(this.refEmpleadoresURL())
+      .then(({ data }) => data);
+  useGetRefEmpleadores = () =>
+    useSWR([this.refEmpleadoresURL(), token.getToken()], () =>
+      this.getRefEmpleadores()
+    );
   //#endregion
 
   //#region FormulariosRAR
   readonly getFormulariosRARURL = (params: ParametersFormularioRar = {}) => {
     //params.CUIT ??= useAuth().user?.empresaCUIT ?? 0; este parametro lo paso desde el componente que lo usa
-    return this.getURL({ path: "/api/FormulariosRAR", search: toURLSearch(params) }).toString();
+    return this.getURL({
+      path: "/api/FormulariosRAR",
+      search: toURLSearch(params),
+    }).toString();
   };
-  getFormulariosRAR = async (params: ParametersFormularioRar = {}) => tokenizable.get(
-    this.getFormulariosRARURL(params),
-  ).then(({ data }) => data);
-  useGetFormulariosRARURL = (params: ParametersFormularioRar = {}) => useSWR(
-    [this.getFormulariosRARURL(params), token.getToken()], () => this.getFormulariosRAR(params),
-    {
-      // No volver a revalidar al volver al foco, reconectar o al montar si ya hay cache
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      //revalidateOnMount: false,
-      //dedupingInterval: 1000 * 60 * 60, // 1 hora (ajusta si hace falta) // Tiempo en ms durante el cual SWR deduplica solicitudes iguales (evita re-fetch frecuente)
-      // Si quieres que la clave no dispare fetch hasta que exista token, puedes usar: (token.getToken() ? key : null)
-    }
-  );
+  getFormulariosRAR = async (params: ParametersFormularioRar = {}) =>
+    tokenizable.get(this.getFormulariosRARURL(params)).then(({ data }) => data);
+  useGetFormulariosRARURL = (params: ParametersFormularioRar = {}) =>
+    useSWR(
+      [this.getFormulariosRARURL(params), token.getToken()],
+      () => this.getFormulariosRAR(params),
+      {
+        // No volver a revalidar al volver al foco, reconectar o al montar si ya hay cache
+        revalidateOnFocus: false,
+        revalidateOnReconnect: false,
+        //revalidateOnMount: false,
+        //dedupingInterval: 1000 * 60 * 60, // 1 hora (ajusta si hace falta) // Tiempo en ms durante el cual SWR deduplica solicitudes iguales (evita re-fetch frecuente)
+        // Si quieres que la clave no dispare fetch hasta que exista token, puedes usar: (token.getToken() ? key : null)
+      }
+    );
+  //#endregion
+
+  //#region Denuncias
+  readonly getDenunciasURL = (params: DenunciaQueryParams = {}) => {
+    //params.CUIT ??= useAuth().user?.empresaCUIT ?? 0; este parametro lo paso desde el componente que lo usa
+    return this.getURL({
+      path: "/api/Denuncias",
+      search: toURLSearch(params),
+    }).toString();
+  };
+  getDenuncias = async (params: DenunciaQueryParams = {}) =>
+    tokenizable.get<DenunciasApiResponse>(this.getDenunciasURL(params)).then(({ data }) => data);
+  useGetDenuncias = (params: DenunciaQueryParams = {}) =>
+    useSWR(
+      [this.getDenunciasURL(params), token.getToken()],
+      () => this.getDenuncias(params),
+      {
+        // No volver a revalidar al volver al foco, reconectar o al montar si ya hay cache
+        revalidateOnFocus: false,
+        revalidateOnReconnect: false,
+        //revalidateOnMount: false,
+        //dedupingInterval: 1000 * 60 * 60, // 1 hora (ajusta si hace falta) // Tiempo en ms durante el cual SWR deduplica solicitudes iguales (evita re-fetch frecuente)
+        // Si quieres que la clave no dispare fetch hasta que exista token, puedes usar: (token.getToken() ? key : null)
+      }
+    );
   //#endregion
 
   //#region FormulariosRGRL
