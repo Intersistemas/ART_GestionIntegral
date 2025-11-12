@@ -1,0 +1,26 @@
+.accordionTitle {
+    
+    font-size: 1.5rem !important;
+    display: flex;
+    align-items: center;
+}
+
+.accordionIcon {
+    font-size: 2.5rem !important;
+}
+
+.accentuatedText {
+    font-weight: bold !important;
+    text-decoration: underline;
+}
+
+.orangeBG {
+    background: var(--naranjaClaroClaro);
+    border-radius: 6px;
+    padding: 12px; /* opcional: espacio interno para que el borde no pegue al contenido */
+}
+
+.filtersInfo {
+    font-size: 1.5rem !important;
+    font-weight: bold !important;
+}

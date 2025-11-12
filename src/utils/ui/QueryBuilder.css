@@ -1,8 +1,21 @@
-.shiftActions > button {
-  min-width: 25px;
+.shiftActions, .rule-remove, .ruleGroup-remove{
+  background-color: var(--naranjaClaro) !important;
+  border-radius: 4px;
+  font-size: 1.3rem !important;
+  line-height: 1.2rem !important;
 }
+
+.shiftActions, .rule-remove, .ruleGroup-remove > button {
+  min-width: 15px !important;
+}
+
 
 .rule-remove,
 .ruleGroup-remove {
-  min-width: 25px !important;
+  min-width: 15px !important;
+  padding: 3px 6px !important;
+}
+
+.ruleGroup-addRule, .ruleGroup-addGroup {
+  font-size: 1.2rem !important;
 }

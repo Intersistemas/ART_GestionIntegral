@@ -60,8 +60,8 @@
   /* React-QueryBuilder */
   --rqb-spacing: 0.5rem;
   --rqb-border-width: 1px;
-  --rqb-base-color: var(--verdeClaroClaro);
-  --rqb-background-color: var(--naranjaClaro);
+  --rqb-base-color: var(--verdeClaro);
+  --rqb-background-color: var(--naranjaClaroClaro);
   --rqb-border-color: var(--naranjaOscuro);
   --rqb-border-style: solid;
   --rqb-border-radius: 0.25rem;

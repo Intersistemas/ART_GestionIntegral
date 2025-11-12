@@ -6,6 +6,9 @@ import { CCMMContextProvider, useCCMMContext } from './context';
 import DataTable from '@/utils/ui/table/DataTable';
 import CustomButton from '@/utils/ui/button/CustomButton';
 import QueryBuilder from '@/utils/ui/QueryBuilder';
+import styles from './comisionesMedicas.module.css';
+import { BsSliders } from "react-icons/bs";
+
 
 function CCMMQueryBuilder() {
   const { fields, query: { state: query, setState: setQuery } } = useCCMMContext();
@@ -28,39 +31,50 @@ function Informe() {
     <Grid container spacing={1} size="grow">
       <Grid size={12}>
         <Accordion defaultExpanded>
-          <AccordionSummary expandIcon={<MdExpandMore />} aria-controls="panel1-content" id="panel1-header">
-            <Typography component="span">Filtros</Typography>
+          <AccordionSummary expandIcon={<MdExpandMore className={styles.accordionIcon} />} aria-controls="panel1-content" id="panel1-header">
+            <Grid container spacing={1} alignItems="center">
+              <BsSliders size={20}/>
+              <Typography component="span" className={styles.accordionTitle} >Configuración de Filtros</Typography>
+            </Grid>
           </AccordionSummary>
           <AccordionDetails>
-            <Grid container spacing={1} size="grow">
-              <Grid size={12}>
-                <Typography variant="h6" color={filtro == null ? "info" : "success"}>{filtro?.nombre ?? "Sin filtro seleccionado"}</Typography>
+            
+            <Grid container spacing={3} size="grow" >
+              <Grid size={12} className={styles.orangeBG}>
+                 <Grid container spacing={2} alignItems="center" justifyContent="space-between">
+                  
+                    <Grid >
+                      <Typography className={styles.filtersInfo} color={filtro == null ? "textDisabled" : "success"}>
+                        {filtro?.nombre ? (
+                          <>Filtro cargado: <span className={styles.accentuatedText}>{filtro?.nombre}</span></>
+                        ) : ("Sin filtro seleccionado")}
+                      </Typography>
+                    </Grid>
+
+                    <Grid >
+                      <Grid container spacing={2} alignItems="center" justifyContent="flex-end">
+                        <Grid>
+                          <CustomButton onClick={onLookupFiltro}>Elegir Filtro</CustomButton>
+                        </Grid>
+                        <Grid>
+                          <CustomButton onClick={onEliminaFiltro} disabled={filtro == null}>Eliminar Filtro</CustomButton>
+                        </Grid>
+                      </Grid>
+                    </Grid>
+                  </Grid>
               </Grid>
               <Grid size={12}>
                 <CCMMQueryBuilder />
               </Grid>
               <Grid container size={12} spacing={2} justifyContent="space-between">
+               
                 <Grid container spacing={2}>
-                  <CustomButton onClick={onLookupFiltro}>Carga</CustomButton>
-                  <CustomButton onClick={onGuardaFiltro} disabled={!proposition}>Guarda</CustomButton>
-                  <CustomButton onClick={onEliminaFiltro} disabled={filtro == null}>Elimina</CustomButton>
+                  <CustomButton onClick={onAplicaFiltro}>Aplicar Filtro</CustomButton>
+                  <CustomButton onClick={onLimpiaFiltro}>Limpiar Filtro</CustomButton>
+                  <CustomButton onClick={onGuardaFiltro} disabled={!proposition}>Guardar Filtro</CustomButton>
                 </Grid>
-                <Grid container spacing={2}>
-                  <CustomButton onClick={onAplicaFiltro}>Aplica</CustomButton>
-                  <CustomButton onClick={onLimpiaFiltro}>Limpia</CustomButton>
-                </Grid>
+                <CustomButton width="auto" onClick={onExport} disabled={!habilita}>Exportar a Excel</CustomButton>
               </Grid>
-            </Grid>
-          </AccordionDetails>
-        </Accordion>
-        <Accordion>
-          <AccordionSummary expandIcon={<MdExpandMore />} aria-controls="panel1-content" id="panel1-header">
-            <Typography component="span">Resultados</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Grid container size={12} spacing={2} justifyContent="end">
-              <CustomButton width="auto" onClick={onExport} disabled={!habilita}>Exportar a Excel</CustomButton>
-              <CustomButton width="auto" onClick={onLimpiaTabla}>Limpia</CustomButton>
             </Grid>
           </AccordionDetails>
         </Accordion>

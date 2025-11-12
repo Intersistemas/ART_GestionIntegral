@@ -56,27 +56,27 @@ export const translations: Partial<Translations> = {
     title: 'Valor',
   } as const,
   removeRule: {
-    label: '⨯',
+    label: 'X',
     title: 'Quita regla',
   } as const,
   removeGroup: {
-    label: '⨯',
+    label: 'X',
     title: 'Quita grupo',
   } as const,
   addRule: {
-    label: '+ Regla',
+    label: 'Agregar Regla',
     title: 'Agrega regla',
   } as const,
   addGroup: {
-    label: '+ Grupo',
+    label: 'Agregar Grupo',
     title: 'Agrega grupo',
   } as const,
   combinators: {
     title: 'Combinadores',
   } as const,
   notToggle: {
-    label: 'No',
-    title: 'Invierte este grupo',
+    label: 'Contiene/No contiene',
+    title: 'Contiene/No contiene',
   } as const,
   cloneRule: {
     label: '⧉',
