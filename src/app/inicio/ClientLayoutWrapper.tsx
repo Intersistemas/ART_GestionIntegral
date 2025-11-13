@@ -19,6 +19,13 @@ const formatTitleFromPath = (pathname: string): string => {
     return 'Póliza';
   }
 
+  if (pathname === '/inicio/informes/comisionesMedicas') {
+    return 'Comisiones Médicas';
+  }
+
+  if (pathname === '/inicio/informes/atencionAlPublico') {
+    return 'Atención al Público';
+  }
 
   const parts = pathname.split('/').filter(Boolean);
   const lastPart = parts[parts.length - 1];

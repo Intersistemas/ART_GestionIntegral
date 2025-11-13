@@ -7,7 +7,7 @@ import { CCMMContextProvider, useCCMMContext } from './context';
 import DataTable from '@/utils/ui/table/DataTable';
 import CustomButton from '@/utils/ui/button/CustomButton';
 import QueryBuilder from '@/utils/ui/queryBuilder/QueryBuilder';
-import styles from './comisionesMedicas.module.css';
+import styles from '../informes.module.css';
 import { BsSliders } from "react-icons/bs";
 
 
@@ -38,8 +38,8 @@ function Informe() {
               <Typography component="span" className={styles.accordionTitle} >Configuración de Filtros</Typography>
             </Grid>
           </AccordionSummary>
+          
           <AccordionDetails>
-            
             <Grid container spacing={3} size="grow" >
               <Grid size={12} className={styles.orangeBG}>
                  <Grid container spacing={2} alignItems="center" justifyContent="space-between">

@@ -6,6 +6,8 @@ import { SiniestrosContextProvider, useSiniestrosContext } from './context';
 import DataTable from '@/utils/ui/table/DataTable';
 import CustomButton from '@/utils/ui/button/CustomButton';
 import QueryBuilder from '@/utils/ui/queryBuilder/QueryBuilder';
+import styles from '../informes.module.css';
+import { BsSliders } from "react-icons/bs";
 
 function SiniestrosQueryBuilder() {
   const { fields, query: { state: query, setState: setQuery } } = useSiniestrosContext();
@@ -33,25 +35,27 @@ function Informe() {
     <Grid container spacing={1} size="grow">
       <Grid size={12}>
         <Accordion defaultExpanded>
-          <AccordionSummary expandIcon={<MdExpandMore />} aria-controls="panel1-content" id="panel1-header">
-            <Typography component="span">Filtros</Typography>
+          <AccordionSummary expandIcon={<MdExpandMore className={styles.accordionIcon} />} aria-controls="panel1-content" id="panel1-header">
+            <Grid container spacing={1} alignItems="center">
+              <BsSliders size={20}/>
+              <Typography component="span" className={styles.accordionTitle} >Configuración de Filtros</Typography>
+            </Grid>
           </AccordionSummary>
+
           <AccordionDetails>
-            <SiniestrosQueryBuilder />
+            <Grid container spacing={3} size="grow" >
+              <Grid size={12}>
+                <SiniestrosQueryBuilder />
+              </Grid>
+              <Grid container size={12} spacing={2} justifyContent="space-between">
+                <Grid container spacing={2}>
+                  <CustomButton onClick={onAplicaFiltro}>Aplicar Filtro</CustomButton>
+                  <CustomButton onClick={onLimpiaFiltro}>Limpiar Filtro</CustomButton>
+                </Grid>
+                <CustomButton width="auto" onClick={onExport} disabled={!habilita}>Exportar a Excel</CustomButton>
+              </Grid>
+            </Grid>
           </AccordionDetails>
-          <AccordionActions>
-            <CustomButton width="auto" onClick={onAplicaFiltro}>Aplica</CustomButton>
-            <CustomButton width="auto" onClick={onLimpiaFiltro}>Limpia</CustomButton>
-          </AccordionActions>
-        </Accordion>
-        <Accordion>
-          <AccordionSummary expandIcon={<MdExpandMore />} aria-controls="panel1-content" id="panel1-header">
-            <Typography component="span">Exportación</Typography>
-          </AccordionSummary>
-          <AccordionActions>
-            <CustomButton width="auto" onClick={onExport} disabled={!habilita}>Exportar a Excel</CustomButton>
-            <CustomButton width="auto" onClick={onLimpiaTabla}>Limpia</CustomButton>
-          </AccordionActions>
         </Accordion>
         <Paper>
           <SiniestrosTable />

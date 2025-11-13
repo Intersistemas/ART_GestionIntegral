@@ -15,10 +15,7 @@ const { useGetPoliza } = gestionEmpleadorAPI;
 const Poliza = () => {
 
   const { user } = useAuth(); 
-
   const { data: polizaRawData, isLoading: isPersonalLoading } = useGetPoliza(); 
-
-  console.log("poliza",polizaRawData)
 
   if (!user) {
     return <p>Error: Sesión no válida o no encontrada.</p>;

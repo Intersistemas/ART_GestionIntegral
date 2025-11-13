@@ -14,43 +14,49 @@
  import DataTable from "@/utils/ui/table/DataTable";
  import CustomButton from '@/utils/ui/button/CustomButton';
  import QueryBuilder from '@/utils/ui/queryBuilder/QueryBuilder';
+import styles from '../informes.module.css';
+import { BsSliders } from "react-icons/bs";
 
  function AtencionAlPublicoQueryBuilder() {
    const { fields, query: { state: query, setState: setQuery } } = useDataContext();
    return <QueryBuilder fields={fields} query={query} onQueryChange={setQuery} />
  }
 
- function SiniestrosTable() {
+ function AtencionAlPublicoTable() {
    const { columns, rows } = useDataContext();
    return <DataTable data={rows} columns={columns} />;
  }
 
- function SiniestrosPageInner() {
+ function AtencionAlPublicoPageInner() {
    const { dialog, onAplica, onLimpia } = useDataContext();
    return (
      <Grid container spacing={1} size="grow">
        <Grid size={12}>
          <Accordion defaultExpanded>
-           <AccordionSummary expandIcon={<MdExpandMore />}>
-             <Typography component="span">Filtros</Typography>
-           </AccordionSummary>
+           <AccordionSummary expandIcon={<MdExpandMore className={styles.accordionIcon} />} aria-controls="panel1-content" id="panel1-header">
+            <Grid container spacing={1} alignItems="center">
+              <BsSliders size={20}/>
+              <Typography component="span" className={styles.accordionTitle} >Configuración de Filtros</Typography>
+            </Grid>
+          </AccordionSummary>
+          
            <AccordionDetails>
-             <AtencionAlPublicoQueryBuilder />
-           </AccordionDetails>
-           <AccordionActions>
-             <CustomButton width="auto" onClick={onAplica}>
-               Aplica
-             </CustomButton>
-             <CustomButton width="auto" onClick={onLimpia}>
-               Limpia
-             </CustomButton>
-           </AccordionActions>
-         </Accordion>
-       </Grid>
-       <Grid size={12}>
-         <Paper>
-           <SiniestrosTable />
-         </Paper>
+              <Grid container spacing={3} size="grow" >
+                <Grid size={12}>
+                  <AtencionAlPublicoQueryBuilder />
+                </Grid>
+                <Grid container size={12} spacing={2} justifyContent="space-between">
+                  <Grid container spacing={2}>
+                    <CustomButton onClick={onAplica}>Aplicar Filtro</CustomButton>
+                    <CustomButton onClick={onLimpia}>Limpiar Filtro</CustomButton>
+                  </Grid>
+                </Grid>
+              </Grid>
+            </AccordionDetails>
+          </Accordion>
+          <Paper>
+            <AtencionAlPublicoTable />
+          </Paper>
        </Grid>
        {dialog}
      </Grid>
@@ -60,7 +66,7 @@
  export default function SiniestrosPage() {
    return (
      <DataContextProvider>
-       <SiniestrosPageInner />
+       <AtencionAlPublicoPageInner />
      </DataContextProvider>
    );
  }
