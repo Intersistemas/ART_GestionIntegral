@@ -22,68 +22,48 @@
   font-size: 1.2rem !important;
 }
 
-/* Estilo general para todos los botones del query builder */
-.queryBuilder button {
-    /* Color de fondo de los botones */
-    background-color: var(--naranjaClaro) !important;
-    color: var(--blanco) !important;
-    border-color: var(--naranjaOscuro) !important;
-}
-
 
 /* =================================================================
  * 2. Estilos de GRUPO y CABECERA (Fondo y Borde)
  * ================================================================= */
 
 /* Estilo para los grupos de reglas (los contenedores principales) */
-.queryBuilder,
 .queryBuilder .ruleGroup {
   /* Fondo del grupo de reglas */
-  background-color: var(--naranjaClaroClaro) !important; 
+  background-color: color-mix(in srgb, transparent, #ffaf4c 30%);
   /* Borde general del grupo de reglas */
-  border-color: var(--naranjaOscuro) !important;
-  border-style: solid !important;
+  border-color: var(--naranjaOscuro);
+  border-style: solid;
   /* Usando valores de variables para borde y radio, si están definidos */
-  border-width: var(--rqb-border-width, 1px) !important; 
-  border-radius: var(--rqb-border-radius, 4px) !important; 
+  border-width: var(--rqb-border-width, 1px); 
+  border-radius: var(--rqb-border-radius, 4px); 
 
   /* ** AÑADIDO: Indentación para crear el espacio para la línea vertical ** */
-  padding-left: var(--rqb-branch-indent, 0.5rem) !important; 
+  padding-left: var(--rqb-branch-indent, 0.5rem); 
 }
 
-/* Sobrescribir el estilo de la cabecera (combinador, NotToggle, etc.) */
-.queryBuilder .ruleGroup-header {
-    background-color: var(--naranjaClaro) !important;
-    border-bottom: 1px solid var(--naranjaOscuro) !important;
-}
-
-
-/* =================================================================
- * 3. LÍNEAS DE RAMA e INDENTACIÓN (Corrección de visualización)
- * ================================================================= */
-
-/* LÍNEAS DE LAS BRANCHES (Barras verticales de conexión) */
-.queryBuilder .ruleGroup-body::before {
-    /* Color de la línea de la rama */
-    background-color: var(--naranjaOscuro) !important;
-    
-    /* ** AÑADIDO: Propiedades para forzar la visualización de la barra ** */
-    content: '' !important; 
-    position: absolute !important;
-    height: 100% !important; 
-    left: 0 !important;
-    top: 0 !important;
-    margin-left: 0 !important;
-    
-    /* Usando valores de variables para ancho y estilo */
-    width: var(--rqb-branch-width, 1px) !important;
-    border-style: var(--rqb-branch-style, solid) !important;
-    border-radius: var(--rqb-branch-radius, 0.25rem) !important;
-}
 
 /* Ajuste de padding en header y reglas individuales para respetar el espaciado */
-.queryBuilder .ruleGroup-header,
-.queryBuilder .rule {
-    padding-left: var(--rqb-spacing, 0.5rem) !important;
-    padding-right: var(--rqb-spacing, 0.5rem) !important;
+.queryBuilder .ruleGroup-header {
+    padding-left: var(--rqb-spacing, 0.5rem) ;
+    padding-right: var(--rqb-spacing, 0.5rem) ;
 }
+.queryBuilder .rule {
+    padding-left: var(--rqb-spacing, 0.5rem) ;
+    padding-right: var(--rqb-spacing, 0.5rem) ;
+}
+
+/*
+.queryBuilder-branches:dir(ltr) .rule::before{
+    left: 0;
+    top: calc(-1 * var(--rqb-spacing));
+    height: calc(50% + var(--rqb-spacing));
+    border-width: 0 0 var(--rqb-branch-width) var(--rqb-branch-width);
+    border-color: var(--naranjaOscuro);
+    border-style: var(--rqb-branch-style);
+    content: "";
+    width: var(--rqb-branch-indent);
+    left: calc(-1 * (var(--rqb-branch-indent) + var(--rqb-branch-width)));
+    border-radius: 0;
+    position: absolute;
+}*/  
