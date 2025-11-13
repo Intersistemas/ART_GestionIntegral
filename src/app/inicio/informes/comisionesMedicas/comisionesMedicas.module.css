@@ -1,5 +1,5 @@
 .accordionTitle {
-    
+    font-weight: bold !important;
     font-size: 1.5rem !important;
     display: flex;
     align-items: center;
@@ -7,6 +7,7 @@
 
 .accordionIcon {
     font-size: 2.5rem !important;
+    color: black;
 }
 
 .accentuatedText {

@@ -67,11 +67,11 @@
   --rqb-border-color: #b66400;
   --rqb-border-style: solid;
   --rqb-border-radius: 0.25rem;
-  --rqb-branch-indent: var(--rqb-spacing);
-  --rqb-branch-width: var(--rqb-border-width);
-  --rqb-branch-color: var(--rqb-border-color);
-  --rqb-branch-radius: var(--rqb-border-radius);
-  --rqb-branch-style: var(--rqb-border-style);
+  --rqb-branch-indent: 0.5rem;
+  --rqb-branch-width: 1px;
+  --rqb-branch-color: #b66400;
+  --rqb-branch-radius: 0.25rem;
+  --rqb-branch-style: solid;
 }
 
 html {
