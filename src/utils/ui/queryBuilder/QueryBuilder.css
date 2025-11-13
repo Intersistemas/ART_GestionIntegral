@@ -49,14 +49,13 @@
 
   /* ** AÑADIDO: Indentación para crear el espacio para la línea vertical ** */
   padding-left: var(--rqb-branch-indent, 1rem); 
+  margin: 0.5rem;
 }
 
 
 /* Ajuste de padding en header y reglas individuales para respetar el espaciado */
 .queryBuilder .ruleGroup-header {
     padding: var(--rqb-spacing, 1rem) ;
-    display: flex !important;
-    align-items: flex-end !important;
 }
 .queryBuilder .rule {
     padding-left: var(--rqb-spacing, 1rem) ;
