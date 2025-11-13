@@ -19,3 +19,33 @@
 .ruleGroup-addRule, .ruleGroup-addGroup { 
   font-size: 1.2rem !important;
 }
+
+/* Estilo para los grupos de reglas (los contenedores principales) */
+.queryBuilder,
+.queryBuilder .ruleGroup {
+  /* Fondo del grupo de reglas */
+  background-color: var(--naranjaClaroClaro) !important; 
+  /* Borde general del grupo de reglas */
+  border-color: var(--naranjaOscuro) !important;
+  border-style: solid !important;
+}
+
+/* Estilo para la línea vertical de conexión (la rama) */
+.queryBuilder .ruleGroup-body::before {
+  /* Color de la línea de la rama */
+  background-color: var(--naranjaOscuro) !important;
+}
+
+/* Estilo para los botones (opcional, si los quieres customizados) */
+.queryBuilder button {
+    /* Color de fondo de los botones */
+    background-color: var(--naranjaClaro) !important;
+    color: var(--blanco) !important;
+    border-color: var(--naranjaOscuro) !important;
+}
+
+/* Sobrescribir el estilo de la cabecera (combinador, NotToggle, etc.) */
+.queryBuilder .ruleGroup-header {
+    background-color: var(--naranjaClaro) !important;
+    border-bottom: 1px solid var(--naranjaOscuro) !important;
+}

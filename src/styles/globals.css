@@ -1,8 +1,4 @@
 /* src/styles/Globals.css*/
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 @import "react-querybuilder/dist/query-builder.css";
 
 :root {
@@ -10,7 +6,6 @@
   --secondary: gray;
 
   /*PALETA DE ART*/
-  
   --naranjaClaroClaro: #ffecc2;
   --naranjaClaro: #ffaf4c;
   --naranja: #E4840C; 
@@ -31,11 +26,6 @@
   
   --blanco: white;
   --negro: black;
-
-  /*Colores del logo*/
-  --naranjaLogo: #e7800f;
-  --verde1Logo: #1b883f;
-  --verde2Logo: #629331;
   
   --font: 'Outfit', sans-serif;
   --font-size: large;
@@ -122,3 +112,8 @@ select:-webkit-autofill:focus {
   box-shadow: 0 0 0px 1000px var(--verdeClaroClaro) inset !important;
   transition: background-color 5000s ease-in-out 0s !important;
 }
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
