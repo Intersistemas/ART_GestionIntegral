@@ -10,6 +10,11 @@
   min-width: 15px !important;
 }
 
+/* Ajusta el interlineado del toggle de negación .css-c0kzyl-MuiButtonBase-root-MuiToggleButton-root:not(.Mui-selected) { */
+.ruleGroup-notToggle {
+  padding: 6px !important; 
+}
+
 /* Asegura el ancho mínimo y padding para los botones de remover */
 .rule-remove,
 .ruleGroup-remove {
@@ -20,6 +25,10 @@
 /* Estilo para los botones de añadir regla/grupo */
 .ruleGroup-addRule, .ruleGroup-addGroup { 
   font-size: 1.2rem !important;
+}
+
+.ruleGroup-addRule{
+  margin-left: 5% !important;
 }
 
 
@@ -39,18 +48,19 @@
   border-radius: var(--rqb-border-radius, 4px); 
 
   /* ** AÑADIDO: Indentación para crear el espacio para la línea vertical ** */
-  padding-left: var(--rqb-branch-indent, 0.5rem); 
+  padding-left: var(--rqb-branch-indent, 1rem); 
 }
 
 
 /* Ajuste de padding en header y reglas individuales para respetar el espaciado */
 .queryBuilder .ruleGroup-header {
-    padding-left: var(--rqb-spacing, 0.5rem) ;
-    padding-right: var(--rqb-spacing, 0.5rem) ;
+    padding: var(--rqb-spacing, 1rem) ;
+    display: flex !important;
+    align-items: flex-end !important;
 }
 .queryBuilder .rule {
-    padding-left: var(--rqb-spacing, 0.5rem) ;
-    padding-right: var(--rqb-spacing, 0.5rem) ;
+    padding-left: var(--rqb-spacing, 1rem) ;
+    padding-right: var(--rqb-spacing, 1rem) ;
 }
 
 /*

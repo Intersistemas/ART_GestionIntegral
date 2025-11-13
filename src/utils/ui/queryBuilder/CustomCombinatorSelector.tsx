@@ -1,7 +1,14 @@
 // src/utils/ui/queryBuilder/CustomCombinatorSelector.tsx
 import React from 'react';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import {
+    Radio,
+    RadioGroup,
+    FormControlLabel,
+    FormControl,
+    FormLabel,
+    Box,
+    Typography,
+} from '@mui/material';
 import { CombinatorSelectorProps } from 'react-querybuilder';
 
 // Definimos internamente las opciones de combinador necesarias (Y/O)
@@ -11,71 +18,65 @@ const internalCombinators = [
 ];
 
 const CustomCombinatorSelector: React.FC<CombinatorSelectorProps> = ({
-  // La prop 'value' es el combinador actual ('and' o 'or')
-  value,
-  // La prop 'handleOnChange' se usa para actualizar el combinador
-  handleOnChange,
-  // Eliminamos 'combinators' de las props desestructuradas
-  className,
+    // La prop 'value' es el combinador actual ('and' o 'or')
+    value,
+    // La prop 'handleOnChange' se usa para actualizar el combinador
+    handleOnChange,
+    className,
 }) => {
-  
-  // La función de cambio de ToggleButtonGroup pasa el nuevo valor a handleOnChange
-  const handleChange = (
-    event: React.MouseEvent<HTMLElement>,
-    newCombinator: string | null,
-  ) => {
-    // Si se hace clic en el botón actualmente seleccionado, newCombinator será null.
-    // Prevenimos que se deseleccione, manteniendo el valor actual.
-    if (newCombinator !== null) {
-      handleOnChange(newCombinator);
-    }
-  };
 
-  return (
-    <ToggleButtonGroup
-      exclusive
-      value={value} // 'and' o 'or'
-      onChange={handleChange}
-      className={className}
-      size="small"
-      sx={{ height: '32px' }}
-    >
-      {/* Usamos las opciones definidas internamente */}
-      {internalCombinators.map((combinator) => (
-        <ToggleButton
-          key={combinator.name}
-          value={combinator.name}
-          aria-label={combinator.label}
-          sx={{
-            fontWeight: 'bold',
-            // Estilos para distinguir 'Y' de 'O'
-            backgroundColor: combinator.name === 'and' ? '#808080' : '#808080', // Azul para 'Y', Rojo para 'O'
-            color: 'white',
-            // Estilos para el botón activo
-            '&.Mui-selected': {
-                backgroundColor: combinator.name === 'and' ? '#0d47a1' : '#c62828', // Color más oscuro al seleccionar
-                color: 'white',
-                '&:hover': {
-                    backgroundColor: combinator.name === 'and' ? '#0d47a1' : '#c62828',
-                },
-            },
-            // Estilos para el botón inactivo
-            '&:not(.Mui-selected)': {
-                opacity: 0.6,
-                '&:hover': {
-                    opacity: 0.8,
-                },
-            },
-            // Ajuste para el texto (Y/O)
-            fontSize: '0.8rem',
-            padding: '4px 12px',
-          }}
-        >
-          {combinator.label}
-        </ToggleButton>
-      ))}
-    </ToggleButtonGroup>
-  );
+    // La función de cambio para RadioGroup
+    const handleChange = (
+        event: React.ChangeEvent<HTMLInputElement>,
+    ) => {
+        // El valor del Radio seleccionado ya está en event.target.value
+        const newCombinator = event.target.value;
+        handleOnChange(newCombinator);
+    };
+
+    return (
+        <FormControl component="fieldset" className={className} size="small">
+            <RadioGroup
+                row // Organiza los botones en una fila
+                name="combinator-selector"
+                value={value} // 'and' o 'or'
+                onChange={handleChange}
+                sx={{ gap: 0 }} // Espacio entre los botones
+            >
+                {/* Usamos las opciones definidas internamente */}
+                {internalCombinators.map((combinator) => (
+                    <FormControlLabel
+                        key={combinator.name}
+                        value={combinator.name}
+                        control={
+                            <Radio
+                                size="medium"
+                                sx={{
+                                    // Colores del radio
+                                    color: combinator.name === 'and' ? '#1976d2' : '#f44336', // Color del círculo
+                                    '&.Mui-checked': {
+                                        color: combinator.name === 'and' ? '#0d47a1' : '#c62828', // Color del círculo seleccionado
+                                    },
+                                }}
+                            />
+                        }
+                        label={
+                            <Typography
+                                variant="button"
+                                sx={{
+                                    fontSize: '1.5rem',
+                                    fontWeight: 'bold',
+                                    color: combinator.name === 'and' ? '#1976d2' : '#f44336', // Color del texto
+                                }}
+                            >
+                                {combinator.label}
+                            </Typography>
+                        }
+                    />
+                ))}
+            </RadioGroup>
+        </FormControl>
+    );
 };
 
 export default CustomCombinatorSelector;

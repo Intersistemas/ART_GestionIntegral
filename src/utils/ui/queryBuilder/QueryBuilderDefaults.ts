@@ -58,11 +58,11 @@ export const translations: Partial<Translations> = {
     title: 'Valor',
   } as const,
   removeRule: {
-    label: 'X',
+    label: 'ELIMINAR REGLA',
     title: 'Quitar regla',
   } as const,
   removeGroup: {
-    label: 'X',
+    label: 'ELIMINAR GRUPO',
     title: 'Quitar grupo',
   } as const,
   addRule: {
