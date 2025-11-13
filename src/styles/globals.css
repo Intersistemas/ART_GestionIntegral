@@ -67,11 +67,11 @@
   --rqb-border-color: #b66400 !important;
   --rqb-border-style: solid !important;
   --rqb-border-radius: 0.25rem !important;
-  --rqb-branch-indent: 0.5rem;
-  --rqb-branch-width: 1px;
-  --rqb-branch-color: #b66400;
-  --rqb-branch-radius: 0.25rem;
-  --rqb-branch-style: solid;
+  --rqb-branch-indent: 0.5rem !important;
+  --rqb-branch-width: 1px !important;
+  --rqb-branch-color: #b66400 !important;
+  --rqb-branch-radius: 0.25rem !important;
+  --rqb-branch-style: solid !important;
 }
 
 html {
