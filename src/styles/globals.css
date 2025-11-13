@@ -63,7 +63,7 @@
   --rqb-spacing: 0.5rem;
   --rqb-border-width: 1px;
   --rqb-base-color: #ffaf4c;
-  --rqb-background-color: color-mix(in srgb, transparent, var(--rqb-base-color) 30%);
+  --rqb-background-color: color-mix(in srgb, transparent, #ffaf4c 30%);
   --rqb-border-color: #b66400;
   --rqb-border-style: solid;
   --rqb-border-radius: 0.25rem;
