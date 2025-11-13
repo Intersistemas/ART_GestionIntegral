@@ -5,20 +5,35 @@
   line-height: 1.2rem !important;
 }
 
+/* Asegura el ancho mínimo para los botones de control (remover, shift) */
 .shiftActions, .rule-remove, .ruleGroup-remove > button {
   min-width: 15px !important;
 }
 
-
+/* Asegura el ancho mínimo y padding para los botones de remover */
 .rule-remove,
 .ruleGroup-remove {
   min-width: 15px !important;
   padding: 3px 6px !important;
 }
 
+/* Estilo para los botones de añadir regla/grupo */
 .ruleGroup-addRule, .ruleGroup-addGroup { 
   font-size: 1.2rem !important;
 }
+
+/* Estilo general para todos los botones del query builder */
+.queryBuilder button {
+    /* Color de fondo de los botones */
+    background-color: var(--naranjaClaro) !important;
+    color: var(--blanco) !important;
+    border-color: var(--naranjaOscuro) !important;
+}
+
+
+/* =================================================================
+ * 2. Estilos de GRUPO y CABECERA (Fondo y Borde)
+ * ================================================================= */
 
 /* Estilo para los grupos de reglas (los contenedores principales) */
 .queryBuilder,
@@ -28,24 +43,47 @@
   /* Borde general del grupo de reglas */
   border-color: var(--naranjaOscuro) !important;
   border-style: solid !important;
-}
+  /* Usando valores de variables para borde y radio, si están definidos */
+  border-width: var(--rqb-border-width, 1px) !important; 
+  border-radius: var(--rqb-border-radius, 4px) !important; 
 
-/* Estilo para la línea vertical de conexión (la rama) */
-.queryBuilder .ruleGroup-body::before {
-  /* Color de la línea de la rama */
-  background-color: var(--naranjaOscuro) !important;
-}
-
-/* Estilo para los botones (opcional, si los quieres customizados) */
-.queryBuilder button {
-    /* Color de fondo de los botones */
-    background-color: var(--naranjaClaro) !important;
-    color: var(--blanco) !important;
-    border-color: var(--naranjaOscuro) !important;
+  /* ** AÑADIDO: Indentación para crear el espacio para la línea vertical ** */
+  padding-left: var(--rqb-branch-indent, 0.5rem) !important; 
 }
 
 /* Sobrescribir el estilo de la cabecera (combinador, NotToggle, etc.) */
 .queryBuilder .ruleGroup-header {
     background-color: var(--naranjaClaro) !important;
     border-bottom: 1px solid var(--naranjaOscuro) !important;
+}
+
+
+/* =================================================================
+ * 3. LÍNEAS DE RAMA e INDENTACIÓN (Corrección de visualización)
+ * ================================================================= */
+
+/* LÍNEAS DE LAS BRANCHES (Barras verticales de conexión) */
+.queryBuilder .ruleGroup-body::before {
+    /* Color de la línea de la rama */
+    background-color: var(--naranjaOscuro) !important;
+    
+    /* ** AÑADIDO: Propiedades para forzar la visualización de la barra ** */
+    content: '' !important; 
+    position: absolute !important;
+    height: 100% !important; 
+    left: 0 !important;
+    top: 0 !important;
+    margin-left: 0 !important;
+    
+    /* Usando valores de variables para ancho y estilo */
+    width: var(--rqb-branch-width, 1px) !important;
+    border-style: var(--rqb-branch-style, solid) !important;
+    border-radius: var(--rqb-branch-radius, 0.25rem) !important;
+}
+
+/* Ajuste de padding en header y reglas individuales para respetar el espaciado */
+.queryBuilder .ruleGroup-header,
+.queryBuilder .rule {
+    padding-left: var(--rqb-spacing, 0.5rem) !important;
+    padding-right: var(--rqb-spacing, 0.5rem) !important;
 }

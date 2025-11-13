@@ -49,7 +49,7 @@
 
 
 
-  /* React-QueryBuilder */
+  /* React-QueryBuilder
   --rqb-spacing: 0.5rem !important;
   --rqb-border-width: 1px !important;
   --rqb-base-color: #ffaf4c !important;
@@ -61,7 +61,7 @@
   --rqb-branch-width: 1px !important;
   --rqb-branch-color: #b66400 !important;
   --rqb-branch-radius: 0.25rem !important;
-  --rqb-branch-style: solid !important;
+  --rqb-branch-style: solid !important; */
 }
 
 html {
