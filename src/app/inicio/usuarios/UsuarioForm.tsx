@@ -476,7 +476,7 @@ export default function UsuarioForm({
 
     // Set default values for hidden fields       
     // Determinar empresaId según si es administrador
-    let finalEmpresaId = form.empresaId || (refEmpleadores.length > 0 ? refEmpleadores[0].interno : 0);
+    let finalEmpresaId = form.empresaId;
     if (isCreating && isAdminUser) {
       finalEmpresaId = 0; // Si es administrador, empresaId debe ser 0
     }
@@ -510,6 +510,8 @@ export default function UsuarioForm({
       onSubmit(dataToSubmit);
     }
   };
+
+  console.log("Form State:", form.empresaId);
 
   return (
     <CustomModal
