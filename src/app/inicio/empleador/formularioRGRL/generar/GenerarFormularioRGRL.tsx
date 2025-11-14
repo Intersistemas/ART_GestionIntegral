@@ -493,8 +493,7 @@ const GenerarFormularioRGRL: React.FC<{
   const [page, setPage] = useState(0);
   useEffect(() => { setPage(Math.floor(secIdx / PAGE_SIZE)); }, [secIdx]);
 
-  // Envía PUT final con todas las respuestas y listas (finalizar)
-  const finalizarPUT = async () => {
+  const guardarPUT = async (completar: boolean) => {
     if (!form) return;
     setLoading(true);
     setError('');
@@ -562,7 +561,7 @@ const GenerarFormularioRGRL: React.FC<{
         internoFormulario: form.internoFormulario,
         internoEstablecimiento: form.internoEstablecimiento,
         creacionFechaHora: form.creacionFechaHora ?? toIsoOrNull(new Date()),
-        completadoFechaHora: toIsoOrNull(new Date()),
+        completadoFechaHora: completar ? toIsoOrNull(new Date()) : null,
         notificacionFecha: form.notificacionFecha ?? toIsoOrNull(new Date()),
         respuestasCuestionario: fullCuest,
         respuestasGremio: gremiosFull,
@@ -583,7 +582,7 @@ const GenerarFormularioRGRL: React.FC<{
 
       router.replace('/inicio/empleador/formularioRGRL');
     } catch (e: any) {
-      setError(e?.message ?? 'Error al finalizar.');
+      setError(e?.message ?? (completar ? 'Error al finalizar.' : 'Error al guardar incompleto.'));
     } finally {
       setLoading(false);
     }
@@ -727,8 +726,9 @@ const GenerarFormularioRGRL: React.FC<{
         </div>
 
         <div className={styles.row}>
-          <CustomButton onClick={() => router.back()} disabled={loading}>VOLVER</CustomButton>
-          <CustomButton onClick={finalizarPUT} disabled={loading}>FINALIZAR</CustomButton>
+            <CustomButton onClick={() => router.back()} disabled={loading}>VOLVER</CustomButton>
+            <CustomButton onClick={() => guardarPUT(true)} disabled={loading}>FINALIZAR</CustomButton>
+            <CustomButton onClick={() => guardarPUT(false)} disabled={loading}>GUARDADO INCOMPLETO</CustomButton>
         </div>
 
         {loading && <div className={styles.savingMsg}>Guardando…</div>}
