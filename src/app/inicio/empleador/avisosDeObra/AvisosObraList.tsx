@@ -18,12 +18,12 @@ import {
     Tooltip,
 } from "@mui/material";
 
-import { AvisoObraRecord, AvisoTipo, Provincia } from "./types";
+import { AvisoObraRecord, AvisoTipo, Provincia } from "./types/types";
 
 
 // Importación de las constantes de datos
-import { AvisosObraTipos } from "./avisosObraTipos";
-import { Provincias } from "./provincias";
+import { AvisosObraTipos } from "./types/avisosObraTipos";
+import { Provincias } from "./types/provincias";
 import Formato from "@/utils/Formato";
 
 

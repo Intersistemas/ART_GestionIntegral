@@ -5,8 +5,10 @@ export interface AvisoObraRecord {
     obraSecuencia?: number | null;
     empleadorCUIT?: number | null; 
     empleadorRazonSocial?: string | null;
-    
+
     obraTipo: string;
+    superficie: number | string | null;
+    plantas: number | string | null;
 
     direccionCalleRuta: string;
     direccionNumero: string;
@@ -14,21 +16,14 @@ export interface AvisoObraRecord {
     direccionDeptoPartido: string;
     direccionPciaCodigo: number | string; // Permitimos string para el estado inicial vacío
     direccionCPA: string;
-
     recepcionFecha: string | null; // Fechas pueden ser string (ISO) o null
-    
-    superficie: number | string | null;
-    plantas: number | string | null;
 
     actividadInicioFecha: string | null;
     actividadFinFecha: string | null;
-
     suspensionFecha: string | null;
     reinicioFecha: string | null;
-
     excavacionInicioFecha: string | null;
     excavacionFinFecha: string | null;
-
     demolicionInicioFecha: string | null;
     demolicionFinFecha: string | null;
 
@@ -215,126 +210,6 @@ export interface PdfFormData {
     // Índice de firma para permitir el acceso dinámico (data[key])
     [key: string]: any; 
 }
-
-/*
-export interface PdfFormData {
-    // ----------------------------------------------------
-    // 1. CAMPOS DE TEXTO / FORMATO
-    // ----------------------------------------------------
-    empleadorCUIT?: string | null;
-    empleadorRazonSocial?: string | null;
-    
-    // Dirección
-    direccionCalleRuta?: string | null;
-    direccionNumero?: string | null;
-    direccionLocalidad?: string | null;
-    direccionDeptoPartido?: string | null;
-    direccionPciaCodigo?: number | null; // Tipado como number para buscar en Provincias
-    direccionCPA?: string | null;
-    
-    // Dimensiones
-    superficie?: string | number | null;
-    plantas?: string | number | null;
-    
-    // Otros (ej. actividad Otros)
-    actOtros?: string | null;
-
-    // ----------------------------------------------------
-    // 2. CAMPOS DE FECHA
-    // ----------------------------------------------------
-    actividadInicioFecha?: string | null;
-    excavacionInicioFecha?: string | null;
-    excavacionFinFecha?: string | null;
-    demolicionInicioFecha?: string | null;
-    demolicionFinFecha?: string | null;
-    actividadFinFecha?: string | null;
-    suspensionFecha?: string | null;
-    reinicioFecha?: string | null;
-
-    // ----------------------------------------------------
-    // 3. RADIO GROUPS (obraTipo, obraResolucion)
-    // Los valores posibles son "A", "S", "E", "51/97", "35/98"
-    // ----------------------------------------------------
-    obraTipo: string; 
-    obraResolucion?: string | null;
-    
-    // ----------------------------------------------------
-    // 4. CHECKBOXES (Asumimos string "S" o "N" o potencialmente null/undefined)
-    // ----------------------------------------------------
-    
-    // Ingeniería Civil
-    ingCivCaminos?: string | null;
-    ingCivCalles?: string | null;
-    ingCivAutopistas?: string | null;
-    ingCivPuentes?: string | null;
-    ingCivTuneles?: string | null;
-    ingCivObrFerroviarias?: string | null;
-    ingCivObrHidraulicas?: string | null;
-    ingCivAlcantarillas?: string | null;
-    ingCivPuertos?: string | null;
-    ingCivAeropuertos?: string | null;
-    ingCivOtros?: string | null;
-    
-    // Arquitectura
-    arqViviendas?: string | null;
-    arqEdifPisosMultiples?: string | null;
-    arqEdifComerciales?: string | null;
-    arqEdifOficinas?: string | null;
-    arqHospitales?: string | null;
-    arqOtros?: string | null;
-    arqEscuelas?: string | null;
-    arqUrbanizacion?: string | null;
-    
-    // Montajes Industriales
-    monIndDestileria?: string | null;
-    monIndGenElectrica?: string | null;
-    monIndMineria?: string | null;
-    monIndManufUrbana?: string | null;
-    monIndOtros?: string | null;
-    
-    // Ductos y Tuberías
-    ductosTuberias?: string | null;
-    ductosEstaciones?: string | null;
-    ductosOtros?: string | null;
-    
-    // Redes
-    redesTransElectAV?: string | null;
-    redesComunicaciones?: string | null;
-    redesOtros?: string | null;
-    redesTransElectBV?: string | null;
-    
-    // Otras Construcciones
-    otrasConstExcavaciones?: string | null;
-    otrasConstInstHidrGas?: string | null;
-    otrasConstInstElectro?: string | null;
-    otrasConstInstAireAcon?: string | null;
-    otrasConstReparaciones?: string | null;
-    otrasConstOtros?: string | null;
-    
-    // Actividades
-    actExcavacion?: string | null;
-    actDemolicion?: string | null;
-    actAlbanileria?: string | null;
-    actHA?: string | null;
-    actMontajesElectro?: string | null;
-    actInstalaciones?: string | null;
-    actEstructMetalicas?: string | null;
-    actElectricidad?: string | null;
-    actAscensores?: string | null;
-    actPintura?: string | null;
-    actMayorMilSupCubierta?: string | null;
-    actSilletas?: string | null;
-    actMediosIzaje?: string | null;
-    actAltaMediaTension?: string | null;
-    
-    // Campo auxiliar creado en la función
-    actOtrosCheck?: string | null; 
-
-    // ----------------------------------------------------
-    // 5. INDICE DE FIRMA (Necesario para data[name] dinámico)
-    // ----------------------------------------------------
-    [key: string]: any; 
-}*/
 
 interface FormClosedState {
     request: null;

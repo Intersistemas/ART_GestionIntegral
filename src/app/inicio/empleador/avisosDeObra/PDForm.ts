@@ -13,9 +13,9 @@ import { Base64 } from "js-base64"; // Necesario para la conversión Base64 comp
 
 // 🚨 Ajusta las rutas de importación según tu estructura de carpetas
 import Formato from "@/utils/Formato";
-import { Provincias } from "./provincias"; 
-import { Provincia } from "./types";
-import { PdfFormData } from "./types";
+import { Provincias } from "./types/provincias"; 
+import { Provincia } from "./types/types";
+import { PdfFormData } from "./types/types";
 
 // ----------------------------------------------------
 // Interfaces para funciones auxiliares (Mantenidas)

@@ -23,7 +23,7 @@ import {
     ApiQueryState, 
     ApiError, 
     FormDataState 
-} from "./types";
+} from "./types/types";
 import gestionEmpleadorAPI from "@/data/gestionEmpleadorAPI";
 import CustomButton from "@/utils/ui/button/CustomButton";
 import { useAuth } from "@/data/AuthContext";

@@ -28,7 +28,7 @@ const CustomNotToggle: React.FC<NotToggleProps> = ({
         minWidth: '75px',
         '&.Mui-selected': {
           // Estilo para el estado 'NO' (Negación activa)
-          backgroundColor: 'warning.main', // Asumiendo que 'warning' es naranja
+          backgroundColor: 'var(--naranjaOscuro)', // Asumiendo que 'warning' es naranja
           color: 'white',
           '&:hover': {
                       opacity: 1,
@@ -36,7 +36,7 @@ const CustomNotToggle: React.FC<NotToggleProps> = ({
         },
         '&:not(.Mui-selected)': {
           // Estilo para el estado 'SI' (Regla activa)
-          backgroundColor: 'success.main', // Asumiendo que 'success' es verde
+          backgroundColor: 'var(--naranjaOscuro)', // Asumiendo que 'success' es verde
           color: 'white',
           '&:hover': {
                      opacity: 0.3,
@@ -45,7 +45,7 @@ const CustomNotToggle: React.FC<NotToggleProps> = ({
       }}
     >
       <Typography variant="button" component="span" sx={{ marginLeft: '0.3rem', fontWeight: 'bold' }}>
-        {content} Contiene
+        <span style={{fontSize: "1.2rem"}}>{content}</span> Contiene
       </Typography>
     </ToggleButton>
   );

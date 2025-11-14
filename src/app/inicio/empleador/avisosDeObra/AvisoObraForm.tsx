@@ -1,13 +1,13 @@
-// AvisoObraForm.tsx
+// src/app/inicio/empleador/avisosDeObra/AvisoObraForm.tsx
+
 import React, { useState, FC } from "react";
-// 🚨 Importar ChangeEvent ya no es necesario
 import { Control as UIControl } from "./Control"; // Asumo que UIControl es el componente de input/select
 import { Card, CardContent, Typography, Grid, Box } from "@mui/material";
 // Asumo que Provincias y AvisosObraTipos son arrays de objetos con campos Codigo y Descripcion
-import { AvisosObraTipos } from './avisosObraTipos'; 
-import { Provincias } from './provincias';
+import { AvisosObraTipos } from './types/avisosObraTipos'; 
+import { Provincias } from './types/provincias';
 import CustomModal from "@/utils/ui/form/CustomModal";
-import { AvisoObraRecord, AvisoTipo, Provincia, Request, Response } from "./types";
+import { AvisoObraRecord, AvisoTipo, Provincia, Request, Response } from "./types/types";
 import CustomButton from "@/utils/ui/button/CustomButton";
 
 // El tipo SelectConfig se usa para mapear la descripción a un valor (string o number)
@@ -115,7 +115,7 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
             default: return "";
         }
     })();
-    const title = [finalAction, "Aviso de obra"].filter(e => e).join(" ");
+    const title = [finalAction, "Aviso de Obra"].filter(e => e).join(" ");
     
     // 7. Componente de Control tipado y con lógica de manejo de cambios
     // Lo definimos dentro del componente principal para tener acceso a 'data' y 'setData'
