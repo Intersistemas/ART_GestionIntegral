@@ -66,3 +66,16 @@ export function toURLSearch(o: any, execute = false): URLSearchParams | undefine
     s.append(k, v);
   }
 }
+
+export function arrayToRecord<T = any, K extends keyof any = number, V = any>(
+  array: readonly T[],
+  entryBuilder: (item: T, index: number) => [K, V] | undefined = (e, i) => [i as K, e as unknown as V],
+) {
+  const result = {} as Record<K, V>;
+  array.forEach((e, i) => {
+    const r = entryBuilder(e, i);
+    if (!r) return;
+    result[r[0]] = r[1];
+  });
+  return result;
+}
