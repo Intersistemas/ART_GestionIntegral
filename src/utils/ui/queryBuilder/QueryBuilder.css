@@ -59,7 +59,6 @@
     display: flex;
     gap: 0.5rem;
     align-items: center;
-    height: 3rem !important;
 }
 .queryBuilder .rule {
     padding-left: var(--rqb-spacing, 1rem) ;
