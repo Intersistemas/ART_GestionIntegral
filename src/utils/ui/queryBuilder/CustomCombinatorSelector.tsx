@@ -85,6 +85,7 @@ const CustomCombinatorSelector: React.FC<CombinatorSelectorProps> = ({
             // Ajuste para el texto (Y/O)
             fontSize: "1.2rem",
             padding: "4px 12px",
+            height: '3rem !important',
           }}
         >
           {combinator.label}

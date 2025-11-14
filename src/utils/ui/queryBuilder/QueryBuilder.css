@@ -55,14 +55,21 @@
 
 /* Ajuste de padding en header y reglas individuales para respetar el espaciado */
 .queryBuilder .ruleGroup-header {
-    display: flex !important;
-    padding: var(--rqb-spacing, 1rem) ;
+    padding: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    height: 3rem !important;
 }
 .queryBuilder .rule {
     padding-left: var(--rqb-spacing, 1rem) ;
     padding-right: var(--rqb-spacing, 1rem) ;
 }
 
+
+.MuiToggleButtonGroup-root {
+    height: 3rem !important;
+}
 /*
 .queryBuilder-branches:dir(ltr) .rule::before{
     left: 0;

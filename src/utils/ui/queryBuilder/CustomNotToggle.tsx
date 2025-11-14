@@ -26,6 +26,7 @@ const CustomNotToggle: React.FC<NotToggleProps> = ({
       sx={{
         textTransform: 'none', // Previene MAYÚSCULAS automáticas
         minWidth: '75px',
+        height: '3rem',
         '&.Mui-selected': {
           // Estilo para el estado 'NO' (Negación activa)
           backgroundColor: 'var(--naranjaOscuro)', // Asumiendo que 'warning' es naranja
