@@ -32,7 +32,7 @@ const CustomNotToggle: React.FC<NotToggleProps> = ({
           backgroundColor: 'var(--naranjaOscuro)', // Asumiendo que 'warning' es naranja
           color: 'white',
           '&:hover': {
-                      opacity: 1,
+                      backgroundColor: 'var(--naranjaOscuro50)',
                     },
         },
         '&:not(.Mui-selected)': {
@@ -40,7 +40,7 @@ const CustomNotToggle: React.FC<NotToggleProps> = ({
           backgroundColor: 'var(--naranjaOscuro)', // Asumiendo que 'success' es verde
           color: 'white',
           '&:hover': {
-                     opacity: 0.3,
+                     backgroundColor: 'var(--naranjaOscuro50)',
                     },
         },
       }}

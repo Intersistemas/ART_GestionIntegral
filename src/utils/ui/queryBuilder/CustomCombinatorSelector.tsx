@@ -57,29 +57,26 @@ const CustomCombinatorSelector: React.FC<CombinatorSelectorProps> = ({
           aria-label={combinator.label}
           sx={{
             fontWeight: "bold",
-            // Estilos para distinguir 'Y' de 'O'
-            backgroundColor: combinator.name === "and" ? "#808080" : "#808080", 
             color: "white",
+              backgroundColor: 'var(--naranjaOscuro)',
             // Estilos para el botón activo
             "&.Mui-selected": {
-              backgroundColor:
-                combinator.name === "and" ? 'var(--naranjaOscuro)' : 'var(--naranjaOscuro)', // Color más oscuro al seleccionar
-
+              backgroundColor: 'var(--naranjaOscuro)', // Color más oscuro al seleccionar
               color: "white",
-
               "&:hover": {
-                backgroundColor:
-                  combinator.name === "and" ? 'var(--naranjaOscuro)' : 'var(--naranjaOscuro)',
+                backgroundColor: 'var(--naranjaOscuro)',
               },
             },
 
             // Estilos para el botón inactivo
 
             "&:not(.Mui-selected)": {
-              opacity: 0.6,
+              backgroundColor: 'var(--naranjaOscuro50)',
+              opacity: 0.3,
 
               "&:hover": {
-                opacity: 0.8,
+                 backgroundColor: 'var(--naranjaOscuro50)',
+                 opacity: 1,
               },
             },
             // Ajuste para el texto (Y/O)
