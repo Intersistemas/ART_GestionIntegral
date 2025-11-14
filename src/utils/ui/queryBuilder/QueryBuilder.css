@@ -55,6 +55,7 @@
 
 /* Ajuste de padding en header y reglas individuales para respetar el espaciado */
 .queryBuilder .ruleGroup-header {
+    display: flex !important;
     padding: var(--rqb-spacing, 1rem) ;
 }
 .queryBuilder .rule {
