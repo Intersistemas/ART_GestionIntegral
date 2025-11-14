@@ -494,7 +494,7 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
                                 <Grid ><Control label="Alta y media tensión" name="actAltaMediaTension" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
                                 <Grid ><Control label="Mayor de 1000 m2 Sup. Cubierta o más de 4m. de altura" name="actMayorMilSupCubierta" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
                                
-                                <Control label="Otros (detallar)" name="actOtros" type="textarea" onChange={handleChange} data={data} disabled={isReadOnly} />
+                                <Control label="Otros (detallar)" name="actOtros" maxLength={100} type="textarea" onChange={handleChange} data={data} disabled={isReadOnly} />
                             </Grid>
                         </CardContent>
                     </Card>
