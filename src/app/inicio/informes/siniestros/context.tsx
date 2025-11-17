@@ -3,12 +3,16 @@ import React, { createContext, type ReactNode, useCallback, useContext, useMemo,
 import { type Field, formatQuery, type RuleGroupType, type ValueEditorType, type DefaultOperators, defaultOperators } from 'react-querybuilder';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { type GridColType } from '@mui/x-data-grid';
-import QueriesAPI, { type Query } from '@/data/queryAPI';
+import QueriesAPI, { type Query, type FiltroVm } from '@/data/queryAPI';
 import Formato from '@/utils/Formato';
 import propositionFormat from '@/utils/PropositionFormatQuery';
 import { type ColumnDef } from '@tanstack/react-table';
 import moment from 'moment';
 import { saveTable, type TableColumn, type AddTableOptions } from '@/utils/excelUtils';
+import { FiltrosTable, FiltrosTableContextProvider } from '@/components/filtros/FiltrosTable';
+import CustomModal from '@/utils/ui/form/CustomModal';
+import parsePropositionGroup from '@/utils/PropositionParseQuery';
+import FiltroForm from '@/components/filtros/FiltroForm';
 
 //#region types
 type Row = Record<string, any>;
@@ -27,12 +31,20 @@ type Tables = Record<TablesName, TablesField[]>;
 type OptionsFormatter = (options: any) => Formatter;
 type OptionsValues = (options: any) => { name: string, label: any }[];
 type Headers = { columns: Record<string, TableColumn>, options: AddTableOptions };
+
 interface DataContextType {
   fields: Field[];
   columns: ColumnDef<Row>[];
   rows: Row[];
   query: { state: RuleGroupType, setState: React.Dispatch<React.SetStateAction<RuleGroupType>> };
   dialog?: React.ReactNode;
+
+  proposition?: string;
+  filtro?: FiltroVm;
+  onLookupFiltro: () => void;
+  onGuardaFiltro: () => void;
+  onEliminaFiltro: () => void;
+
   onAplicaFiltro: () => void;
   onLimpiaFiltro: () => void;
   onLimpiaTabla: () => void;
@@ -47,16 +59,13 @@ const defaultQuery: RuleGroupType = { combinator: 'and', rules: [] };
 const numeroSiniestroFormatter: Formatter = (v) => Formato.Mascara(v, "####-######-##");
 const fechaHoraFormatter: Formatter = (v) => Formato.FechaHora(v);
 
-
 const fechaFormatter: Formatter = (v) => {
   if (v == null) return "";
   const s = String(v).trim();
 
   if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) return s;
 
-
   if (/^\d{4}-\d{2}-\d{2}/.test(s)) return Formato.Fecha(s);
-
 
   if (/^\d{10,13}$/.test(s)) {
     const t = Number(s);
@@ -72,7 +81,6 @@ const fechaFormatter: Formatter = (v) => {
   const byUtils = Formato.Fecha(s);
   return byUtils || s;
 };
-
 
 const numeroFormatter: Formatter = (v) => Formato.Numero(v);
 const cuipFormatter: Formatter = (v) => Formato.CUIP(v);
@@ -90,7 +98,6 @@ const optionsSelect = (options: any, formatter = valueOptionsFormatter, values =
   formatter: formatter(options),
   values: values(options),
 });
-
 
 const SNOptions = { S: "Si", N: "No" };
 const tipoSiniestroOptions = { T: "Accidente Trabajo", P: "Enfermedad Profesional", I: "Accidente In-Itinere", R: "Reingreso" };
@@ -131,10 +138,8 @@ export function SiniestrosContextProvider({ children }: { children: ReactNode })
       { name: "EstablecimientoIdSrt", label: "Establecimiento Id SRT", type: "number" },
       { name: "EstablecimientoTipo", label: "Establecimiento Tipo" },
 
-
       { name: "EstablecimientoProvincia", label: "Prov. Establecimiento (Desc.)" },
       { name: "EstablecimientoLocalidad", label: "Loc. Establecimiento (Desc.)" },
-
 
       { name: "ProvinciaOcurrenciaDes", label: "Prov. Ocurrencia (Desc.)" },
       { name: "LocalidadOcurrenciaDesc", label: "Loc. Ocurrencia (Desc.)" },
@@ -219,11 +224,19 @@ export function SiniestrosContextProvider({ children }: { children: ReactNode })
   }, [tables.vSiniestrosWeb]);
   //#endregion columns, fields, headers
 
-  //#region rows, query, dialog
+  //#region rows, query, dialog, filtro
   const [rows, setRows] = useState<Row[]>([]);
   const [query, setQuery] = useState(defaultQuery);
   const [dialog, setDialog] = useState<React.ReactNode>();
-  //#endregion rows, query, dialog
+  const [filtro, setFiltro] = useState<FiltroVm | undefined>();
+  //#endregion rows, query, dialog, filtro
+
+  //#region proposition (string serializada)
+  const proposition = useMemo(
+    () => formatQuery(query, propositionFormat({ fields })),
+    [query, fields]
+  );
+  //#endregion
 
   //#region helpers diálogo
   const onCloseDialog = useCallback(() => setDialog(null), []);
@@ -244,9 +257,56 @@ export function SiniestrosContextProvider({ children }: { children: ReactNode })
   ), [onCloseDialog]);
   //#endregion helpers diálogo
 
+  //#region acciones filtros guardados
+  const onLookupFiltro = useCallback(() => {
+    setDialog(
+      <FiltrosLookup
+        onClose={onCloseDialog}
+        onSelect={(f) => {
+          setFiltro(f);
+          setQuery(parsePropositionGroup(f.proposition));
+          onCloseDialog();
+        }}
+      />
+    );
+  }, [onCloseDialog]);
+
+  const onGuardaFiltro = useCallback(() => {
+    setDialog(
+      <FiltroForm
+        action={filtro == null ? "Create" : "Update"}
+        title="Guardando filtro"
+        init={{
+          ...filtro,
+          modulo: "Informes_Siniestros",
+          proposition
+        }}
+        onClose={(completed, filtroGuardado) => {
+          if (completed && filtroGuardado) setFiltro(filtroGuardado);
+          onCloseDialog();
+        }}
+      />
+    );
+  }, [filtro, proposition, onCloseDialog]);
+
+  const onEliminaFiltro = useCallback(() => {
+    setDialog(
+      <FiltroForm
+        action="Delete"
+        title="Borrando filtro"
+        init={filtro}
+        disabled={{ nombre: true, ambito: true }}
+        onClose={(completed) => {
+          if (completed) setFiltro(undefined);
+          onCloseDialog();
+        }}
+      />
+    );
+  }, [filtro, onCloseDialog]);
+  //#endregion acciones filtros guardados
+
   //#region acciones (aplicar/limpiar/exportar)
   const onAplicaFiltro = useCallback(async () => {
-    const proposition = formatQuery(query, propositionFormat({ fields }));
     const table: TablesName = "vSiniestrosWeb";
 
     const apiQuery: Query = {
@@ -292,9 +352,13 @@ export function SiniestrosContextProvider({ children }: { children: ReactNode })
       .catch((error) => errorDialog({
         message: typeof error === "string" ? error : error.detail ?? error.message ?? JSON.stringify(error)
       }));
-  }, [query, fields, onCloseDialog, errorDialog, tables]);
+  }, [proposition, tables, execute, analyze, onCloseDialog, errorDialog]);
 
-  const onLimpiaFiltro = useCallback(() => setQuery(defaultQuery), []);
+  const onLimpiaFiltro = useCallback(() => {
+    setFiltro(undefined);
+    setQuery(defaultQuery);
+  }, []);
+
   const onLimpiaTabla  = useCallback(() => setRows([]), []);
 
   const onExport = useCallback(async () => {
@@ -327,11 +391,22 @@ export function SiniestrosContextProvider({ children }: { children: ReactNode })
 
   //#region provider
   const value: DataContextType = {
-    fields, columns, rows, dialog,
+    fields,
+    columns,
+    rows,
+    dialog,
+    proposition,
+    filtro,
     query: { state: query, setState: setQuery },
-    onAplicaFiltro, onLimpiaFiltro, onLimpiaTabla, onExport
+    onLookupFiltro,
+    onGuardaFiltro,
+    onEliminaFiltro,
+    onAplicaFiltro,
+    onLimpiaFiltro,
+    onLimpiaTabla,
+    onExport,
   };
- return <SiniestrosContext.Provider value={value}>{children}</SiniestrosContext.Provider>
+  return <SiniestrosContext.Provider value={value}>{children}</SiniestrosContext.Provider>;
   //#endregion provider
 }
 
@@ -339,4 +414,23 @@ export function useSiniestrosContext() {
   const context = useContext(SiniestrosContext);
   if (context === undefined) throw new Error('useSiniestrosContext must be used within a SiniestrosContextProvider');
   return context;
+}
+function FiltrosLookup({
+  onSelect,
+  onClose,
+}: {
+  onSelect: (filtro: FiltroVm) => void;
+  onClose: () => void;
+}) {
+  return (
+    <CustomModal
+      open={true}
+      onClose={onClose}
+      title="Elige filtro"
+    >
+      <FiltrosTableContextProvider deleted={false} modulo="Informes_Siniestros">
+        <FiltrosTable onSelect={onSelect} />
+      </FiltrosTableContextProvider>
+    </CustomModal>
+  );
 }
