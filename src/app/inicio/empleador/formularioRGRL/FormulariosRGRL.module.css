@@ -107,8 +107,9 @@
 .iconActions {
   display: flex;
   gap: 8px;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
+  width: 80%;
 }
 
 .iconButton {

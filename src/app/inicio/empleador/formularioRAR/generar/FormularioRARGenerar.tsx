@@ -23,12 +23,15 @@ dayjs.locale('es');
 
 const cuipFormatter = (v: any) => Formato.CUIP(v);
 
+const normalizarCuil = (v: string) => (v || '').replace(/\D/g, '');
+
 interface CrearProps {
   cuit: number;
   internoEstablecimiento?: number; // opcional en creación
   referenteDatos?: unknown;
   finalizaCarga: (ret?: boolean) => void;
   formulariosRAR?: any[]; // opcional
+  editarId?: number; // interno del formulario a editar (si existe)
 }
 
 type OpcionEstablecimiento = { interno: string; domicilioCalle: string; displayText: string };
@@ -39,6 +42,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
   internoEstablecimiento = 0,
   finalizaCarga,
   formulariosRAR = [],
+  editarId = 0,
 }) => {
   // encabezado
   const [cuitActual, setCuitActual] = React.useState<string>(String(cuit || ''));
@@ -62,6 +66,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
 
   // modal - Se abre automáticamente al cargar el componente
   const [modalTrabajadorOpen, setModalTrabajadorOpen] = React.useState<boolean>(true);
+  const esModoEdicionFormulario = editarId > 0;
 
   // trabajadores
   const [cuil, setCuil] = React.useState<string>('');
@@ -177,8 +182,8 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
       size: 100,
       cell: ({ getValue }: any) => {
         const fecha = getValue();
-        return fecha && fecha.trim() !== '' 
-          ? fecha 
+        return fecha && fecha.trim() !== ''
+          ? fecha
           : <span style={{ color: '#888', fontStyle: 'italic' }}>No especif.</span>;
       }
     },
@@ -197,11 +202,11 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
       header: 'Acciones',
       size: 100,
       cell: ({ row }: any) => {
-        const index = filas.findIndex(fila => 
-          fila.CUIL === row.original.CUIL && 
+        const index = filas.findIndex(fila =>
+          fila.CUIL === row.original.CUIL &&
           fila.Nombre === row.original.Nombre
         );
-        
+
         return (
           <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', alignItems: 'center' }}>
             <EditIcon
@@ -217,7 +222,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
                   e.target.style.color = '#ff9800';
                 }
               }}
-              onMouseLeave={(e: any) => { 
+              onMouseLeave={(e: any) => {
                 if (!modoEdicion || editandoIndex === index) {
                   e.target.style.color = '#2196f3';
                 } else {
@@ -249,7 +254,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
           </div>
         );
       },
-      meta: { align: 'center'} 
+      meta: { align: 'center' }
     }
   ], [filas, modoEdicion, editandoIndex, handleEditarTrabajador, handleEliminarTrabajador]);
 
@@ -274,11 +279,11 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
     const exposicionCompleto = exposicion && exposicion.trim() !== '';
     const ultimoExamenMedicoCompleto = ultimoExamenMedico && ultimoExamenMedico.trim() !== '';
     const codigoAgenteCompleto = codigoAgente && codigoAgente.trim() !== '';
-    
-    const resultado = cuilCompleto && nombreCompleto && sectorCompleto && 
-                     ingresoCompleto && fechaInicioCompleto && exposicionCompleto && 
-                     ultimoExamenMedicoCompleto && codigoAgenteCompleto;
-    
+
+    const resultado = cuilCompleto && nombreCompleto && sectorCompleto &&
+      ingresoCompleto && fechaInicioCompleto && exposicionCompleto &&
+      ultimoExamenMedicoCompleto && codigoAgenteCompleto;
+
     console.log(' Validación trabajadorCompleto DETALLADA:', {
       cuilCompleto: { valor: cuil, completo: cuilCompleto, longitud: cuil ? cuil.replace(/\D/g, '').length : 0 },
       nombreCompleto: { valor: nombre, completo: nombreCompleto },
@@ -290,7 +295,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
       codigoAgenteCompleto: { valor: codigoAgente, completo: codigoAgenteCompleto },
       resultado: resultado
     });
-    
+
     return resultado;
   }, [cuil, nombre, sector, ingreso, fechaInicio, exposicion, ultimoExamenMedico, codigoAgente]);
 
@@ -301,18 +306,55 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
 
   // Verificar si hay establecimiento seleccionado para habilitar siguiente paso
   const establecimientoSeleccionadoValido = (establecimientoSeleccionado || '').trim() !== '';
-  
+
   // Validación para cantidades completas (requisito esencial)
-  const cantidadesCompletas = 
+  const cantidadesCompletas =
     establecimientoSeleccionadoValido &&
-    numerosValidos(cantExpuestos) && 
+    numerosValidos(cantExpuestos) &&
     numerosValidos(cantNoExpuestos) &&
     (Number(cantExpuestos) + Number(cantNoExpuestos)) > 0;
 
   // Calcular total de trabajadores requeridos (EXPUESTOS + NO EXPUESTOS)
-  const totalTrabajadoresRequeridos = cantidadesCompletas ? (Number(cantExpuestos) + Number(cantNoExpuestos)) : 0;
-  const trabajadoresCargados = filas.length;
+  const totalTrabajadoresRequeridos = cantidadesCompletas
+    ? (Number(cantExpuestos) + Number(cantNoExpuestos))
+    : 0;
+
+  const cuilsUnicos = React.useMemo(() => {
+    const set = new Set<string>();
+    filas.forEach((f) => {
+      const n = normalizarCuil(f.CUIL);
+      if (n) set.add(n);
+    });
+    return set;
+  }, [filas]);
+
+  const trabajadoresCargados = cuilsUnicos.size;
   const faltanTrabajadores = totalTrabajadoresRequeridos - trabajadoresCargados;
+
+  const esCuilRepetido = React.useMemo(() => {
+    const cuilNum = normalizarCuil(cuil);
+    if (!cuilNum) return false;
+    return filas.some((f) => normalizarCuil(f.CUIL) === cuilNum);
+  }, [cuil, filas]);
+
+  const puedeCargarTrabajador = React.useMemo(() => {
+
+    if (!cantidadesCompletas || !trabajadorCompleto) return false;
+
+    if (totalTrabajadoresRequeridos <= 0) return false;
+
+    if (trabajadoresCargados < totalTrabajadoresRequeridos) return true;
+
+    return esCuilRepetido;
+  }, [
+    cantidadesCompletas,
+    trabajadorCompleto,
+    totalTrabajadoresRequeridos,
+    trabajadoresCargados,
+    esCuilRepetido,
+  ]);
+
+
 
   // Console para debuggear totales
   console.log(' Cantidades:', {
@@ -329,7 +371,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
     (establecimientoSeleccionado || '').trim() !== '' &&
     cantidadesCompletas &&
     trabajadoresCargados >= totalTrabajadoresRequeridos &&
-    !modoEdicion; // No permitir guardar mientras se está editando
+    !modoEdicion;
 
   // ===== Carga inicial: encabezado + selects =====
   React.useEffect(() => {
@@ -346,12 +388,58 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
   React.useEffect(() => {
     let cancel = false;
     (async () => {
+      if (!esModoEdicionFormulario || editarId <= 0) return;
+      try {
+        console.log(' MODO EDICIÓN: cargando formulario existente', editarId);
+        const r = await fetch(`http://arttest.intersistemas.ar:8302/api/FormulariosRAR/${editarId}`);
+        if (!r.ok) {
+          console.error(' No se pudo cargar el formulario para edición');
+          return;
+        }
+        const data = await r.json();
+        if (cancel) return;
+
+        // Cantidades
+        setCantExpuestos(String(data.cantTrabajadoresExpuestos || 0));
+        setCantNoExpuestos(String(data.cantTrabajadoresNoExpuestos || 0));
+
+        // Establecimiento (interno)
+        if (data.internoEstablecimiento) {
+          setEstablecimientoSeleccionado(String(data.internoEstablecimiento));
+        }
+
+        // Detalle trabajadores
+        if (Array.isArray(data.formularioRARDetalle)) {
+          const filasMap = data.formularioRARDetalle.map((d: any) => ({
+            CUIL: String(d.cuil || ''),
+            Nombre: d.nombre || '',
+            SectorTareas: d.sectorTarea || '',
+            Ingreso: d.fechaIngreso ? dayjs(d.fechaIngreso).format('YYYY-MM-DD') : '',
+            FechaInicio: d.fechaInicioExposicion ? dayjs(d.fechaInicioExposicion).format('YYYY-MM-DD') : '',
+            Exposicion: String(d.horasExposicion || 0),
+            FechaFinExposicion: d.fechaFinExposicion ? dayjs(d.fechaFinExposicion).format('YYYY-MM-DD') : '',
+            UltimoExamenMedico: d.fechaUltimoExamenMedico ? dayjs(d.fechaUltimoExamenMedico).format('YYYY-MM-DD') : '',
+            CodigoAgente: String(d.codigoAgente || ''),
+            AgenteCausanteDisplay: String(d.codigoAgente || ''),
+          }));
+          setFilas(filasMap);
+        }
+      } catch (e) {
+        console.error(' Error cargando datos para edición:', e);
+      }
+    })();
+    return () => { cancel = true; };
+  }, [editarId, esModoEdicionFormulario]);
+
+  React.useEffect(() => {
+    let cancel = false;
+    (async () => {
       try {
         setCargandoSelects(true);
 
         // Validar CUIT
         const cuitParaUsar = cuitActual || cuit;
-        
+
         if (!cuitParaUsar || cuitParaUsar === 0 || String(cuitParaUsar).trim() === '' || String(cuitParaUsar).trim() === '0') {
           if (!cancel) {
             setOpcionesEstablecimientos([]);
@@ -364,7 +452,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
 
         // Establecimientos
         const url = `http://arttest.intersistemas.ar:8302/api/Establecimientos/Empresa/${cuitParaUsar}`;
-        
+
         const resp = await fetch(url, {
           method: 'GET',
           headers: {
@@ -373,16 +461,16 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
           },
           mode: 'cors',
         });
-        
+
         const establecimientos = resp.ok ? await resp.json() : [];
-        
+
         console.log(' Respuesta establecimientos:', establecimientos);
-        
+
         const estArr = Array.isArray(establecimientos)
           ? establecimientos
           : establecimientos?.data
-          ? (Array.isArray(establecimientos.data) ? establecimientos.data : [establecimientos.data])
-          : (establecimientos ? [establecimientos] : []);
+            ? (Array.isArray(establecimientos.data) ? establecimientos.data : [establecimientos.data])
+            : (establecimientos ? [establecimientos] : []);
 
         console.log(' Array procesado:', estArr);
 
@@ -410,8 +498,8 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
         const agArr = Array.isArray(agentes)
           ? agentes
           : agentes?.data
-          ? (Array.isArray(agentes.data) ? agentes.data : [agentes.data])
-          : (agentes ? [agentes] : []);
+            ? (Array.isArray(agentes.data) ? agentes.data : [agentes.data])
+            : (agentes ? [agentes] : []);
 
         const opcionesAgentes: OpcionAgente[] = agArr
           .filter((a: any) => a && (a.codigo || a.agenteCausante))
@@ -440,27 +528,16 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
   // ===== Efecto para manejar lógica de exposición y agente causante =====
   React.useEffect(() => {
     const exposicionNum = Number(exposicion) || 0;
-    
-    if (exposicionNum === 0 && agentesCausantes.length > 0) {
-      // Si exposición es 0, buscar y seleccionar automáticamente el agente con código 90009
-      const agenteOtrosFisicos = agentesCausantes.find(agente => agente.codigo === 90009);
-      if (agenteOtrosFisicos) {
-        setCodigoAgente(String(agenteOtrosFisicos.codigo));
-        console.log(' Agente "OTROS AGENTES FISICOS" (90009) seleccionado automáticamente:', agenteOtrosFisicos);
-      } else {
-        // Fallback: si no se encuentra el agente 90009, usar el primero de la lista
-        const primerAgente = agentesCausantes[0];
-        if (primerAgente) {
-          setCodigoAgente(String(primerAgente.codigo));
-          console.log('Agente 90009 no encontrado, usando primer agente como fallback:', primerAgente);
-        }
-      }
+
+    if (exposicionNum === 0) {
+
+      setCodigoAgente('1');
+      console.log(' Agente automático para exposición 0: código 1 seleccionado');
     } else if (exposicionNum > 0) {
       // Si exposición > 0, limpiar la selección para que el usuario pueda elegir
-      // Solo limpiar si el agente actual es el código 90009 (seleccionado automáticamente)
-      if (codigoAgente === '90009') {
+      if (codigoAgente === '1') {
         setCodigoAgente('');
-        console.log(' Limpiando selección automática del agente 90009 para permitir selección manual');
+        console.log(' Limpiando selección automática del agente código 1 para permitir selección manual');
       }
     }
   }, [exposicion, agentesCausantes, codigoAgente]);
@@ -474,12 +551,12 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
     }
 
     setConsultandoCuil(true);
-    
+
     try {
       console.log(' Consultando CUIL:', cuilNumerico);
-      
+
       const url = `https://api.artmutualrural.org.ar:8182/api/AfiliadoDatos/BuscarPorCUILSimple?pCUIL=${cuilNumerico}`;
-      
+
       const response = await fetch(url, {
         method: 'GET',
         headers: {
@@ -492,7 +569,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
       if (response.ok) {
         const datos = await response.json();
         console.log(' Datos obtenidos:', datos);
-        
+
         // Si tiene nombre, completar automáticamente
         if (datos && datos.Nombre && datos.Nombre.trim() !== '') {
           setNombre(datos.Nombre.trim());
@@ -572,7 +649,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
     }
 
     setErroresCampos(nuevosErrores);
-    
+
     // Retornar si hay errores
     return Object.values(nuevosErrores).some(error => error !== '');
   }, [cuil, nombre, sector, ingreso, fechaInicio, exposicion, ultimoExamenMedico, codigoAgente]);
@@ -592,7 +669,12 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
       codigoAgente,
       trabajadorCompleto
     });
-    
+
+    if (!modoEdicion && !puedeCargarTrabajador) {
+      console.log(' No se puede cargar trabajador: límite alcanzado o datos incompletos');
+      return;
+    }
+
     // Si estamos en modo edición, usar la función de guardar edición
     if (modoEdicion) {
       console.log(' Modo edición activo, ejecutando handleGuardarEdicion');
@@ -606,17 +688,14 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
       console.log(' Trabajador incompleto con errores de validación');
       return;
     }
-    
-    if (filas.length >= totalTrabajadoresRequeridos) {
-      alert(`Ya cargaste todos los trabajadores requeridos (${totalTrabajadoresRequeridos})`);
-      return;
-    }
 
-    const cuilNum = (cuil || '').replace(/\D/g, '');
-    if (filas.some((f) => f.CUIL?.replace(/\D/g, '') === cuilNum)) {
-      alert('Este CUIL ya fue cargado');
-      return;
-    }
+    const cuilNum = normalizarCuil(cuil);
+
+    const yaExisteCuil = filas.some((f) => normalizarCuil(f.CUIL) === cuilNum);
+
+    const cuilsUnicosAntes = cuilsUnicos.size;
+
+
 
     const agente = agentesCausantes.find((a) => String(a.codigo) === (codigoAgente || '').trim());
 
@@ -630,7 +709,11 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
       FechaFinExposicion: (fechaFinExposicion || '').trim(),
       UltimoExamenMedico: (ultimoExamenMedico || '').trim(),
       CodigoAgente: (codigoAgente || '').trim(),
-      AgenteCausanteDisplay: agente ? agente.displayText : (codigoAgente || '').trim(),
+      AgenteCausanteDisplay: agente
+        ? agente.displayText
+        : (codigoAgente || '').trim() === '1'
+          ? '1 - No Expuesto'
+          : (codigoAgente || '').trim(),
     };
 
     console.log(' Cargando trabajador:', nuevoTrabajador);
@@ -651,11 +734,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
     setFechaFinExposicion('');
     setUltimoExamenMedico('');
     setCodigoAgente('');
-    
-    // Mensaje de confirmación pero mantener modal abierto
-    if (filas.length + 1 >= totalTrabajadoresRequeridos) {
-      alert(`¡Perfecto! Has cargado todos los ${totalTrabajadoresRequeridos} trabajadores expuestos. Ya podés guardar el formulario RAR completo.`);
-    }
+
   };
 
 
@@ -672,7 +751,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
 
     const cuilNum = cuil.replace(/\D/g, '');
     // Verificar CUIL duplicado (excluyendo el que estamos editando)
-    const duplicado = filas.some((f, idx) => 
+    const duplicado = filas.some((f, idx) =>
       idx !== editandoIndex && f.CUIL?.replace(/\D/g, '') === cuilNum
     );
 
@@ -696,7 +775,11 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
         FechaFinExposicion: fechaFinExposicion.trim(),
         UltimoExamenMedico: ultimoExamenMedico.trim(),
         CodigoAgente: codigoAgente.trim(),
-        AgenteCausanteDisplay: agente ? agente.displayText : codigoAgente.trim(),
+        AgenteCausanteDisplay: agente
+          ? agente.displayText
+          : codigoAgente.trim() === '1'
+            ? '1 - No Expuesto'
+            : codigoAgente.trim(),
       };
       return nuevasFilas;
     });
@@ -723,7 +806,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
 
   // Nueva función para guardar directamente desde el modal completo
   const handleGuardarCompleto = async () => {
-    console.log(' Iniciando handleGuardarCompleto');
+    console.log(' Iniciando handleGuardarCompleto (ahora permite guardar incompleto)');
     console.log('📊 DEBUG - Estado actual:', {
       puedeGuardarCompleto,
       cantExpuestos,
@@ -733,12 +816,6 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
       totalTrabajadoresRequeridos,
       trabajadoresCargados: filas.length
     });
-
-    if (!puedeGuardarCompleto) {
-      console.log(' No puede guardar completo');
-      alert('Completá todos los campos requeridos');
-      return;
-    }
 
     const total = Number(cantExpuestos) + Number(cantNoExpuestos);
     if (total === 0) return alert('El total de trabajadores debe ser mayor a 0.');
@@ -769,7 +846,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
           fechaUltimoExamenMedico: dayjs(f.UltimoExamenMedico || fechaActual).toISOString(),
           codigoAgente: Number(f.CodigoAgente) || 1,
           fechaInicioExposicion: dayjs(f.FechaInicio || fechaActual).toISOString(),
-          fechaFinExposicion: f.FechaFinExposicion && f.FechaFinExposicion.trim() !== '' 
+          fechaFinExposicion: f.FechaFinExposicion && f.FechaFinExposicion.trim() !== ''
             ? dayjs(f.FechaFinExposicion).toISOString()
             : dayjs('2099-01-01').toISOString(), // Fecha por defecto: 01/01/2099 para indicar "no especificada"
         };
@@ -781,7 +858,8 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
         cantTrabajadoresExpuestos: Number(cantExpuestos) || 0,
         cantTrabajadoresNoExpuestos: Number(cantNoExpuestos) || 0,
         fechaCreacion: fechaActual,
-        fechaPresentacion: fechaActual,
+        // Si el formulario está completo mandamos la fecha actual, sino mandamos null
+        fechaPresentacion: puedeGuardarCompleto ? fechaActual : null,
         internoPresentacion: 0,
         internoEstablecimiento: establecimientoParaEnvio,
         formularioRARDetalle: formularioRARDetalle,
@@ -790,9 +868,11 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
       console.log(' Payload completo:', JSON.stringify(payload, null, 2));
 
       console.log(' Enviando POST request...');
-      
-      const resp = await fetch('http://arttest.intersistemas.ar:8302/api/FormulariosRAR', {
-        method: 'POST',
+
+      const urlGuardar = esModoEdicionFormulario ? `http://arttest.intersistemas.ar:8302/api/FormulariosRAR/${editarId}` : 'http://arttest.intersistemas.ar:8302/api/FormulariosRAR';
+      const metodo = esModoEdicionFormulario ? 'PUT' : 'POST';
+      const resp = await fetch(urlGuardar, {
+        method: metodo,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
@@ -813,14 +893,15 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
       console.log(' Respuesta exitosa:', responseData);
 
       // Mostrar mensaje de éxito y preguntar qué hacer
-      const confirmacion = window.confirm(
-        'Formulario RAR creado exitosamente!\n\n' +
+      const mensajeBase = esModoEdicionFormulario ? 'Formulario RAR actualizado exitosamente!' : 'Formulario RAR creado exitosamente!';
+      const confirmacion = !esModoEdicionFormulario && window.confirm(
+        mensajeBase + '\n\n' +
         '¿Querés crear otro formulario RAR?\n\n' +
         '• Presioná "Aceptar" para crear otro formulario\n' +
         '• Presioná "Cancelar" para volver a la lista'
       );
 
-      if (confirmacion) {
+      if (!esModoEdicionFormulario && confirmacion) {
         // Limpiar el formulario para crear otro
         setCuil(''); setNombre(''); setSector(''); setIngreso('');
         setFechaInicio(''); setExposicion('0'); setFechaFinExposicion('');
@@ -869,7 +950,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
         fechaUltimoExamenMedico: dayjs(f.UltimoExamenMedico || fechaActual).toISOString(),
         codigoAgente: Number(f.CodigoAgente) || 1,
         fechaInicioExposicion: dayjs(f.FechaFin || fechaActual).toISOString(),
-        fechaFinExposicion: f.FechaFinExposicion && f.FechaFinExposicion.trim() !== '' 
+        fechaFinExposicion: f.FechaFinExposicion && f.FechaFinExposicion.trim() !== ''
           ? dayjs(f.FechaFinExposicion).toISOString()
           : dayjs('2099-01-01').toISOString(), // Fecha por defecto: 01/01/2099 para indicar "no especificada"
       }));
@@ -878,7 +959,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
         cantTrabajadoresExpuestos: Number(cantExpuestos) || 0,
         cantTrabajadoresNoExpuestos: Number(cantNoExpuestos) || 0,
         fechaCreacion: fechaActual,
-        fechaPresentacion: fechaActual,
+        fechaPresentacion: puedeGuardarCompleto ? fechaActual : null,
         internoPresentacion: 0,
         internoEstablecimiento: establecimientoParaEnvio,
         formularioRARDetalle: formularioRARDetalle,
@@ -930,7 +1011,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
           // Redirigir a la pantalla principal
           finalizaCarga(false);
         }}
-        title="Formulario RAR"
+        title={esModoEdicionFormulario ? `Editar Formulario RAR #${editarId}` : 'Formulario RAR'}
         size="large"
       >
         <div className={styles.modalGridCol}>
@@ -990,18 +1071,18 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
           </div>
 
           {/* SECCIÓN 2: CANTIDADES DE TRABAJADORES */}
-          <div style={{ 
-            background: establecimientoSeleccionadoValido ? '#f8f9fa' : '#f5f5f5', 
-            padding: '15px', 
-            borderRadius: '5px', 
+          <div style={{
+            background: establecimientoSeleccionadoValido ? '#f8f9fa' : '#f5f5f5',
+            padding: '15px',
+            borderRadius: '5px',
             marginBottom: '20px',
             opacity: establecimientoSeleccionadoValido ? 1 : 0.6
           }}>
-            <h4 style={{ 
-              margin: '0 0 15px 0', 
+            <h4 style={{
+              margin: '0 0 15px 0',
               color: establecimientoSeleccionadoValido ? '#495057' : '#9e9e9e'
             }}>
-              Cantidades de Trabajadores 
+              Cantidades de Trabajadores
               <span style={{ color: '#d32f2f', fontSize: '16px' }}>*</span>
               {!establecimientoSeleccionadoValido && (
                 <span style={{ fontSize: '14px', fontWeight: 'normal', marginLeft: '10px' }}>
@@ -1050,15 +1131,15 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
           </div>
 
           {/* SECCIÓN 3: DATOS DEL TRABAJADOR */}
-          <div style={{ 
-            background: cantidadesCompletas ? '#f8f9fa' : '#f5f5f5', 
-            padding: '15px', 
-            borderRadius: '5px', 
+          <div style={{
+            background: cantidadesCompletas ? '#f8f9fa' : '#f5f5f5',
+            padding: '15px',
+            borderRadius: '5px',
             marginBottom: '20px',
             opacity: cantidadesCompletas ? 1 : 0.6
           }}>
-            <h4 style={{ 
-              margin: '0 0 15px 0', 
+            <h4 style={{
+              margin: '0 0 15px 0',
               color: cantidadesCompletas ? '#495057' : '#9e9e9e'
             }}>
               Datos del Trabajador
@@ -1082,12 +1163,12 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
                     if (value.length > 2) f = value.substring(0, 2) + '-' + value.substring(2);
                     if (value.length > 10) f = value.substring(0, 2) + '-' + value.substring(2, 10) + '-' + value.substring(10);
                     setCuil(f);
-                    
+
                     // Limpiar error al escribir
                     if (erroresCampos.cuil) {
                       setErroresCampos(prev => ({ ...prev, cuil: '' }));
                     }
-                    
+
                     // Si el CUIL está completo (11 dígitos), consultar datos automáticamente
                     if (value.length === 11) {
                       consultarDatosPorCuil(f);
@@ -1103,7 +1184,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
                 style={{ marginRight: '15px' }}
                 error={!!erroresCampos.cuil}
                 helperText={
-                  erroresCampos.cuil || 
+                  erroresCampos.cuil ||
                   (cantidadesCompletas ? "El nombre se completará automáticamente al ingresar el CUIL completo" : "")
                 }
               />
@@ -1124,16 +1205,16 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
                 required
                 disabled={!cantidadesCompletas || consultandoCuil}
                 placeholder={
-                  !cantidadesCompletas 
+                  !cantidadesCompletas
                     ? "Completá primero las cantidades"
-                    : consultandoCuil 
-                    ? "Consultando datos..." 
-                    : "Se completará automáticamente al ingresar CUIL o ingresalo manualmente"
+                    : consultandoCuil
+                      ? "Consultando datos..."
+                      : "Se completará automáticamente al ingresar CUIL o ingresalo manualmente"
                 }
                 className={styles.flex1}
                 error={!!erroresCampos.nombre}
                 helperText={
-                  erroresCampos.nombre || 
+                  erroresCampos.nombre ||
                   (consultandoCuil ? "🔍 Consultando datos del afiliado..." : "")
                 }
               />
@@ -1257,7 +1338,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
                 InputLabelProps={{ shrink: true }}
                 className={styles.flex1}
                 style={{ marginRight: '15px' }}
-                
+
               />
               <TextField
                 label="Último Examen Médico"
@@ -1287,11 +1368,11 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
             <div className={styles.modalRow} style={{ marginBottom: '20px' }}>
               <FormControl fullWidth required className={styles.flex1} error={!!erroresCampos.codigoAgente}>
                 <InputLabel id="lbl-agente">
-                  {!cantidadesCompletas 
+                  {!cantidadesCompletas
                     ? "Agente Causante (Completá primero las cantidades)"
-                    : exposicionEsCero 
-                    ? "Agente Causante (Selección automática: OTROS AGENTES FISICOS)"
-                    : "Agente Causante"
+                    : exposicionEsCero
+                      ? "Agente Causante (Selección automática: Código 1 - No expuesto)"
+                      : "Agente Causante"
                   }
                 </InputLabel>
                 <Select
@@ -1318,11 +1399,11 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
                   }}
                 >
                   <MenuItem value="">
-                    {!cantidadesCompletas 
+                    {!cantidadesCompletas
                       ? "Completá primero las cantidades"
                       : exposicionEsCero
-                      ? "Automático: OTROS AGENTES FISICOS (90009)"
-                      : "Seleccione un agente causante"
+                        ? "Automático: Código 1 (No expuesto)"
+                        : "Seleccione un agente causante"
                     }
                   </MenuItem>
                   {cantidadesCompletas && agentesCausantes.length === 0 ? (
@@ -1336,32 +1417,32 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
                   ) : null}
                 </Select>
                 {erroresCampos.codigoAgente && (
-                  <div style={{ 
-                    color: '#d32f2f', 
-                    fontSize: '0.75rem', 
-                    marginTop: '3px', 
-                    marginLeft: '14px' 
+                  <div style={{
+                    color: '#d32f2f',
+                    fontSize: '0.75rem',
+                    marginTop: '3px',
+                    marginLeft: '14px'
                   }}>
                     {erroresCampos.codigoAgente}
                   </div>
                 )}
               </FormControl>
-     
+
             </div>
-            
+
             {/* BOTÓN CARGAR TRABAJADOR */}
             {cantidadesCompletas && (
-              <div style={{ 
-                textAlign: 'center', 
-                marginTop: '25px', 
-                paddingTop: '20px', 
-                borderTop: '1px solid #e0e0e0' 
+              <div style={{
+                textAlign: 'center',
+                marginTop: '25px',
+                paddingTop: '20px',
+                borderTop: '1px solid #e0e0e0'
               }}>
                 {/* Botones Centrados - Modo Edición o Normal */}
                 {modoEdicion ? (
-                  <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'center', 
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
                     gap: '15px'
                   }}>
                     <CustomButton
@@ -1376,7 +1457,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
                     >
                       Guardar Cambios
                     </CustomButton>
-                    
+
                     <CustomButton
                       onClick={handleCancelarEdicion}
                       style={{
@@ -1393,19 +1474,16 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
                 ) : (
                   <CustomButton
                     onClick={handleCargarFila}
-                    disabled={filas.length >= totalTrabajadoresRequeridos}
+                    disabled={!puedeCargarTrabajador}
                     style={{
-                      background: filas.length < totalTrabajadoresRequeridos ? '#2196f3' : '#cccccc',
+                      background: puedeCargarTrabajador ? '#2196f3' : '#cccccc',
                       color: 'white',
                       padding: '12px 24px',
                       fontSize: '16px',
                       fontWeight: 'bold'
                     }}
                   >
-                    {filas.length >= totalTrabajadoresRequeridos 
-                      ? `Ya cargaste todos los trabajadores (${totalTrabajadoresRequeridos})`
-                      : ` Cargar Trabajador (${filas.length + 1}/${totalTrabajadoresRequeridos})`
-                    }
+                    {` Cargar Trabajador (${trabajadoresCargados}/${totalTrabajadoresRequeridos})`}
                   </CustomButton>
                 )}
               </div>
@@ -1416,9 +1494,9 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
           {filas.length > 0 && (
             <div style={{ background: 'white', padding: '15px', borderRadius: '5px', marginBottom: '20px', border: '1px solid #e0e0e0' }}>
               <h4 style={{ margin: '0 0 15px 0', color: '#333' }}>
-                Trabajadores Cargados ({filas.length}/{totalTrabajadoresRequeridos})
+                Trabajadores Cargados
               </h4>
-              
+
               <DataTableImport
                 data={filas}
                 columns={columnasTabla}
@@ -1428,8 +1506,8 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
                 enableFiltering={false}
                 onRowClick={(rowData) => {
                   // Resaltar la fila seleccionada si está en modo edición
-                  const index = filas.findIndex(fila => 
-                    fila.CUIL === rowData.CUIL && 
+                  const index = filas.findIndex(fila =>
+                    fila.CUIL === rowData.CUIL &&
                     fila.Nombre === rowData.Nombre
                   );
                   if (editandoIndex === index && modoEdicion) {
@@ -1437,23 +1515,23 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
                   }
                 }}
               />
-              
+
               {/* RESUMEN DE PROGRESO */}
-              <div style={{ 
-                background: filas.length >= totalTrabajadoresRequeridos ? '#c8e6c9' : '#fff3cd', 
-                padding: '10px', 
-                borderRadius: '3px', 
-                marginTop: '10px', 
+              <div style={{
+                background: filas.length >= totalTrabajadoresRequeridos ? '#c8e6c9' : '#fff3cd',
+                padding: '10px',
+                borderRadius: '3px',
+                marginTop: '10px',
                 textAlign: 'center',
                 border: `1px solid ${filas.length >= totalTrabajadoresRequeridos ? '#4caf50' : '#ffc107'}`
               }}>
-                {filas.length >= totalTrabajadoresRequeridos ? (
+                {trabajadoresCargados >= totalTrabajadoresRequeridos ? (
                   <span style={{ color: '#2e7d32', fontWeight: 'bold' }}>
                     Has cargado todos los trabajadores expuestos requeridos
                   </span>
                 ) : (
                   <span style={{ color: '#f57f17', fontWeight: 'bold' }}>
-                    Faltan {totalTrabajadoresRequeridos - filas.length} trabajadores por cargar
+                    Faltan {faltanTrabajadores} trabajadores por cargar
                   </span>
                 )}
               </div>
@@ -1462,11 +1540,11 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
 
           {/* MENSAJE DE ESTADO */}
           {!establecimientoSeleccionado && (
-            <div style={{ 
-              background: '#fff3cd', 
-              border: '1px solid #ffeaa7', 
-              padding: '15px', 
-              borderRadius: '5px', 
+            <div style={{
+              background: '#fff3cd',
+              border: '1px solid #ffeaa7',
+              padding: '15px',
+              borderRadius: '5px',
               marginBottom: '20px',
               textAlign: 'center'
             }}>
@@ -1489,60 +1567,60 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
           )} */}
 
           {/* BOTONES DE ACCIÓN */}
-           {!establecimientoSeleccionado ? null : (
-          <div className={styles.modalButtons}>
-            <CustomButton 
-              onClick={handleGuardarCompleto} 
-              disabled={!puedeGuardarCompleto}
-              style={{ 
-                background: puedeGuardarCompleto ? '#4caf50' : '#cccccc', 
-                color: 'white' 
-              }}
-            >
-              {puedeGuardarCompleto ? 'Guardar Formulario RAR Completo' : 'Completá todos los campos requeridos'}
-            </CustomButton>
-            <CustomButton
-              onClick={() => {
-                // Limpiar todos los campos del formulario
-                setCuil(''); setNombre(''); setSector(''); setIngreso('');
-                setFechaInicio(''); setExposicion('0'); setFechaFinExposicion('');
-                setUltimoExamenMedico(''); setCodigoAgente('');
-                setCantExpuestos(''); setCantNoExpuestos('');
-                setEstablecimientoSeleccionado('');
-                setFilas([]); // Limpiar también la tabla de trabajadores cargados
-                // Cancelar edición si está activa
-                setEditandoIndex(-1);
-                setModoEdicion(false);
-              }}
-            >
-              Limpiar Todo
-            </CustomButton>
-            <CustomButton 
-              onClick={() => {
-                // Cerrar modal y redirigir a la pantalla principal
-                setModalTrabajadorOpen(false);
-                // Limpiar todos los campos del formulario
-                setCuil(''); setNombre(''); setSector(''); setIngreso('');
-                setFechaInicio(''); setExposicion('0'); setFechaFinExposicion('');
-                setUltimoExamenMedico(''); setCodigoAgente('');
-                setCantExpuestos(''); setCantNoExpuestos('');
-                setEstablecimientoSeleccionado('');
-                setFilas([]);
-                setEditandoIndex(-1);
-                setModoEdicion(false);
-                // Redirigir a la pantalla principal
-                finalizaCarga(false);
-              }}
-              style={{ 
-                background: '#757575', 
-                color: 'white' 
-              }}
-            >
-              Cancelar
-            </CustomButton>
-          </div>
-           )
-           }
+          {!establecimientoSeleccionado ? null : (
+            <div className={styles.modalButtons}>
+              <CustomButton
+                onClick={handleGuardarCompleto}
+                disabled={!establecimientoSeleccionado}
+                style={{
+                  background: establecimientoSeleccionado ? '#4caf50' : '#cccccc',
+                  color: 'white'
+                }}
+              >
+                {esModoEdicionFormulario ? 'Actualizar Formulario RAR' : 'Guardar Formulario RAR'}
+              </CustomButton>
+              <CustomButton
+                onClick={() => {
+                  // Limpiar todos los campos del formulario
+                  setCuil(''); setNombre(''); setSector(''); setIngreso('');
+                  setFechaInicio(''); setExposicion('0'); setFechaFinExposicion('');
+                  setUltimoExamenMedico(''); setCodigoAgente('');
+                  setCantExpuestos(''); setCantNoExpuestos('');
+                  setEstablecimientoSeleccionado('');
+                  setFilas([]); // Limpiar también la tabla de trabajadores cargados
+                  // Cancelar edición si está activa
+                  setEditandoIndex(-1);
+                  setModoEdicion(false);
+                }}
+              >
+                Limpiar Todo
+              </CustomButton>
+              <CustomButton
+                onClick={() => {
+                  // Cerrar modal y redirigir a la pantalla principal
+                  setModalTrabajadorOpen(false);
+                  // Limpiar todos los campos del formulario
+                  setCuil(''); setNombre(''); setSector(''); setIngreso('');
+                  setFechaInicio(''); setExposicion('0'); setFechaFinExposicion('');
+                  setUltimoExamenMedico(''); setCodigoAgente('');
+                  setCantExpuestos(''); setCantNoExpuestos('');
+                  setEstablecimientoSeleccionado('');
+                  setFilas([]);
+                  setEditandoIndex(-1);
+                  setModoEdicion(false);
+                  // Redirigir a la pantalla principal
+                  finalizaCarga(false);
+                }}
+                style={{
+                  background: '#757575',
+                  color: 'white'
+                }}
+              >
+                Cancelar
+              </CustomButton>
+            </div>
+          )
+          }
         </div>
       </CustomModal>
 
