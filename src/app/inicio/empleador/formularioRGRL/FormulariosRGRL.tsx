@@ -34,7 +34,7 @@ import type {
   ResponsableItem,
   DetallePayload
 } from './types/rgrl';
-import { BsFileEarmarkPdfFill, BsPencilFill,BsFront  } from "react-icons/bs";
+import { BsFileEarmarkPdfFill, BsPencilFill, BsFront } from "react-icons/bs";
 
 let _tiposCache: ApiTiposFormularios | null = null;
 //#region tipos-catalogos
@@ -123,7 +123,7 @@ const CargarConsultaFormulariosRGRL = async (cuit: number): Promise<FormularioRG
     return [];
   }
 
-  
+
   if (!res.ok) {
     const raw = await res.text().catch(() => '');
     throw new Error(`GET ${url} -> ${res.status} ${raw}`);
@@ -132,9 +132,9 @@ const CargarConsultaFormulariosRGRL = async (cuit: number): Promise<FormularioRG
   const body = await res.json().catch(() => null);
   const arr =
     Array.isArray(body?.DATA) ? body.DATA :
-    Array.isArray(body?.data) ? body.data :
-    Array.isArray(body) ? body :
-    [];
+      Array.isArray(body?.data) ? body.data :
+        Array.isArray(body) ? body :
+          [];
 
   const data: ApiFormularioRGRL[] = (arr ?? []) as ApiFormularioRGRL[];
   return data.map(mapApiToUi);
@@ -243,7 +243,7 @@ const CargarDetalleRGRL = async (id: number): Promise<DetallePayload> => {
     Contratista: c.contratista ?? c.nombre ?? ''
   }));
   const responsables = (data.respuestasResponsable ?? []).map(r => ({
-    CUITCUIL: CUIP(r.cuit),   
+    CUITCUIL: CUIP(r.cuit),
     NombreApellido: r.responsable ?? '',
     Cargo: r.cargo ?? '',
     Representacion: r.representacion ?? '',
@@ -296,8 +296,8 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
   const [replicaDe, setReplicaDe] = useState<number | undefined>(undefined);
 
   const { user } = useAuth();
-      // Accede a las propiedades de la sesión con seguridad
-  const {empresaCUIT } = user as any;
+  // Accede a las propiedades de la sesión con seguridad
+  const { empresaCUIT } = user as any;
 
   const isFilaVacia = (r: FormularioRGRLDetalle) =>
     !(
@@ -369,29 +369,29 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
   // Definición de columnas de la grilla principal y handlers asociados.
   const tableColumns = useMemo(
     () => [
-      { accessorKey: 'CUIT', header: 'CUIT', cell: (info: any) => Formato.CUIP(info.getValue())},
+      { accessorKey: 'CUIT', header: 'CUIT', cell: (info: any) => Formato.CUIP(info.getValue()) },
       { accessorKey: 'RazonSocial', header: 'Razón Social' },
       { accessorKey: 'Establecimiento', header: 'Establecimiento' },
       { accessorKey: 'Formulario', header: 'Formulario' },
       { accessorKey: 'Estado', header: 'Estado' },
-      { accessorKey: 'FechaHoraCreacion', header: 'Fecha Creación', meta: { align: "center"}},
-      { accessorKey: 'FechaHoraConfirmado', header: 'Fecha Confirmado', meta: { align: "center"}},
+      { accessorKey: 'FechaHoraCreacion', header: 'Fecha Creación', meta: { align: "center" } },
+      { accessorKey: 'FechaHoraConfirmado', header: 'Fecha Confirmado', meta: { align: "center" } },
 
       {
         id: 'acciones',
         header: 'Acciones',
         //@ts-ignore
         cell: ({ row }) => {
-          console.log("row",row)
+          console.log("row", row)
           const onClick = async (e: any) => {
-            console.log("row",row)
+            console.log("row", row)
             e.stopPropagation?.();
             const interno = Number(row.original.InternoFormularioRGRL || 0);
-            console.log("interno",interno)
+            console.log("interno", interno)
             if (!interno) return;
 
             const data = await CargarDetalleRGRL(interno);
-            console.log("data",data)
+            console.log("data", data)
             const establecimientos = await CargarEstablecimientosEmpresa(Number(row.original.CUIT));
             const estab =
               establecimientos.find(e => e.interno === Number(data.internoEstablecimiento ?? 0)) ||
@@ -400,7 +400,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
             const cabecera: CabeceraData = {
               empresa: {
                 razonSocial: row.original.RazonSocial,
-                cuit: CUIP(row.original.CUIT), 
+                cuit: CUIP(row.original.CUIT),
                 contrato: '',
                 ciiu: estab?.ciiu != null ? String(estab.ciiu) : '',
               },
@@ -452,13 +452,15 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
           return (
 
             <div className={styles.iconActions}>
+              {String(row.original.Estado ?? '').trim() !== 'Confirmado' && (
+                <BsPencilFill title="Editar" onClick={onEdit} className={styles.iconButton} />
+              )}
               <BsFileEarmarkPdfFill title="Imprimir" onClick={onClick} className={styles.iconButton} />
-              <BsPencilFill title="Editar" onClick={onEdit} className={styles.iconButton} />
-              <BsFront  title="Replicar" onClick={onCopy} className={styles.iconButton} />
+              <BsFront title="Replicar" onClick={onCopy} className={styles.iconButton} />
             </div>
           );
         },
-        meta: { align: 'center'},
+        meta: { align: 'center' },
         enableSorting: false,
       },
     ],
@@ -541,7 +543,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
   const handleExportExcel = async () => {
     const columns: Record<string, TableColumn> = {
 
-      
+
       CUIT: { header: 'CUIT', key: 'CUIT' },
       RazonSocial: { header: 'Razón Social', key: 'RazonSocial' },
       Establecimiento: { header: 'Establecimiento', key: 'Establecimiento' },
@@ -564,7 +566,7 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
   return (
     <div>
       {/* Contenedor principal: buscador, acciones, tabla y detalle */}
-      
+
       {!cargarFormulario ? (
         <div>
           {/* Buscador: input para CUIT y tecla Enter para buscar */}

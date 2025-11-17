@@ -179,6 +179,15 @@ const FormulariosRAREditar: React.FC<EditarProps> = ({ edita, finalizaCarga }) =
       (x) => x && x.trim() !== ''
     ) && cuil.replace(/\D/g, '').length >= 11;
 
+  const trabajadoresCargados = React.useMemo(() => {
+    const s = new Set<string>();
+    filas.forEach((f) => {
+      const n = (f.CUIL || '').replace(/\D/g, '');
+      if (n) s.add(n);
+    });
+    return s.size;
+  }, [filas]);
+
   const cargarFila = () => {
     if (!trabajadorCompleto) return;
 
@@ -204,9 +213,8 @@ const FormulariosRAREditar: React.FC<EditarProps> = ({ edita, finalizaCarga }) =
 
       setModoEdicion(false);
       setEditandoIndex(-1);
-      alert('Trabajador actualizado correctamente');
     } else {
-      if (filas.length >= totalTrabajadores) return alert('Ya alcanzó el límite máximo de trabajadores');
+      if (trabajadoresCargados >= totalTrabajadores) return alert('Ya alcanzó el límite máximo de trabajadores');
       const cuilExiste = filas.some((f) => f.CUIL === cuil.trim());
       if (cuilExiste) return alert('Este CUIL ya fue cargado');
 
@@ -280,11 +288,13 @@ const FormulariosRAREditar: React.FC<EditarProps> = ({ edita, finalizaCarga }) =
   const guardar = async () => {
     if (guardandoRef.current) return;
     if (!establecimientoSeleccionado) return alert('Seleccione establecimiento');
-    if (filas.length === 0) return alert('Cargue al menos un trabajador');
+    if (trabajadoresCargados === 0) return alert('Cargue al menos un trabajador');
 
     guardandoRef.current = true;
     try {
       const fechaActual = new Date().toISOString();
+      const cantidadesCompletas = numerosValidos(cantExpuestos) && numerosValidos(cantNoExpuestos) && (Number(cantExpuestos) + Number(cantNoExpuestos)) > 0;
+      const formularioCompleto = establecimientoSeleccionado.trim() !== '' && cantidadesCompletas && trabajadoresCargados >= totalTrabajadores;
       const detalle = filas.map((f) => ({
         internoFormulariosRar: 0,
         cuil: Number((f.CUIL || '').replace(/\D/g, '')),
@@ -302,7 +312,7 @@ const FormulariosRAREditar: React.FC<EditarProps> = ({ edita, finalizaCarga }) =
         cantTrabajadoresExpuestos: Number(cantExpuestos) || 0,
         cantTrabajadoresNoExpuestos: Number(cantNoExpuestos) || 0,
         fechaCreacion: fechaActual,
-        fechaPresentacion: fechaActual,
+        fechaPresentacion: formularioCompleto ? fechaActual : null,
         internoPresentacion: 0,
         internoEstablecimiento: Number(establecimientoSeleccionado) || 0,
         formularioRARDetalle: detalle,
@@ -325,7 +335,7 @@ const FormulariosRAREditar: React.FC<EditarProps> = ({ edita, finalizaCarga }) =
     }
   };
 
-  const llegoAlTope = generar && totalTrabajadores > 0 && filas.length >= totalTrabajadores;
+  const llegoAlTope = generar && totalTrabajadores > 0 && trabajadoresCargados >= totalTrabajadores;
 
   return (
     <div className={styles.wrapperCol}>
@@ -429,7 +439,7 @@ const FormulariosRAREditar: React.FC<EditarProps> = ({ edita, finalizaCarga }) =
       {generar && totalTrabajadores > 0 && !llegoAlTope && (
         <div className={`${styles.btnCenter} ${styles.mt20}`}>
           <CustomButton onClick={() => setModalTrabajadorOpen(true)}>
-            Agregar Trabajador ({filas.length}/{totalTrabajadores})
+            Agregar Trabajador ({trabajadoresCargados}/{totalTrabajadores})
           </CustomButton>
         </div>
       )}
@@ -488,7 +498,7 @@ const FormulariosRAREditar: React.FC<EditarProps> = ({ edita, finalizaCarga }) =
       )}
 
       <div className={`${styles.flex} ${styles.gap8} ${styles.mt40}`}>
-        <CustomButton onClick={guardar} disabled={!generar || filas.length === 0 || filas.length < totalTrabajadores}>
+        <CustomButton onClick={guardar} disabled={!generar || trabajadoresCargados === 0 || trabajadoresCargados < totalTrabajadores}>
           Guardar Cambios
         </CustomButton>
         <CustomButton onClick={() => finalizaCarga(false)}>Cancelar</CustomButton>
@@ -556,7 +566,7 @@ const FormulariosRAREditar: React.FC<EditarProps> = ({ edita, finalizaCarga }) =
           <div className={styles.modalButtons}>
             <CustomButton
               onClick={cargarFila}
-              disabled={!trabajadorCompleto || (!modoEdicion && filas.length >= totalTrabajadores)}
+              disabled={!trabajadorCompleto || (!modoEdicion && trabajadoresCargados >= totalTrabajadores)}
               style={modoEdicion ? { backgroundColor: '#ff9800', color: 'white' } : {}}
             >
               {modoEdicion ? 'Guardar Cambios' : 'Cargar Trabajador'}

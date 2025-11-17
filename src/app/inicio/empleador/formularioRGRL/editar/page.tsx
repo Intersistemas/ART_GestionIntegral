@@ -110,8 +110,7 @@ export default function Page() {
         });
     };
 
-    // Envía un PUT con todas las respuestas y listas actualizadas
-    const guardarPUT = async () => {
+    const guardarPUT = async (completar: boolean = true) => {
         if (!form) return;
         setSaving(true);
         setError('');
@@ -142,7 +141,7 @@ export default function Page() {
                 internoFormulario: form.internoFormulario,
                 internoEstablecimiento: form.internoEstablecimiento,
                 creacionFechaHora: form.creacionFechaHora ?? toIsoOrNull(new Date()),
-                completadoFechaHora: toIsoOrNull(new Date()),
+                completadoFechaHora: completar ? toIsoOrNull(new Date()) : null,
                 notificacionFecha: form.notificacionFecha ?? toIsoOrNull(new Date()),
                 respuestasCuestionario: fullCuest,
                 respuestasGremio: (form.respuestasGremio ?? []).map((g: any, i: number) => ({
@@ -199,7 +198,7 @@ export default function Page() {
             setForm(data as FormularioVm);
             router.replace('/inicio/empleador/formularioRGRL');
         } catch (e: any) {
-            setError(e?.message ?? 'Error al guardar.');
+            setError(e?.message ?? (completar ? 'Error al guardar.' : 'Error al guardar incompleto.'));
         } finally {
             setSaving(false);
         }
@@ -350,7 +349,8 @@ export default function Page() {
             {/* Acciones: botones para volver y guardar */}
             <div className={styles.actionsRow}>
                 <CustomButton onClick={() => router.back()} disabled={saving}>VOLVER</CustomButton>
-                <CustomButton onClick={guardarPUT} disabled={saving}>GUARDAR</CustomButton>
+                <CustomButton onClick={() => guardarPUT(true)} disabled={saving}>GUARDAR COMPLETO</CustomButton>
+                <CustomButton onClick={() => guardarPUT(false)} disabled={saving}>GUARDADO INCOMPLETO</CustomButton>
             </div>
 
             {/* Mensajes de estado: guardando y errores */}

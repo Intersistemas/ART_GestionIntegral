@@ -1,8 +1,8 @@
 
 'use client';
 
-import React, { useCallback, useEffect, useState, SyntheticEvent} from 'react';
-import { IconButton, Box, Tooltip } from "@mui/material"; 
+import React, { useCallback, useEffect, useState, SyntheticEvent } from 'react';
+import { IconButton, Box, Tooltip } from "@mui/material";
 import { useAuth } from '@/data/AuthContext';
 import Formato from '@/utils/Formato';
 import CustomButton from '@/utils/ui/button/CustomButton';
@@ -12,13 +12,13 @@ import BaseDocumentPDF from '@/utils/PDF/BaseDocumentPDF';
 import { Text, View } from '@react-pdf/renderer';
 import CustomTab from '@/utils/ui/tab/CustomTab';
 import styles from './FormulariosRAR.module.css';
-import { BsFileEarmarkPdfFill, BsPencilFill} from "react-icons/bs";
+import { BsFileEarmarkPdfFill, BsPencilFill } from "react-icons/bs";
 import FormularioRAR from './types/TformularioRar';
 import ArtAPI from "@/data/artAPI";
 
 // Hijos
 import FormularioRARGenerar from './generar/FormularioRARGenerar';
-import FormularioRAREditor from './editar/FormularioRAREditor';
+// import FormularioRAREditor from './editar/FormularioRAREditor'; // Ya no se usa, reutilizamos el modal de generar para edición
 
 /* Helpers */
 const fechaFormatter = (v: any) => Formato.Fecha(v);
@@ -36,8 +36,8 @@ type ViewMode = 'list' | 'crear' | 'editar';
 
 const FormulariosRAR: React.FC = () => {
   const { user } = useAuth();
-    // Accede a las propiedades de la sesión con seguridad
-  const {empresaCUIT, cuit } = user as any;
+  // Accede a las propiedades de la sesión con seguridad
+  const { empresaCUIT, cuit } = user as any;
 
   const [loading, setLoading] = useState<boolean>(true);
   const [internoFormularioRAR, setInternoFormularioRAR] = useState<number>(0);
@@ -50,7 +50,7 @@ const FormulariosRAR: React.FC = () => {
   const [PageIndex, setPageIndex] = useState<number>(0);
   const [PageSize, setPageSize] = useState<number>(10);
   const [pageCount, setPageCount] = useState<number>(0);
-  
+
   // modos
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [editaId, setEditaId] = useState<number>(0);
@@ -64,20 +64,20 @@ const FormulariosRAR: React.FC = () => {
   const [loadingDetalles, setLoadingDetalles] = useState<boolean>(false);
   const [errorDetalles, setErrorDetalles] = useState<string>('');
   const [registroSeleccionado, setRegistroSeleccionado] = useState<any>(null);
-  
+
   // Estado para controlar el tab activo (correcto)
   const [activeTabIndex, setActiveTabIndex] = useState<number>(0);
 
   // Handler para cambiar el tab (necesario para el componente controlado)
   const handleTabChange = (event: SyntheticEvent, newTabValue: number) => {
-      setActiveTabIndex(newTabValue);
+    setActiveTabIndex(newTabValue);
   };
 
   // Usamos el hook SWR del API (solo hace fetch si existe token y respeta las opciones de revalidate)
   // Pasamos PageIndex y PageSize al hook (cambia la clave de SWR y dispara fetch)
   const apiPageIndex = PageIndex + 1;
   const { data: formulariosData, error: formulariosError, isValidating, mutate: mutateFormularios } =
-    ArtAPI.useGetFormulariosRARURL(empresaCUIT ? { CUIT: empresaCUIT, PageIndex: apiPageIndex, PageSize: PageSize } : {PageIndex: apiPageIndex, PageSize: PageSize});
+    ArtAPI.useGetFormulariosRARURL(empresaCUIT ? { CUIT: empresaCUIT, PageIndex: apiPageIndex, PageSize: PageSize } : { PageIndex: apiPageIndex, PageSize: PageSize });
 
   // Una sola vez: cuando llegan datos, los mapeamos al estado local
   useEffect(() => {
@@ -103,15 +103,15 @@ const FormulariosRAR: React.FC = () => {
 
     setFormulariosRAR(formularios);
     setLoading(false);
-     // Si la API devuelve total/totalRecords/TotalCount calcula pageCount
+    // Si la API devuelve total/totalRecords/TotalCount calcula pageCount
     const total =
       typeof data?.total === 'number' ? data.total :
-      typeof data?.totalCount === 'number' ? data.totalCount :
-      typeof data?.TotalCount === 'number' ? data.TotalCount :
-      typeof data?.TOTAL === 'number' ? data.TOTAL :
-      typeof data?.count === 'number' ? data.count :
-      typeof data?.meta?.total === 'number' ? data.meta.total :
-      undefined;
+        typeof data?.totalCount === 'number' ? data.totalCount :
+          typeof data?.TotalCount === 'number' ? data.TotalCount :
+            typeof data?.TOTAL === 'number' ? data.TOTAL :
+              typeof data?.count === 'number' ? data.count :
+                typeof data?.meta?.total === 'number' ? data.meta.total :
+                  undefined;
 
     if (typeof total === 'number' && PageSize > 0) {
       setPageCount(Math.ceil(total / PageSize));
@@ -222,10 +222,37 @@ const FormulariosRAR: React.FC = () => {
         const response = await fetch(`http://arttest.intersistemas.ar:8302/api/FormulariosRAR/${idFormulario}`);
         if (response.ok) {
           const detallesFormulario = await response.json();
+
+          let mapaAgentes = new Map<number, string>();
+          try {
+            const rAg = await fetch('http://arttest.intersistemas.ar:8302/api/AgentesCausantes');
+            if (rAg.ok) {
+              const agentes = await rAg.json();
+              const arr = Array.isArray(agentes) ? agentes : agentes?.data ? (Array.isArray(agentes.data) ? agentes.data : [agentes.data]) : [agentes];
+              arr.forEach((a: any) => {
+                const codigo = Number(a?.codigo ?? 0);
+                const nombre = String(a?.agenteCausante ?? '').trim();
+                if (codigo && nombre) mapaAgentes.set(codigo, nombre);
+              });
+            }
+          } catch (e) {
+            console.warn('No se pudo cargar el catálogo de agentes para PDF', e);
+          }
+
+          const detalles = detallesFormulario.formularioRARDetalle || [];
+          const detallesConNombre = Array.isArray(detalles)
+            ? detalles.map((d: any) => ({
+                ...d,
+                agenteNombre: d?.codigoAgente === 1
+                  ? 'No Expuesto'
+                  : (mapaAgentes.get(Number(d?.codigoAgente)) || '—'),
+              }))
+            : [];
+
           const datosCompletos = {
             ...rowData,
-            detallesTrabajadores: detallesFormulario.formularioRARDetalle || [],
-            totalTrabajadores: detallesFormulario.formularioRARDetalle?.length || 0,
+            detallesTrabajadores: detallesConNombre,
+            totalTrabajadores: detallesConNombre.length || 0,
           };
           setDatosPDF(datosCompletos);
         } else {
@@ -247,145 +274,146 @@ const FormulariosRAR: React.FC = () => {
 
   /* Columnas para tabla principal de formularios */
   const tableColumns = [
-    { accessorKey: 'interno', header: 'Interno'},
-    { accessorKey: 'cuit', header: 'CUIT', cell: (info: any) => Formato.CUIP(info.getValue())},
-    { accessorKey: 'razonSocial', header: 'Razón Social'},
-    { accessorKey: 'direccion', header: 'Dirección'},
-    { accessorKey: 'estado', header: 'Estado'},
-    { accessorKey: 'fechaCreacion', header: 'Fecha Creación', cell: (info: any) => fechaFormatter(info.getValue()), meta: { align: "center"}},
-    { accessorKey: 'fechaPresentacion', header: 'Fecha Presentación', cell: (info: any) => fechaFormatter(info.getValue()), meta: { align: "center"}},
-    { accessorKey: 'internoEstablecimiento', header: 'Interno Establecimiento', meta: { align: "center"}},
-    { accessorKey: 'cantTrabajadoresExpuestos', header: 'Expuestos', meta: { align: "center"}},
-    { accessorKey: 'cantTrabajadoresNoExpuestos', header: 'No Expuestos', meta: { align: "center"}},
-    { id: 'acciones',
+    { accessorKey: 'interno', header: 'Interno' },
+    { accessorKey: 'cuit', header: 'CUIT', cell: (info: any) => Formato.CUIP(info.getValue()) },
+    { accessorKey: 'razonSocial', header: 'Razón Social' },
+    { accessorKey: 'direccion', header: 'Dirección' },
+    { accessorKey: 'estado', header: 'Estado' },
+    { accessorKey: 'fechaCreacion', header: 'Fecha Creación', cell: (info: any) => fechaFormatter(info.getValue()), meta: { align: "center" } },
+    { accessorKey: 'fechaPresentacion', header: 'Fecha Presentación', cell: (info: any) => fechaFormatter(info.getValue()), meta: { align: "center" } },
+    { accessorKey: 'internoEstablecimiento', header: 'Interno Establecimiento', meta: { align: "center" } },
+    { accessorKey: 'cantTrabajadoresExpuestos', header: 'Expuestos', meta: { align: "center" } },
+    { accessorKey: 'cantTrabajadoresNoExpuestos', header: 'No Expuestos', meta: { align: "center" } },
+    {
+      id: 'acciones',
       header: 'Acciones',
-      meta: { align: "center"},
+      meta: { align: "center" },
       cell: ({ row }: { row: any }) => (
-                <Box >
-                  <>
-                    <Tooltip
-                      title="Editar Formulario"
-                      arrow
-                      slotProps={{
-                        tooltip: {
-                          sx: {
-                            fontSize: "1.2rem",
-                            fontWeight: 500,
-                          },
-                        },
-                      }}
-                    >
-                      <IconButton
-                        onClick={(e: any) => {
-                          e.stopPropagation?.();
-                          // Seleccionar el registro y activar edición
-                          const internoForm = Number(row.original.InternoFormularioRAR || row.original.interno || 0);
-                          const internoEstab = Number(row.original.internoEstablecimiento || row.original.InternoEstablecimiento || 0);
-                          const est = String(row.original.Estado || row.original.estado || '');
-                          
-                          seleccionaRegistro(internoForm, internoEstab, est);
-                          setIdFormularioSeleccionado(internoForm);
-                          
-                          if (internoForm > 0) {
-                            setEditaId(internoForm);
-                            setViewMode('editar');
-                          } else {
-                            alert('No se pudo obtener el ID del formulario para editar.');
-                          }
-                        }}
-                        disabled={cuit === 99999999999 || (!row.original.interno && !row.original.InternoFormularioRAR)}
-                        color="warning"
-                        size="small"
-                      >
-                        <BsPencilFill fontSize="large" />
-                      </IconButton>
-                    </Tooltip>
-                    {/* Botón Imprimir */}
-                    <Tooltip
-                      title="Generar PDF"
-                      arrow
-                      slotProps={{
-                        tooltip: {
-                          sx: {
-                            fontSize: "1.2rem",
-                            fontWeight: 500,
-                          },
-                        },
-                      }}
-                    >
-                      <IconButton
-                        onClick={(e: any) => {
-                          e.stopPropagation?.();
-                          handleAbrirPDF(row.original);
-                        }}
-                        color="warning"
-                        size="small"
-                      >
-                        <BsFileEarmarkPdfFill fontSize="large"/>
-                      </IconButton>
-                    </Tooltip> 
-                    </>
-            </Box>
-          )
-        },
+        <Box >
+          <>
+            <Tooltip
+              title="Editar Formulario"
+              arrow
+              slotProps={{
+                tooltip: {
+                  sx: {
+                    fontSize: "1.2rem",
+                    fontWeight: 500,
+                  },
+                },
+              }}
+            >
+              <IconButton
+                onClick={(e: any) => {
+                  e.stopPropagation?.();
+                  // Seleccionar el registro y activar edición
+                  const internoForm = Number(row.original.InternoFormularioRAR || row.original.interno || 0);
+                  const internoEstab = Number(row.original.internoEstablecimiento || row.original.InternoEstablecimiento || 0);
+                  const est = String(row.original.Estado || row.original.estado || '');
+
+                  seleccionaRegistro(internoForm, internoEstab, est);
+                  setIdFormularioSeleccionado(internoForm);
+
+                  if (internoForm > 0) {
+                    setEditaId(internoForm);
+                    setViewMode('editar');
+                  } else {
+                    alert('No se pudo obtener el ID del formulario para editar.');
+                  }
+                }}
+                disabled={cuit === 99999999999 || (!row.original.interno && !row.original.InternoFormularioRAR)}
+                color="warning"
+                size="small"
+              >
+                <BsPencilFill fontSize="large" />
+              </IconButton>
+            </Tooltip>
+            {/* Botón Imprimir */}
+            <Tooltip
+              title="Generar PDF"
+              arrow
+              slotProps={{
+                tooltip: {
+                  sx: {
+                    fontSize: "1.2rem",
+                    fontWeight: 500,
+                  },
+                },
+              }}
+            >
+              <IconButton
+                onClick={(e: any) => {
+                  e.stopPropagation?.();
+                  handleAbrirPDF(row.original);
+                }}
+                color="warning"
+                size="small"
+              >
+                <BsFileEarmarkPdfFill fontSize="large" />
+              </IconButton>
+            </Tooltip>
+          </>
+        </Box>
+      )
+    },
   ];
 
   /*  MODIFICACIÓN: Columnas para tabla de detalles de trabajadores */
   const detalleColumns = [
-    { 
-      accessorKey: 'id', 
+    {
+      accessorKey: 'id',
       header: '#',
       size: 60
     },
-    { 
-      accessorKey: 'cuil', 
+    {
+      accessorKey: 'cuil',
       header: 'CUIL',
       cell: (info: any) => cuipFormatter(info.getValue()) || '—',
       size: 120
     },
-    { 
-      accessorKey: 'nombre', 
+    {
+      accessorKey: 'nombre',
       header: 'Nombre',
       cell: (info: any) => info.getValue() || '—'
     },
-    { 
-      accessorKey: 'sectorTarea', 
+    {
+      accessorKey: 'sectorTarea',
       header: 'Sector/Tarea',
       cell: (info: any) => info.getValue() || '—',
       size: 150
     },
-    { 
-      accessorKey: 'fechaIngreso', 
+    {
+      accessorKey: 'fechaIngreso',
       header: 'Fecha Ingreso',
       cell: (info: any) => info.getValue() || '—',
       size: 120
     },
-    { 
-      accessorKey: 'fechaInicioExposicion', 
+    {
+      accessorKey: 'fechaInicioExposicion',
       header: 'Fecha Inicio Exp.',
       cell: (info: any) => info.getValue() || '—',
       size: 140
     },
-    { 
-      accessorKey: 'fechaFinExposicion', 
+    {
+      accessorKey: 'fechaFinExposicion',
       header: 'Fecha Fin Exp.',
       cell: (info: any) => info.getValue() || '—',
       size: 130
     },
-    { 
-      accessorKey: 'horasExposicion', 
+    {
+      accessorKey: 'horasExposicion',
       header: 'Horas Exp.',
       cell: (info: any) => info.getValue() || '—',
       size: 80
     },
-    { 
-      accessorKey: 'codigoAgente', 
+    {
+      accessorKey: 'codigoAgente',
       header: 'Cod. Agente',
       cell: (info: any) => info.getValue() || '—',
       size: 100
     },
-    { 
-      accessorKey: 'fechaUltimoExamenMedico', 
+    {
+      accessorKey: 'fechaUltimoExamenMedico',
       header: 'Último Examen Médico',
       cell: (info: any) => info.getValue() || '—',
       size: 150
@@ -397,20 +425,22 @@ const FormulariosRAR: React.FC = () => {
     const internoForm = Number(row.InternoFormularioRAR || row.interno || 0);
     const internoEstab = Number(row.internoEstablecimiento || row.InternoEstablecimiento || 0);
     const est = String(row.Estado || row.estado || '');
+
+    // guardar selección
     seleccionaRegistro(internoForm, internoEstab, est);
     setIdFormularioSeleccionado(idFormulario);
     setRegistroSeleccionado(row);
-    
-    //  MODIFICACIÓN 6: Cambiar automáticamente al tab de detalles cuando se selecciona un registro
-    setActiveTabIndex(1); // Cambiar al segundo tab (índice 1)
-    
-    if (internoForm > 0) fetchDetallesInterno(internoForm);
-    else {
+
+
+    if (internoForm > 0) {
+      fetchDetallesInterno(internoForm);
+    } else {
       setDetallesInterno([]);
       setErrorDetalles('');
       setRegistroSeleccionado(null);
     }
   };
+
 
   const disableEdita = cuit !== 99999999999 && internoFormularioRAR !== 0 ? false : true;
   const disableGenera = cuit === 99999999999 ? true : false;
@@ -428,27 +458,20 @@ const FormulariosRAR: React.FC = () => {
 
   const FormularioRARPDF = ({ datos }: { datos: any }) => {
     if (!datos) return null;
-    const columnas = [
-      { key: 'interno', title: 'Interno', width: '10%' },
-      { key: 'cuit', title: 'CUIT', width: '15%' },
-      { key: 'razonSocial', title: 'Razón Social', width: '25%' },
-      { key: 'direccion', title: 'Dirección', width: '20%' },
-      { key: 'estado', title: 'Estado', width: '10%' },
-      { key: 'cantTrabajadoresExpuestos', title: 'Expuestos', width: '10%' },
-      { key: 'cantTrabajadoresNoExpuestos', title: 'No Expuestos', width: '10%' },
-    ];
-    const datosFormateados = [
-      {
-        interno: datos.interno || datos.InternoFormularioRAR || '',
-        cuit: cuipFormatter(datos.cuit || datos.CUIT || ''),
-        razonSocial: datos.razonSocial || datos.RazonSocial || '',
-        direccion: datos.direccion || datos.Direccion || '',
-        estado: datos.estado || datos.Estado || '',
-        cantTrabajadoresExpuestos: datos.cantTrabajadoresExpuestos || datos.CantTrabExpuestos || 0,
-        cantTrabajadoresNoExpuestos: datos.cantTrabajadoresNoExpuestos || datos.CantTrabNoExpuestos || 0,
-      },
-    ];
 
+    const resumen = {
+      interno: datos.interno || datos.InternoFormularioRAR || '',
+      cuit: cuipFormatter(datos.cuit || datos.CUIT || ''),
+      razonSocial: datos.razonSocial || datos.RazonSocial || '',
+      direccion: datos.direccion || datos.Direccion || '',
+      estado: datos.estado || datos.Estado || '',
+      cantTrabajadoresExpuestos:
+        datos.cantTrabajadoresExpuestos || datos.CantTrabExpuestos || 0,
+      cantTrabajadoresNoExpuestos:
+        datos.cantTrabajadoresNoExpuestos || datos.CantTrabNoExpuestos || 0,
+    };
+
+    // TRABAJADORES: ahora son la tabla principal (abajo)
     const trabajadores = datos.detallesTrabajadores || [];
     const trabajadoresFormateados = trabajadores.map((t: any) => ({
       cuil: cuipFormatter(t.cuil || ''),
@@ -456,53 +479,95 @@ const FormulariosRAR: React.FC = () => {
       sectorTarea: t.sectorTarea || '',
       fechaIngreso: fechaFormatter(t.fechaIngreso || ''),
       horasExposicion: t.horasExposicion || 0,
-      codigoAgente: t.codigoAgente || '',
+      agenteNombre: t.agenteNombre || '—',
     }));
+
+    const columnasTrabajadores = [
+      { key: 'cuil', title: 'CUIL', width: '15%' },
+      { key: 'nombre', title: 'Nombre', width: '25%' },
+      { key: 'sectorTarea', title: 'Sector/Tarea', width: '20%' },
+      { key: 'fechaIngreso', title: 'Fecha Ingreso', width: '12%' },
+      { key: 'horasExposicion', title: 'Horas Exp.', width: '10%' },
+      { key: 'agenteNombre', title: 'Agente Causante', width: '18%' },
+    ];
 
     return (
       <BaseDocumentPDF
-        title={`Formulario RAR #${datos.interno || datos.InternoFormularioRAR}`}
+        title={`Formulario RAR #${resumen.interno}`}
         headerComponent={SimpleHeader}
-        columns={columnas}
-        data={datosFormateados}
+        // AHORA la tabla principal es la de TRABAJADORES (la de abajo)
+        columns={columnasTrabajadores}
+        data={trabajadoresFormateados}
         orientation="landscape"
-        itemsPerPage={1}
+        itemsPerPage={trabajadoresFormateados.length || 1}
         customStyles={{}}
         renderCustomContent={() => (
           <>
-            <Text style={{ fontSize: 10, marginBottom: 10, textAlign: 'center' }}>
+            {/* Fechas arriba del todo */}
+            <Text style={{ fontSize: 10, marginBottom: 5, textAlign: 'center' }}>
               Fecha de creación: {formatearFecha(datos.fechaCreacion || datos.FechaHoraCreacion)}
             </Text>
             <Text style={{ fontSize: 10, marginBottom: 10, textAlign: 'center' }}>
               Fecha de presentación: {formatearFecha(datos.fechaPresentacion || datos.FechaHoraConfirmado)}
             </Text>
 
-            {trabajadores.length > 0 && (
-              <>
-                <Text style={{ fontSize: 12, marginTop: 20, marginBottom: 10, fontWeight: 'bold' }}>
-                  Trabajadores Registrados ({trabajadores.length})
+            {/* TABLA RESUMEN (Interno / CUIT / Razón Social / etc.) ARRIBA */}
+            <View style={{ marginTop: 10, marginBottom: 15 }}>
+              {/* Encabezado */}
+              <View
+                style={{
+                  flexDirection: 'row',
+                  backgroundColor: '#83BC00',
+                  paddingVertical: 4,
+                  paddingHorizontal: 2,
+                }}
+              >
+                <Text style={{ fontSize: 8, fontWeight: 'bold', width: '10%' }}>Interno</Text>
+                <Text style={{ fontSize: 8, fontWeight: 'bold', width: '15%' }}>CUIT</Text>
+                <Text style={{ fontSize: 8, fontWeight: 'bold', width: '25%' }}>Razón Social</Text>
+                <Text style={{ fontSize: 8, fontWeight: 'bold', width: '20%' }}>Dirección</Text>
+                <Text style={{ fontSize: 8, fontWeight: 'bold', width: '10%' }}>Estado</Text>
+                <Text style={{ fontSize: 8, fontWeight: 'bold', width: '10%' }}>Expuestos</Text>
+                <Text style={{ fontSize: 8, fontWeight: 'bold', width: '10%' }}>No Expuestos</Text>
+              </View>
+
+              {/* Fila única con los datos del formulario */}
+              <View
+                style={{
+                  flexDirection: 'row',
+                  borderWidth: 0.5,
+                  borderColor: '#000',
+                  paddingVertical: 3,
+                  paddingHorizontal: 2,
+                }}
+              >
+                <Text style={{ fontSize: 8, width: '10%' }}>{resumen.interno}</Text>
+                <Text style={{ fontSize: 8, width: '15%' }}>{resumen.cuit}</Text>
+                <Text style={{ fontSize: 8, width: '25%' }}>{resumen.razonSocial}</Text>
+                <Text style={{ fontSize: 8, width: '20%' }}>{resumen.direccion}</Text>
+                <Text style={{ fontSize: 8, width: '10%' }}>{resumen.estado}</Text>
+                <Text style={{ fontSize: 8, width: '10%' }}>
+                  {resumen.cantTrabajadoresExpuestos}
                 </Text>
-                <View style={{ marginTop: 10 }}>
-                  <View style={{ flexDirection: 'row', backgroundColor: '#f0f0f0', padding: 5 }}>
-                    <Text style={{ fontSize: 8, width: '15%', fontWeight: 'bold' }}>CUIL</Text>
-                    <Text style={{ fontSize: 8, width: '25%', fontWeight: 'bold' }}>Nombre</Text>
-                    <Text style={{ fontSize: 8, width: '20%', fontWeight: 'bold' }}>Sector/Tarea</Text>
-                    <Text style={{ fontSize: 8, width: '12%', fontWeight: 'bold' }}>Fecha Ingreso</Text>
-                    <Text style={{ fontSize: 8, width: '10%', fontWeight: 'bold' }}>Horas Exp.</Text>
-                    <Text style={{ fontSize: 8, width: '18%', fontWeight: 'bold' }}>Cod. Agente</Text>
-                  </View>
-                  {trabajadoresFormateados.map((trabajador: any, index: number) => (
-                    <View key={index} style={{ flexDirection: 'row', padding: 3, borderBottom: '1px solid #ddd' }}>
-                      <Text style={{ fontSize: 8, width: '15%' }}>{trabajador.cuil}</Text>
-                      <Text style={{ fontSize: 8, width: '25%' }}>{trabajador.nombre}</Text>
-                      <Text style={{ fontSize: 8, width: '20%' }}>{trabajador.sectorTarea}</Text>
-                      <Text style={{ fontSize: 8, width: '12%' }}>{trabajador.fechaIngreso}</Text>
-                      <Text style={{ fontSize: 8, width: '10%' }}>{trabajador.horasExposicion}</Text>
-                      <Text style={{ fontSize: 8, width: '18%' }}>{trabajador.codigoAgente}</Text>
-                    </View>
-                  ))}
-                </View>
-              </>
+                <Text style={{ fontSize: 8, width: '10%' }}>
+                  {resumen.cantTrabajadoresNoExpuestos}
+                </Text>
+              </View>
+            </View>
+
+            {/* TÍTULO antes de la tabla de trabajadores (que es la tabla principal de abajo) */}
+            {trabajadoresFormateados.length > 0 && (
+              <Text
+                style={{
+                  fontSize: 12,
+                  marginTop: 5,
+                  marginBottom: 5,
+                  fontWeight: 'bold',
+                  textAlign: 'left',
+                }}
+              >
+                Trabajadores Registrados ({trabajadoresFormateados.length})
+              </Text>
             )}
           </>
         )}
@@ -526,7 +591,7 @@ const FormulariosRAR: React.FC = () => {
 
           {/* Tabla principal de formularios */}
           <div className={styles.compactTable}>
-             <DataTable
+            <DataTable
               columns={tableColumns}
               data={formulariosRAR}
               onRowClick={onRowClick}
@@ -565,7 +630,7 @@ const FormulariosRAR: React.FC = () => {
                   <h3 className={styles.formularioTitle}>
                     📄 Formulario RAR #{registroSeleccionado.interno || registroSeleccionado.InternoFormularioRAR}
                   </h3>
-                
+
                 </div>
                 <div className={styles.formularioGrid}>
                   <p><strong>Razón Social:</strong> {registroSeleccionado.razonSocial || '—'}</p>
@@ -602,7 +667,7 @@ const FormulariosRAR: React.FC = () => {
                       <strong>👥 Trabajadores registrados: {detallesInterno.length}</strong>
                     </p>
                   </div>
-                  
+
                   {/* Usando el mismo componente DataTable*/}
                   <div className={styles.compactTable}>
                     <DataTable
@@ -626,9 +691,9 @@ const FormulariosRAR: React.FC = () => {
       {viewMode === 'list' ? (
         <div>
           <CustomTab
-              tabs={tabItems}
-              currentTab={activeTabIndex} // Usamos el estado
-              onTabChange={handleTabChange} // Usamos el handler
+            tabs={tabItems}
+            currentTab={activeTabIndex} // Usamos el estado
+            onTabChange={handleTabChange} // Usamos el handler
           />
         </div>
       ) : viewMode === 'crear' ? (
@@ -639,9 +704,12 @@ const FormulariosRAR: React.FC = () => {
           formulariosRAR={formulariosRAR}
         />
       ) : (
-        <FormularioRAREditor
+        <FormularioRARGenerar
+          cuit={cuit}
+          internoEstablecimiento={internoEstablecimiento}
           finalizaCarga={handleFinalizaCarga}
-          edita={editaId} // interno del formulario a editar
+          formulariosRAR={formulariosRAR}
+          editarId={editaId}
         />
       )}
 
