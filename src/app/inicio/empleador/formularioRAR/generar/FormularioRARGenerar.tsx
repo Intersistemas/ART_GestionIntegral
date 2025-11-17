@@ -4,6 +4,7 @@ import { TextField, MenuItem, Select, InputLabel, FormControl } from '@mui/mater
 import { SelectChangeEvent } from '@mui/material/Select';
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
@@ -15,6 +16,7 @@ import CustomButton from '../../../../../utils/ui/button/CustomButton';
 import DataTableImport from '../../../../../utils/ui/table/DataTable';
 import CustomModal from '../../../../../utils/ui/form/CustomModal';
 import styles from '../FormulariosRAR.module.css';
+import { importarTrabajadoresDesdeExcel, descargarPlantillaExcel, TrabajadorExcel, ResultadoImportacion } from '../../../../../utils/excelUtils';
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
@@ -108,13 +110,115 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
     codigoAgente: ''
   });
 
+  // Estados para importación de Excel
+  const [cargandoExcel, setCargandoExcel] = React.useState<boolean>(false);
+  const [mostrarModalImportacion, setMostrarModalImportacion] = React.useState<boolean>(false);
+  const [resultadoImportacion, setResultadoImportacion] = React.useState<ResultadoImportacion | null>(null);
+
+  // Estado para mostrar errores
+  const [mensajeError, setMensajeError] = React.useState<string>('');
+
   const guardandoRef = React.useRef(false);
+
+  // ===== Funciones para importación de Excel =====
+  const handleCargarExcel = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // No limitamos por cantidad ingresada, traemos todo el Excel
+    const maxAImportar = 10000;
+
+    setCargandoExcel(true);
+    try {
+      const resultado = await importarTrabajadoresDesdeExcel(file, maxAImportar);
+      
+      // Calcular estadísticas del Excel
+      const cuilsExpuestos = new Set<string>();
+      const cuilsNoExpuestos = new Set<string>();
+
+      resultado.exitosos.forEach(t => {
+        const cuilLimpio = t.CUIL?.replace(/\D/g, '');
+        if (cuilLimpio) {
+          // Clasificar por codigoAgente
+          if (t.CodigoAgente === '1') {
+            cuilsNoExpuestos.add(cuilLimpio);
+          } else {
+            cuilsExpuestos.add(cuilLimpio);
+          }
+        }
+      });
+
+      const totalTrabajadores = cuilsExpuestos.size + cuilsNoExpuestos.size;
+
+      // Guardar estadísticas en el resultado
+      const resultadoConEstadisticas = {
+        ...resultado,
+        totalTrabajadores,
+        trabajadoresExpuestos: cuilsExpuestos.size,
+        trabajadoresNoExpuestos: cuilsNoExpuestos.size
+      };
+
+      setResultadoImportacion(resultadoConEstadisticas as any);
+      setMostrarModalImportacion(true);
+    } catch (error) {
+      console.error('Error al importar Excel:', error);
+      setMensajeError('Error al leer el archivo Excel. Asegúrate de que sea un archivo válido.');
+    } finally {
+      setCargandoExcel(false);
+      // Limpiar el input para poder cargar el mismo archivo nuevamente
+      if (event.target) {
+        event.target.value = '';
+      }
+    }
+  };
+
+  const handleConfirmarImportacion = () => {
+    if (!resultadoImportacion) return;
+
+    // Agregar los trabajadores exitosos a la tabla con la descripción del agente
+    const nuevosTrabajadores = resultadoImportacion.exitosos.map(t => {
+      // Buscar la descripción del agente en la lista de agentes cargados
+      const agente = agentesCausantes.find((a) => String(a.codigo) === t.CodigoAgente);
+      
+      return {
+        ...t,
+        AgenteCausanteDisplay: agente
+          ? agente.displayText
+          : t.CodigoAgente === '1'
+            ? '1 - Sin exposición'
+            : t.CodigoAgente
+      };
+    });
+
+    // Reemplazar completamente las filas con los nuevos trabajadores del Excel
+    setFilas(nuevosTrabajadores);
+
+    // Actualizar las cantidades de trabajadores basadas en el Excel
+    const trabajadoresExpuestos = (resultadoImportacion as any).trabajadoresExpuestos || 0;
+    const trabajadoresNoExpuestos = (resultadoImportacion as any).trabajadoresNoExpuestos || 0;
+    
+    setCantExpuestos(String(trabajadoresExpuestos));
+    setCantNoExpuestos(String(trabajadoresNoExpuestos));
+
+    // Limpiar modal
+    setMostrarModalImportacion(false);
+    setResultadoImportacion(null);
+  };
+
+  const handleDescargarPlantilla = async () => {
+    try {
+      await descargarPlantillaExcel();
+    } catch (error) {
+      console.error('Error al descargar plantilla:', error);
+      setMensajeError('Error al descargar la plantilla');
+    }
+  };
 
   // ===== Funciones para manejo de trabajadores =====
   // Función para editar un trabajador
   const handleEditarTrabajador = React.useCallback((index: number) => {
     if (modoEdicion) {
-      alert('Ya estás editando un trabajador. Guardá o cancelá los cambios antes de editar otro.');
+      setMensajeError('Ya estás editando un trabajador. Guardá o cancelá los cambios antes de editar otro.');
       return;
     }
 
@@ -328,7 +432,8 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
     return set;
   }, [filas]);
 
-  const trabajadoresCargados = cuilsUnicos.size;
+  // Usar filas.length para contar todos los registros cargados (no solo CUILs únicos)
+  const trabajadoresCargados = filas.length;
   const faltanTrabajadores = totalTrabajadoresRequeridos - trabajadoresCargados;
 
   const esCuilRepetido = React.useMemo(() => {
@@ -341,17 +446,11 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
 
     if (!cantidadesCompletas || !trabajadorCompleto) return false;
 
-    if (totalTrabajadoresRequeridos <= 0) return false;
-
-    if (trabajadoresCargados < totalTrabajadoresRequeridos) return true;
-
-    return esCuilRepetido;
+    // Permitir cargar sin límite de cantidad (sin restricción de totalTrabajadoresRequeridos)
+    return true;
   }, [
     cantidadesCompletas,
     trabajadorCompleto,
-    totalTrabajadoresRequeridos,
-    trabajadoresCargados,
-    esCuilRepetido,
   ]);
 
 
@@ -367,10 +466,11 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
   });
 
   // Nueva validación para el modal completo
+  // Se puede guardar si: hay establecimiento + cantidades + al menos 1 trabajador cargado + no estamos editando
   const puedeGuardarCompleto =
     (establecimientoSeleccionado || '').trim() !== '' &&
     cantidadesCompletas &&
-    trabajadoresCargados >= totalTrabajadoresRequeridos &&
+    trabajadoresCargados >= 1 &&
     !modoEdicion;
 
   // ===== Carga inicial: encabezado + selects =====
@@ -756,7 +856,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
     );
 
     if (duplicado) {
-      alert('Este CUIL ya fue cargado por otro trabajador');
+      setMensajeError('Este CUIL ya fue cargado por otro trabajador');
       return;
     }
 
@@ -786,7 +886,6 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
 
     // Limpiar y salir del modo edición
     handleCancelarEdicion();
-    alert('Trabajador actualizado correctamente');
   };
 
   // Función para cancelar la edición
@@ -818,8 +917,8 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
     });
 
     const total = Number(cantExpuestos) + Number(cantNoExpuestos);
-    if (total === 0) return alert('El total de trabajadores debe ser mayor a 0.');
-    if (total > 99999) return alert('El total no puede exceder 99,999.');
+    if (total === 0) return setMensajeError('El total de trabajadores debe ser mayor a 0.');
+    if (total > 99999) return setMensajeError('El total no puede exceder 99,999.');
 
     if (guardandoRef.current) return;
     guardandoRef.current = true;
@@ -920,7 +1019,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
     } catch (e: any) {
       console.error(' Error al guardar (handleGuardarCompleto):', e);
       console.error(' Stack trace:', e.stack);
-      alert(e?.message || 'Error desconocido al guardar');
+      setMensajeError(e?.message || 'Error desconocido al guardar');
     } finally {
       guardandoRef.current = false;
     }
@@ -928,10 +1027,10 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
 
   const handleGuardar = async () => {
     if (!numerosValidos(cantExpuestos) || !numerosValidos(cantNoExpuestos)) {
-      return alert('Ingresá cantidades válidas');
+      return setMensajeError('Ingresá cantidades válidas');
     }
-    if (!establecimientoSeleccionado) return alert('Seleccioná un establecimiento válido');
-    if (filas.length === 0) return alert('Cargá al menos un trabajador');
+    if (!establecimientoSeleccionado) return setMensajeError('Seleccioná un establecimiento válido');
+    if (filas.length === 0) return setMensajeError('Cargá al menos un trabajador');
 
     if (guardandoRef.current) return;
     guardandoRef.current = true;
@@ -949,7 +1048,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
         horasExposicion: Number(String(f.Exposicion || '').replace(/[^\d]/g, '')) || 4,
         fechaUltimoExamenMedico: dayjs(f.UltimoExamenMedico || fechaActual).toISOString(),
         codigoAgente: Number(f.CodigoAgente) || 1,
-        fechaInicioExposicion: dayjs(f.FechaFin || fechaActual).toISOString(),
+        fechaInicioExposicion: dayjs(f.FechaInicio || fechaActual).toISOString(),
         fechaFinExposicion: f.FechaFinExposicion && f.FechaFinExposicion.trim() !== ''
           ? dayjs(f.FechaFinExposicion).toISOString()
           : dayjs('2099-01-01').toISOString(), // Fecha por defecto: 01/01/2099 para indicar "no especificada"
@@ -980,7 +1079,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
       finalizaCarga(true);
     } catch (e: any) {
       console.error('Error al guardar:', e);
-      alert(e?.message || 'Error desconocido al guardar');
+      setMensajeError(e?.message || 'Error desconocido al guardar');
     } finally {
       guardandoRef.current = false;
     }
@@ -1015,6 +1114,22 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
         size="large"
       >
         <div className={styles.modalGridCol}>
+          {/* MOSTRAR ERRORES EN ROJO */}
+          {mensajeError && (
+            <div style={{
+              background: '#ffebee',
+              border: '1px solid #ef5350',
+              color: '#c62828',
+              padding: '12px 15px',
+              borderRadius: '5px',
+              marginBottom: '20px',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}>
+              ✕ {mensajeError}
+            </div>
+          )}
+
           {/* SECCIÓN 0: INFORMACIÓN DEL EMPLEADOR */}
           <div style={{ background: '#e3f2fd', padding: '15px', borderRadius: '5px', marginBottom: '20px' }}>
             <h4 style={{ margin: '0 0 15px 0', color: '#1976d2' }}>Datos del Empleador</h4>
@@ -1039,7 +1154,10 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
                 <InputLabel>Establecimiento</InputLabel>
                 <Select
                   value={establecimientoSeleccionado}
-                  onChange={(e) => setEstablecimientoSeleccionado(e.target.value)}
+                  onChange={(e) => {
+                    setEstablecimientoSeleccionado(e.target.value);
+                    setMensajeError('');
+                  }}
                   label="Establecimiento"
                   disabled={cargandoSelects}
                   MenuProps={{
@@ -1067,6 +1185,99 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
                   )}
                 </Select>
               </FormControl>
+            </div>
+          </div>
+
+          {/* SECCIÓN 1.5: IMPORTACIÓN DE TRABAJADORES DESDE EXCEL */}
+          <div style={{
+            background: establecimientoSeleccionadoValido ? '#f0f7ff' : '#f5f5f5',
+            padding: '18px',
+            borderRadius: '8px',
+            marginBottom: '20px',
+            border: `2px dashed ${establecimientoSeleccionadoValido ? '#1976d2' : '#ccc'}`,
+            opacity: establecimientoSeleccionadoValido ? 1 : 0.6
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              marginBottom: '12px'
+            }}>
+              <CloudUploadIcon style={{ fontSize: '28px', color: establecimientoSeleccionadoValido ? '#1565c0' : '#ccc' }} />
+              <h4 style={{
+                margin: 0,
+                color: establecimientoSeleccionadoValido ? '#1565c0' : '#9e9e9e',
+                fontSize: '16px',
+                fontWeight: '600'
+              }}>
+                Importar Trabajadores desde Excel
+              </h4>
+              {!establecimientoSeleccionadoValido && (
+                <span style={{ fontSize: '13px', fontWeight: 'normal', marginLeft: '10px', color: '#9e9e9e' }}>
+                  (Seleccioná primero un establecimiento)
+                </span>
+              )}
+            </div>
+            
+            <p style={{
+              margin: '0 0 15px 0',
+              color: establecimientoSeleccionadoValido ? '#555' : '#bbb',
+              fontSize: '13px',
+              lineHeight: '1.5'
+            }}>
+              Cargá un archivo Excel con los datos de los trabajadores para importarlos automáticamente. 
+              Podés descargar la plantilla para ver el formato requerido.
+            </p>
+
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              marginBottom: '12px',
+              flexWrap: 'wrap'
+            }}>
+              <input
+                type="file"
+                id="upload-excel"
+                accept=".xlsx,.xls"
+                style={{ display: 'none' }}
+                onChange={handleCargarExcel}
+                disabled={cargandoExcel || !establecimientoSeleccionadoValido}
+              />
+              <CustomButton
+                onClick={() => document.getElementById('upload-excel')?.click()}
+                disabled={cargandoExcel || !establecimientoSeleccionadoValido}
+                style={{
+                  background: establecimientoSeleccionadoValido ? '#1976d2' : '#cccccc',
+                  color: 'white',
+                  padding: '10px 16px',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  borderRadius: '4px',
+                  cursor: establecimientoSeleccionadoValido ? 'pointer' : 'not-allowed'
+                }}
+              >
+                <CloudUploadIcon style={{ fontSize: '18px' }} />
+                {cargandoExcel ? 'Cargando...' : 'Seleccionar archivo Excel'}
+              </CustomButton>
+
+              <CustomButton
+                onClick={handleDescargarPlantilla}
+                disabled={!establecimientoSeleccionadoValido}
+                style={{
+                  background: establecimientoSeleccionadoValido ? '#17a2b8' : '#cccccc',
+                  color: 'white',
+                  padding: '10px 16px',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  borderRadius: '4px',
+                  cursor: establecimientoSeleccionadoValido ? 'pointer' : 'not-allowed'
+                }}
+              >
+                📋 Descargar formato modelo excel
+              </CustomButton>
             </div>
           </div>
 
@@ -1433,59 +1644,63 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
             {/* BOTÓN CARGAR TRABAJADOR */}
             {cantidadesCompletas && (
               <div style={{
-                textAlign: 'center',
                 marginTop: '25px',
                 paddingTop: '20px',
                 borderTop: '1px solid #e0e0e0'
               }}>
-                {/* Botones Centrados - Modo Edición o Normal */}
-                {modoEdicion ? (
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    gap: '15px'
-                  }}>
+                {/* BOTONES CARGAR TRABAJADOR */}
+                <div style={{
+                  textAlign: 'center'
+                }}>
+                  {/* Botones Centrados - Modo Edición o Normal */}
+                  {modoEdicion ? (
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      gap: '15px'
+                    }}>
+                      <CustomButton
+                        onClick={handleCargarFila}
+                        style={{
+                          background: '#ff9800',
+                          color: 'white',
+                          padding: '12px 24px',
+                          fontSize: '16px',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Guardar Cambios
+                      </CustomButton>
+
+                      <CustomButton
+                        onClick={handleCancelarEdicion}
+                        style={{
+                          background: '#757575',
+                          color: 'white',
+                          padding: '12px 24px',
+                          fontSize: '16px',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Cancelar Edición
+                      </CustomButton>
+                    </div>
+                  ) : (
                     <CustomButton
                       onClick={handleCargarFila}
+                      disabled={!puedeCargarTrabajador}
                       style={{
-                        background: '#ff9800',
+                        background: puedeCargarTrabajador ? '#2196f3' : '#cccccc',
                         color: 'white',
                         padding: '12px 24px',
                         fontSize: '16px',
                         fontWeight: 'bold'
                       }}
                     >
-                      Guardar Cambios
+                      {` Cargar Trabajador (${trabajadoresCargados}/${totalTrabajadoresRequeridos})`}
                     </CustomButton>
-
-                    <CustomButton
-                      onClick={handleCancelarEdicion}
-                      style={{
-                        background: '#757575',
-                        color: 'white',
-                        padding: '12px 24px',
-                        fontSize: '16px',
-                        fontWeight: 'bold'
-                      }}
-                    >
-                      Cancelar Edición
-                    </CustomButton>
-                  </div>
-                ) : (
-                  <CustomButton
-                    onClick={handleCargarFila}
-                    disabled={!puedeCargarTrabajador}
-                    style={{
-                      background: puedeCargarTrabajador ? '#2196f3' : '#cccccc',
-                      color: 'white',
-                      padding: '12px 24px',
-                      fontSize: '16px',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    {` Cargar Trabajador (${trabajadoresCargados}/${totalTrabajadoresRequeridos})`}
-                  </CustomButton>
-                )}
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -1527,7 +1742,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
               }}>
                 {trabajadoresCargados >= totalTrabajadoresRequeridos ? (
                   <span style={{ color: '#2e7d32', fontWeight: 'bold' }}>
-                    Has cargado todos los trabajadores expuestos requeridos
+                    Has cargado todos los trabajadores expuestos y no expuestos requeridos
                   </span>
                 ) : (
                   <span style={{ color: '#f57f17', fontWeight: 'bold' }}>
@@ -1622,6 +1837,163 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
           )
           }
         </div>
+      </CustomModal>
+
+      {/* MODAL DE RESULTADOS DE IMPORTACIÓN */}
+      <CustomModal
+        open={mostrarModalImportacion}
+        onClose={() => setMostrarModalImportacion(false)}
+        title="Resultados de Importación"
+        size="large"
+      >
+        {resultadoImportacion && (
+          <div style={{ padding: '20px' }}>
+            {/* RESUMEN GENERAL */}
+            <div style={{
+              background: '#f8f9fa',
+              padding: '15px',
+              borderRadius: '5px',
+              marginBottom: '20px',
+              textAlign: 'center'
+            }}>
+              <h4 style={{ margin: '0 0 10px 0' }}>Resumen de Importación</h4>
+              
+              {/* Información de cantidad requerida vs cargada */}
+              {/* <div style={{
+                background: '#e3f2fd',
+                padding: '10px',
+                borderRadius: '3px',
+                marginBottom: '15px',
+                fontSize: '13px',
+                color: '#1565c0'
+              }}>
+                <strong>Cantidad Requerida:</strong> {Number(cantExpuestos) + Number(cantNoExpuestos)} trabajadores 
+                <br />
+                <strong>Trabajadores Actuales:</strong> {filas.length}
+                <br />
+                <strong>Disponibles para Importar:</strong> {(Number(cantExpuestos) + Number(cantNoExpuestos)) - filas.length}
+              </div> */}
+
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: '15px',
+                marginTop: '10px'
+              }}>
+                <div style={{ background: '#e3f2fd', padding: '10px', borderRadius: '3px' }}>
+                  <div style={{ fontSize: '12px', color: '#1565c0' }}>Total Trabajadores</div>
+                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#1565c0' }}>
+                    {(resultadoImportacion as any).totalTrabajadores || 0}
+                  </div>
+                </div>
+                <div style={{ background: '#bbdefb', padding: '10px', borderRadius: '3px' }}>
+                  <div style={{ fontSize: '12px', color: '#1565c0' }}>Expuestos</div>
+                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#1565c0' }}>
+                    {(resultadoImportacion as any).trabajadoresExpuestos || 0}
+                  </div>
+                </div>
+                <div style={{ background: '#ffe0b2', padding: '10px', borderRadius: '3px' }}>
+                  <div style={{ fontSize: '12px', color: '#e65100' }}>No Expuestos</div>
+                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#e65100' }}>
+                    {(resultadoImportacion as any).trabajadoresNoExpuestos || 0}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* TRABAJADORES EXITOSOS */}
+            {resultadoImportacion.exitosos.length > 0 && (
+              <div style={{ marginBottom: '20px' }}>
+                <h4 style={{ margin: '0 0 10px 0', color: '#2e7d32' }}>
+                  ✓ Registros Cargados Correctamente
+                </h4>
+                <div style={{
+                  background: '#f1f8e9',
+                  padding: '10px',
+                  borderRadius: '3px',
+                  maxHeight: '200px',
+                  overflowY: 'auto',
+                  border: '1px solid #c5e1a5'
+                }}>
+                  <ul style={{ margin: '0', paddingLeft: '20px' }}>
+                    {resultadoImportacion.exitosos.map((t, i) => (
+                      <li key={i} style={{ marginBottom: '5px', color: '#333' }}>
+                        {t.CUIL} - {t.Nombre}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {/* ERRORES */}
+            {resultadoImportacion.errores.length > 0 && (
+              <div style={{ marginBottom: '20px' }}>
+                <h4 style={{ margin: '0 0 10px 0', color: '#d32f2f' }}>
+                  ✗ Errores en la Importación
+                </h4>
+                <div style={{
+                  background: '#ffebee',
+                  padding: '10px',
+                  borderRadius: '3px',
+                  maxHeight: '200px',
+                  overflowY: 'auto',
+                  border: '1px solid #ef9a9a'
+                }}>
+                  {resultadoImportacion.errores.map((error, i) => (
+                    <div key={i} style={{
+                      marginBottom: '10px',
+                      paddingBottom: '10px',
+                      borderBottom: i < resultadoImportacion.errores.length - 1 ? '1px solid #ffcdd2' : 'none'
+                    }}>
+                      <div style={{ fontWeight: 'bold', color: '#d32f2f' }}>
+                        Fila {error.fila} - CUIL: {error.cuil}
+                      </div>
+                      <ul style={{ margin: '5px 0 0 0', paddingLeft: '20px', color: '#c62828' }}>
+                        {error.errores.map((err, j) => (
+                          <li key={j} style={{ fontSize: '13px' }}>
+                            {err}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* BOTONES DE ACCIÓN */}
+            <div style={{
+              display: 'flex',
+              gap: '10px',
+              justifyContent: 'center',
+              marginTop: '20px'
+            }}>
+              {resultadoImportacion.exitosos.length > 0 && (
+                <CustomButton
+                  onClick={handleConfirmarImportacion}
+                  style={{
+                    background: '#4caf50',
+                    color: 'white',
+                    padding: '10px 20px'
+                  }}
+                >
+                  Confirmar Carga ({resultadoImportacion.exitosos.length} registros)
+                </CustomButton>
+              )}
+              <CustomButton
+                onClick={() => setMostrarModalImportacion(false)}
+                style={{
+                  background: '#757575',
+                  color: 'white',
+                  padding: '10px 20px'
+                }}
+              >
+                Cerrar
+              </CustomButton>
+            </div>
+          </div>
+        )}
       </CustomModal>
 
     </div>

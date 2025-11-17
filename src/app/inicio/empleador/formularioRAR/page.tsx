@@ -101,6 +101,13 @@ const FormulariosRAR: React.FC = () => {
     else if (Array.isArray(data)) formularios = data;
     else if (data) formularios = [data];
 
+    // Ordenar por fecha más reciente (descendente) - registro más nuevo primero
+    formularios.sort((a, b) => {
+      const fechaA = new Date(a.fechaCreacion || a.FechaHoraCreacion || a.fechaPresentacion || a.FechaHoraConfirmado || 0).getTime();
+      const fechaB = new Date(b.fechaCreacion || b.FechaHoraCreacion || b.fechaPresentacion || b.FechaHoraConfirmado || 0).getTime();
+      return fechaB - fechaA; // Descendente (más reciente primero)
+    });
+
     setFormulariosRAR(formularios);
     setLoading(false);
     // Si la API devuelve total/totalRecords/TotalCount calcula pageCount
@@ -148,7 +155,17 @@ const FormulariosRAR: React.FC = () => {
       const data = await response.json();
 
       if (data?.formularioRARDetalle && Array.isArray(data.formularioRARDetalle)) {
-        const detallesFormateados = data.formularioRARDetalle.map((detalle: any, index: number) => ({
+        // Crear un Map para eliminar duplicados por CUIL
+        const cuilMap = new Map();
+        data.formularioRARDetalle.forEach((detalle: any) => {
+          const cuil = detalle.cuil || '';
+          if (cuil && !cuilMap.has(cuil)) {
+            cuilMap.set(cuil, detalle);
+          }
+        });
+
+        // Convertir Map a array y formatear
+        const detallesFormateados = Array.from(cuilMap.values()).map((detalle: any, index: number) => ({
           id: index + 1,
           cuil: detalle.cuil || '',
           nombre: detalle.nombre || '',
