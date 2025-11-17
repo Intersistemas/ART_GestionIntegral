@@ -14,6 +14,8 @@ export type FormularioRGRL = {
   Estado: string;
   FechaHoraCreacion: string;
   FechaHoraConfirmado: string;
+  // Fecha cruda tal como viene de la API (ISO) para parseos/decisiones lógicas
+  CreacionFechaHoraRaw?: string | null;
 };
 
 export type FormularioRGRLDetalle = {
