@@ -1,16 +1,18 @@
-// src 
+// src/app/inicio/empleador/avisosDeObra/AvisoObraForm.tsx
 import React, { useState, FC, useEffect } from "react";
 import { Control as UIControl } from "./Control"; // Asumo que UIControl es el componente de input/select
 import { Card, CardContent, Typography, Grid, Box } from "@mui/material";
 
 // Importamos mock/tipos necesarios
-import { AvisosObraTipos } from './types/avisosObraTipos'; 
-import { Provincias } from './types/provincias';
+import { AvisosObraTipos } from './data/avisosObraTipos';
+import { Provincias } from './data/provincias';
 import CustomModal from "@/utils/ui/form/CustomModal";
 import { AvisoObraRecord, AvisoTipo, Provincia, Request, Response } from "./types/types";
 import CustomButton from "@/utils/ui/button/CustomButton";
 import styles from './AvisoObra.module.css';
 
+// === IMPORTAMOS EL INIT CENTRALIZADO ===
+import { getDefaultAvisoObra } from "./data/defaultAvisoObra";
 
 type SelectConfig = Record<string, string | number>;
 type ControlType = "text" | "number" | "date" | "checkbox" | "select" | "textarea";
@@ -18,32 +20,14 @@ type ControlType = "text" | "number" | "date" | "checkbox" | "select" | "textare
 // 2. Props para el componente AvisoObraForm
 interface AvisoObraFormProps {
     request: Request;
-    data?: Partial<AvisoObraRecord>; 
+    data?: Partial<AvisoObraRecord>;
     onClose: (request: Request, response: Response, data: AvisoObraRecord) => void;
     action?: string;
-    open: boolean; 
-    [key: string]: any; 
+    open: boolean;
+    [key: string]: any;
 }
 
-// 3. Función auxiliar de inicialización de datos con tipado (Mantener fuera)
-const initData = (initialData: Partial<AvisoObraRecord> = {}): AvisoObraRecord => {
-    // Definición de defaultData (completo y correcto)
-    const defaultData: AvisoObraRecord = {
-        interno: null, obraNumero: null, obraSecuencia: null, empleadorCUIT: null, empleadorRazonSocial: null,
-        obraTipo: '', superficie: null, plantas: null, direccionCalleRuta: '', direccionNumero: '', direccionLocalidad: '', direccionDeptoPartido: '',
-        direccionPciaCodigo: '', direccionCPA: '', recepcionFecha: null, actividadInicioFecha: null, actividadFinFecha: null,
-        suspensionFecha: null, reinicioFecha: null, excavacionInicioFecha: null, excavacionFinFecha: null, demolicionInicioFecha: null, demolicionFinFecha: null,
-        ingCivCaminos: "N", ingCivCalles: "N", ingCivAutopistas: "N", ingCivPuentes: "N", ingCivTuneles: "N", ingCivObrFerroviarias: "N", ingCivObrHidraulicas: "N",
-        ingCivAlcantarillas: "N", ingCivPuertos: "N", ingCivAeropuertos: "N", ingCivOtros: "N", monIndDestileria: "N", monIndGenElectrica: "N", monIndMineria: "N",
-        monIndManufUrbana: "N", monIndOtros: "N", ductosTuberias: "N", ductosEstaciones: "N", ductosOtros: "N", redesTransElectAV: "N", redesTransElectBV: "N",
-        redesComunicaciones: "N", redesOtros: "N", otrasConstExcavaciones: "N", otrasConstInstHidrGas: "N", otrasConstInstElectro: "N", otrasConstInstAireAcon: "N",
-        otrasConstReparaciones: "N", otrasConstOtros: "N", arqViviendas: "N", arqEdifPisosMultiples: "N", arqUrbanizacion: "N", arqEdifComerciales: "N",
-        arqEdifOficinas: "N", arqEscuelas: "N", arqHospitales: "N", arqOtros: "N", actExcavacion: "N", actDemolicion: "N", actAlbanileria: "N", actHA: "N",
-        actMontajesElectro: "N", actInstalaciones: "N", actEstructMetalicas: "N", actElectricidad: "N", actAscensores: "N", actPintura: "N",
-        actMayorMilSupCubierta: "N", actSilletas: "N", actMediosIzaje: "N", actAltaMediaTension: "N", actOtros: '', operacionTipo: "A", confirmacionFecha: null,
-    };
-    return { ...defaultData, ...initialData } as AvisoObraRecord;
-};
+// NOTE: ya no usamos initData local — usamos getDefaultAvisoObra importado
 
 interface ControlProps {
     name: keyof AvisoObraRecord;
@@ -51,7 +35,7 @@ interface ControlProps {
     config?: Record<string, any>;
     disabled?: boolean;
     label?: string;
-    value?: any; 
+    value?: any;
     onChange: (changes: { [key: string]: any }) => void; // Recibe el manejador de cambios
     data: AvisoObraRecord; // Recibe el estado actual (para obtener el valor por defecto)
     maxLength?: number;
@@ -81,45 +65,47 @@ const Control: FC<ControlProps> = ({
     }
 
     // Se mantiene la lógica para obtener el valor
-    const currentValue = propValue !== undefined 
-        ? propValue 
-        : data[name] || (type === "checkbox" ? controlConfig.falseValue : "");
+    const currentValue = propValue !== undefined
+        ? propValue
+        : (data[name] !== undefined && data[name] !== null ? data[name] : (type === "checkbox" ? controlConfig.falseValue : ""));
 
     const controlProps = {
         name: name,
-        label: label || name,
+        label: label || (String(name)),
         value: currentValue,
-        type: type, 
+        type: type,
         config: controlConfig,
-        disabled: disabled, 
+        disabled: disabled,
         // El onChange de UIControl debe llamar al onChange pasado por props
         maxLength: finalMaxLength,
-        onChange: (e: any) => { 
-            // Asumo que tu UIControl ya devuelve { [name]: value } o es fácil de adaptar.
-            // Si UIControl pasa el valor directamente, ajusta aquí:
-            // onChange({ [name]: e.target.value })
-            onChange(e); 
+        onChange: (e: any) => {
+            // Normalizamos a la forma { [name]: value } que espera el handleChange
+            // Si tu UIControl ya devuelve ese objeto, puedes pasar e directamente
+            // Aquí intentamos adaptarnos a ambos casos:
+            if (e && typeof e === "object" && Object.keys(e).length === 1 && Object.keys(e)[0] === String(name)) {
+                onChange(e);
+            } else if (e && e.target !== undefined) {
+                onChange({ [name]: e.target.type === "checkbox" ? (e.target.checked ? controlConfig.trueValue : controlConfig.falseValue) : e.target.value });
+            } else {
+                onChange({ [name]: e });
+            }
         },
         ...p,
     };
-    
+
     return <UIControl {...controlProps as any} />;
 };
-
-
-// ==========================================================
-// 5. COMPONENTE PRINCIPAL
-// ==========================================================
 
 const AvisoObraForm: FC<AvisoObraFormProps> = ({
     request,
     data: initialData = {},
     onClose,
     action,
-    open, 
+    open,
     ...restProps
 }) => {
-    const [data, setData] = useState<AvisoObraRecord>(initData(initialData));
+    // Usamos el init centralizado y permitimos sobrescribir con initialData
+    const [data, setData] = useState<AvisoObraRecord>(getDefaultAvisoObra(initialData));
 
     // Mapeos para Selects
     const avisosObraTipos: SelectConfig = AvisosObraTipos.reduce((acc, r: AvisoTipo) => {
@@ -136,7 +122,7 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
     const confirmadoValor = (): string => {
         if (data.confirmacionFecha) {
             if (typeof data.confirmacionFecha === 'string') return data.confirmacionFecha;
-            if ((data.confirmacionFecha as any) instanceof Date) { 
+            if ((data.confirmacionFecha as any) instanceof Date) {
                 return (data.confirmacionFecha as Date).toISOString().split(".")[0];
             }
         }
@@ -146,14 +132,14 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
 
     const deshabilitaConfirmacionFecha = (d: AvisoObraRecord = data): boolean => {
         if (d.direccionCalleRuta === "") return true;
-        if (!d.direccionPciaCodigo) return true; 
+        if (!d.direccionPciaCodigo) return true;
         if (d.direccionCPA === "") return true;
-        if (!d.actividadInicioFecha) return true; 
+        if (!d.actividadInicioFecha) return true;
         if (d.actExcavacion === "S" && (!d.excavacionInicioFecha || !d.excavacionFinFecha)) return true;
         if (d.actDemolicion === "S" && (!d.demolicionInicioFecha || !d.demolicionFinFecha)) return true;
         return false;
     };
-    
+
     // 6. MANEJADOR CENTRAL DE CAMBIOS (Se encarga de actualizar el estado 'data')
     const handleChange = (changes: { [key: string]: any }) => {
         // Obtenemos el campo y el valor del objeto de cambios
@@ -161,22 +147,22 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
         const fieldValue = changes[fieldName];
 
         let newData = { ...data, [fieldName]: fieldValue };
-        
+
         // Lógica para resetear confirmacionFecha si la validación falla
         const isConfirmationDisabled = deshabilitaConfirmacionFecha(newData);
-        
+
         // Si el campo cambiado NO es confirmacionFecha:
         if (fieldName !== "confirmacionFecha") {
             // Si la nueva data deshabilita la confirmación, forzamos confirmacionFecha a null
             if (isConfirmationDisabled && newData.confirmacionFecha) {
                 newData.confirmacionFecha = null;
             }
-        } 
+        }
         // Si el campo cambiado ES confirmacionFecha:
         else {
             const trueValue = confirmadoValor();
             const falseValue = null;
-            
+
             // Si el valor entrante no es null (se está marcando)
             if (fieldValue !== falseValue) {
                 // Si la confirmación no está deshabilitada por la validación
@@ -215,7 +201,7 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
         // Aplicamos la lógica de conversión a number/null
         (Object.keys(record) as Array<keyof AvisoObraRecord>).forEach((field) => {
             let value = record[field];
-            
+
             switch (field) {
                 case "recepcionFecha":
                 case "actividadInicioFecha":
@@ -231,12 +217,12 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
                         (record as any)[field] = null;
                     }
                     break;
-                    
+
                 case "obraNumero":
                 case "obraSecuencia":
                 case "direccionPciaCodigo":
                 case "superficie":
-                case "plantas":{
+                case "plantas": {
                     const v = (record as any)[field];
                     if (v === "" || v === null || v === undefined) {
                         (record as any)[field] = null;
@@ -258,14 +244,6 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
     };
 
     const handleConfirm = () => {
-        if (
-            (request === Request.Insert || request === Request.Change) && 
-            !data.confirmacionFecha
-        ) {
-            console.error("Debe marcar 'Formulario listo para envío' antes de confirmar.");
-            return;
-        }
-        
         handleOnClose(request, Response.Completed);
     };
 
@@ -273,18 +251,18 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
 
     const modalActions = (
         <Box sx={{ display: 'flex', gap: 2, padding: 2 }}>
-            <CustomButton 
-                variant="outlined" 
-                onClick={handleCancel} 
+            <CustomButton
+                variant="outlined"
+                onClick={handleCancel}
                 color="secondary"
             >
                 Cancelar
             </CustomButton>
-            
+
             {!isReadOnly && (
-                <CustomButton 
-                    variant="contained" 
-                    onClick={handleConfirm} 
+                <CustomButton
+                    variant="contained"
+                    onClick={handleConfirm}
                     color="primary"
                     disabled={request !== Request.Delete && deshabilitaConfirmacionFecha()}
                 >
@@ -294,19 +272,16 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
         </Box>
     );
 
-    // 8. Renderizado del componente (JSX) con la estructura Grid corregida
-    // Nota: Agregamos 'xs={12}' a los Grid para evitar un error de layout
-    // y pasamos las props 'data' y 'onChange' al componente 'Control'
     return (
-        <CustomModal 
-            title={title} 
-            open={open} 
-            onClose={handleCancel} 
-            actions={modalActions} 
+        <CustomModal
+            title={title}
+            open={open}
+            onClose={handleCancel}
+            actions={modalActions}
             size="large"
         >
             <Grid container rowSpacing={2} columnSpacing={2}>
-                
+
                 {/* CAMPOS SUPERIORES DIRECTOS */}
                 <Grid width={'20%'}>
                     <Control label="Tipo" name="obraTipo" type="select" config={avisosObraTipos} onChange={handleChange} data={data} disabled={isReadOnly} />
@@ -317,7 +292,7 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
                 <Grid >
                     <Control label="Plantas" maxLength={4} name="plantas" type="number" onChange={handleChange} data={data} disabled={isReadOnly} />
                 </Grid>
-                
+
                 <Grid >
                     <Card variant="outlined">
                         <CardContent>
@@ -363,7 +338,7 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
                         </CardContent>
                     </Card>
                 </Grid>
-                
+
                 <Grid >
                     <Card variant="outlined">
                         <CardContent>
@@ -380,13 +355,11 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
                         </CardContent>
                     </Card>
                 </Grid>
-                
-                {/* --- SECCIÓN CLASIFICACIÓN (Múltiples CARDS en filas) --- */}
 
                 <Grid>
                     <Card variant="outlined">
                         <CardContent>
-                        <Typography className={styles.titulo}>Obras de Ingeniería Civil</Typography>
+                            <Typography className={styles.titulo}>Obras de Ingeniería Civil</Typography>
                             <Grid container spacing={1}>
                                 <Grid ><Control label="Caminos" name="ingCivCaminos" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
                                 <Grid ><Control label="Calles" name="ingCivCalles" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
@@ -403,7 +376,7 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
                         </CardContent>
                     </Card>
                 </Grid>
-                
+
                 <Grid >
                     <Card variant="outlined">
                         <CardContent>
@@ -448,14 +421,12 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
                         </CardContent>
                     </Card>
                 </Grid>
-                
-                {/* --- SECCIÓN ACTIVIDAD A DESARROLLAR (CARD GRANDE) --- */}
+
                 <Grid >
                     <Card variant="outlined">
                         <CardContent>
                             <Typography align="left" className={styles.titulo}>Actividad a Desarrollar</Typography>
                             <Grid container spacing={2}>
-                                {/* Sub-sección Excavación y Demolición (con sus fechas internas) */}
                                 <Grid>
                                     <Card variant="outlined">
                                         <CardContent>
@@ -467,7 +438,7 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
                                         </CardContent>
                                     </Card>
                                 </Grid>
-                                
+
                                 <Grid>
                                     <Card variant="outlined">
                                         <CardContent>
@@ -479,7 +450,7 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
                                         </CardContent>
                                     </Card>
                                 </Grid>
-                            </Grid>  
+                            </Grid>
                             <Grid container spacing={2} sx={{mt: 1}}>
                                 <Grid ><Control label="Albañilería" name="actAlbanileria" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
                                 <Grid ><Control label="H A" name="actHA" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
@@ -493,14 +464,13 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
                                 <Grid ><Control label="Medios de Izaje" name="actMediosIzaje" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
                                 <Grid ><Control label="Alta y media tensión" name="actAltaMediaTension" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
                                 <Grid ><Control label="Mayor de 1000 m2 Sup. Cubierta o más de 4m. de altura" name="actMayorMilSupCubierta" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
-                               
+
                                 <Control label="Otros (detallar)" name="actOtros" maxLength={100} type="textarea" onChange={handleChange} data={data} disabled={isReadOnly} />
                             </Grid>
                         </CardContent>
                     </Card>
                 </Grid>
-                
-                {/* --- SECCIÓN CONFIRMACIÓN FINAL --- */}
+
                 <Grid >
                     <div style={{ textAlign: "left", marginTop: 10 }}>
                         <Control
@@ -508,12 +478,12 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
                             name="confirmacionFecha"
                             disabled={isReadOnly || deshabilitaConfirmacionFecha()}
                             type="checkbox"
-                            config={{ 
-                                trueValue: confirmadoValor(), 
+                            config={{
+                                trueValue: confirmadoValor(),
                                 falseValue: null,
                             }}
                             value={data.confirmacionFecha}
-                            onChange={handleChange} 
+                            onChange={handleChange}
                             data={data}
                         />
                     </div>

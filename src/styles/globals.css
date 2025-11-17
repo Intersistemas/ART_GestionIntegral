@@ -48,21 +48,6 @@
   --content-padding: 20px;
   --main-content-margin: 5px;
 
-
-
-  /* React-QueryBuilder
-  --rqb-spacing: 0.5rem !important;
-  --rqb-border-width: 1px !important;
-  --rqb-base-color: #ffaf4c !important;
-  --rqb-background-color: color-mix(in srgb, transparent, #ffaf4c 30%) !important;
-  --rqb-border-color: #b66400 !important;
-  --rqb-border-style: solid !important;
-  --rqb-border-radius: 0.25rem !important;
-  --rqb-branch-indent: 0.5rem !important;
-  --rqb-branch-width: 1px !important;
-  --rqb-branch-color: #b66400 !important;
-  --rqb-branch-radius: 0.25rem !important;
-  --rqb-branch-style: solid !important; */
 }
 
 html {

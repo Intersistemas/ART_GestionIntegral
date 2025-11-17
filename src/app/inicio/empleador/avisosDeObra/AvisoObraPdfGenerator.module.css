@@ -1,0 +1,193 @@
+
+.screenContainer {
+  display: table-column;
+  background: var(--grisClaroClaro);
+  min-height: 100vh;
+  padding: 20px;
+  justify-content: center;
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: right;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+/* ================= ===== PDF ROOT ===== ================= */
+
+.pdfRoot {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: center;
+}
+
+/* ================= PAGE ================= */
+
+.page {
+  width: 794px;
+  height: 1123px;
+  box-sizing: border-box;
+  background: white;
+  padding: 20px;
+  border: 1px solid #dcdcdc;
+}
+
+.title {
+  text-align: center;
+  font-weight: 900;
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+
+.pageNumber {
+  text-align: right;
+  font-size: 10px;
+  color: var(--gris);
+  margin-top: 8px;
+}
+
+.line {
+  height: 6px;
+  border-top: 2px solid var(--grisOscuro);
+  margin-bottom: 10px;
+}
+
+/* ================= SECTION TITLE ================= */
+
+.sectionTitle {
+  background: var(--naranjaClaroClaro);
+  border: 1px solid var(--grisOscuro);
+  padding: 6px;
+  text-align: center;
+  font-weight: 800;
+  font-size: 13px;
+  margin: 8px 0;
+}
+
+/* ================= GRID HELPERS ================= */
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.grid4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+/* ================= FIELD ================= */
+
+.fieldWrapper {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--grisOscuro);
+  padding: 4px;
+  min-height: 40px;
+  box-sizing: border-box;
+}
+
+.fieldLarge {
+  grid-column: span 2;
+}
+
+.fieldLabel {
+  font-size: 10px;
+  color: var(--gris);
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.fieldValue {
+  font-size: 12px;
+  font-weight: 700;
+  min-height: 18px;
+}
+
+/* ================= CHECKBOX ================= */
+
+.checkboxItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+.checkboxBox {
+  width: 12px;
+  height: 12px;
+  border: 1px solid black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkboxChecked {
+  background: var(--verde);
+}
+
+.checkboxTick {
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  line-height: 3;
+  margin-bottom: 5px;
+}
+
+/* ================= RESOLUCIÓN ================= */
+
+.resolContainer {
+  border: 1px solid var(--grisOscuro);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.resolChecks {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+/* ================= BLOCK ================= */
+
+.block {
+  border: 1px solid var(--grisOscuro);
+  padding: 8px;
+}
+
+.blockTitle {
+  font-size: 12px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+/* ================= ACTIVIDADES EXTRA ================= */
+
+.otherActivitiesBox {
+  border: 1px solid var(--grisOscuro);
+  padding: 6px;
+  margin-top: 10px;
+}
+
+.otherActTitle {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.otherActText {
+  white-space: pre-wrap;
+  font-size: 12px;
+}

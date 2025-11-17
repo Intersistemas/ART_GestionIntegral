@@ -1,9 +1,5 @@
 // srrc/app/inicio/empleador/avisosDeObra/types/types.ts
 
-// ==========================================================
-// ENUMS DE OPERACIÓN
-// ==========================================================
-
 export enum Request {
     Insert = "Insert",
     Change = "Change",
@@ -15,12 +11,8 @@ export enum Response {
     Cancelled = "Cancelled",
 }
 
-// ==========================================================
-// INTERFACES DE DATOS MAESTROS Y REGISTRO PRINCIPAL
-// ==========================================================
-
-export interface AvisoTipo { Codigo: string; Descripcion: string; }
-export interface Provincia { Codigo: number; Descripcion: string; }
+export type AvisoTipo = { Codigo: string; Descripcion: string; };
+export type Provincia = { Codigo: number; Descripcion: string; };
 
 // 1. Interfaz para el Registro de Aviso de Obra
 export interface AvisoObraRecord {
@@ -90,10 +82,6 @@ export interface AvisoObraRecord {
     [key: string]: any; // Permite el acceso dinámico (data[name])
 }
 
-// ==========================================================
-// INTERFACES DE ESTADO Y ERROR
-// ==========================================================
-
 // Define la estructura del error
 export interface ApiError {
     code?: string;
@@ -119,10 +107,6 @@ interface FormOpenState {
     data: AvisoObraRecord;
 }
 export type FormDataState = FormClosedState | FormOpenState;
-
-// ==========================================================
-// INTERFACE DE DATOS PARA PDF (si es necesario un mapeo)
-// ==========================================================
 
 export interface PdfFormData {
     // Mapeo más detallado (si es necesario) o simplemente usar Partial<AvisoObraRecord>
