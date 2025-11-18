@@ -28,7 +28,7 @@ import { BsSliders } from "react-icons/bs";
  }
 
  function AtencionAlPublicoPageInner() {
-   const { dialog, onAplica, onLimpia } = useDataContext();
+   const { dialog, onLookupFiltro, onGuardaFiltro, onEliminaFiltro, onAplica, onLimpia, onLimpiaTabla, onExport, rows: { length: habilita }, proposition, filtro } = useDataContext();
    return (
      <Grid container spacing={1} size="grow">
        <Grid size={12}>
@@ -42,6 +42,29 @@ import { BsSliders } from "react-icons/bs";
           
            <AccordionDetails>
               <Grid container spacing={3} size="grow" >
+                <Grid size={12} className={styles.orangeBG}>
+                 <Grid container spacing={2} alignItems="center" justifyContent="space-between">
+                  
+                    <Grid >
+                      <Typography className={styles.filtersInfo} color={filtro == null ? "textDisabled" : "success"}>
+                        {filtro?.nombre ? (
+                          <>Filtro cargado: <span className={styles.accentuatedText}>{filtro?.nombre}</span></>
+                        ) : ("Sin filtro seleccionado")}
+                      </Typography>
+                    </Grid>
+
+                    <Grid >
+                      <Grid container spacing={2} alignItems="center" justifyContent="flex-end">
+                        <Grid>
+                          <CustomButton onClick={onLookupFiltro}>Elegir Filtro</CustomButton>
+                        </Grid>
+                        <Grid>
+                          <CustomButton onClick={onEliminaFiltro} disabled={filtro == null}>Eliminar Filtro</CustomButton>
+                        </Grid>
+                      </Grid>
+                    </Grid>
+                  </Grid>
+              </Grid>
                 <Grid size={12}>
                   <AtencionAlPublicoQueryBuilder />
                 </Grid>
@@ -49,7 +72,9 @@ import { BsSliders } from "react-icons/bs";
                   <Grid container spacing={2}>
                     <CustomButton onClick={onAplica}>Aplicar Filtro</CustomButton>
                     <CustomButton onClick={onLimpia}>Limpiar Filtro</CustomButton>
+                    <CustomButton onClick={onGuardaFiltro} disabled={!proposition}>Guardar Filtro</CustomButton>
                   </Grid>
+                  <CustomButton width="auto" onClick={onExport} disabled={!habilita}>Exportar a Excel</CustomButton>
                 </Grid>
               </Grid>
             </AccordionDetails>
