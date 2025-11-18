@@ -35,12 +35,10 @@ export class ArtAPIClass extends ExternalAPI {
       // No volver a revalidar al volver al foco, reconectar o al montar si ya hay cache
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
-      //revalidateOnMount: false,
-      //dedupingInterval: 1000 * 60 * 60, // 1 hora (ajusta si hace falta) // Tiempo en ms durante el cual SWR deduplica solicitudes iguales (evita re-fetch frecuente)
-      // Si quieres que la clave no dispare fetch hasta que exista token, puedes usar: (token.getToken() ? key : null)
     }     
   );
   //#endregion
+  
 }
 
 const ArtAPI = Object.seal(new ArtAPIClass());

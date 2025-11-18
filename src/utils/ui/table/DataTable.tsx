@@ -47,7 +47,6 @@ type ColumnMeta = {
     align?: 'left' | 'center' | 'right' | 'justify';
 };
 
-
 interface DataTableProps<TData extends object> {
     data: TData[];
     columns: ColumnDef<TData, any>[];
@@ -69,6 +68,23 @@ interface DataTableProps<TData extends object> {
     pageCount?: number;
     onPageChange?: (newPageIndex: number) => void;
     onPageSizeChange?: (newPageSize: number) => void;
+
+    /**
+     * NUEVAS PROPS
+     * rowKeyField: nombre de la propiedad en cada row original que se usará como clave estable para recordar selección.
+     *   por ejemplo 'interno' o 'id'. Si no existe en la fila, caerá a 'id' o a un hash interno.
+     *
+     * selectedRowKeyProp: si el padre lo pasa, la tabla usará esta clave como selección controlada.
+     * initialSelectedRowKey: selección inicial (solo al montar) si el padre la provee.
+     * onSelectedRowChange: callback que recibe (selectedKey: string | null, row?: TData)
+     *
+     * persistSelectedRowKey: si se pasa una cadena, la tabla guardará/leerá la selección en localStorage con esa clave.
+     */
+    rowKeyField?: string;
+    selectedRowKeyProp?: string | null;
+    initialSelectedRowKey?: string | null;
+    onSelectedRowChange?: (selectedKey: string | null, row?: TData) => void;
+    persistSelectedRowKey?: string | null;
 }
 
 export function DataTable<TData extends object>({
@@ -91,6 +107,13 @@ export function DataTable<TData extends object>({
     pageCount: pageCountProp,
     onPageChange,
     onPageSizeChange,
+
+    // new props
+    rowKeyField = 'interno',
+    selectedRowKeyProp,
+    initialSelectedRowKey = null,
+    onSelectedRowChange,
+    persistSelectedRowKey = null,
 }: DataTableProps<TData>) {
 
     const defaultProps = {
@@ -117,10 +140,12 @@ export function DataTable<TData extends object>({
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
     const [globalFilter, setGlobalFilter] = useState('');
-    const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
+    // selectedRowKey: clave estable (string) usada para resaltar la fila (independiente de checkbox)
+    const [selectedRowKey, setSelectedRowKey] = useState<string | null>(selectedRowKeyProp ?? initialSelectedRowKey ?? null);
+    const [selectedRowIdInternal, setSelectedRowIdInternal] = useState<string | null>(null); // row.id de tanstack para la fila visible actual (opcional)
     const [rowSelection, setRowSelection] = useState<RowSelectionState>(initialRowSelection);
 
-       // Estado local de paginación (sin controlar o sincronizado cuando viene prop)
+    // Estado local de paginación (sin controlar o sincronizado cuando viene prop)
     const [localPagination, setLocalPagination] = useState({
         pageIndex: pageIndexProp ?? 0,
         pageSize: pageSizeProp ?? (resolvedProps.pageSizeOptions?.[0] ?? 10),
@@ -150,8 +175,61 @@ export function DataTable<TData extends object>({
     const handleRowSelectionChange = (updater: RowSelectionState | ((old: RowSelectionState) => RowSelectionState)) => {
         setRowSelection(updater);
     };
-    
-    // Columna de selección con la alineación definida en meta
+
+    // Helper: obtener clave estable para una fila TData
+    const getRowKey = (row: TData): string => {
+        // Priorizar field especificado
+        const anyRow = row as any;
+        if (rowKeyField && anyRow && typeof anyRow[rowKeyField] !== 'undefined' && anyRow[rowKeyField] !== null) {
+            return String(anyRow[rowKeyField]);
+        }
+        // fallback a 'id' si existe
+        if (anyRow && typeof anyRow['id'] !== 'undefined' && anyRow['id'] !== null) {
+            return String(anyRow['id']);
+        }
+        // Último recurso: serialized short fingerprint
+        try {
+            const s = JSON.stringify(anyRow);
+            // hash simple para evitar strings demasiado largos
+            let h = 0;
+            for (let i = 0; i < s.length; i++) {
+                h = ((h << 5) - h) + s.charCodeAt(i);
+                h |= 0;
+            }
+            return `hash_${Math.abs(h)}`;
+        } catch {
+            return `row_${Math.random().toString(36).substr(2, 9)}`;
+        }
+    };
+
+    // Persistencia en localStorage si persistSelectedRowKey está provisto
+    useEffect(() => {
+        // lectura en el montaje, pero respetando prioridades:
+        // 1) selectedRowKeyProp (controlado) -> no leer
+        // 2) initialSelectedRowKey -> si existe usarla (ya se inicializó en useState)
+        // 3) si neither y persistSelectedRowKey definido -> leer almacenado
+        try {
+            if (!persistSelectedRowKey) return;
+            if (selectedRowKeyProp !== undefined && selectedRowKeyProp !== null) return;
+            if (initialSelectedRowKey) return; // ya se inicializó desde prop
+            const stored = localStorage.getItem(persistSelectedRowKey);
+            if (stored) {
+                setSelectedRowKey(stored);
+            }
+        } catch (err) {
+            // no bloquear si localStorage falla
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // leer solo al montar
+
+    // Mantener sincronización con prop controlada selectedRowKeyProp (si existe)
+    useEffect(() => {
+        if (typeof selectedRowKeyProp !== 'undefined') {
+            setSelectedRowKey(selectedRowKeyProp);
+        }
+    }, [selectedRowKeyProp]);
+
+    // Crear la tabla
     const selectionColumn: ColumnDef<TData, unknown> = {
         id: 'select',
         header: ({ table }: HeaderContext<TData, unknown>) => ( 
@@ -223,19 +301,98 @@ export function DataTable<TData extends object>({
     useEffect(() => {
         if (onRowSelectionChange) {
             const selectedRows = table.getSelectedRowModel().flatRows.map(row => row.original);
-            console.log('USE EFFECT (CALLBACK): Filas seleccionadas (Callback al padre):', selectedRows.length);
             onRowSelectionChange(selectedRows);
         }
-    }, [rowSelection, onRowSelectionChange, data.length]);
-
+    }, [rowSelection, onRowSelectionChange, data.length, table]);
 
     // #2. useEffect para manejar la visibilidad de la columna 'select'
     useEffect(() => {
-        const selectColumn = table.getColumn('select');
-        if (selectColumn) {
-            selectColumn.toggleVisibility(enableRowSelection);
+        const selectColumnRef = table.getColumn('select');
+        if (selectColumnRef) {
+            selectColumnRef.toggleVisibility(enableRowSelection);
         }
-    }, [enableRowSelection]);
+    }, [enableRowSelection, table]);
+
+    // #3. Selección inicial / reconciliación cuando cambian los datos:
+    // Precedencia:
+    //  - si selectedRowKeyProp existe -> no tocar (controlado por padre)
+    //  - si selectedRowKey (estado interno) apunta a clave que ya no existe en data -> intentar recuperar: 1) initialSelectedRowKey (solo si se pasó y todavía existe) 2) localStorage 3) primera fila
+    useEffect(() => {
+        // Si padre controla selección, respetar
+        if (selectedRowKeyProp !== undefined && selectedRowKeyProp !== null) {
+            return;
+        }
+
+        // Si ya tenemos selectedRowKey en estado, verificar existencia
+        if (selectedRowKey) {
+            const exists = data.some(d => getRowKey(d) === selectedRowKey);
+            if (exists) {
+                // notificar por si quieren escuchar cambios cuando data recarga la misma fila
+                const matched = data.find(d => getRowKey(d) === selectedRowKey);
+                if (onSelectedRowChange) onSelectedRowChange(selectedRowKey, matched);
+                return;
+            }
+        }
+
+        // Si initialSelectedRowKey fue provisto y existe en data, usarla
+        if (initialSelectedRowKey) {
+            const existsInit = data.some(d => getRowKey(d) === initialSelectedRowKey);
+            if (existsInit) {
+                setSelectedRowKey(initialSelectedRowKey);
+                if (persistSelectedRowKey) {
+                    try { localStorage.setItem(persistSelectedRowKey, initialSelectedRowKey); } catch {}
+                }
+                const matched = data.find(d => getRowKey(d) === initialSelectedRowKey);
+                if (onSelectedRowChange) onSelectedRowChange(initialSelectedRowKey, matched);
+                return;
+            }
+        }
+
+        // Si persistSelectedRowKey y un valor guardado coincide, usarlo
+        if (persistSelectedRowKey) {
+            try {
+                const stored = localStorage.getItem(persistSelectedRowKey);
+                if (stored) {
+                    const existsStored = data.some(d => getRowKey(d) === stored);
+                    if (existsStored) {
+                        setSelectedRowKey(stored);
+                        const matched = data.find(d => getRowKey(d) === stored);
+                        if (onSelectedRowChange) onSelectedRowChange(stored, matched);
+                        return;
+                    }
+                }
+            } catch {}
+        }
+
+        // Si no hay ninguna selección válida -> seleccionar primer registro (si existe)
+        if (data.length > 0) {
+            const firstKey = getRowKey(data[0]);
+            setSelectedRowKey(firstKey);
+            if (persistSelectedRowKey) {
+                try { localStorage.setItem(persistSelectedRowKey, firstKey); } catch {}
+            }
+            if (onSelectedRowChange) onSelectedRowChange(firstKey, data[0]);
+        } else {
+            // si no hay datos, limpiar selección
+            setSelectedRowKey(null);
+            if (onSelectedRowChange) onSelectedRowChange(null, undefined);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [data]);
+
+    // Guardar en localStorage cuando cambia selection (si está configurado)
+    useEffect(() => {
+        if (!persistSelectedRowKey) return;
+        try {
+            if (selectedRowKey === null) {
+                localStorage.removeItem(persistSelectedRowKey);
+            } else {
+                localStorage.setItem(persistSelectedRowKey, selectedRowKey);
+            }
+        } catch (err) {
+            // noop
+        }
+    }, [selectedRowKey, persistSelectedRowKey]);
 
     // Determinación de clases CSS
     const cellPaddingClass = size === 'small' ? styles.smallCell : styles.midCell;
@@ -295,22 +452,36 @@ export function DataTable<TData extends object>({
                                 </TableCell>
                             </TableRow>
                         ) : table.getRowModel().rows.length ? (
-                            table.getRowModel().rows.map((row) => (
+                            table.getRowModel().rows.map((row) => {
+                                // Calcular clave estable para esta fila (a partir de row.original)
+                                const stableKey = getRowKey(row.original as TData);
+                                const isSelectedKey = stableKey === selectedRowKey;
+                                // Mantener row.id interno (opcional)
+                                const rowId = row.id;
+                                return (
                                 <TableRow
                                     key={row.id}
                                     // Aplicación de clases CSS modular
-                                    className={`${styles.tableRow} ${row.getIsSelected() ? styles.selectedRow : ''}`}
+                                    className={`${styles.tableRow} ${row.getIsSelected() ? styles.selectedRow : ''} ${isSelectedKey ? styles.selectedRow : ''}`}
                                     onClick={() => {
-                                        // Si la selección de fila está habilitada, la fila entera actúa como toggle
+                                        // SI la selección con checkbox está habilitada, togglear la selección de checkbox
                                         if (enableRowSelection) {
                                             row.toggleSelected(!row.getIsSelected());
                                         }
-                                        
-                                        // Manejo de resaltado simple y callback
-                                        setSelectedRowId(row.id);
-                                        onRowClick?.(row.original);
+
+                                        // setear la selección por fila (clave estable)
+                                        setSelectedRowKey(stableKey);
+                                        setSelectedRowIdInternal(rowId);
+                                        // persistir si corresponde
+                                        if (persistSelectedRowKey) {
+                                            try { if (stableKey) localStorage.setItem(persistSelectedRowKey, stableKey); } catch {}
+                                        }
+                                        // notificar al padre la selección (clave y objeto fila)
+                                        if (onSelectedRowChange) onSelectedRowChange(stableKey, row.original as TData);
+
+                                        // callback legacy onRowClick
+                                        onRowClick?.(row.original as TData);
                                     }}
-                                    // ELIMINAMOS EL SX Y USAMOS STYLE PARA EL CURSOR
                                     style={{ cursor: onRowClick || enableRowSelection ? 'pointer' : 'default' }}
                                 >
                                     {row.getVisibleCells().map((cell) => {
@@ -323,14 +494,14 @@ export function DataTable<TData extends object>({
                                             <TableCell
                                                 key={cell.id}
                                                 // APLICAR CLASE DE ALINEACIÓN
-                                                className={`${styles.tableBodyCell} ${cellPaddingClass} ${row.id === selectedRowId ? styles.selectedCell : ''} ${alignClass}`}
+                                                className={`${styles.tableBodyCell} ${cellPaddingClass} ${isSelectedKey ? styles.selectedCell : ''} ${alignClass}`}
                                             >
                                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                             </TableCell>
                                         );
                                     })}
                                 </TableRow>
-                            ))
+                            )})
                         ) : (
                             <TableRow>
                                 <TableCell colSpan={finalColumns.length} className={styles.noDataCell}>
