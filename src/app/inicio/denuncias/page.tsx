@@ -8,7 +8,7 @@ function CotizacionesPage() {
  
   return (
     <div className={styles.inicioContainer}>
-      Denuncias
+      Pantalla En Desarrollo...
     </div>
   )
 }
