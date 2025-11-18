@@ -86,9 +86,6 @@
     transition: color 0.2s ease-in-out;
 }
 
-.iconAlert {
-    color: #e03d3d; /* rojo para indicar alerta en la campana */
-}
 
 /* CAMBIO CLAVE: Agregamos una nueva regla para cambiar el color del ícono dentro del menuItem en hover */
 .menuItem:hover .iconButton {
