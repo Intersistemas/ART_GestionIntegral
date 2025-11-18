@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { GoBellFill } from 'react-icons/go';
 import styles from './Navbar.module.css';
 import CustomButton from '@/utils/ui/button/CustomButton';
-import { getFormulariosRGRL, getEstablecimientosEmpresa, formatEstablecimientoLabel } from '@/data/rgrlAPI';
+import ArtAPI, { formatEstablecimientoLabel } from '@/data/artAPI';
 
 type Props = {
   empresaCUIT?: number | string | null;
@@ -28,8 +28,8 @@ export default function Notification({ empresaCUIT }: Props) {
           return;
         }
         const [ests, forms] = await Promise.all([
-          getEstablecimientosEmpresa(c),
-          getFormulariosRGRL(c, true),
+          ArtAPI.getEstablecimientosEmpresa(c),
+          ArtAPI.getFormulariosRGRL(c, true),
         ]);
 
         const formsEstIds = new Set((forms ?? []).map((f: any) => Number(f.internoEstablecimiento)).filter(Boolean));
