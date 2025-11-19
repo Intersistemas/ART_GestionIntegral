@@ -169,7 +169,9 @@
 .tableFooter {
   margin-top: 12px;
   display: flex;
-  justify-content: space-between;
+  gap: 12px;
+  justify-content: flex-start;
+  align-items: center;
 }
 
 .savingMsg {

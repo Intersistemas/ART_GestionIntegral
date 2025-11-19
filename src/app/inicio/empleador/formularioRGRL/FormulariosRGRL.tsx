@@ -105,14 +105,16 @@ const mapApiToUi = (r: ApiFormularioRGRL): FormularioRGRL => ({
   Estado: r.estado ?? '',
   FechaHoraCreacion: Fecha(r.creacionFechaHora),
   FechaHoraConfirmado: Fecha(r.completadoFechaHora),
+  CreacionFechaHoraRaw: r.creacionFechaHora ?? null,
 });
 
 const CargarConsultaFormulariosRGRL = async (cuit: number): Promise<FormularioRGRL[]> => {
 
   // GET /FormulariosRGRL/{cuit}: obtiene lista de formularios para la grilla.
+  // Solicitar todos los formularios añadiendo un pageSize alto para evitar la paginación del backend
   const url = `http://arttest.intersistemas.ar:8302/api/FormulariosRGRL?CUIT=${encodeURIComponent(
     cuit
-  )}`;
+  )}&pageSize=99999`;
   const res = await fetch(url, {
     cache: 'no-store',
     headers: { Accept: 'text/json, application/json' },
@@ -163,6 +165,37 @@ const normPropioContratado = (v?: string | null): 'Propio' | 'Contratado' => {
 
   if (s === 'contratado' || s === 'c' || s === 'externo' || s === '1' || s === 'true') return 'Contratado';
   return 'Propio';
+};
+
+const normCargo = (v?: string | null): string => {
+  const s = String(v ?? '').trim();
+  if (!s) return '';
+  if (s === 'H') return 'Profesional de Higiene y Seguridad en el Trabajo';
+  if (s === 'M') return 'Profesional de Medicina Laboral';
+  if (s === 'R') return 'Responsable de Datos del Formulario';
+  return s;
+};
+
+const normRepresentacion = (v?: string | number | null): string => {
+  const n = Number(v);
+  switch (n) {
+    case 1:
+      return 'Representante Legal';
+    case 2:
+      return 'Presidente';
+    case 3:
+      return 'VicePresidente';
+    case 4:
+      return 'Director General';
+    case 5:
+      return 'Gerente General';
+    case 6:
+      return 'Administrador General';
+    case 0:
+      return 'Otros';
+    default:
+      return String(v ?? '');
+  }
 };
 
 const CargarDetalleRGRL = async (id: number): Promise<DetallePayload> => {
@@ -245,8 +278,8 @@ const CargarDetalleRGRL = async (id: number): Promise<DetallePayload> => {
   const responsables = (data.respuestasResponsable ?? []).map(r => ({
     CUITCUIL: CUIP(r.cuit),
     NombreApellido: r.responsable ?? '',
-    Cargo: r.cargo ?? '',
-    Representacion: r.representacion ?? '',
+    Cargo: normCargo(r.cargo),
+    Representacion: normRepresentacion(r.representacion ?? r.representacion),
     PropioContratado: normPropioContratado(r.propioContratado),
     TituloHabilitante: r.tituloHabilitante ?? '',
     Matricula: r.matricula ?? '',
@@ -449,14 +482,26 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
             setOpenGenerar(true);
           };
 
-          return (
+          // Ocultar iconos de replicar/editar si la fecha de creación es >= 1 año
+          // Preferimos usar la fecha cruda (ISO) que guardamos en `CreacionFechaHoraRaw`; si no existe, usamos la cadena formateada.
+          const creadoRaw = (row.original as any).CreacionFechaHoraRaw ?? row.original.FechaHoraCreacion ?? '';
+          const creado = dayjs(creadoRaw);
+          const anos = creado.isValid() ? dayjs().diff(creado, 'year') : 0;
+          const olderOrEqual1Year = creado.isValid() && anos >= 1;
 
+          const estado = String(row.original.Estado ?? '').trim();
+          const showEditar = estado !== 'Confirmado' && !olderOrEqual1Year;
+          const showReplicar = !olderOrEqual1Year;
+
+          return (
             <div className={styles.iconActions}>
-              {String(row.original.Estado ?? '').trim() !== 'Confirmado' && (
+              {showEditar && (
                 <BsPencilFill title="Editar" onClick={onEdit} className={styles.iconButton} />
               )}
               <BsFileEarmarkPdfFill title="Imprimir" onClick={onClick} className={styles.iconButton} />
-              <BsFront title="Replicar" onClick={onCopy} className={styles.iconButton} />
+              {showReplicar && (
+                <BsFront title="Replicar" onClick={onCopy} className={styles.iconButton} />
+              )}
             </div>
           );
         },
@@ -524,21 +569,6 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
     setOpenGenerar(true);
   };
 
-  const handleClickEditar = () => {
-    if (!internoSeleccionado) return;
-    router.push(`/inicio/empleador/formularioRGRL/editar?id=${internoSeleccionado}`);
-  };
-
-  const handleFinalizaCarga = async (refrescar?: boolean) => {
-    setCargarFormulario(false);
-    if (refrescar) await fetchFormularios(Number(cuitBusqueda) || cuit);
-  };
-
-  const handleReplicar = () => {
-    if (!internoSeleccionado) return;
-    setReplicaDe(internoSeleccionado);
-    setOpenGenerar(true);
-  };
   //#endregion table-and-handlers
   const handleExportExcel = async () => {
     const columns: Record<string, TableColumn> = {
