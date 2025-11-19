@@ -263,15 +263,6 @@ function DenunciasPage() {
   const currentInitialData = requestState.denunciaData || initialDenunciaFormData;
 
   return (
-<<<<<<< HEAD
-    <div className={styles.inicioContainer}>
-<<<<<<< HEAD
-      Pantalla En Desarrollo...
-=======
-      {/* <div className={styles.header}>
-        <h1 className={styles.title}>Denuncias</h1>
-      </div> */}
-=======
     <Box className={styles.inicioContainer}>
       <CustomButton
         onClick={() => handleOpenModal("create")}
@@ -279,7 +270,6 @@ function DenunciasPage() {
       >
         Registrar Denuncia
       </CustomButton>
->>>>>>> 4699029 (avances)
 
       {/* Filters */}
       <div className={styles.filtersContainer}>
@@ -317,18 +307,14 @@ function DenunciasPage() {
         />
       </div>
 
-      {/* Empty state for no data */}
-      {!isLoading && ((data?.data && data.data.length === 0) || is404Error || (!data && !error)) && (
-        <div className={styles.emptyState}>
-          <p>No se encontraron denuncias con los filtros seleccionados.</p>
-        </div>
-      )}
-<<<<<<< HEAD
->>>>>>> 0cbd7be (desarrollo browse)
-    </div>
-=======
-
-      {/* Denuncia Form Modal */}
+    {/* Empty state for no data */}
+    {!isLoading && ((data?.data && data.data.length === 0) || is404Error || (!data && !error)) && (
+      <div className={styles.emptyState}>
+        <p>No se encontraron denuncias con los filtros seleccionados.</p>
+      </div>
+    )}
+    
+    {/* Denuncia Form Modal */}
       <DenunciaForm
         open={showModal}
         onClose={handleCloseModal}
@@ -348,7 +334,6 @@ function DenunciasPage() {
         title="Atención requerida"  
       />
     </Box>
->>>>>>> 4699029 (avances)
   );
 }
 

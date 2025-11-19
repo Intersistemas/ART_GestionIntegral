@@ -239,3 +239,23 @@
     text-align: center;
   }
 }
+
+/*Layout formulario*/
+.formContent {
+  flex: 2;
+  padding-right: 24px;
+}
+
+.formRow {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.formRow > * {
+  flex: 1;
+}
+
+.fullRowField {
+  flex: 1 !important;
+}

@@ -511,8 +511,6 @@ export default function UsuarioForm({
     }
   };
 
-  console.log("Form State:", form.empresaId);
-
   return (
     <CustomModal
       open={open}
