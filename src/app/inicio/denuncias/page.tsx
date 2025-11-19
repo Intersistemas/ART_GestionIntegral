@@ -2,12 +2,16 @@
 
 "use client";
 import { useState, useMemo } from 'react';
+import { Box } from "@mui/material";
 import styles from './denuncias.module.css';
 import ArtAPI from '@/data/artAPI';
-import { DenunciaGetAll, DenunciaQueryParams } from './types/tDenuncias';
+import { DenunciaGetAll, DenunciaQueryParams, DenunciaFormData, initialDenunciaFormData } from './types/tDenuncias';
 import { useAuth } from '@/data/AuthContext';
 import DataTable from '@/utils/ui/table/DataTable';
 import Formato from '@/utils/Formato';
+import CustomButton from "@/utils/ui/button/CustomButton";
+import CustomModalMessage from "@/utils/ui/form/CustomModalMessage";
+import DenunciaForm from './denunciaForm';
 
 // Estado options for the dropdown
 const estadoOptions = [
@@ -17,6 +21,14 @@ const estadoOptions = [
   { value: 2, label: 'Completado' },
   { value: 3, label: 'Cancelado' },
 ];
+
+// Definición del modo de operación
+type RequestMethod = "create" | "edit" | "view" | "delete";
+
+interface RequestState {
+  method: RequestMethod | null;
+  denunciaData: DenunciaFormData | null;
+}
 
 /* Helpers */
 const fechaFormatter = (v: any) => Formato.Fecha(v);
@@ -38,6 +50,24 @@ function DenunciasPage() {
   const [pageSize, setPageSize] = useState(10);
   const [loading, setLoading] = useState<boolean>(true);
   const [pageCount, setPageCount] = useState<number>(0);
+
+  // State for form modal
+  const [formError, setFormError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [requestState, setRequestState] = useState<RequestState>({
+    method: null,
+    denunciaData: null,
+  });
+
+  const [modalMessage, setModalMessage] = useState<{
+    open: boolean;
+    message: string;
+    type: 'success' | 'error' | 'warning' | 'info';
+  }>({
+    open: false,
+    message: '',
+    type: 'info'
+  });
 
   // Build query parameters
   const queryParams: DenunciaQueryParams = useMemo(() => ({
@@ -98,6 +128,81 @@ function DenunciasPage() {
     setEstado(value === '' ? undefined : Number(value));
     setPageIndex(0); // Reset to first page when filtering
   };
+
+  // Modal handlers
+  const showModal = requestState.method !== null;
+
+  const showModalMessage = (message: string, type: 'success' | 'error' | 'warning' | 'info') => {
+    setModalMessage({
+      open: true,
+      message,
+      type
+    });
+  };
+
+  const handleClose = () => {
+    setModalMessage({
+      open: false,
+      message: '',
+      type: 'info'
+    });
+  };
+
+  const handleOpenModal = (method: RequestMethod, row?: DenunciaGetAll) => {
+    const dataToForm: DenunciaFormData = row
+      ? {
+          ...initialDenunciaFormData,
+          // Map row data to form data if needed
+          // TODO: Implement mapping when editing is supported
+        }
+      : initialDenunciaFormData;
+
+    setRequestState({
+      method,
+      denunciaData: dataToForm,
+    });
+    setFormError(null);
+  };
+
+  const handleCloseModal = () => {
+    setRequestState({ method: null, denunciaData: null });
+  };
+
+  const handleSubmit = async (data: DenunciaFormData) => {
+    setIsSubmitting(true);
+    setFormError(null);
+
+    try {
+      const method = requestState.method;
+      let result: { success: boolean; error: string | null } = {
+        success: false,
+        error: null,
+      };
+
+      if (method === "view") {
+        handleCloseModal();
+        return;
+      }
+
+      if (method === "create") {
+        // TODO: Implement API call for creating denuncia
+        // For now, just simulate success
+        result = { success: true, error: null };
+        showModalMessage("Denuncia registrada exitosamente", "success");
+        handleCloseModal();
+      }
+
+      // TODO: Implement other methods (edit, delete) when needed
+
+    } catch (error) {
+      console.error("Error en handleSubmit:", error);
+      const errorMessage = "Ocurrió un error inesperado al procesar la solicitud";
+      showModalMessage(errorMessage, "error");
+      setFormError(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   
   // Table columns definition
   const tableColumns = [
@@ -154,7 +259,11 @@ function DenunciasPage() {
     );
   }
 
+  // Current initial data for the form
+  const currentInitialData = requestState.denunciaData || initialDenunciaFormData;
+
   return (
+<<<<<<< HEAD
     <div className={styles.inicioContainer}>
 <<<<<<< HEAD
       Pantalla En Desarrollo...
@@ -162,6 +271,15 @@ function DenunciasPage() {
       {/* <div className={styles.header}>
         <h1 className={styles.title}>Denuncias</h1>
       </div> */}
+=======
+    <Box className={styles.inicioContainer}>
+      <CustomButton
+        onClick={() => handleOpenModal("create")}
+        style={{ float: "right", marginBottom: "20px" }}
+      >
+        Registrar Denuncia
+      </CustomButton>
+>>>>>>> 4699029 (avances)
 
       {/* Filters */}
       <div className={styles.filtersContainer}>
@@ -205,8 +323,32 @@ function DenunciasPage() {
           <p>No se encontraron denuncias con los filtros seleccionados.</p>
         </div>
       )}
+<<<<<<< HEAD
 >>>>>>> 0cbd7be (desarrollo browse)
     </div>
+=======
+
+      {/* Denuncia Form Modal */}
+      <DenunciaForm
+        open={showModal}
+        onClose={handleCloseModal}
+        onSubmit={handleSubmit}
+        initialData={currentInitialData}
+        errorMsg={formError}
+        method={requestState.method || "create"}
+        isSubmitting={isSubmitting}
+      />
+
+      {/* Modal Message */}
+      <CustomModalMessage         
+        open={modalMessage.open}         
+        message={modalMessage.message}         
+        type={modalMessage.type}         
+        onClose={handleClose}        
+        title="Atención requerida"  
+      />
+    </Box>
+>>>>>>> 4699029 (avances)
   );
 }
 
