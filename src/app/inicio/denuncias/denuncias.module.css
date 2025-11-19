@@ -259,3 +259,23 @@
 .fullRowField {
   flex: 1 !important;
 }
+
+/* Acciones del formulario */
+.formActions {
+  display: flex;
+  justify-content: flex-start;
+  gap: 12px;
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid #e9ecef;
+}
+
+.cancelButton {
+  background-color: #6c757d !important;
+  color: white !important;
+  border: none !important;
+}
+
+.cancelButton:hover {
+  background-color: #5a6268 !important;
+}

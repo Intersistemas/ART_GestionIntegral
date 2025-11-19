@@ -561,9 +561,9 @@ export default function DenunciaForm({
             {/* Botones de navegación */}
             <div className={styles.formActions}>
               {activeTab === 0 && !isViewing && (
-                <Button
+                <CustomButton
                   onClick={handleNext}
-                  variant="contained"
+                  color="primary"
                   sx={{ 
                     backgroundColor: '#ff6600', 
                     '&:hover': { backgroundColor: '#e55a00' },
@@ -572,7 +572,7 @@ export default function DenunciaForm({
                   disabled={isSubmitting}
                 >
                   Siguiente ›
-                </Button>
+                </CustomButton>
               )}
 
               <CustomButton
