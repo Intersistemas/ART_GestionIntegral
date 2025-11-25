@@ -4,10 +4,11 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import SignOutButton from "./SignOutButton";
 import { BsSearch, BsBoxArrowRight, BsPersonCircle } from "react-icons/bs";
-import { GoBellFill } from "react-icons/go";
+import Notificacion from './Notification';
 import styles from './Navbar.module.css';
 import Image from 'next/image';
 import { useState } from 'react';
+import { useAuth } from '@/data/AuthContext';
 import CustomButton from "@/utils/ui/button/CustomButton";
 import Formato from "@/utils/Formato";
 
@@ -27,6 +28,8 @@ function Navbar() {
   const user = session?.user as any;
   const nombre = user?.nombre;
   const cuit = user?.cuit;
+  const auth = useAuth();
+  const empresaCUIT = (auth?.user as any)?.empresaCUIT ?? cuit ?? 0;
 
   return (
     <nav className={styles.nav}>
@@ -50,9 +53,7 @@ function Navbar() {
         <ul className={styles.menu}>
           {session ? (
             <>
-              <li className={styles.menuItem}>
-                <GoBellFill className={styles.iconButton} />
-              </li>
+                <Notificacion empresaCUIT={empresaCUIT} />
               <li className={styles.menuItem} onClick={toggleModal}>
                 {user?.image ? (
                   <Image

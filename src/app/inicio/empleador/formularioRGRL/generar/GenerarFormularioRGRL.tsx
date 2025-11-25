@@ -727,8 +727,8 @@ const GenerarFormularioRGRL: React.FC<{
 
         <div className={styles.row}>
             <CustomButton onClick={() => router.back()} disabled={loading}>VOLVER</CustomButton>
-            <CustomButton onClick={() => guardarPUT(true)} disabled={loading}>FINALIZAR</CustomButton>
-            <CustomButton onClick={() => guardarPUT(false)} disabled={loading}>GUARDADO INCOMPLETO</CustomButton>
+            <CustomButton onClick={() => guardarPUT(true)} disabled={loading}>GUARDAR COMPLETO</CustomButton>
+            <CustomButton onClick={() => guardarPUT(false)} disabled={loading}>GUARDAR INCOMPLETO</CustomButton>
         </div>
 
         {loading && <div className={styles.savingMsg}>Guardando…</div>}
@@ -769,6 +769,7 @@ const GenerarFormularioRGRL: React.FC<{
             </table>
             <div className={styles.tableFooter}>
               <CustomButton onClick={() => addRow<GremioUI>(setGremiosUI, { legajo: 0, nombre: '' })}>AGREGAR</CustomButton>
+              <CustomButton onClick={() => setOpenGremios(false)}>GUARDAR</CustomButton>
             </div>
           </div>
         </CustomModal>
@@ -821,6 +822,7 @@ const GenerarFormularioRGRL: React.FC<{
             </table>
             <div className={styles.tableFooter}>
               <CustomButton onClick={() => addRow<ContratistaUI>(setContratistasUI, { cuit: 0, contratista: '' })}>AGREGAR</CustomButton>
+              <CustomButton onClick={() => setOpenContratistas(false)}>GUARDAR</CustomButton>
             </div>
           </div>
         </CustomModal>
@@ -833,7 +835,7 @@ const GenerarFormularioRGRL: React.FC<{
                   <th>Nombre y apellido</th>
                   <th>Cargo</th>
                   <th className={styles.tableWidth120}>Representación</th>
-                  <th className={styles.tableWidth110}>Contratado (0/1)</th>
+                  <th className={styles.tableWidth110}>Propio/contratado</th>
                   <th>Título</th>
                   <th>Matrícula</th>
                   <th>Entidad</th>
@@ -870,27 +872,80 @@ const GenerarFormularioRGRL: React.FC<{
                       />
                     </td>
                     <td className={styles.tdPad4}>
-                      <TextField
-                        value={r.cargo ?? ''}
-                        onChange={(e) => changeRow(setResponsablesUI, i, 'cargo', e.target.value)}
-                        fullWidth
-                      />
+                      <FormControl fullWidth>
+                        <Select
+                          value={r.cargo ?? ''}
+                          onChange={(e) => changeRow(setResponsablesUI, i, 'cargo', e.target.value)}
+                          renderValue={(val) => {
+                            if (!val) return '';
+                            if (val === 'H') return 'Profesional de Higiene y Seguridad en el Trabajo';
+                            if (val === 'M') return 'Profesional de Medicina Laboral';
+                            if (val === 'R') return 'Responsable de Datos del Formulario';
+                            return String(val);
+                          }}
+                        >
+                          <MenuItem value=""> 
+                            <em>Seleccioná...</em>
+                          </MenuItem>
+                          <MenuItem value={'H'}>Profesional de Higiene y Seguridad en el Trabajo</MenuItem>
+                          <MenuItem value={'M'}>Profesional de Medicina Laboral</MenuItem>
+                          <MenuItem value={'R'}>Responsable de Datos del Formulario</MenuItem>
+                        </Select>
+                      </FormControl>
                     </td>
                     <td className={styles.tdPad4}>
-                      <TextField
-                        type="number"
-                        value={r.representacion ?? 0}
-                        onChange={(e) => changeRow(setResponsablesUI, i, 'representacion', Number(e.target.value || 0))}
-                        fullWidth
-                      />
+                      <FormControl fullWidth>
+                        <Select
+                          value={r.representacion ?? ''}
+                          onChange={(e) => changeRow(setResponsablesUI, i, 'representacion', Number(e.target.value || 0))}
+                          renderValue={(val) => {
+                            const v = Number(val);
+                            switch (v) {
+                              case 1: return 'Representante Legal';
+                              case 2: return 'Presidente';
+                              case 3: return 'VicePresidente';
+                              case 4: return 'Director General';
+                              case 5: return 'Gerente General';
+                              case 6: return 'Administrador General';
+                              case 0: return 'Otros';
+                              default: return String(val ?? '');
+                            }
+                          }}
+                        >
+                          <MenuItem value=""> 
+                            <em>Seleccioná...</em>
+                          </MenuItem>
+                          <MenuItem value={1}>Representante Legal</MenuItem>
+                          <MenuItem value={2}>Presidente</MenuItem>
+                          <MenuItem value={3}>VicePresidente</MenuItem>
+                          <MenuItem value={4}>Director General</MenuItem>
+                          <MenuItem value={5}>Gerente General</MenuItem>
+                          <MenuItem value={6}>Administrador General</MenuItem>
+                          <MenuItem value={0}>Otros</MenuItem>
+                        </Select>
+                      </FormControl>
                     </td>
                     <td className={styles.tdPad4}>
-                      <TextField
-                        type="number"
-                        value={r.esContratado ?? 0}
-                        onChange={(e) => changeRow(setResponsablesUI, i, 'esContratado', Number(e.target.value || 0))}
-                        fullWidth
-                      />
+                      <FormControl fullWidth>
+                        <Select
+                          value={typeof r.esContratado === 'number' ? r.esContratado : ''}
+                          onChange={(e) => changeRow(setResponsablesUI, i, 'esContratado', Number(e.target.value || 0))}
+                          renderValue={(val) => {
+                            const v = Number(val);
+                            switch (v) {
+                              case 0: return 'Contratado';
+                              case 1: return 'Propio';
+                              default: return String(val ?? '');
+                            }
+                          }}
+                        >
+                          <MenuItem value="">
+                            <em>Seleccioná...</em>
+                          </MenuItem>
+                          <MenuItem value={0}>Contratado</MenuItem>
+                          <MenuItem value={1}>Propio</MenuItem>
+                        </Select>
+                      </FormControl>
                     </td>
                     <td className={styles.tdPad4}>
                       <input
@@ -928,7 +983,7 @@ const GenerarFormularioRGRL: React.FC<{
                     cuit: 0,
                     responsable: '',
                     cargo: '',
-                    representacion: 0,
+                    representacion: 7,
                     esContratado: 0,
                     tituloHabilitante: '',
                     matricula: '',
@@ -938,6 +993,7 @@ const GenerarFormularioRGRL: React.FC<{
               >
                 AGREGAR
               </CustomButton>
+              <CustomButton onClick={() => setOpenResponsables(false)}>GUARDAR</CustomButton>
             </div>
           </div>
         </CustomModal>
