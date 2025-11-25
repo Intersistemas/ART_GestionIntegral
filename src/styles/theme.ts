@@ -1,4 +1,4 @@
-// src/themes.ts
+// src/styles/themes.ts
 import { createTheme } from '@mui/material/styles';
 
 // Función para obtener variables CSS de forma segura, con valores de respaldo para SSR

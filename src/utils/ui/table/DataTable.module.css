@@ -122,11 +122,14 @@
 .selectedRow {
   background-color: var(--naranjaClaroClaro) !important;
   border-left: 5px solid var(--naranja) !important;
+  
+  font-weight: bold !important;
 }
 
 .selectedRow:nth-of-type(odd) {
  background-color: var(--naranjaClaroClaro) !important;
   border-left: 5px solid var(--naranja) !important;
+  font-weight: bold !important;
 }
 .selectedRow:hover {
     /* Mezcla el color de selección con un poco de gris de hover */
