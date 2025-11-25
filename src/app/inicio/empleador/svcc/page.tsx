@@ -3,91 +3,98 @@ import CustomTab from '@/utils/ui/tab/CustomTab';
 import PortadaHandler from './Portada/PortadaHandler';
 import AnexoVHandler from './AnexoV/Sustancias/AnexoVHandler';
 import NominasHandler from './Nomina/NominasHandler';
-import { SyntheticEvent, useState } from 'react';
+import { useState } from 'react';
 import CustomButton from '@/utils/ui/button/CustomButton';
+import { SVCCPresentacionContextProvider, useSVCCPresentacionContext } from './context';
 
+export default function SVCCPage() {
+  return (
+    <SVCCPresentacionContextProvider>
+      <Contextualized />
+    </SVCCPresentacionContextProvider>
+  );
+}
 
-function SVCCPage() {
+function Contextualized() {
+  const {
+    ultima: {
+      isLoading,
+      data: presentacion,
+    },
+    nueva: { trigger: onNueva },
+    finaliza: { trigger: onFinaliza },
+  } = useSVCCPresentacionContext();
+  const [currentTab, setCurrentTab] = useState(0);// Queremos que inicie en la primera pestaña (0)
 
-  const initialTabIndex = 0; // Queremos que inicie en la primera pestaña (0)
-  const [currentTab, setCurrentTab] = useState<number>(initialTabIndex);
-  const [apiQuery, setApiQuery] = useState({
-		action: "init",
-		timeStamp: new Date(),
-	});
-
-
-  // 2. HANDLER DE CAMBIO: Convertimos el valor (string) que devuelve MUI a number
-  const handleTabChange = (event: SyntheticEvent, newTabValue: string | number) => {
-      setCurrentTab(newTabValue as number); 
-  };
-      
-
-  const handleIniciaPresentacion = () => {
-		const newApiQuery = {
-			action: "nueva",
-			timeStamp: new Date(),
-		};
-		setApiQuery(newApiQuery);
-		setCurrentTab(1); // Cambia a la pestaña "Portada"
-	};
-
-  const tabItems = [
-      {
+  return (
+    <CustomTab
+      currentTab={currentTab}
+      onTabChange={(_event, tab) => setCurrentTab(tab)}
+      tabs={[
+        {
           label: 'Inicio',
           value: 0,
           content: (
-              
-              <CustomButton
-								variant="contained"
-								color="primary"
-								size="large"
-								onClick={handleIniciaPresentacion}
-							>
-								Iniciar Nueva Presentación
-							</CustomButton>
+            <CustomButton
+              variant="contained"
+              color="primary"
+              size="large"
+              onClick={() => onNueva({ idMotivo: 1 })}
+              disabled={
+                isLoading
+                || (
+                  presentacion?.interno != null
+                  && presentacion.presentacionFecha == null
+                )
+              }
+            >
+              Iniciar Nueva Presentación
+            </CustomButton>
           ),
-      },
-      {
+        },
+        {
           label: 'Portada',
           value: 1,
           content: (
-              <PortadaHandler />
+            <PortadaHandler />
           ),
-      },
-      {
+        },
+        {
           label: 'Anexo V',
           value: 2,
           content: (
-              <AnexoVHandler />
+            <AnexoVHandler />
           ),
-      },
-      {
+        },
+        {
           label: 'Nóminas',
           value: 3,
           content: (
-              <NominasHandler />
+            <NominasHandler />
           ),
-      },
-       {
+        },
+        {
           label: 'Confirma',
           value: 4,
           content: (
-              <div>Contenido de Confirma</div>
+            <CustomButton
+              variant="contained"
+              color="primary"
+              size="large"
+              onClick={() => onFinaliza({ ...presentacion })}
+              disabled={
+                isLoading
+                || (
+                  presentacion?.interno == null
+                  || presentacion.presentacionFecha != null
+                )
+              }
+            >
+              Confirma presentación
+            </CustomButton>
           ),
-      },
-  ];
-
-
-  return (
-    <div>
-      <CustomTab 
-            tabs={tabItems} 
-            currentTab={currentTab} 
-            onTabChange={handleTabChange}
-        /> 
-    </div>
-  )
+        },
+      ]}
+    />
+  );
 }
-
-export default SVCCPage
