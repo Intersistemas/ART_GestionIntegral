@@ -1,38 +1,49 @@
 import { ReactNode, useState } from "react";
 import EmpresaTercerizadaBrowse from "./EmpresaTercerizadaBrowse";
-import { SVCCEmpresasTercerizadasContextProvider, useSVCCEmpresasTercerizadasContext } from "./context";
 import { useSVCCPresentacionContext } from "../../context";
-import { EmpresaTercerizadaDTO } from "@/data/gestionEmpleadorAPI";
+import gestionEmpleadorAPI, {
+  Pagination, EmpresaTercerizadaDTO, SVCCEmpresaTercerizadaUpdateParams, SVCCEmpresaTercerizadaDeleteParams
+} from "@/data/gestionEmpleadorAPI";
+
 import EmpresaTercerizadaModalForm, { OnConfirmCallbackInfo } from "./EmpresaTercerizadaForm";
 
-export default function EmpresaTercerizadaHandler() {
-  return (
-    <SVCCEmpresasTercerizadasContextProvider>
-      <Contextualized />
-    </SVCCEmpresasTercerizadasContextProvider>
-  );
-}
+const {
+  useSVCCEmpresaTercerizadaList,
+  useSVCCEmpresaTercerizadaCreate,
+  useSVCCEmpresaTercerizadaUpdate,
+  useSVCCEmpresaTercerizadaDelete,
+} = gestionEmpleadorAPI;
 
 type State = {
   modal?: ReactNode
 }
-function Contextualized() {
+export default function EmpresaTercerizadaHandler() {
   const [state, setState] = useState<State>({});
   const { ultima: { data: presentacion } } = useSVCCPresentacionContext();
-  const {
-    list: { isLoading, data, onPageIndexChange, onPageSizeChange },
-    create: { trigger: triggerCreate },
-    update: { trigger: triggerUpdate, configure: configureUpdate },
-    delete: { trigger: triggerDelete, configure: configureDelete },
-  } = useSVCCEmpresasTercerizadasContext()
+  const [{ index, size }, setPage] = useState({ index: 0, size: 100 });
+  const [data, setData] = useState<Pagination<EmpresaTercerizadaDTO>>({ index: index + 1, size, count: 0, pages: 0, data: [] });
+  const { isLoading, mutate } = useSVCCEmpresaTercerizadaList(
+    { page: `${index + 1},${size}` },
+    {
+      revalidateOnFocus: false,
+      onSuccess(data) { setData({ ...data, index: data.index - 1 }) },
+    }
+  );
+  const { trigger: triggerCreate } = useSVCCEmpresaTercerizadaCreate({ onSuccess() { mutate(); }});
+
+  const [updateParams, setUpdateParams] = useState<SVCCEmpresaTercerizadaUpdateParams | undefined>();
+  const { trigger: triggerUpdate } = useSVCCEmpresaTercerizadaUpdate(updateParams, { onSuccess() { mutate(); }});
+
+  const [deleteParams, setDeleteParams] = useState<SVCCEmpresaTercerizadaDeleteParams | undefined>();
+  const { trigger: triggerDelete } = useSVCCEmpresaTercerizadaDelete(deleteParams, { onSuccess() { mutate(); }});
   const readonly = presentacion?.presentacionFecha != null;
   return (
     <>
       <EmpresaTercerizadaBrowse
         isLoading={isLoading}
         data={data}
-        onPageIndexChange={onPageIndexChange}
-        onPageSizeChange={onPageSizeChange}
+        onPageIndexChange={(index: number) => setPage((o) => ({ ...o, index }))}
+        onPageSizeChange={(size: number) => setPage((o) => ({ ...o, size }))}
         onCreate={readonly ? undefined : () => onAction("create")}
         onRead={(data) => onAction("read", data)}
         onUpdate={readonly ? undefined : (data) => onAction("update", data)}
@@ -53,7 +64,7 @@ function Contextualized() {
         if (data?.interno == null) {
           action = "read"
         } else {
-          configureUpdate({ id: data?.interno });
+          setUpdateParams({ id: data?.interno });
         }
         break;
       }
@@ -61,7 +72,7 @@ function Contextualized() {
         if (data?.interno == null) {
           action = "read"
         } else {
-          configureDelete({ id: data?.interno });
+          setDeleteParams({ id: data?.interno });
         }
         break;
       }
@@ -137,4 +148,5 @@ function Contextualized() {
         }
       }
     }
-  }}
+  }
+}

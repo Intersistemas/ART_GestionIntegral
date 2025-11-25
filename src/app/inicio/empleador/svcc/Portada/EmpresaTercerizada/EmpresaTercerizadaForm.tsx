@@ -45,7 +45,7 @@ export type EmpresaTercerizadaModalFormProps = EmpresaTercerizadaCommonFormProps
   init?: Partial<EmpresaTercerizadaDTO>;
   errors?: EmpresaTercerizadaCommonFormErrors;
   onConfirm?: (info: OnConfirmCallbackInfo) => void;
-  onCancel?: (data: EmpresaTercerizadaDTO) => void;
+  onCancel?: (data: Partial<EmpresaTercerizadaDTO>) => void;
 };
 
 const tooltip_SlotProps = { tooltip: { sx: { fontSize: "1.2rem", fontWeight: 500 } } };
