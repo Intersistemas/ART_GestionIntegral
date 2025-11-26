@@ -1,8 +1,7 @@
 import { EmpresaTercerizadaDTO } from "@/data/gestionEmpleadorAPI";
 import CustomModal from "@/utils/ui/form/CustomModal";
-import styles from "./EmpresaTercerizadaForm.module.css";
 import { Dispatch, SetStateAction, useCallback, useState } from "react";
-import { Box, IconButton, InputAdornment, TextField, Tooltip, Typography } from "@mui/material";
+import { Grid, IconButton, InputAdornment, TextField, Tooltip, Typography } from "@mui/material";
 import CustomButton from "@/utils/ui/button/CustomButton";
 import { MoreHoriz } from "@mui/icons-material";
 import Formato from "@/utils/Formato";
@@ -54,8 +53,8 @@ export function EmpresaTercerizadaForm({
   data, disabled, errors, onChange = () => {}
 }: EmpresaTercerizadaFormProps) {
   return (
-    <>
-      <div className={styles.formRow}>
+    <Grid container size={12} spacing={2}>
+      <Grid size={3}>
         <TextField
           name="idEstablecimientoEmpresa"
           type="number"
@@ -89,14 +88,16 @@ export function EmpresaTercerizadaForm({
           }}
           fullWidth
         />
+      </Grid>
+      <Grid size={9}>
         <TextField
           name="Placeholder"
           label="Establ. Empresa - Descripcion"
           disabled
           fullWidth
         />
-      </div>
-      <div className={styles.formRow}>
+      </Grid>
+      <Grid size={4}>
         <TextField
           name="cuit"
           label="CUIT"
@@ -108,6 +109,8 @@ export function EmpresaTercerizadaForm({
           disabled={disabled?.cuit}
           fullWidth
         />
+      </Grid>
+      <Grid size={4}>
         <TextField
           name="ciiu"
           label="CIIU"
@@ -119,6 +122,8 @@ export function EmpresaTercerizadaForm({
           disabled={disabled?.ciiu}
           placeholder="CIIU"
         />
+      </Grid>
+      <Grid size={4}>
         <TextField
           name="cantidadTrabajadores"
           label="Cant. trabajadores"
@@ -130,8 +135,8 @@ export function EmpresaTercerizadaForm({
           disabled={disabled?.cantidadTrabajadores}
           placeholder="Cant. trabajadores"
         />
-      </div>
-    </>
+      </Grid>
+    </Grid>
   );
 }
 const allDisabled: Partial<Record<keyof EmpresaTercerizadaDTO, boolean>> = {
@@ -156,19 +161,18 @@ export default function EmpresaTercerizadaModalForm({
       title={title}
       size={size}
     >
-      <Box className={styles.formContainer}>
-        {errors.message && <Typography variant="h5" className={styles.errorMessage}>{errors.message}</Typography>}
-        <div className={styles.formLayout}>
-          <div className={styles.formContent}>
-            <div className={styles.formSection}>
-              <EmpresaTercerizadaForm
-                data={data}
-                disabled={{ ...(action === "read" ? allDisabled : {}), ...disabled }}
-                errors={errors.data}
-                onChange={onChange}
-              />
-            </div>
-            <div className={styles.formActions}>
+      <Grid container spacing={2} justifyContent="center">
+        {errors.message && <Typography variant="h5" color="var(--naranja)" textAlign="center">{errors.message}</Typography>}
+        <Grid container flexDirection="column" justifyContent="space-between" minHeight="500px">
+          <EmpresaTercerizadaForm
+            data={data}
+            disabled={{ ...(action === "read" ? allDisabled : {}), ...disabled }}
+            errors={errors.data}
+            onChange={onChange}
+          />
+          <Grid container flexDirection="column" justifyContent="space-between">
+            <Grid borderTop="1px solid #e9ecef" />
+            <Grid container>
               {action !== "read" &&
                 <CustomButton
                   onClick={handleOnConfirm}
@@ -184,10 +188,10 @@ export default function EmpresaTercerizadaModalForm({
               >
                 {action === "read" ? "Cerrar" : "Cancelar"}
               </CustomButton>
-            </div>
-          </div>
-        </div>
-      </Box>
+            </Grid>
+          </Grid>
+        </Grid>
+      </Grid>
     </CustomModal>
   );
   function handleOnClose() { onCancel(data); }
