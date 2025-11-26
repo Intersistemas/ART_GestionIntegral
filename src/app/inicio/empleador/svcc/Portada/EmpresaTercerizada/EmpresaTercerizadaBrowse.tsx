@@ -12,10 +12,10 @@ import DataTable from "@/utils/ui/table/DataTable";
 
 export type EmpresaTercerizadaBrowseActions = {
   onCreate?: () => void;
-  onRead?: (record: EmpresaTercerizadaDTO) => void;
-  onUpdate?: (record: EmpresaTercerizadaDTO) => void;
-  onDelete?: (record: EmpresaTercerizadaDTO) => void;
-  onSelect?: (record: EmpresaTercerizadaDTO) => void;
+  onRead?: (record: EmpresaTercerizadaDTO, index: number) => void;
+  onUpdate?: (record: EmpresaTercerizadaDTO, index: number) => void;
+  onDelete?: (record: EmpresaTercerizadaDTO, index: number) => void;
+  onSelect?: (record: EmpresaTercerizadaDTO, index: number) => void;
 }
 export type EmpresaTercerizadaBrowseProps = {
   isLoading: boolean;
@@ -85,7 +85,7 @@ export default function EmpresaTercerizadaBrowse(props: EmpresaTercerizadaBrowse
                     color="primary"
                     size="small"
                     disabled={!actions.onSelect}
-                    onClick={() => onSelect(row.original)}
+                    onClick={() => onSelect(row.original, row.index)}
                   >
                     <CheckCircleIcon fontSize="large" />
                   </IconButton>
@@ -99,7 +99,7 @@ export default function EmpresaTercerizadaBrowse(props: EmpresaTercerizadaBrowse
                       color="primary"
                       size="small"
                       disabled={!actions.onRead}
-                      onClick={() => onRead(row.original)}
+                      onClick={() => onRead(row.original, row.index)}
                     >
                       <InfoIcon fontSize="large" />
                     </IconButton>
@@ -109,7 +109,7 @@ export default function EmpresaTercerizadaBrowse(props: EmpresaTercerizadaBrowse
                       color="primary"
                       size="small"
                       disabled={!actions.onUpdate}
-                      onClick={() => onUpdate(row.original)}
+                      onClick={() => onUpdate(row.original, row.index)}
                     >
                       <ChangeCircleIcon fontSize="large" />
                     </IconButton>
@@ -119,7 +119,7 @@ export default function EmpresaTercerizadaBrowse(props: EmpresaTercerizadaBrowse
                       color="primary"
                       size="small"
                       disabled={!actions.onDelete}
-                      onClick={() => onDelete(row.original)}
+                      onClick={() => onDelete(row.original, row.index)}
                     >
                       <RemoveCircleIcon fontSize="large" />
                     </IconButton>
