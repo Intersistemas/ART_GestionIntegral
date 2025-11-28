@@ -306,7 +306,7 @@ export type SVCCEstablecimientoDeclaradoListOptions = SWRConfiguration<Paginatio
 
 //#region Types SVCC/EstablecimientoDeclarado - Create
 export type SVCCEstablecimientoDeclaradoCreateSWRKey = [url: string, token: string];
-export type SVCCEstablecimientoDeclaradoCreateOptions = SWRMutationConfiguration<EstablecimientoDeclaradoDTO, any, SVCCEstablecimientoDeclaradoCreateSWRKey, never, EstablecimientoDeclaradoDTO> & {
+export type SVCCEstablecimientoDeclaradoCreateOptions = SWRMutationConfiguration<EstablecimientoDeclaradoDTO, any, SVCCEstablecimientoDeclaradoCreateSWRKey, EstablecimientoDeclaradoDTO, EstablecimientoDeclaradoDTO> & {
   throwOnError?: boolean;
 }
 //#endregion Types SVCC/EstablecimientoDeclarado - Create
@@ -316,7 +316,7 @@ export type SVCCEstablecimientoDeclaradoUpdateParams = {
   id: number;
 }
 export type SVCCEstablecimientoDeclaradoUpdateSWRKey = [url: string, token: string, params: string];
-export type SVCCEstablecimientoDeclaradoUpdateOptions = SWRMutationConfiguration<EstablecimientoDeclaradoDTO, any, SVCCEstablecimientoDeclaradoUpdateSWRKey | null, never, EstablecimientoDeclaradoDTO> & {
+export type SVCCEstablecimientoDeclaradoUpdateOptions = SWRMutationConfiguration<EstablecimientoDeclaradoDTO, any, SVCCEstablecimientoDeclaradoUpdateSWRKey | null, EstablecimientoDeclaradoDTO, EstablecimientoDeclaradoDTO> & {
   throwOnError?: boolean;
 }
 //#endregion Types SVCC/EstablecimientoDeclarado - Update
@@ -326,7 +326,7 @@ export type SVCCEstablecimientoDeclaradoDeleteParams = {
   id: number;
 }
 export type SVCCEstablecimientoDeclaradoDeleteSWRKey = [url: string, token: string, params: string];
-export type SVCCEstablecimientoDeclaradoDeleteOptions = SWRMutationConfiguration<EstablecimientoDeclaradoDTO, any, SVCCEstablecimientoDeclaradoDeleteSWRKey | null, never, EstablecimientoDeclaradoDTO> & {
+export type SVCCEstablecimientoDeclaradoDeleteOptions = SWRMutationConfiguration<EstablecimientoDeclaradoDTO, any, SVCCEstablecimientoDeclaradoDeleteSWRKey | null, EstablecimientoDeclaradoDTO, EstablecimientoDeclaradoDTO> & {
   throwOnError?: boolean;
 }
 //#endregion Types SVCC/EstablecimientoDeclarado - Delete
