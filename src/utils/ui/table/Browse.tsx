@@ -54,7 +54,7 @@ export function defaultActionsColumns<T extends object, A extends Actions = CRUD
         }}>
           <>Acciones</>
           {isCRUD
-            ? <Tooltip title="Agrega" arrow slotProps={slotProps}>
+            ? <Tooltip title="Agregar" arrow slotProps={slotProps}>
               <IconButton
                 color="primary"
                 size="small"
@@ -82,7 +82,7 @@ export function defaultActionsColumns<T extends object, A extends Actions = CRUD
             }}
           >
             {!!cruds.onSelect
-              ? <Tooltip title="Elige" arrow slotProps={slotProps}>
+              ? <Tooltip title="Elegir" arrow slotProps={slotProps}>
                 <IconButton
                   color="primary"
                   size="small"
