@@ -63,3 +63,5 @@ export const PuestoForm: Form<PuestoDTO> = ({
     </Grid>
   </Grid>
 );
+
+export default PuestoForm;

@@ -10,7 +10,7 @@ type Props = BrowseProps<EmpresaTercerizadaDTO, Actions> & { cuit: number; };
 
 const { useEstablecimientoList } = ArtAPI;
 
-const EmpresaTercerizadaBrowse = Browse<EmpresaTercerizadaDTO, Actions, Props>(
+export const EmpresaTercerizadaBrowse = Browse<EmpresaTercerizadaDTO, Actions, Props>(
   (props) => {
     const { data } = useEstablecimientoList({ cuit: props.cuit }, { revalidateOnFocus: false });
     const { options } = useMemo(() => (

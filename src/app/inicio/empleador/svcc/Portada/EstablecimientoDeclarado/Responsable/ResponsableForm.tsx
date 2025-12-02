@@ -133,3 +133,5 @@ export const ResponsableForm: Form<ResponsableDTO> = ({
     </Grid>
   </Grid>
 );
+
+export default ResponsableForm;

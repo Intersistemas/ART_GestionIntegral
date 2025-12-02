@@ -9,7 +9,7 @@ type Props = BrowseProps<EstablecimientoDeclaradoDTO, Actions> & { cuit: number;
 
 const { useEstablecimientoList } = ArtAPI;
 
-const EstablecimientoDeclaradoBrowse = Browse<EstablecimientoDeclaradoDTO, Actions, Props>(
+export const EstablecimientoDeclaradoBrowse = Browse<EstablecimientoDeclaradoDTO, Actions, Props>(
   (props) => {
     const { data } = useEstablecimientoList({ cuit: props.cuit }, { revalidateOnFocus: false });
     const { options } = useMemo(() => (

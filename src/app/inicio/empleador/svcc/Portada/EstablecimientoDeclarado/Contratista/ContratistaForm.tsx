@@ -77,3 +77,5 @@ export const ContratistaForm: Form<ContratistaDTO> = ({
     </Grid>
   </Grid>
 );
+
+export default ContratistaForm;

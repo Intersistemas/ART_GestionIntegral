@@ -10,10 +10,10 @@ import ContratistaBrowse from "./Contratista/ContratistaBrowse";
 import ResponsableBrowse from "./Responsable/ResponsableBrowse";
 import CustomModal from "@/utils/ui/form/CustomModal";
 import CustomButton from "@/utils/ui/button/CustomButton";
-import { PuestoForm } from "./Puesto/PuestoForm";
-import { SectorForm } from "./Sector/SectorForm";
-import { ContratistaForm } from "./Contratista/ContratistaForm";
-import { ResponsableForm } from "./Responsable/ResponsableForm";
+import PuestoForm from "./Puesto/PuestoForm";
+import SectorForm from "./Sector/SectorForm";
+import ContratistaForm from "./Contratista/ContratistaForm";
+import ResponsableForm from "./Responsable/ResponsableForm";
 
 type EditAction = "create" | "read" | "update" | "delete";
 type EditState<T extends object> = {

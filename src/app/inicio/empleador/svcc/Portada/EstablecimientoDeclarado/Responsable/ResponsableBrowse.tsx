@@ -3,7 +3,7 @@ import Formato from "@/utils/Formato";
 import Browse, { defaultActionsColumns } from "@/utils/ui/table/Browse";
 import { TTipoProfesionalResponsable_Map } from "../../../constants";
 
-const ResponsableBrowse = Browse<ResponsableDTO>(
+export const ResponsableBrowse = Browse<ResponsableDTO>(
   (props) => [
     { accessorKey: "cuilCuit", header: "CUIL/CUIT", cell({ getValue }) { return Formato.CUIP(getValue<number>()) } },
     { accessorKey: "matricula", header: "Matricula" },

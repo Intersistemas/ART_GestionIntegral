@@ -63,3 +63,5 @@ export const SectorForm: Form<SectorDTO> = ({
     </Grid>
   </Grid>
 );
+
+export default SectorForm;
