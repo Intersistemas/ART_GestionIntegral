@@ -2,7 +2,7 @@
 @import "react-querybuilder/dist/query-builder.css";
 
 :root {
-  --primary: lightgray;
+  --primary: var(--grisOscuro);
   --secondary: gray;
 
   /*PALETA DE ART*/
