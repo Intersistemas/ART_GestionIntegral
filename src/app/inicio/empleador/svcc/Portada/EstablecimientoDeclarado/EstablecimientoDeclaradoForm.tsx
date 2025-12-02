@@ -60,14 +60,16 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
                     arrow
                     slotProps={tooltip_SlotProps}
                   >
-                    <IconButton
-                      color="primary"
-                      size="large"
-                      disabled={disabled.idEstablecimientoEmpresa}
-                    // onClick={() => onLookup()}
-                    >
-                      <MoreHoriz />
-                    </IconButton>
+                    <div>
+                      <IconButton
+                        color="primary"
+                        size="large"
+                        disabled={disabled.idEstablecimientoEmpresa}
+                      // onClick={() => onLookup()}
+                      >
+                        <MoreHoriz />
+                      </IconButton>
+                    </div>
                   </Tooltip>
                 </InputAdornment>
               ),

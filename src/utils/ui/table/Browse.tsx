@@ -55,14 +55,16 @@ export function defaultActionsColumns<T extends object, A extends Actions = CRUD
           <>Acciones</>
           {isCRUD
             ? <Tooltip title="Agregar" arrow slotProps={slotProps}>
-              <IconButton
-                color="primary"
-                size="small"
-                disabled={!onCreate}
-                onClick={() => { if (onCreate) onCreate(); }}
-              >
-                <AddCircleIcon fontSize="large" />
-              </IconButton>
+              <div>
+                <IconButton
+                  color="primary"
+                  size="small"
+                  disabled={!onCreate}
+                  onClick={() => { if (onCreate) onCreate(); }}
+                >
+                  <AddCircleIcon fontSize="large" />
+                </IconButton>
+              </div>
             </Tooltip>
             : null
           }
@@ -83,48 +85,56 @@ export function defaultActionsColumns<T extends object, A extends Actions = CRUD
           >
             {!!cruds.onSelect
               ? <Tooltip title="Elegir" arrow slotProps={slotProps}>
-                <IconButton
-                  color="primary"
-                  size="small"
-                  disabled={!onSelect}
-                  onClick={() => { if (onSelect) onSelect(); }}
-                >
-                  <CheckCircleIcon fontSize="large" />
-                </IconButton>
+                <div>
+                  <IconButton
+                    color="primary"
+                    size="small"
+                    disabled={!onSelect}
+                    onClick={() => { if (onSelect) onSelect(); }}
+                  >
+                    <CheckCircleIcon fontSize="large" />
+                  </IconButton>
+                </div>
               </Tooltip>
               : null
             }
             {isCRUD
               ? <>
                 <Tooltip title="Ver" arrow slotProps={slotProps} >
-                  <IconButton
-                    color="primary"
-                    size="small"
-                    disabled={!onRead}
-                    onClick={() => { if (onRead) onRead(); }}
-                  >
-                    <InfoIcon fontSize="large" />
-                  </IconButton>
+                  <div>
+                    <IconButton
+                      color="primary"
+                      size="small"
+                      disabled={!onRead}
+                      onClick={() => { if (onRead) onRead(); }}
+                    >
+                      <InfoIcon fontSize="large" />
+                    </IconButton>
+                  </div>
                 </Tooltip>
                 <Tooltip title="Editar" arrow slotProps={slotProps} >
-                  <IconButton
-                    color="primary"
-                    size="small"
-                    disabled={!onUpdate}
-                    onClick={() => { if (onUpdate) onUpdate(); }}
-                  >
-                    <ChangeCircleIcon fontSize="large" />
-                  </IconButton>
+                  <div>
+                    <IconButton
+                      color="primary"
+                      size="small"
+                      disabled={!onUpdate}
+                      onClick={() => { if (onUpdate) onUpdate(); }}
+                    >
+                      <ChangeCircleIcon fontSize="large" />
+                    </IconButton>
+                  </div>
                 </Tooltip>
                 <Tooltip title="Borrar" arrow slotProps={slotProps} >
-                  <IconButton
-                    color="primary"
-                    size="small"
-                    disabled={!onDelete}
-                    onClick={() => { if (onDelete) onDelete(); }}
-                  >
-                    <RemoveCircleIcon fontSize="large" />
-                  </IconButton>
+                  <div>
+                    <IconButton
+                      color="primary"
+                      size="small"
+                      disabled={!onDelete}
+                      onClick={() => { if (onDelete) onDelete(); }}
+                    >
+                      <RemoveCircleIcon fontSize="large" />
+                    </IconButton>
+                  </div>
                 </Tooltip>
               </>
               : null

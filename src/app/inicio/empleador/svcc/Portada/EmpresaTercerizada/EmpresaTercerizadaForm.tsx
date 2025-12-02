@@ -32,14 +32,16 @@ export const EmpresaTercerizadaForm: Form<EmpresaTercerizadaDTO> = ({
                   arrow
                   slotProps={tooltip_SlotProps}
                 >
-                  <IconButton
-                    color="primary"
-                    size="large"
-                    disabled={disabled.idEstablecimientoEmpresa}
-                  // onClick={() => onLookup()}
-                  >
-                    <MoreHoriz />
-                  </IconButton>
+                  <div>
+                    <IconButton
+                      color="primary"
+                      size="large"
+                      disabled={disabled.idEstablecimientoEmpresa}
+                    // onClick={() => onLookup()}
+                    >
+                      <MoreHoriz />
+                    </IconButton>
+                  </div>
                 </Tooltip>
               </InputAdornment>
             ),
@@ -88,14 +90,16 @@ export const EmpresaTercerizadaForm: Form<EmpresaTercerizadaDTO> = ({
                   arrow
                   slotProps={tooltip_SlotProps}
                 >
-                  <IconButton
-                    color="primary"
-                    size="large"
-                    disabled={disabled.ciiu}
-                  // onClick={() => onLookup()}
-                  >
-                    <MoreHoriz />
-                  </IconButton>
+                  <div>
+                    <IconButton
+                      color="primary"
+                      size="large"
+                      disabled={disabled.ciiu}
+                    // onClick={() => onLookup()}
+                    >
+                      <MoreHoriz />
+                    </IconButton>
+                  </div>
                 </Tooltip>
               </InputAdornment>
             ),

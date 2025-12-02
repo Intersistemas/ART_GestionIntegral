@@ -44,14 +44,16 @@ export const ContratistaForm: Form<ContratistaDTO> = ({
                   arrow
                   slotProps={tooltip_SlotProps}
                 >
-                  <IconButton
-                    color="primary"
-                    size="large"
-                    disabled={disabled.ciiu}
-                  // onClick={() => onLookup()}
-                  >
-                    <MoreHoriz />
-                  </IconButton>
+                  <div>
+                    <IconButton
+                      color="primary"
+                      size="large"
+                      disabled={disabled.ciiu}
+                    // onClick={() => onLookup()}
+                    >
+                      <MoreHoriz />
+                    </IconButton>
+                  </div>
                 </Tooltip>
               </InputAdornment>
             ),

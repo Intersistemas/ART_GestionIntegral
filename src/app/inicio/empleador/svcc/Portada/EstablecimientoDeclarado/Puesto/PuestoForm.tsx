@@ -31,14 +31,16 @@ export const PuestoForm: Form<PuestoDTO> = ({
                   arrow
                   slotProps={tooltip_SlotProps}
                 >
-                  <IconButton
-                    color="primary"
-                    size="large"
-                    disabled={disabled.ciuo}
-                  // onClick={() => onLookup()}
-                  >
-                    <MoreHoriz />
-                  </IconButton>
+                  <div>
+                    <IconButton
+                      color="primary"
+                      size="large"
+                      disabled={disabled.ciuo}
+                    // onClick={() => onLookup()}
+                    >
+                      <MoreHoriz />
+                    </IconButton>
+                  </div>
                 </Tooltip>
               </InputAdornment>
             ),
