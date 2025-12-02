@@ -46,7 +46,7 @@ export async function middleware(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   const { pathname } = req.nextUrl;
 
-  console.log("token_login",token)
+  // console.log("token_login",token)
   // 1. Redirección de autenticación 
   if (!token && pathname.startsWith('/inicio')) {
     return NextResponse.redirect(new URL('/login', req.url));

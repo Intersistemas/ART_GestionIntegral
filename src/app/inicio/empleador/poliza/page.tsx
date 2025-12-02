@@ -1,21 +1,22 @@
 // components/poliza/poliza.tsx
 "use client"; // Marca el componente como un Componente de Cliente
 
-import React from 'react';
-import styles from './poliza.module.css';
+import React from "react";
+import styles from "./poliza.module.css";
 import { useAuth } from "@/data/AuthContext";
-import {
-  TextField,
-} from "@mui/material";
-import Formato from '@/utils/Formato';
+import { TextField } from "@mui/material";
+import Formato from "@/utils/Formato";
 import gestionEmpleadorAPI from "@/data/gestionEmpleadorAPI";
+import CustomButton from "@/utils/ui/button/CustomButton";
+import { BsDownload } from "react-icons/bs";
+import { saveAs } from "file-saver";
+import { getSession } from "next-auth/react";
 
 const { useGetPoliza } = gestionEmpleadorAPI;
 
 const Poliza = () => {
-
-  const { user } = useAuth(); 
-  const { data: polizaRawData, isLoading: isPersonalLoading } = useGetPoliza(); 
+  const { user } = useAuth();
+  const { data: polizaRawData, isLoading: isPersonalLoading } = useGetPoliza();
 
   if (!user) {
     return <p>Error: Sesión no válida o no encontrada.</p>;
@@ -24,84 +25,143 @@ const Poliza = () => {
   // Accede a las propiedades de la sesión con seguridad
   const { email, empresaCUIT, empresaRazonSocial } = user as any;
 
+  const handleDownloadPDF = async () => {
+    if (!polizaRawData?.archivo) {
+      console.error("No hay archivo disponible para descargar");
+      return;
+    }
+
+    try {
+      const archivo = polizaRawData.archivo;
+      
+      // Verificar si es una URL o base64
+      if (archivo.startsWith("http://") || archivo.startsWith("https://")) {
+        // Es una URL, hacer fetch con autenticación si es necesario
+        const session = await getSession();
+        const headers: HeadersInit = {};
+        
+        if (session?.accessToken) {
+          headers.Authorization = `Bearer ${session.accessToken}`;
+        }
+        
+        const response = await fetch(archivo, { headers });
+        if (!response.ok) {
+          throw new Error("Error al descargar el archivo");
+        }
+        const blob = await response.blob();
+        saveAs(blob, `poliza_${polizaRawData?.numero || "poliza"}.pdf`);
+      } else if (archivo.startsWith("data:")) {
+        // Es un data URL (base64 con prefijo)
+        const response = await fetch(archivo);
+        const blob = await response.blob();
+        saveAs(blob, `poliza_${polizaRawData?.numero || "poliza"}.pdf`);
+      } else {
+        // Asumir que es base64 sin prefijo
+        const byteCharacters = atob(archivo);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: "application/pdf" });
+        saveAs(blob, `poliza_${polizaRawData?.numero || "poliza"}.pdf`);
+      }
+    } catch (error) {
+      console.error("Error al descargar el PDF:", error);
+    }
+  };
+
   return (
     <div>
+      {/* Botón de descarga PDF */}
+      <div style={{ marginBottom: "20px" }}>
+        <CustomButton
+          onClick={handleDownloadPDF}
+          disabled={!polizaRawData?.archivo || isPersonalLoading}
+          icon={<BsDownload size={20} />}
+          variant="contained"
+          color="primary"
+        >
+          Descargar Póliza PDF
+        </CustomButton>
+      </div>
       {/* Sección de Razón Social */}
       <div className={styles.sectionHeader}>
         <h2 className={styles.headerTitle}>Razón Social</h2>
-        <p className={styles.headerData}>{empresaRazonSocial ?? "Usuario sin Empresa"}</p>
+        <p className={styles.headerData}>
+          {empresaRazonSocial ?? "Usuario sin Empresa"}
+        </p>
       </div>
 
       {/* Sección de Datos de la Aseguradora */}
       <h3 className={styles.sectionTitle}>Datos de la Aseguradora</h3>
       <div className={styles.dataGrid}>
-  
-         <TextField
-            label="CUIT:"
-            name="CUIT"
-            value="30-71.621.143-2"
-            fullWidth
-            variant='standard'
-          />
+        <TextField
+          label="CUIT:"
+          name="CUIT"
+          value="30-71.621.143-2"
+          fullWidth
+          variant="standard"
+        />
 
-          <TextField
-            label="Domicilio:"
-            name="Domicilio"
-            value="Reconquista 630 Piso:6 - C.A.B.A. - CAPITAL FEDERAL - CP:1003"
-            fullWidth
-            variant='standard'
-          />
+        <TextField
+          label="Domicilio:"
+          name="Domicilio"
+          value="Reconquista 630 Piso:6 - C.A.B.A. - CAPITAL FEDERAL - CP:1003"
+          fullWidth
+          variant="standard"
+        />
 
-           <TextField
-            label="Teléfono:"
-            name="Telefono"
-            value="(011)(37546700)"
-            fullWidth
-            variant='standard'
-          />
-        
-         <TextField
-            label="Email:"
-            name="Email"
-            value="info@artmutualrural.org.ar"
-            fullWidth
-            variant='standard'
-          />
-           <TextField
-            label="Reclamos y Consultas:"
-            name="reclamos"
-            value="0800-333-2786"
-            fullWidth
-            variant='standard'
-          />
-           <TextField
-            label="Denominación:"
-            name="Denominacion"
-            value="ART MUTUAL RURAL DE SEGUROS DE RIESGOS DEL TRABAJO"
-            fullWidth
-            variant='standard'
-          />
-           <TextField
-            label="FAX:"
-            name="FAX"
-            value="(011)(37546700)"
-            fullWidth
-            variant='standard'
-          />
-           <TextField
-            label="Página web:"
-            name="web"
-            value="www.artmutualrural.org.ar"
-            fullWidth
-            variant='standard'
-          />
-           <TextField
-            label="Denuncias y Accidentes:"
-            name="denuncias"
-            value="0800-333-6888"
-            fullWidth
-            variant='standard'
-          />
+        <TextField
+          label="Teléfono:"
+          name="Telefono"
+          value="(011)(37546700)"
+          fullWidth
+          variant="standard"
+        />
+
+        <TextField
+          label="Email:"
+          name="Email"
+          value="info@artmutualrural.org.ar"
+          fullWidth
+          variant="standard"
+        />
+        <TextField
+          label="Reclamos y Consultas:"
+          name="reclamos"
+          value="0800-333-2786"
+          fullWidth
+          variant="standard"
+        />
+        <TextField
+          label="Denominación:"
+          name="Denominacion"
+          value="ART MUTUAL RURAL DE SEGUROS DE RIESGOS DEL TRABAJO"
+          fullWidth
+          variant="standard"
+        />
+        <TextField
+          label="FAX:"
+          name="FAX"
+          value="(011)(37546700)"
+          fullWidth
+          variant="standard"
+        />
+        <TextField
+          label="Página web:"
+          name="web"
+          value="www.artmutualrural.org.ar"
+          fullWidth
+          variant="standard"
+        />
+        <TextField
+          label="Denuncias y Accidentes:"
+          name="denuncias"
+          value="0800-333-6888"
+          fullWidth
+          variant="standard"
+        />
       </div>
 
       {/* Sección de Canal Comercial */}
@@ -112,21 +172,21 @@ const Poliza = () => {
           name="cuitcuil"
           value="-----------"
           fullWidth
-          variant='standard'
+          variant="standard"
         />
         <TextField
           label="Matricula:"
           name="Matricula"
           value="-----------"
           fullWidth
-          variant='standard'
+          variant="standard"
         />
         <TextField
           label="Apellido y Nombre/Denominación:"
           name="apellidoynombre"
           value="-----------"
           fullWidth
-          variant='standard'
+          variant="standard"
         />
       </div>
 
@@ -138,70 +198,78 @@ const Poliza = () => {
           name="NroPoliza"
           value={polizaRawData?.numero || "---"}
           fullWidth
-          variant='standard'
+          variant="standard"
         />
         <TextField
           label="Nº CUIT:"
           name="CUITEmpleador"
           value={Formato.CUIP(polizaRawData?.cuit) || "---"}
           fullWidth
-          variant='standard'
+          variant="standard"
         />
         <TextField
           label="Vigencia Desde:"
           name="desde"
           value={Formato.Fecha(polizaRawData?.vigencia_Desde) || "---"}
           fullWidth
-          variant='standard'
+          variant="standard"
         />
-         <TextField
+        <TextField
           label="Vigencia Hasta:"
           name="hasta"
           value={Formato.Fecha(polizaRawData?.vigencia_Hasta) || "---"}
           fullWidth
-          variant='standard'
+          variant="standard"
         />
         <TextField
           label="Localidad:"
           name="Localidad"
-          value={`${polizaRawData?.empleador_Domicilio_Localidad_Descripcion || "---"} - CP:${polizaRawData?.empleador_Domicilio_CP || "---"}`}
+          value={`${
+            polizaRawData?.empleador_Domicilio_Localidad_Descripcion || "---"
+          } - CP:${polizaRawData?.empleador_Domicilio_CP || "---"}`}
           fullWidth
-          variant='standard'
+          variant="standard"
         />
         <TextField
           label="Provincia:"
           name="Provincia"
-          value={polizaRawData?.empleador_Domicilio_Provincia_Descripcion || "---"}
+          value={
+            polizaRawData?.empleador_Domicilio_Provincia_Descripcion || "---"
+          }
           fullWidth
-          variant='standard'
+          variant="standard"
         />
         <TextField
           label="Calle:"
           name="Calle"
-          value={`${polizaRawData?.empleador_Domicilio_Calle || "---"} ${polizaRawData?.empleador_Domicilio_Altura || "---"} ${polizaRawData?.empleador_Domicilio_Piso || ""} ${polizaRawData?.empleador_Domicilio_Depto || ""}`}
+          value={`${polizaRawData?.empleador_Domicilio_Calle || "---"} ${
+            polizaRawData?.empleador_Domicilio_Altura || "---"
+          } ${polizaRawData?.empleador_Domicilio_Piso || ""} ${
+            polizaRawData?.empleador_Domicilio_Depto || ""
+          }`}
           fullWidth
-          variant='standard'
+          variant="standard"
         />
         <TextField
           label="Email:"
           name="EmailEmpleador"
           value={polizaRawData?.empleador_Email || "---"}
           fullWidth
-          variant='standard'
+          variant="standard"
         />
         <TextField
           label="Telefono:"
           name="TelefonoEmpleador"
           value={polizaRawData?.empleador_Telefono || "---"}
           fullWidth
-          variant='standard'
+          variant="standard"
         />
         <TextField
           label="Movil:"
           name="MovilEmpleador"
           value={polizaRawData?.empleador_Movil || "---"}
           fullWidth
-          variant='standard'
+          variant="standard"
         />
       </div>
 
@@ -213,67 +281,71 @@ const Poliza = () => {
           name="CIIU"
           value={polizaRawData?.ciiu || "---"}
           fullWidth
-          variant='standard'
+          variant="standard"
         />
         <TextField
           label="Alicuota:"
           name="Alicuota"
           value={`ILT: ${polizaRawData?.alicuota_PagoILT} - Valor Fijo: $${polizaRawData?.alicuota_SumaFija}`}
           fullWidth
-          variant='standard'
+          variant="standard"
         />
         <TextField
           label="Alicuota:"
           name="Alicuota"
-          value={`Valor Variable: %${polizaRawData?.alicuota_CuotaVariable ?? 0} - Nivel: ${polizaRawData?.alicuota_Nivel} - FFE: ${polizaRawData?.alicuota_FFE}`}
+          value={`Valor Variable: %${
+            polizaRawData?.alicuota_CuotaVariable ?? 0
+          } - Nivel: ${polizaRawData?.alicuota_Nivel} - FFE: ${
+            polizaRawData?.alicuota_FFE
+          }`}
           fullWidth
-          variant='standard'
+          variant="standard"
         />
-        
+
         <TextField
           label="Nº Solicitud:"
           name="Solicitud"
           value={polizaRawData?.numeroSolicitud || "---"}
           fullWidth
-          variant='standard'
+          variant="standard"
         />
-        
+
         <TextField
           label="Codigo Operación:"
           name="Operacion"
           value={polizaRawData?.codigoOperacion || "---"}
           fullWidth
-          variant='standard'
+          variant="standard"
         />
-        
+
         <TextField
           label="Codigo Motivo Sorteo:"
           name="Sorteo"
           value={polizaRawData?.codigoMotivoSorteo || "---"}
           fullWidth
-          variant='standard'
+          variant="standard"
         />
-        
+
         <TextField
           label="Referencia ART:"
           name="Referencia"
           value={polizaRawData?.referenciaART || "---"}
           fullWidth
-          variant='standard'
+          variant="standard"
         />
         <TextField
           label="Cuota Resultante:"
           name="CuotaResultante"
           value={polizaRawData?.cuotaResultante || "---"}
           fullWidth
-          variant='standard'
+          variant="standard"
         />
         <TextField
           label="Cantidad de Trabajadores:"
           name="CantTrabajadores"
           value={polizaRawData?.cantTrabajadores || "---"}
           fullWidth
-          variant='standard'
+          variant="standard"
         />
 
         <TextField
@@ -281,35 +353,35 @@ const Poliza = () => {
           name="Masa"
           value={polizaRawData?.masaSalarial || "---"}
           fullWidth
-          variant='standard'
+          variant="standard"
         />
         <TextField
           label="Bonificación:"
           name="Bonificacion"
           value={polizaRawData?.bonificacion || "---"}
           fullWidth
-          variant='standard'
+          variant="standard"
         />
         <TextField
           label="Clausula Penal"
           name="Clausula"
           value={polizaRawData?.clausulaPenal || "---"}
           fullWidth
-          variant='standard'
+          variant="standard"
         />
         <TextField
           label="Unico Establecimiento"
           name="Establecimiento"
           value={polizaRawData?.unicoEstablecimiento || "---"}
           fullWidth
-          variant='standard'
+          variant="standard"
         />
         <TextField
           label="Prestador Médico"
           name="Prestador"
           value={polizaRawData?.prestadorMedico ? "Si" : "No"}
           fullWidth
-          variant='standard'
+          variant="standard"
         />
       </div>
     </div>
