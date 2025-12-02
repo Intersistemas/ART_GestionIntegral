@@ -179,7 +179,7 @@ function CuentaCorrienteComercializador() {
     };
 
     const columns: ColumnDef<ViewCuentaCorriente>[] = useMemo(() => [
-        { header: 'Período', accessorKey: 'periodo', cell: (info: any) => Formato.Fecha(info.getValue(),"MM-YYYY"), meta: { align: 'center'} }, 
+        { id: 'periodoCtaCte', header: 'Período', accessorKey: 'periodo', cell: (info: any) => Formato.Fecha(info.getValue(),"MM-YYYY"), meta: { align: 'center'} }, 
         { header: 'Monto', accessorKey: 'monto', cell: info => formatCurrency(info.getValue() as number), meta: { align: 'center'} },
         { header: 'Comisión', accessorKey: 'comision', cell: info => formatCurrency(info.getValue() as number), meta: { align: 'center'} },
         { header: 'Servicios Adicionales', accessorKey: 'serviciosAdicionales', cell: info => formatCurrency(info.getValue() as number), meta: { align: 'center'} },
@@ -189,7 +189,7 @@ function CuentaCorrienteComercializador() {
     ], []);
 
     const columnsDetalles: ColumnDef<ViewCuentaCorrienteDetalle>[] = useMemo(() => [
-        { header: 'Período', accessorKey: 'periodo', cell: (info: any) => Formato.Fecha(info.getValue(),"MM-YYYY"), meta: { align: 'center'} },
+        { id: 'periodoDetalle', header: 'Período', accessorKey: 'periodo', cell: (info: any) => Formato.Fecha(info.getValue(),"MM-YYYY"), meta: { align: 'center'} },
         { header: 'Fecha', accessorKey: 'fecha', cell: (info: any) => Formato.Fecha(info.getValue()), meta: { align: 'center'} },
         { header: 'Origen', accessorKey: 'origen', meta: { align: 'center'} },
         { header: 'Nro. Póliza', accessorKey: 'polizaNumero', meta: { align: 'center'} },

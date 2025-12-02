@@ -1,4 +1,4 @@
-import moment from "moment";
+import dayjs from "dayjs";
 import { AbstractIntermediateContextualInterpreter, type InterpreterContextualExpression } from "./Interpreter";
 
 export type FieldType = "boolean" | "number" | "string" | "date" | "time" | "datetime";
@@ -11,9 +11,9 @@ export interface Context {
   fields?: Record<string, Field>
 }
 
-export const DateFormatter: FieldFormatter = (v: any) => moment(v).format("YYYY-MM-DD");
-export const TimeFormatter: FieldFormatter = (v: any) => moment(v).format("HH:mm:ss.SS");
-export const DateTimeFormatter: FieldFormatter = (v: any) => moment(v).format("YYYY-MM-DDTHH:mm:ss.SS");
+export const DateFormatter: FieldFormatter = (v: any) => dayjs(v).format("YYYY-MM-DD");
+export const TimeFormatter: FieldFormatter = (v: any) => dayjs(v).format("HH:mm:ss.SSS");
+export const DateTimeFormatter: FieldFormatter = (v: any) => dayjs(v).format("YYYY-MM-DDTHH:mm:ss.SSS");
 
 class PropositionQueryBuilderJSONContextualExpression implements InterpreterContextualExpression<string | null, Context> {
   private expression: object;

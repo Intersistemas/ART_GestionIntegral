@@ -11,6 +11,8 @@
     z-index: 10;
     display: flex;
     flex-direction: column;
+    padding: 0 !important; /* Eliminar cualquier padding */
+    margin: 0 !important; /* Eliminar cualquier margin */
 }
 
 .sidebarOpen {
@@ -30,6 +32,8 @@
     justify-content: flex-start;
     gap: 1rem;
     cursor: pointer;
+    padding: 1rem !important; /* Padding consistente para el header */
+    margin: 0 !important;
 }
 
 .headerOpen {
@@ -50,6 +54,8 @@
 .listContainer {
     flex-grow: 1;
     overflow-y: auto;
+    padding: 0 !important; /* Eliminar padding por defecto de Material UI */
+    margin: 0 !important; /* Eliminar margin por defecto */
     /* Estilos para ocultar y estilizar la barra de desplazamiento */
     -ms-overflow-style: none; /* Para Internet Explorer, Edge heredado */
     scrollbar-width: none; /* Para Firefox */
@@ -69,24 +75,26 @@
 
 .listItem {
     display: block !important;
-    padding-top: inherit;
+    padding-top: inherit !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-bottom: 0 !important;
 }
 
 .menuItemButton {
     min-height: 48px !important;
-    padding: 0 20px;
-    justify-content: center;
+    padding: 0 20px !important;
+    justify-content: center !important;
     transition: background-color 0.3s ease-in-out, border-left 0.3s ease-in-out;
 }
 
 .menuItemButtonOpen {
-    justify-content: initial;
-    padding-left: 20px;
+    justify-content: initial !important;
+    padding-left: 20px !important;
 }
 
 .menuItemButtonClosed {
-    justify-content: center;
-    padding: 0;
+    justify-content: center !important;
 }
 
 .submenuItem {

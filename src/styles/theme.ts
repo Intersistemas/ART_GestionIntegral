@@ -1,36 +1,28 @@
 // src/styles/themes.ts
 import { createTheme } from '@mui/material/styles';
 
-// Función para obtener variables CSS de forma segura, con valores de respaldo para SSR
-const getCssVariable = (name: string, fallback: string) => {
-  if (typeof window !== 'undefined') {
-    const root = getComputedStyle(document.documentElement);
-    const value = root.getPropertyValue(name).trim();
-    return value || fallback;
-  }
-  return fallback;
-};
+// Valores por defecto para evitar diferencias entre servidor y cliente
+// Estos valores deben coincidir con los valores en globals.css para consistencia
+const naranjaClaro = '#ffaf4c';
+const naranja = '#E4840C';
+const naranjaOscuro = '#b66400';
 
-// Se necesitan valores de respaldo para el SSR
-const naranjaClaro = getCssVariable('--naranjaClaro', '#ffaf4c');
-const naranja = getCssVariable('--naranja', '#E4840C');
-const naranjaOscuro = getCssVariable('--naranjaOscuro', '#b66400');
+const verdeOscuro = '#45661f';
+const verdeClaro = '#92bd68';
+const verdeClaroClaro = '#f7f7f7';
+const verde = '#648C34';
 
-const verdeOscuro = getCssVariable('--verdeOscuro', '#45661f');
-const verdeClaro = getCssVariable('--verdeClaro', '#92bd68');
-const verdeClaroClaro = getCssVariable('--verdeClaroClaro', '#f7f7f7');
-const verde = getCssVariable('--verde', '#648C34');
+const gris = '#808080';
+const grisOscuro = '#474747';
+const blanco = 'white';
 
-const gris = getCssVariable('--gris', '#808080');
-const grisOscuro = getCssVariable('--grisOscuro', '#474747');
-const blanco = getCssVariable('--blanco', 'white');
+const font = 'Outfit, sans-serif';
 
-const font = getCssVariable('--font', 'Outfit, sans-serif');
-
-const fontSizeMenu = getCssVariable('--font-size-sidebar', '1.5rem');
-const fontWeightMenu = getCssVariable('--font-weight-sidebar', '700');
-const colorMenu = getCssVariable('--color-menu', 'white');
-const hoverColorMenu = getCssVariable('--hover-color-menu', '#414141');
+// Valores que coinciden con globals.css para evitar diferencias
+const fontSizeMenu = '1.6rem'; // Coincide con --font-size-sidebar en globals.css
+const fontWeightMenu = '700'; // Coincide con --font-weight-sidebar en globals.css
+const colorMenu = 'white'; // Coincide con --color-menu en globals.css
+const hoverColorMenu = '#414141'; // Coincide con --hover-color-menu en globals.css
 
 // Tipado para la paleta de colores personalizada
 declare module '@mui/material/styles' {
@@ -230,12 +222,32 @@ const theme = createTheme({
       },
     },
 
+    MuiList: {
+      styleOverrides: {
+        root: {
+          // Estilos por defecto, pero permitir que el Sidebar los sobrescriba
+          padding: '8px 0',
+        },
+      },
+    },
+    MuiListItem: {
+      styleOverrides: {
+        root: {
+          // Estilos por defecto, pero permitir que el Sidebar los sobrescriba
+          paddingTop: '4px',
+          paddingBottom: '4px',
+        },
+      },
+    },
     MuiListItemButton: {
       styleOverrides: {
         root: {
           '&:hover': {
             backgroundColor: hoverColorMenu,
           },
+          // Estilos por defecto, pero permitir que el Sidebar los sobrescriba
+          paddingLeft: '16px',
+          paddingRight: '16px',
         },
       },
     },

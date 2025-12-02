@@ -24,8 +24,22 @@ const CustomModal: React.FC<CustomModalProps> = ({
 }) => {
   const modalSizeClass = styles[size];
 
+  const handleClose = (event: {}, reason?: string) => {
+    // Prevenir cierre accidental por backdrop click si es necesario
+    if (reason === 'backdropClick') {
+      return;
+    }
+    onClose();
+  };
+
   return (
-    <Modal open={open} onClose={onClose} aria-labelledby="custom-modal-title">
+    <Modal 
+      open={open} 
+      onClose={handleClose} 
+      aria-labelledby="custom-modal-title"
+      disableAutoFocus
+      disableEnforceFocus
+    >
       <Box className={`${styles.modalContainer} ${modalSizeClass}`}>
         {/* Nuevo div para el encabezado del modal */}
         <div className={styles.modalHeader}>

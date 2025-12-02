@@ -166,12 +166,12 @@ const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
                                 />
                                 {isOpen && (isMenuOpen ? <BsChevronDown className={arrowIconClasses} /> : <BsChevronRight className={arrowIconClasses} />)}
                             </ListItemButton>
-                            <Collapse in={isMenuOpen} timeout="auto" unmountOnExit>
-                                <List component="div" disablePadding className={styles.submenu}>
-                                    {filteredChildren}
-                                </List>
-                            </Collapse>
                         </ListItem>
+                        <Collapse in={isMenuOpen} timeout="auto" unmountOnExit>
+                            <List component="div" disablePadding className={styles.submenu}>
+                                {filteredChildren}
+                            </List>
+                        </Collapse>
                     </React.Fragment>
                 );
             }

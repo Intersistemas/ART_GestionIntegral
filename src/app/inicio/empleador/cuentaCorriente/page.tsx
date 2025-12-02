@@ -66,8 +66,8 @@ function CuentaCorrientePage() {
     }
 
     const columns: ColumnDef<CuentaCorrienteRegistro>[] = useMemo(() => [
-        { header: 'Período Cobertura', accessorKey: 'periodo', cell: (info: any) => Formato.Fecha(sumarleUnMesAlPeriodo(info.getValue()),"MM-YYYY"), meta: { align: 'center'} }, //DEBO RESTAR UN MES AL VALOR
-        { header: 'Período DDJJ', accessorKey: 'periodo', cell: (info: any) => Formato.Fecha(info.getValue(),"MM-YYYY"), meta: { align: 'center'} },
+        { id: 'periodoCobertura', header: 'Período Cobertura', accessorKey: 'periodo', cell: (info: any) => Formato.Fecha(sumarleUnMesAlPeriodo(info.getValue()),"MM-YYYY"), meta: { align: 'center'} }, //DEBO RESTAR UN MES AL VALOR
+        { id: 'periodoDDJJ', header: 'Período DDJJ', accessorKey: 'periodo', cell: (info: any) => Formato.Fecha(info.getValue(),"MM-YYYY"), meta: { align: 'center'} },
         { header: 'Fecha de Presentación', accessorKey: 'presentacion', cell: (info: any) => Formato.Fecha(info.getValue()), meta: { align: 'center'} },
         { header: 'Tipo', accessorKey: 'origenDDJJ', meta: { align: 'center'} },
         { header: 'Masa Salarial', accessorKey: 'masaSalarial', cell: info => formatCurrency(info.getValue() as number), meta: { align: 'center'} },

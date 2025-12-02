@@ -29,11 +29,18 @@ export default function CoberturaPage() {
     const [abrirPDF, setAbrirPDF] = useState<boolean>(false);
     const [clausula, setClausula] = useState<boolean>(false);
 
+    // Fecha y hora actuales (formato local es-AR) - Solo se calcula en el cliente para evitar errores de hidratación
+    const [dia, setDia] = useState<string>('');
+    const [hora, setHora] = useState<string>('');
+    const [isMounted, setIsMounted] = useState<boolean>(false);
 
-    // Fecha y hora actuales (formato local es-AR)
-    const now = new Date();
-    const dia = now.toLocaleDateString('es-AR'); // ej. "07/11/2025"
-    const hora = now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }); // ej. "14:35"
+    useEffect(() => {
+        // Marcar como montado y calcular fecha/hora solo en el cliente
+        setIsMounted(true);
+        const now = new Date();
+        setDia(now.toLocaleDateString('es-AR')); // ej. "07/11/2025"
+        setHora(now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })); // ej. "14:35"
+    }, []);
 
     // Estados para las selecciones de filas en cada tabla
     const [selectedPendiente, setSelectedPendiente] = useState<Persona[]>([]);
@@ -63,14 +70,18 @@ export default function CoberturaPage() {
         {
             header: 'CUIL',
             accessorKey: 'cuil',
-            cell: (info: any) => Formato.CUIP(info.getValue())
-            
+            cell: (info: any) => {
+                // Solo formatear cuando el componente esté montado para evitar errores de hidratación
+                if (!isMounted) return '';
+                const value = info.getValue();
+                return value ? Formato.CUIP(value) : '';
+            }
         },
         {
             header: 'Nombre',
             accessorKey: 'nombreEmpleador',
         },
-    ], []);
+    ], [isMounted]);
 
 
     const handleSelectionPendiente = useCallback((selectedRows: Persona[]) => {
@@ -157,6 +168,27 @@ export default function CoberturaPage() {
 
     const isAddButtonDisabled = newCuil === null || newNombre.trim() === '';
 
+    // Calcular valores formateados solo cuando polizaData esté disponible y el componente esté montado
+    // Esto evita errores de hidratación al asegurar que los valores se calculen solo en el cliente
+    const formattedValues = useMemo(() => {
+        if (!isMounted || !polizaData) {
+            return {
+                cuit: "",
+                vigenciaDesde: "",
+                vigenciaHasta: "",
+                empleadorDenominacion: "",
+                numero: ""
+            };
+        }
+        return {
+            cuit: Formato.CUIP(polizaData.cuit) || "",
+            vigenciaDesde: Formato.Fecha(polizaData.vigencia_Desde) || "",
+            vigenciaHasta: Formato.Fecha(polizaData.vigencia_Hasta) || "",
+            empleadorDenominacion: polizaData.empleador_Denominacion || "",
+            numero: polizaData.numero || ""
+        };
+    }, [polizaData, isMounted]);
+
     return ( 
         <div className={styles.inicioContainer}>
             <div className={styles.header}>
@@ -168,8 +200,8 @@ export default function CoberturaPage() {
                 {/* -------------------- TABLA DE PERSONAL PENDIENTE -------------------- */}
                 <div className={styles.tablePanel}>
                     <div className={styles.detalles}>
-                        <h2 className={styles.tableTitle}>Personal Pendiente ({personalPendiente.length})</h2>
-                        <p>Seleccionados: {selectedPendiente.length}</p>
+                        <h2 className={styles.tableTitle}>Personal Pendiente {isMounted ? `(${personalPendiente.length})` : ''}</h2>
+                        <p>Seleccionados: {isMounted ? selectedPendiente.length : 0}</p>
                     </div>
                     <DataTable
                         data={personalPendiente} 
@@ -178,7 +210,7 @@ export default function CoberturaPage() {
                         isLoading={isPersonalLoading}
                         enableRowSelection={true}
                         onRowSelectionChange={handleSelectionPendiente}
-                        key={`pendiente-${personalPendiente.length}`} 
+                        key={`pendiente-${isMounted ? personalPendiente.length : 0}`} 
                     />
                 </div>
 
@@ -204,8 +236,8 @@ export default function CoberturaPage() {
                 {/* -------------------- TABLA DE PERSONAL CUBIERTO -------------------- */}
                 <div className={styles.tablePanel}>
                     <div className={styles.detalles}>
-                        <h2 className={styles.tableTitle}>Personal Cubierto ({personalCubierto.length})</h2>
-                        <p>Seleccionados: {selectedCubierto.length}</p> 
+                        <h2 className={styles.tableTitle}>Personal Cubierto {isMounted ? `(${personalCubierto.length})` : ''}</h2>
+                        <p>Seleccionados: {isMounted ? selectedCubierto.length : 0}</p> 
                     </div>
                     <DataTable
                         data={personalCubierto} 
@@ -214,7 +246,7 @@ export default function CoberturaPage() {
                         isLoading={isPersonalLoading}
                         enableRowSelection={true}
                         onRowSelectionChange={handleSelectionCubierto}
-                        key={`cubierto-${personalCubierto.length}`}
+                        key={`cubierto-${isMounted ? personalCubierto.length : 0}`}
                     />
 
                     {/* NUEVOS CAMPOS DE ENTRADA Y BOTÓN */}
@@ -271,7 +303,7 @@ export default function CoberturaPage() {
             <div className={styles.certificadoContainer}>
                 {/* Contenido del Certificado */}
                 <div className={styles.lugarFecha}>
-                    Ciudad Autónoma de Buenos Aires, {dia ?? ''}
+                    Ciudad Autónoma de Buenos Aires{isMounted && dia ? `, ${dia}` : ''}
                 </div>
                 <div className={styles.certificadoContent}>
                     
@@ -303,50 +335,50 @@ export default function CoberturaPage() {
                     </div>
                 <br/>    
 
-                    <text>
-                        Por intermedio del presente <strong>CERTIFICAMOS</strong> que la empresa bajo la denominación de <strong>{polizaData?.empleador_Denominacion || "" } </strong>
-                          con N° de CUIT: <strong>{Formato.CUIP(polizaData?.cuit) || ""} </strong> ha contratado la cobertura de <strong>ART MUTUAL RURAL DE SEGUROS DE RIESGOS DEL TRABAJO</strong>,
+                    <p>
+                        Por intermedio del presente <strong>CERTIFICAMOS</strong> que la empresa bajo la denominación de <strong>{formattedValues.empleadorDenominacion} </strong>
+                          con N° de CUIT: <strong>{formattedValues.cuit} </strong> ha contratado la cobertura de <strong>ART MUTUAL RURAL DE SEGUROS DE RIESGOS DEL TRABAJO</strong>,
                           según los términos de la Ley Nro. 24.557 por lo que el personal declarado oportunamente por el/la mencionado/a se encuentra <strong> cubierto a partir
-                           del {Formato.Fecha(polizaData?.vigencia_Desde) || ""} hasta el {Formato.Fecha(polizaData?.vigencia_Hasta) || ""}.</strong>
-                    </text>
+                           del {formattedValues.vigenciaDesde} hasta el {formattedValues.vigenciaHasta}.</strong>
+                    </p>
                     <br/>
-                    <text>
-                        El N° del contrato es el <strong>{polizaData?.numero || ""}.</strong>
-                    </text>
+                    <p>
+                        El N° del contrato es el <strong>{formattedValues.numero}.</strong>
+                    </p>
                      <div className={styles.clausulaToggle}>
                         <Checkbox size="large" checked={clausula} onChange={(e) => setClausula(e.target.checked)} />
                         Incluir cláusula de no repetición
                     </div>
                     {clausula && 
                     <>
-                        <text>
+                        <p>
                             Consta por la presente que <strong>ART MUTUAL RURAL DE SEGUROS DE RIESGOS DEL TRABAJO</strong>, renuncia en forma expresa a reclamar o iniciar toda acción de 
                             repetición o de regreso contra: A quien corresponda, sus funcionarios, empleados u obreros; sea con fundamento en el art. 39, ap. 5, de la Ley 
                             N° 24.557, sea en cualquier otra norma jurídica, con motivo de las prestaciones en especie o dinerarias que se vea obligada a abonar, contratar
-                            u otorgar al personal dependiente o ex dependiente de <strong>{polizaData?.empleador_Denominacion || ""}</strong>, amparados por la cobertura del Contrato de
-                            Afiliación N° <strong>{polizaData?.numero || ""}</strong>, por accidentes del trabajo o enfermedades profesionales, ocurridos o contraídos por el hecho 
+                            u otorgar al personal dependiente o ex dependiente de <strong>{formattedValues.empleadorDenominacion}</strong>, amparados por la cobertura del Contrato de
+                            Afiliación N° <strong>{formattedValues.numero}</strong>, por accidentes del trabajo o enfermedades profesionales, ocurridos o contraídos por el hecho 
                             o en ocasión del trabajo. Esta <strong>Cláusula de no repetición</strong> cesará en sus efectos si el empresario comitente a favor de quien 
                             se emite, no cumple estrictamente con las medidas de prevención e higiene y seguridad en el trabajo, o de cualquier manera infringe la Ley 
                             N° 19.587, su Decreto Reglamentario N° 351/79 y las normativas que sobre el particular ha dictado la Superintendencia de Riesgos del Trabajo,
                             las Provincias y la Ciudad Autónoma de la Ciudad de Buenos Aires en el ámbito de su competencia.
-                        </text>
+                        </p>
                         <br/>
-                        <text>
+                        <p>
                             Fuera de las causales que expresamente prevé la normativa vigente, el contrato de afiliación no podrá ser modificado o enmendado sin previa
                             notificación fehaciente a quien corresponda, en un plazo no inferior a quince (15) días corridos.
-                        </text>
+                        </p>
                     </>
                     }
                     <br/>
-                    <text>
+                    <p>
                         Se deja constancia por la presente que la empresa de referencia se encuentra asegurada en <strong>ART MUTUAL RURAL DE SEGUROS DE RIESGOS DEL TRABAJO</strong>.
                         El presente certificado tiene una validez de 30 días corridos a partir de la fecha de emisión. En ningún caso ART MUTUAL RURAL DE SEGUROS DE RIESGOS
                         DEL TRABAJO será responsable de las consecuencias del uso del certificado una vez vencido el plazo de validez.
-                    </text>
+                    </p>
                     <br/>
-                    <text>
+                    <p>
                         Sin otro particular, saludo a Ud. muy atentamente.
-                    </text>
+                    </p>
                      <br/>
                     <div className={styles.signatureSection}>
                         <div className={styles.signatureLine}>
@@ -375,7 +407,7 @@ export default function CoberturaPage() {
                     dia={dia}                           // opcional
                     hora={hora}                         // opcional
                     fechaDesde={polizaData?.vigencia_Desde}             // opcional
-                    fechaHasta={polizaData?.vigencia_Desde}             // opcional
+                    fechaHasta={polizaData?.vigencia_Hasta}             // opcional
                     clausula={clausula}       // opcional
                     nominasSeleccionadas={selectedCubierto} // si aplicable
                 />

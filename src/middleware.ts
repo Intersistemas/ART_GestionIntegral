@@ -1,8 +1,9 @@
 // src/middleware.ts
+// NOTE: Next.js 16 muestra un warning sobre middleware deprecado en favor de "proxy"
+// Este middleware sigue funcionando correctamente. El warning es informativo sobre futuros cambios.
 
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
-export { default } from "next-auth/middleware";
 
 // Mapeo de rutas a tareas de permiso
 // Si una ruta requiere una tarea, agrégala aquí.
@@ -43,8 +44,14 @@ type Module = {
 };
 
 export async function middleware(req: NextRequest) {
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   const { pathname } = req.nextUrl;
+
+  // Excluir rutas de API de next-auth y otras APIs
+  if (pathname.startsWith('/api/auth')) {
+    return NextResponse.next();
+  }
+
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
   // console.log("token_login",token)
   // 1. Redirección de autenticación 
@@ -82,5 +89,6 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
+  // Solo aplicar middleware a rutas de inicio
   matcher: ["/inicio/:path*"],
 };

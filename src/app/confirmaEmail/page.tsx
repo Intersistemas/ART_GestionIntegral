@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
   Box,
@@ -18,7 +18,7 @@ import UsuarioAPI from "@/data/usuarioAPI";
 
 type ConfirmationState = "loading" | "success" | "error";
 
-const ConfirmarEmailPage = () => {
+const ConfirmarEmailContent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [state, setState] = useState<ConfirmationState>("loading");
@@ -167,6 +167,26 @@ const ConfirmarEmailPage = () => {
         </CardContent>
       </Card>
     </Box>
+  );
+};
+
+const ConfirmarEmailPage = () => {
+  return (
+    <Suspense fallback={
+      <Box 
+        sx={{ 
+          minHeight: "100vh", 
+          display: "flex", 
+          alignItems: "center", 
+          justifyContent: "center",
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    }>
+      <ConfirmarEmailContent />
+    </Suspense>
   );
 };
 

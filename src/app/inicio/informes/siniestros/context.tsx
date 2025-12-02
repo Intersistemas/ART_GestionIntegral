@@ -7,7 +7,7 @@ import QueriesAPI, { type Query, type FiltroVm } from '@/data/queryAPI';
 import Formato from '@/utils/Formato';
 import propositionFormat from '@/utils/PropositionFormatQuery';
 import { type ColumnDef } from '@tanstack/react-table';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { saveTable, type TableColumn, type AddTableOptions } from '@/utils/excelUtils';
 import { FiltrosTable, FiltrosTableContextProvider } from '@/components/filtros/FiltrosTable';
 import CustomModal from '@/utils/ui/form/CustomModal';
@@ -362,9 +362,9 @@ export function SiniestrosContextProvider({ children }: { children: ReactNode })
   const onLimpiaTabla  = useCallback(() => setRows([]), []);
 
   const onExport = useCallback(async () => {
-    const now = moment();
+    const now = dayjs();
     const options = { sheet: { name: "Siniestros" }, table: headers.options };
-    const fileName = `${options.sheet.name.replaceAll(" ", "_")}-${now.format("YYYYMMDDhhmmssSSS")}.xlsx`;
+    const fileName = `${options.sheet.name.replaceAll(" ", "_")}-${now.format("YYYYMMDDHHmmssSSS")}.xlsx`;
     options.sheet.name += ` (${now.format("DD-MM-YYYY")})`;
 
     setDialog(

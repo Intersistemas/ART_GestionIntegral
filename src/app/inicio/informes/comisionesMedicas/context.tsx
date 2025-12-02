@@ -1,4 +1,5 @@
 // src/app/inicio/informes/comisionesMedicas/context.tsx
+"use client";
 import React, { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from 'react';
 import { type Field, formatQuery, type RuleGroupType, type ValueEditorType, type DefaultOperators, defaultOperators } from 'react-querybuilder';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
@@ -8,7 +9,7 @@ import UsuarioAPI from '@/data/usuarioAPI';
 import Formato from '@/utils/Formato';
 import propositionFormat from '@/utils/PropositionFormatQuery';
 import { type ColumnDef } from '@tanstack/react-table';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { saveTable, type TableColumn, type AddTableOptions } from '@/utils/excelUtils';
 import useSWR from 'swr';
 import { FiltrosTable, FiltrosTableContextProvider } from '@/components/filtros/FiltrosTable';
@@ -342,9 +343,9 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
   const onLimpiaTabla = useCallback(() => setRows([]), []);
 
   const onExport = useCallback(async () => {
-    const now = moment();
+    const now = dayjs();
     const options = { sheet: { name: "Comisiones Medicas" }, table: headers.options };
-    const fileName = `${options.sheet.name.replaceAll(" ", "_")}-${now.format("YYYYMMDDhhmmssSSS")}.xlsx`;
+    const fileName = `${options.sheet.name.replaceAll(" ", "_")}-${now.format("YYYYMMDDHHmmssSSS")}.xlsx`;
     options.sheet.name += ` (${now.format("DD-MM-YYYY")})`;
 
     setDialog(

@@ -1,5 +1,5 @@
-import useSWR from "swr";
 import axios, { AxiosError } from "axios";
+import useSWR from "swr";
 import { ExternalAPI } from "./api";
 import UsuarioRow from "@/app/inicio/usuarios/interfaces/UsuarioRow";
 import TokenConfigurator from "@/types/TokenConfigurator";

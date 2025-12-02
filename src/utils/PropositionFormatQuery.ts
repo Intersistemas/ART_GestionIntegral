@@ -10,7 +10,7 @@ import type {
   ValueProcessorOptions,
   Field
 } from "react-querybuilder";
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { parseNumber } from "./utils";
 
 type CustomFields = Field[] | (() => Field[]);
@@ -90,11 +90,11 @@ export const ruleProcessor: RuleProcessor = (rule, options, meta) => {
     }
     function getInputValue() {
       switch (typeof inputType === "string" ? inputType.toLowerCase() : "") {
-        case "date": return moment(v).format("YYYY-MM-DD");
-        case "time": return moment(v).format("HH:mm:ss.SS");
+        case "date": return dayjs(v).format("YYYY-MM-DD");
+        case "time": return dayjs(v).format("HH:mm:ss.SSS");
         case "number": return options?.parseNumbers ? parseNumber(v) ?? v : v;
         case "datetime":
-        case "datetime-local": return moment(v).format("YYYY-MM-DDTHH:mm:ss.SS");
+        case "datetime-local": return dayjs(v).format("YYYY-MM-DDTHH:mm:ss.SSS");
         default: return v;
       }
     }

@@ -5,11 +5,11 @@ import { Metadata } from "next";
 
 // Las Page Props solo reciben `params` y `searchParams`
 interface ResetPasswordPageProps {
-    searchParams: { 
+    searchParams: Promise<{ 
         token?: string; 
         email?: string; 
         errorMsg?: string; // Opcional, si quieres manejar un error de carga de servidor
-    };
+    }>;
 }
 
 // Puedes definir metadatos específicos para esta página
@@ -18,10 +18,10 @@ export const metadata: Metadata = {
     description: 'Establece una nueva contraseña para tu cuenta.',
 };
 
-const ResetPasswordPage = ({ searchParams }: ResetPasswordPageProps) => {
-    
+const ResetPasswordPage = async ({ searchParams }: ResetPasswordPageProps) => {
+    const params = await searchParams;
     // Aquí podrías leer el errorMsg si viniera de una redirección o del servidor
-    const initialErrorMsg = searchParams.errorMsg || null;
+    const initialErrorMsg = params.errorMsg || null;
 
     // Nota: La lógica de leer el token y email se mantiene en el cliente
     // ya que usa `useSearchParams` (aunque podrías leerlos aquí si quieres)
