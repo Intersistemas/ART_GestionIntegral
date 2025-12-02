@@ -9,7 +9,7 @@ const naranjaOscuro = '#b66400';
 
 const verdeOscuro = '#45661f';
 const verdeClaro = '#92bd68';
-const verdeClaroClaro = '#f7f7f7';
+const verdeClaroClaro = '#d7e9c6';
 const verde = '#648C34';
 
 const gris = '#808080';

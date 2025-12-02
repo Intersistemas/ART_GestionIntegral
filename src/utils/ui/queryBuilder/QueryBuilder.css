@@ -25,6 +25,18 @@
 /* Estilo para los botones de añadir regla/grupo */
 .ruleGroup-addRule, .ruleGroup-addGroup { 
   font-size: 1.2rem !important;
+  background-color: var(--verdeOscuro) !important;
+  color: var(--blanco) !important;
+  border-radius: 4px !important;
+  padding: 6px 12px !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+}
+
+.ruleGroup-addRule:hover, .ruleGroup-addGroup:hover {
+  background-color: var(--verde) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
 }
 
 .ruleGroup-addRule{
