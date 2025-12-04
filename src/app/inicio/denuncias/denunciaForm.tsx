@@ -13,12 +13,20 @@ import {
   Tabs,
   Tab,
   Button,
+  Checkbox,
+  FormControlLabel,
+  Paper,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+  IconButton,
 } from "@mui/material";
 import styles from "./denuncias.module.css";
 import { SelectChangeEvent } from "@mui/material/Select";
 import CustomModal from "@/utils/ui/form/CustomModal";
 import CustomButton from "@/utils/ui/button/CustomButton";
-import { DenunciaFormData, initialDenunciaFormData, RELACION_ACCIDENTADO } from "./types/tDenuncias";
+import { DenunciaFormData, initialDenunciaFormData, RELACION_ACCIDENTADO, TIPO_DOCUMENTO, ESTADO_CIVIL, COLORES, TIPOS_TRASLADO } from "./types/tDenuncias";
 
 // Definición del modo de operación
 type RequestMethod = "create" | "edit" | "view" | "delete";
@@ -44,6 +52,30 @@ interface ValidationErrors {
   hora?: string;
   calle?: string;
   descripcion?: string;
+  // Worker data fields
+  cuil?: string;
+  docTipo?: string;
+  docNumero?: string;
+  nombre?: string;
+  fechaNac?: string;
+  sexo?: string;
+  estadoCivil?: string;
+  nacionalidad?: string;
+  domicilioCalle?: string;
+  telefono?: string;
+  email?: string;
+  // Accident data fields
+  estaConsciente?: string;
+  color?: string;
+  habla?: string;
+  gravedad?: string;
+  respira?: string;
+  tieneHemorragia?: string;
+  contextoDenuncia?: string;
+  prestadorInicialCuit?: string;
+  prestadorInicialRazonSocial?: string;
+  // Confirmation fields
+  aceptoTerminos?: string;
 }
 
 interface TouchedFields {
@@ -57,6 +89,30 @@ interface TouchedFields {
   hora?: boolean;
   calle?: boolean;
   descripcion?: boolean;
+  // Worker data fields
+  cuil?: boolean;
+  docTipo?: boolean;
+  docNumero?: boolean;
+  nombre?: boolean;
+  fechaNac?: boolean;
+  sexo?: boolean;
+  estadoCivil?: boolean;
+  nacionalidad?: boolean;
+  domicilioCalle?: boolean;
+  telefono?: boolean;
+  email?: boolean;
+  // Accident data fields
+  estaConsciente?: boolean;
+  color?: boolean;
+  habla?: boolean;
+  gravedad?: boolean;
+  respira?: boolean;
+  tieneHemorragia?: boolean;
+  contextoDenuncia?: boolean;
+  prestadorInicialCuit?: boolean;
+  prestadorInicialRazonSocial?: boolean;
+  // Confirmation fields
+  aceptoTerminos?: boolean;
 }
 
 export default function DenunciaForm({
@@ -72,6 +128,7 @@ export default function DenunciaForm({
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [touched, setTouched] = useState<TouchedFields>({});
   const [activeTab, setActiveTab] = useState(0);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   // Lógica de Modos y Estado
   const isViewing = method === "view";
@@ -129,22 +186,91 @@ export default function DenunciaForm({
         return validateRequired(value, "Calle");
       case "descripcion":
         return validateRequired(value, "Descripción");
+      // Worker data validation
+      case "cuil":
+        return validateRequired(value, "CUIL");
+      case "docTipo":
+        return validateRequired(value, "Tipo de Documento");
+      case "docNumero":
+        return validateRequired(value, "Número de Documento");
+      case "nombre":
+        return validateRequired(value, "Nombre");
+      case "fechaNac":
+        return validateRequired(value, "Fecha de Nacimiento");
+      case "sexo":
+        return validateRequired(value, "Sexo");
+      case "estadoCivil":
+        return validateRequired(value, "Estado Civil");
+      case "nacionalidad":
+        return validateRequired(value, "Nacionalidad");
+      case "domicilioCalle":
+        return validateRequired(value, "Domicilio Calle");
+      case "telefono":
+        return validateRequired(value, "Teléfono");
+      case "email":
+        return validateRequired(value, "eMail");
+      // Accident data validation
+      case "estaConsciente":
+        return validateRequired(value, "¿Está Consciente?");
+      case "color":
+        return validateRequired(value, "Color");
+      case "habla":
+        return validateRequired(value, "¿Habla?");
+      case "gravedad":
+        return validateRequired(value, "Gravedad");
+      case "respira":
+        return validateRequired(value, "¿Respira?");
+      case "tieneHemorragia":
+        return validateRequired(value, "¿Tiene Hemorragia?");
+      case "contextoDenuncia":
+        return validateRequired(value, "Contexto de Denuncia");
+      case "prestadorInicialCuit":
+        return validateRequired(value, "CUIT Prestador Inicial");
+      case "prestadorInicialRazonSocial":
+        return validateRequired(value, "Razón Social Prestador");
+      case "aceptoTerminos":
+        if (!form.aceptoTerminos) return "Debe aceptar los términos y condiciones";
+        return undefined;
       default:
         return undefined;
     }
   };
 
-  const validateAllFields = (): boolean => {
+  const validateAllFields = (tabToValidate?: number): boolean => {
     const newErrors: ValidationErrors = {};
     let hasErrors = false;
 
     if (isDisabled) return true;
 
-    // Validar campos del primer tab
-    const fieldsToValidate: (keyof DenunciaFormData)[] = [
-      "telefonos", "apellidoNombres", "relacionAccidentado", 
-      "tipoDenuncia", "fechaOcurrencia", "hora", "calle", "descripcion"
-    ];
+    const currentTab = tabToValidate !== undefined ? tabToValidate : activeTab;
+    let fieldsToValidate: (keyof DenunciaFormData)[] = [];
+
+    if (currentTab === 0) {
+      // Validar campos del primer tab
+      fieldsToValidate = [
+        "telefonos", "apellidoNombres", "relacionAccidentado", 
+        "tipoDenuncia", "fechaOcurrencia", "hora", "calle", "descripcion"
+      ];
+    } else if (currentTab === 1) {
+      // Validar campos del segundo tab
+      fieldsToValidate = [
+        "cuil", "docTipo", "docNumero", "nombre", "fechaNac", 
+        "sexo", "estadoCivil", "nacionalidad", "domicilioCalle", "telefono", "email"
+      ];
+    } else if (currentTab === 2) {
+      // Validar campos del tercer tab
+      fieldsToValidate = [
+        "estaConsciente", "color", "habla", "gravedad", "respira", 
+        "tieneHemorragia", "contextoDenuncia", "prestadorInicialCuit", "prestadorInicialRazonSocial"
+      ];
+    } else if (currentTab === 3) {
+      // Validar campos del cuarto tab
+      const aceptoTerminosError = form.aceptoTerminos ? undefined : "Debe aceptar los términos y condiciones";
+      if (aceptoTerminosError) {
+        newErrors.aceptoTerminos = aceptoTerminosError;
+        hasErrors = true;
+      }
+    }
 
     fieldsToValidate.forEach((fieldName) => {
       const value = String(form[fieldName] ?? "");
@@ -229,9 +355,47 @@ export default function DenunciaForm({
   };
 
   const handleNext = () => {
-    // Por ahora solo validamos el primer tab
-    if (validateAllFields()) {
+    // Validar el tab actual antes de avanzar
+    if (validateAllFields(activeTab)) {
       setActiveTab(activeTab + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    setActiveTab(activeTab - 1);
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    setUploadedFiles(prev => [...prev, ...files]);
+    setForm(prev => ({
+      ...prev,
+      archivosAdjuntos: [...prev.archivosAdjuntos, ...files]
+    }));
+  };
+
+  const handleFileRemove = (indexToRemove: number) => {
+    const newFiles = uploadedFiles.filter((_, index) => index !== indexToRemove);
+    setUploadedFiles(newFiles);
+    setForm(prev => ({
+      ...prev,
+      archivosAdjuntos: newFiles
+    }));
+  };
+
+  const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = event.target;
+    setForm(prev => ({
+      ...prev,
+      [name]: checked
+    }));
+
+    if (touched[name as keyof TouchedFields]) {
+      const error = checked ? undefined : "Debe aceptar los términos y condiciones";
+      setErrors(prev => ({
+        ...prev,
+        [name]: error
+      }));
     }
   };
 
@@ -260,26 +424,29 @@ export default function DenunciaForm({
             />
             <Tab 
               label="2. Datos del Trabajador" 
-              disabled
+              disabled={activeTab < 1}
               sx={{ 
-                backgroundColor: '#cccccc',
-                color: '#666'
+                backgroundColor: activeTab === 1 ? '#ff6600' : '#cccccc',
+                color: activeTab === 1 ? 'white' : '#666',
+                '&.Mui-selected': { color: 'white' }
               }}
             />
             <Tab 
               label="3. Datos del Siniestro" 
-              disabled
+              disabled={activeTab < 2}
               sx={{ 
-                backgroundColor: '#cccccc',
-                color: '#666'
+                backgroundColor: activeTab === 2 ? '#ff6600' : '#cccccc',
+                color: activeTab === 2 ? 'white' : '#666',
+                '&.Mui-selected': { color: 'white' }
               }}
             />
             <Tab 
               label="4. Confirmación" 
-              disabled
+              disabled={activeTab < 3}
               sx={{ 
-                backgroundColor: '#cccccc',
-                color: '#666'
+                backgroundColor: activeTab === 3 ? '#ff6600' : '#cccccc',
+                color: activeTab === 3 ? 'white' : '#666',
+                '&.Mui-selected': { color: 'white' }
               }}
             />
           </Tabs>
@@ -558,9 +725,928 @@ export default function DenunciaForm({
               </>
             )}
 
+            {/* TAB 2: DATOS DEL TRABAJADOR */}
+            {activeTab === 1 && (
+              <>
+                {/* Trabajador */}
+                <div className={styles.formSection}>
+                  <Typography variant="h6" className={styles.sectionTitle}>
+                    Trabajador
+                  </Typography>
+
+                  <div className={styles.formRow}>
+                    <TextField
+                      label="Cuil"
+                      name="cuil"
+                      value={form.cuil}
+                      onChange={handleTextFieldChange}
+                      onBlur={() => handleBlur("cuil")}
+                      error={touched.cuil && !!errors.cuil}
+                      helperText={touched.cuil && errors.cuil}
+                      fullWidth
+                      required={!isDisabled}
+                      disabled={isDisabled}
+                      placeholder="Ingrese CUIL"
+                    />
+
+                    <FormControl
+                      fullWidth
+                      required={!isDisabled}
+                      error={touched.docTipo && !!errors.docTipo}
+                      disabled={isDisabled}
+                    >
+                      <InputLabel>Doc Tipo</InputLabel>
+                      <Select
+                        name="docTipo"
+                        value={form.docTipo}
+                        label="Doc Tipo"
+                        onChange={handleSelectChange}
+                        onBlur={() => handleBlur("docTipo")}
+                      >
+                        {TIPO_DOCUMENTO.map((tipo) => (
+                          <MenuItem key={tipo.value} value={tipo.value}>
+                            {tipo.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      {touched.docTipo && errors.docTipo && (
+                        <Typography variant="caption" color="error" sx={{ ml: 2, mt: 0.5 }}>
+                          {errors.docTipo}
+                        </Typography>
+                      )}
+                    </FormControl>
+
+                    <TextField
+                      label="Doc Numero"
+                      name="docNumero"
+                      value={form.docNumero}
+                      onChange={handleTextFieldChange}
+                      onBlur={() => handleBlur("docNumero")}
+                      error={touched.docNumero && !!errors.docNumero}
+                      helperText={touched.docNumero && errors.docNumero}
+                      fullWidth
+                      required={!isDisabled}
+                      disabled={isDisabled}
+                      placeholder="Número de documento"
+                    />
+                    <Button
+                      variant="contained"
+                      sx={{ backgroundColor: '#ff6600', '&:hover': { backgroundColor: '#e55a00' } }}
+                    >
+                      🔍
+                    </Button>
+
+                    <TextField
+                      label="Nombre"
+                      name="nombre"
+                      value={form.nombre}
+                      onChange={handleTextFieldChange}
+                      onBlur={() => handleBlur("nombre")}
+                      error={touched.nombre && !!errors.nombre}
+                      helperText={touched.nombre && errors.nombre}
+                      fullWidth
+                      required={!isDisabled}
+                      disabled={isDisabled}
+                      placeholder="Nombre completo"
+                    />
+                    <Button
+                      variant="contained"
+                      sx={{ backgroundColor: '#ff6600', '&:hover': { backgroundColor: '#e55a00' } }}
+                    >
+                      🔍
+                    </Button>
+                  </div>
+
+                  <div className={styles.formRow}>
+                    <TextField
+                      label="Fecha Nac."
+                      name="fechaNac"
+                      type="date"
+                      value={form.fechaNac}
+                      onChange={handleTextFieldChange}
+                      onBlur={() => handleBlur("fechaNac")}
+                      error={touched.fechaNac && !!errors.fechaNac}
+                      helperText={touched.fechaNac && errors.fechaNac}
+                      fullWidth
+                      required={!isDisabled}
+                      disabled={isDisabled}
+                      InputLabelProps={{ shrink: true }}
+                    />
+
+                    <TextField
+                      label="Sexo"
+                      name="sexo"
+                      value={form.sexo}
+                      onChange={handleTextFieldChange}
+                      onBlur={() => handleBlur("sexo")}
+                      error={touched.sexo && !!errors.sexo}
+                      helperText={touched.sexo && errors.sexo}
+                      fullWidth
+                      required={!isDisabled}
+                      disabled={isDisabled}
+                      placeholder="M/F"
+                    />
+                  </div>
+
+                  <div className={styles.formRow}>
+                    <FormControl
+                      fullWidth
+                      required={!isDisabled}
+                      error={touched.estadoCivil && !!errors.estadoCivil}
+                      disabled={isDisabled}
+                    >
+                      <InputLabel>Estado Civil</InputLabel>
+                      <Select
+                        name="estadoCivil"
+                        value={form.estadoCivil}
+                        label="Estado Civil"
+                        onChange={handleSelectChange}
+                        onBlur={() => handleBlur("estadoCivil")}
+                      >
+                        {ESTADO_CIVIL.map((estado) => (
+                          <MenuItem key={estado.value} value={estado.value}>
+                            {estado.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      {touched.estadoCivil && errors.estadoCivil && (
+                        <Typography variant="caption" color="error" sx={{ ml: 2, mt: 0.5 }}>
+                          {errors.estadoCivil}
+                        </Typography>
+                      )}
+                    </FormControl>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+                      <TextField
+                        label="Nacionalidad"
+                        name="nacionalidad"
+                        value={form.nacionalidad}
+                        onChange={handleTextFieldChange}
+                        onBlur={() => handleBlur("nacionalidad")}
+                        error={touched.nacionalidad && !!errors.nacionalidad}
+                        helperText={touched.nacionalidad && errors.nacionalidad}
+                        required={!isDisabled}
+                        disabled={isDisabled}
+                        placeholder="200"
+                        sx={{ width: '100px' }}
+                      />
+                      <Button
+                        variant="contained"
+                        sx={{ backgroundColor: '#ff6600', '&:hover': { backgroundColor: '#e55a00' } }}
+                      >
+                        🔍
+                      </Button>
+                      <TextField
+                        value="Argentina"
+                        disabled
+                        fullWidth
+                        sx={{ flex: 1 }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className={styles.formRow}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+                      <TextField
+                        label="Obra Social"
+                        name="obraSocial"
+                        value={form.obraSocial}
+                        onChange={handleTextFieldChange}
+                        fullWidth
+                        disabled={isDisabled}
+                        placeholder="Código obra social"
+                      />
+                      <Button
+                        variant="contained"
+                        sx={{ backgroundColor: '#ff6600', '&:hover': { backgroundColor: '#e55a00' } }}
+                      >
+                        🔍
+                      </Button>
+                      <TextField
+                        disabled
+                        fullWidth
+                        sx={{ flex: 2 }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className={styles.formRow}>
+                    <TextField
+                      label="Domicilio Calle"
+                      name="domicilioCalle"
+                      value={form.domicilioCalle}
+                      onChange={handleTextFieldChange}
+                      onBlur={() => handleBlur("domicilioCalle")}
+                      error={touched.domicilioCalle && !!errors.domicilioCalle}
+                      helperText={touched.domicilioCalle && errors.domicilioCalle}
+                      fullWidth
+                      required={!isDisabled}
+                      disabled={isDisabled}
+                      placeholder="Nombre de la calle"
+                    />
+                  </div>
+
+                  <div className={styles.formRow}>
+                    <TextField
+                      label="Nro"
+                      name="domicilioNro"
+                      value={form.domicilioNro}
+                      onChange={handleTextFieldChange}
+                      fullWidth
+                      disabled={isDisabled}
+                      placeholder="Número"
+                    />
+                    <TextField
+                      label="Piso"
+                      name="domicilioPiso"
+                      value={form.domicilioPiso}
+                      onChange={handleTextFieldChange}
+                      fullWidth
+                      disabled={isDisabled}
+                      placeholder="Piso"
+                    />
+                    <TextField
+                      label="Dpto"
+                      name="domicilioDpto"
+                      value={form.domicilioDpto}
+                      onChange={handleTextFieldChange}
+                      fullWidth
+                      disabled={isDisabled}
+                      placeholder="Depto"
+                    />
+                  </div>
+
+                  <div className={styles.formRow}>
+                    <TextField
+                      label="Teléfono"
+                      name="telefono"
+                      value={form.telefono}
+                      onChange={handleTextFieldChange}
+                      onBlur={() => handleBlur("telefono")}
+                      error={touched.telefono && !!errors.telefono}
+                      helperText={touched.telefono && errors.telefono}
+                      fullWidth
+                      required={!isDisabled}
+                      disabled={isDisabled}
+                      placeholder="Teléfono"
+                    />
+
+                    <TextField
+                      label="eMail"
+                      name="email"
+                      type="email"
+                      value={form.email}
+                      onChange={handleTextFieldChange}
+                      onBlur={() => handleBlur("email")}
+                      error={touched.email && !!errors.email}
+                      helperText={touched.email && errors.email}
+                      fullWidth
+                      required={!isDisabled}
+                      disabled={isDisabled}
+                      placeholder="email@ejemplo.com"
+                    />
+                  </div>
+
+                  <div className={styles.formRow}>
+                    <TextField
+                      label="Localidad"
+                      name="localidad"
+                      value={form.localidad}
+                      onChange={handleTextFieldChange}
+                      fullWidth
+                      disabled={isDisabled}
+                      placeholder="Localidad"
+                    />
+                    <Button
+                      variant="contained"
+                      sx={{ backgroundColor: '#ff6600', '&:hover': { backgroundColor: '#e55a00' } }}
+                    >
+                      🔍
+                    </Button>
+                    <TextField
+                      disabled
+                      fullWidth
+                      sx={{ flex: 1 }}
+                    />
+                    <TextField
+                      label="Cod Postal"
+                      name="codPostalTrabajador"
+                      value={form.codPostalTrabajador}
+                      onChange={handleTextFieldChange}
+                      fullWidth
+                      disabled={isDisabled}
+                      placeholder="Código postal"
+                    />
+                  </div>
+                </div>
+
+                {/* Tabla de trabajadores relacionados */}
+                <div className={styles.formSection}>
+                  <div style={{
+                    backgroundColor: '#f5f5f5',
+                    minHeight: '150px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    display: 'flex',
+                    flexDirection: 'column'
+                  }}>
+                    {/* Encabezados de la tabla */}
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr 1fr 1fr',
+                      backgroundColor: '#ff6600',
+                      color: 'white',
+                      padding: '8px',
+                      fontWeight: 'bold'
+                    }}>
+                      <div>Trabajador</div>
+                      <div>Empresa</div>
+                      <div>Período</div>
+                      <div>Origen</div>
+                    </div>
+                    
+                    {/* Contenido de la tabla (vacío por ahora) */}
+                    <div style={{
+                      backgroundColor: '#fffacd',
+                      flex: 1,
+                      minHeight: '120px'
+                    }}>
+                      {/* Aquí se mostrarían los trabajadores relacionados */}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* TAB 3: DATOS DEL SINIESTRO */}
+            {activeTab === 2 && (
+              <>
+                {/* Estado del Trabajador */}
+                <div className={styles.formSection}>
+                  <Typography variant="h6" className={styles.sectionTitle}>
+                    Estado del Trabajador
+                  </Typography>
+
+                  <div className={styles.formRow}>
+                    <FormControl
+                      fullWidth
+                      required={!isDisabled}
+                      error={touched.estaConsciente && !!errors.estaConsciente}
+                      disabled={isDisabled}
+                    >
+                      <InputLabel>¿Está Consciente?</InputLabel>
+                      <Select
+                        name="estaConsciente"
+                        value={form.estaConsciente}
+                        label="¿Está Consciente?"
+                        onChange={handleSelectChange}
+                        onBlur={() => handleBlur("estaConsciente")}
+                      >
+                        <MenuItem value="Ignora">Ignora</MenuItem>
+                        <MenuItem value="Si">Sí</MenuItem>
+                        <MenuItem value="No">No</MenuItem>
+                      </Select>
+                      {touched.estaConsciente && errors.estaConsciente && (
+                        <Typography variant="caption" color="error" sx={{ ml: 2, mt: 0.5 }}>
+                          {errors.estaConsciente}
+                        </Typography>
+                      )}
+                    </FormControl>
+
+                    <FormControl
+                      fullWidth
+                      required={!isDisabled}
+                      error={touched.color && !!errors.color}
+                      disabled={isDisabled}
+                    >
+                      <InputLabel>Color</InputLabel>
+                      <Select
+                        name="color"
+                        value={form.color}
+                        label="Color"
+                        onChange={handleSelectChange}
+                        onBlur={() => handleBlur("color")}
+                      >
+                        {COLORES.map((color) => (
+                          <MenuItem key={color.value} value={color.value}>
+                            {color.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      {touched.color && errors.color && (
+                        <Typography variant="caption" color="error" sx={{ ml: 2, mt: 0.5 }}>
+                          {errors.color}
+                        </Typography>
+                      )}
+                    </FormControl>
+
+                    <FormControl
+                      fullWidth
+                      required={!isDisabled}
+                      error={touched.habla && !!errors.habla}
+                      disabled={isDisabled}
+                    >
+                      <InputLabel>¿Habla?</InputLabel>
+                      <Select
+                        name="habla"
+                        value={form.habla}
+                        label="¿Habla?"
+                        onChange={handleSelectChange}
+                        onBlur={() => handleBlur("habla")}
+                      >
+                        <MenuItem value="Ignora">Ignora</MenuItem>
+                        <MenuItem value="Si">Sí</MenuItem>
+                        <MenuItem value="No">No</MenuItem>
+                      </Select>
+                      {touched.habla && errors.habla && (
+                        <Typography variant="caption" color="error" sx={{ ml: 2, mt: 0.5 }}>
+                          {errors.habla}
+                        </Typography>
+                      )}
+                    </FormControl>
+
+                    <FormControl
+                      fullWidth
+                      required={!isDisabled}
+                      error={touched.gravedad && !!errors.gravedad}
+                      disabled={isDisabled}
+                    >
+                      <InputLabel>Gravedad</InputLabel>
+                      <Select
+                        name="gravedad"
+                        value={form.gravedad}
+                        label="Gravedad"
+                        onChange={handleSelectChange}
+                        onBlur={() => handleBlur("gravedad")}
+                      >
+                        <MenuItem value="Ignora">Ignora</MenuItem>
+                        <MenuItem value="Leve">Leve</MenuItem>
+                        <MenuItem value="Grave">Grave</MenuItem>
+                        <MenuItem value="Critico">Crítico</MenuItem>
+                      </Select>
+                      {touched.gravedad && errors.gravedad && (
+                        <Typography variant="caption" color="error" sx={{ ml: 2, mt: 0.5 }}>
+                          {errors.gravedad}
+                        </Typography>
+                      )}
+                    </FormControl>
+                  </div>
+
+                  <div className={styles.formRow}>
+                    <FormControl
+                      fullWidth
+                      required={!isDisabled}
+                      error={touched.respira && !!errors.respira}
+                      disabled={isDisabled}
+                    >
+                      <InputLabel>¿Respira?</InputLabel>
+                      <Select
+                        name="respira"
+                        value={form.respira}
+                        label="¿Respira?"
+                        onChange={handleSelectChange}
+                        onBlur={() => handleBlur("respira")}
+                      >
+                        <MenuItem value="Ignora">Ignora</MenuItem>
+                        <MenuItem value="Si">Sí</MenuItem>
+                        <MenuItem value="No">No</MenuItem>
+                      </Select>
+                      {touched.respira && errors.respira && (
+                        <Typography variant="caption" color="error" sx={{ ml: 2, mt: 0.5 }}>
+                          {errors.respira}
+                        </Typography>
+                      )}
+                    </FormControl>
+
+                    <TextField
+                      label="Observaciones"
+                      name="observaciones"
+                      value={form.observaciones}
+                      onChange={handleTextFieldChange}
+                      fullWidth
+                      disabled={isDisabled}
+                      multiline
+                      rows={3}
+                      placeholder="Observaciones del estado del trabajador"
+                    />
+                  </div>
+
+                  <div className={styles.formRow}>
+                    <FormControl
+                      fullWidth
+                      required={!isDisabled}
+                      error={touched.tieneHemorragia && !!errors.tieneHemorragia}
+                      disabled={isDisabled}
+                    >
+                      <InputLabel>¿Tiene Hemorragia?</InputLabel>
+                      <Select
+                        name="tieneHemorragia"
+                        value={form.tieneHemorragia}
+                        label="¿Tiene Hemorragia?"
+                        onChange={handleSelectChange}
+                        onBlur={() => handleBlur("tieneHemorragia")}
+                      >
+                        <MenuItem value="Ignora">Ignora</MenuItem>
+                        <MenuItem value="Si">Sí</MenuItem>
+                        <MenuItem value="No">No</MenuItem>
+                      </Select>
+                      {touched.tieneHemorragia && errors.tieneHemorragia && (
+                        <Typography variant="caption" color="error" sx={{ ml: 2, mt: 0.5 }}>
+                          {errors.tieneHemorragia}
+                        </Typography>
+                      )}
+                    </FormControl>
+
+                    <FormControl
+                      fullWidth
+                      required={!isDisabled}
+                      error={touched.contextoDenuncia && !!errors.contextoDenuncia}
+                      disabled={isDisabled}
+                    >
+                      <InputLabel>Contexto Denuncia</InputLabel>
+                      <Select
+                        name="contextoDenuncia"
+                        value={form.contextoDenuncia}
+                        label="Contexto Denuncia"
+                        onChange={handleSelectChange}
+                        onBlur={() => handleBlur("contextoDenuncia")}
+                      >
+                        <MenuItem value="Ignora">Ignora</MenuItem>
+                        <MenuItem value="Urgente">Urgente</MenuItem>
+                        <MenuItem value="Normal">Normal</MenuItem>
+                      </Select>
+                      {touched.contextoDenuncia && errors.contextoDenuncia && (
+                        <Typography variant="caption" color="error" sx={{ ml: 2, mt: 0.5 }}>
+                          {errors.contextoDenuncia}
+                        </Typography>
+                      )}
+                    </FormControl>
+                  </div>
+                </div>
+
+                {/* ROAM */}
+                <div className={styles.formSection}>
+                  <Typography variant="h6" className={styles.sectionTitle}>
+                    ROAM
+                  </Typography>
+
+                  <div className={styles.formRow}>
+                    <FormControl fullWidth disabled={isDisabled}>
+                      <InputLabel>ROAM</InputLabel>
+                      <Select
+                        name="roam"
+                        value={form.roam}
+                        label="ROAM"
+                        onChange={handleSelectChange}
+                      >
+                        <MenuItem value="No">No</MenuItem>
+                        <MenuItem value="Si">Sí</MenuItem>
+                      </Select>
+                    </FormControl>
+
+                    <TextField
+                      label="ROAM Nro"
+                      name="roamNro"
+                      value={form.roamNro}
+                      onChange={handleTextFieldChange}
+                      fullWidth
+                      disabled={isDisabled}
+                      placeholder="Número ROAM"
+                    />
+
+                    <TextField
+                      label="ROAM Año"
+                      name="roamAno"
+                      value={form.roamAno}
+                      onChange={handleTextFieldChange}
+                      fullWidth
+                      disabled={isDisabled}
+                      placeholder="Año ROAM"
+                    />
+
+                    <TextField
+                      label="ROAM Código"
+                      name="roamCodigo"
+                      value={form.roamCodigo}
+                      onChange={handleTextFieldChange}
+                      fullWidth
+                      disabled={isDisabled}
+                      placeholder="Código ROAM"
+                    />
+                  </div>
+                </div>
+
+                {/* Tipo de Traslado */}
+                <div className={styles.formSection}>
+                  <Typography variant="h6" className={styles.sectionTitle}>
+                    Tipo de Traslado
+                  </Typography>
+
+                  <div className={styles.formRow}>
+                    <FormControl fullWidth disabled={isDisabled}>
+                      <InputLabel>Tipo Traslado</InputLabel>
+                      <Select
+                        name="tipoTraslado"
+                        value={form.tipoTraslado}
+                        label="Tipo Traslado"
+                        onChange={handleSelectChange}
+                      >
+                        {TIPOS_TRASLADO.map((tipo) => (
+                          <MenuItem key={tipo.value} value={tipo.value}>
+                            {tipo.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+
+                    <TextField
+                      label="Prestador Traslado"
+                      name="prestadorTraslado"
+                      value={form.prestadorTraslado}
+                      onChange={handleTextFieldChange}
+                      fullWidth
+                      disabled={isDisabled}
+                      placeholder="Prestador de traslado"
+                    />
+                  </div>
+                </div>
+
+                {/* Prestador Inicial */}
+                <div className={styles.formSection}>
+                  <Typography variant="h6" className={styles.sectionTitle}>
+                    Prestador Inicial
+                  </Typography>
+
+                  <div className={styles.formRow}>
+                    <TextField
+                      label="CUIT Prestador Inicial"
+                      name="prestadorInicialCuit"
+                      value={form.prestadorInicialCuit}
+                      onChange={handleTextFieldChange}
+                      onBlur={() => handleBlur("prestadorInicialCuit")}
+                      error={touched.prestadorInicialCuit && !!errors.prestadorInicialCuit}
+                      helperText={touched.prestadorInicialCuit && errors.prestadorInicialCuit}
+                      fullWidth
+                      required={!isDisabled}
+                      disabled={isDisabled}
+                      placeholder="CUIT del prestador inicial"
+                    />
+                    <Button
+                      variant="contained"
+                      sx={{ backgroundColor: '#ff6600', '&:hover': { backgroundColor: '#e55a00' } }}
+                    >
+                      🔍
+                    </Button>
+
+                    <TextField
+                      label="Razón Social Prestador"
+                      name="prestadorInicialRazonSocial"
+                      value={form.prestadorInicialRazonSocial}
+                      onChange={handleTextFieldChange}
+                      onBlur={() => handleBlur("prestadorInicialRazonSocial")}
+                      error={touched.prestadorInicialRazonSocial && !!errors.prestadorInicialRazonSocial}
+                      helperText={touched.prestadorInicialRazonSocial && errors.prestadorInicialRazonSocial}
+                      fullWidth
+                      required={!isDisabled}
+                      disabled={isDisabled}
+                      placeholder="Razón social del prestador"
+                    />
+                  </div>
+                </div>
+
+                {/* Verificación de Contacto Inicial */}
+                <div className={styles.formSection}>
+                  <Typography variant="h6" className={styles.sectionTitle}>
+                    Verificación de Contacto Inicial
+                  </Typography>
+
+                  <div className={styles.formRow}>
+                    <TextField
+                      label="Verifica Contacto Inicial"
+                      name="verificaContactoInicial"
+                      value={form.verificaContactoInicial}
+                      onChange={handleTextFieldChange}
+                      fullWidth
+                      disabled={isDisabled}
+                      multiline
+                      rows={2}
+                      placeholder="Información de verificación del contacto inicial"
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* TAB 4: CONFIRMACIÓN */}
+            {activeTab === 3 && (
+              <>
+                {/* Resumen de la Denuncia */}
+                <div className={styles.formSection}>
+                  <Typography variant="h6" className={styles.sectionTitle}>
+                    Resumen de la Denuncia
+                  </Typography>
+                  
+                  <Paper elevation={1} sx={{ p: 2, mb: 2, backgroundColor: '#f8f9fa' }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      Por favor, revise la información ingresada antes de enviar la denuncia.
+                    </Typography>
+                    
+                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                      <Box>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: '#ff6600' }}>
+                          Datos Iniciales
+                        </Typography>
+                        <Typography variant="body2">Teléfono: {form.telefonos}</Typography>
+                        <Typography variant="body2">Contacto: {form.apellidoNombres}</Typography>
+                        <Typography variant="body2">Fecha: {form.fechaOcurrencia}</Typography>
+                        <Typography variant="body2">Hora: {form.hora}</Typography>
+                      </Box>
+                      
+                      <Box>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: '#ff6600' }}>
+                          Datos del Trabajador
+                        </Typography>
+                        <Typography variant="body2">CUIL: {form.cuil}</Typography>
+                        <Typography variant="body2">Nombre: {form.nombre}</Typography>
+                        <Typography variant="body2">Documento: {form.docTipo} {form.docNumero}</Typography>
+                        <Typography variant="body2">Email: {form.email}</Typography>
+                      </Box>
+                    </Box>
+                  </Paper>
+                </div>
+
+                {/* Archivos Adjuntos */}
+                <div className={styles.formSection}>
+                  <Typography variant="h6" className={styles.sectionTitle}>
+                    Archivos Adjuntos
+                  </Typography>
+                  
+                  <Box sx={{ mb: 2 }}>
+                    <input
+                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                      style={{ display: 'none' }}
+                      id="file-upload"
+                      multiple
+                      type="file"
+                      onChange={handleFileUpload}
+                      disabled={isDisabled}
+                    />
+                    <label htmlFor="file-upload">
+                      <Button
+                        variant="outlined"
+                        component="span"
+                        disabled={isDisabled}
+                        sx={{
+                          borderColor: '#ff6600',
+                          color: '#ff6600',
+                          '&:hover': {
+                            borderColor: '#e55a00',
+                            backgroundColor: '#fff3e0'
+                          }
+                        }}
+                      >
+                        📎 Seleccionar Archivos
+                      </Button>
+                    </label>
+                  </Box>
+
+                  {uploadedFiles.length > 0 && (
+                    <Paper elevation={1} sx={{ maxHeight: 200, overflow: 'auto' }}>
+                      <List dense>
+                        {uploadedFiles.map((file, index) => (
+                          <ListItem key={index}>
+                            <ListItemText
+                              primary={file.name}
+                              secondary={`${(file.size / 1024 / 1024).toFixed(2)} MB`}
+                            />
+                            <ListItemSecondaryAction>
+                              <IconButton
+                                edge="end"
+                                onClick={() => handleFileRemove(index)}
+                                disabled={isDisabled}
+                                sx={{ color: '#ff6600' }}
+                              >
+                                ❌
+                              </IconButton>
+                            </ListItemSecondaryAction>
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Paper>
+                  )}
+
+                  <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                    Formatos permitidos: PDF, DOC, DOCX, JPG, JPEG, PNG. Tamaño máximo: 10MB por archivo.
+                  </Typography>
+                </div>
+
+                {/* Términos y Condiciones */}
+                <div className={styles.formSection}>
+                  <Typography variant="h6" className={styles.sectionTitle}>
+                    Términos y Condiciones
+                  </Typography>
+                  
+                  <Paper elevation={1} sx={{ p: 2, mb: 2, maxHeight: 200, overflow: 'auto', backgroundColor: '#f8f9fa' }}>
+                    <Typography variant="body2" paragraph>
+                      <strong>TÉRMINOS Y CONDICIONES PARA EL REGISTRO DE DENUNCIAS</strong>
+                    </Typography>
+                    
+                    <Typography variant="body2" paragraph>
+                      1. La información proporcionada es verídica y completa según mi conocimiento.
+                    </Typography>
+                    
+                    <Typography variant="body2" paragraph>
+                      2. Autorizo el tratamiento de los datos personales conforme a la Ley 25.326 de Protección de Datos Personales.
+                    </Typography>
+                    
+                    <Typography variant="body2" paragraph>
+                      3. Entiendo que proporcionar información falsa puede tener consecuencias legales.
+                    </Typography>
+                    
+                    <Typography variant="body2" paragraph>
+                      4. Acepto que ART puede contactarme para verificar o solicitar información adicional.
+                    </Typography>
+                    
+                    <Typography variant="body2" paragraph>
+                      5. Los archivos adjuntos son relevantes al siniestro reportado y no contienen información confidencial de terceros.
+                    </Typography>
+                  </Paper>
+
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        name="aceptoTerminos"
+                        checked={form.aceptoTerminos}
+                        onChange={handleCheckboxChange}
+                        onBlur={() => handleBlur("aceptoTerminos")}
+                        disabled={isDisabled}
+                        sx={{
+                          color: '#ff6600',
+                          '&.Mui-checked': {
+                            color: '#ff6600'
+                          }
+                        }}
+                      />
+                    }
+                    label={
+                      <Typography variant="body2">
+                        <strong>Acepto los términos y condiciones</strong> *
+                      </Typography>
+                    }
+                  />
+                  
+                  {touched.aceptoTerminos && errors.aceptoTerminos && (
+                    <Typography variant="caption" color="error" sx={{ display: 'block', mt: 1 }}>
+                      {errors.aceptoTerminos}
+                    </Typography>
+                  )}
+                </div>
+
+                {/* Información Adicional */}
+                <div className={styles.formSection}>
+                  <Paper elevation={1} sx={{ p: 2, backgroundColor: '#e3f2fd' }}>
+                    <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1, color: '#1565c0' }}>
+                      ℹ️ Información Importante
+                    </Typography>
+                    
+                    <Typography variant="body2" paragraph>
+                      • Una vez enviada la denuncia, recibirá un número de seguimiento.
+                    </Typography>
+                    
+                    <Typography variant="body2" paragraph>
+                      • Puede consultar el estado de su denuncia en cualquier momento.
+                    </Typography>
+                    
+                    <Typography variant="body2" paragraph>
+                      • Si necesita adjuntar documentos adicionales, puede hacerlo posteriormente.
+                    </Typography>
+                    
+                    <Typography variant="body2">
+                      • Para consultas urgentes, comuníquese al: <strong>0800-XXX-XXXX</strong>
+                    </Typography>
+                  </Paper>
+                </div>
+              </>
+            )}
+
             {/* Botones de navegación */}
             <div className={styles.formActions}>
-              {activeTab === 0 && !isViewing && (
+              {activeTab > 0 && !isViewing && (
+                <CustomButton
+                  onClick={handlePrevious}
+                  color="secondary"
+                  sx={{ 
+                    backgroundColor: '#6c757d', 
+                    '&:hover': { backgroundColor: '#5a6268' },
+                    minWidth: '120px'
+                  }}
+                  disabled={isSubmitting}
+                >
+                  ‹ Anterior
+                </CustomButton>
+              )}
+
+              {activeTab < 3 && !isViewing && (
                 <CustomButton
                   onClick={handleNext}
                   color="primary"
@@ -572,6 +1658,28 @@ export default function DenunciaForm({
                   disabled={isSubmitting}
                 >
                   Siguiente ›
+                </CustomButton>
+              )}
+
+              {activeTab === 3 && !isViewing && (
+                <CustomButton
+                  type="submit"
+                  color="primary"
+                  sx={{ 
+                    backgroundColor: '#28a745', 
+                    '&:hover': { backgroundColor: '#218838' },
+                    minWidth: '120px'
+                  }}
+                  disabled={isSubmitting || !form.aceptoTerminos}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <CircularProgress size={20} sx={{ mr: 1, color: 'white' }} />
+                      Enviando...
+                    </>
+                  ) : (
+                    '✓ Enviar Denuncia'
+                  )}
                 </CustomButton>
               )}
 
