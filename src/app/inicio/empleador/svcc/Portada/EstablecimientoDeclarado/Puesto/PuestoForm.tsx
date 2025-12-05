@@ -1,6 +1,6 @@
-import { PuestoDTO } from "@/data/gestionEmpleadorAPI";
-import { MoreHoriz } from "@mui/icons-material";
 import { Grid, IconButton, InputAdornment, TextField, Tooltip } from "@mui/material";
+import { MoreHoriz } from "@mui/icons-material";
+import { PuestoDTO } from "@/data/gestionEmpleadorAPI";
 import { Form } from "@/utils/ui/form/Form";
 
 const tooltip_SlotProps = { tooltip: { sx: { fontSize: "1.2rem", fontWeight: 500 } } };

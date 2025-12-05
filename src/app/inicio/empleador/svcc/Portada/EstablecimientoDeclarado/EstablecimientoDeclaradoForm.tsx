@@ -1,28 +1,25 @@
-import { ReactNode, useState } from "react";
-import { ContratistaDTO, EstablecimientoDeclaradoDTO, PuestoDTO, ResponsableDTO, SectorDTO } from "@/data/gestionEmpleadorAPI";
+import { useState } from "react";
 import { Card, Checkbox, FormControlLabel, Grid, IconButton, InputAdornment, TextField, Tooltip, Typography } from "@mui/material";
 import { MoreHoriz } from "@mui/icons-material";
+import { ContratistaDTO, EstablecimientoDeclaradoDTO, PuestoDTO, ResponsableDTO, SectorDTO } from "@/data/gestionEmpleadorAPI";
 import Formato from "@/utils/Formato";
-import { Form } from "@/utils/ui/form/Form";
+import { Form, FormProps } from "@/utils/ui/form/Form";
+import CustomModal from "@/utils/ui/form/CustomModal";
+import CustomButton from "@/utils/ui/button/CustomButton";
 import PuestoBrowse from "./Puesto/PuestoBrowse";
 import SectorBrowse from "./Sector/SectorBrowse";
 import ContratistaBrowse from "./Contratista/ContratistaBrowse";
 import ResponsableBrowse from "./Responsable/ResponsableBrowse";
-import CustomModal from "@/utils/ui/form/CustomModal";
-import CustomButton from "@/utils/ui/button/CustomButton";
 import PuestoForm from "./Puesto/PuestoForm";
 import SectorForm from "./Sector/SectorForm";
 import ContratistaForm from "./Contratista/ContratistaForm";
 import ResponsableForm from "./Responsable/ResponsableForm";
+import { useSVCCPresentacionContext } from "../../context";
 
 type EditAction = "create" | "read" | "update" | "delete";
-type EditState<T extends object> = {
+type EditState<T extends object> = Partial<Omit<FormProps<T>, "onChange">> & {
   action?: EditAction,
   index?: number,
-  data?: Partial<T>,
-  disabled?: Partial<Record<keyof T, boolean>>,
-  errors?: Partial<Record<keyof T, boolean>>,
-  helpers?: Partial<Record<keyof T, ReactNode>>,
   message?: string;
 };
 
@@ -38,6 +35,8 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
   const [editSector, setEditSector] = useState<EditState<SectorDTO>>({});
   const [editContratista, setEditContratista] = useState<EditState<ContratistaDTO>>({});
   const [editResponsable, setEditResponsable] = useState<EditState<ResponsableDTO>>({});
+
+  const { establecimientos: { map: establecimientos } } = useSVCCPresentacionContext();
 
   return (
     <Grid container size={12} spacing={2} maxHeight="fit-content">
@@ -82,6 +81,7 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
         <TextField
           name="Placeholder"
           label="Establ. Empresa - Descripcion"
+          value={establecimientos[data.idEstablecimientoEmpresa ?? 0]}
           disabled
           fullWidth
         />
@@ -220,7 +220,7 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
             <Grid size={12}><Typography fontWeight={700} color="#45661f" fontSize="smaller">Puestos</Typography></Grid>
             <Grid size={12}>
               <PuestoBrowse
-                data={{ data: data.puestos ?? [] }}
+                data={{ data: data.puestos as PuestoDTO[] ?? [] }}
                 onCreate={disabled.puestos ? undefined : () => onPuestoAction("create")}
                 onRead={(data, index) => () => onPuestoAction("read", data, index)}
                 onUpdate={disabled.puestos ? undefined : (data, index) => () => onPuestoAction("update", data, index)}
@@ -270,7 +270,7 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
             <Grid size={12}><Typography fontWeight={700} color="#45661f" fontSize="smaller">Sectores</Typography></Grid>
             <Grid size={12}>
               <SectorBrowse
-                data={{ data: data.sectores ?? [] }}
+                data={{ data: data.sectores as SectorDTO[] ?? [] }}
                 onCreate={disabled.puestos ? undefined : () => onSectorAction("create")}
                 onRead={(data, index) => () => onSectorAction("read", data, index)}
                 onUpdate={disabled.puestos ? undefined : (data, index) => () => onSectorAction("update", data, index)}
@@ -320,7 +320,7 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
             <Grid size={12}><Typography fontWeight={700} color="#45661f" fontSize="smaller">Contratistas</Typography></Grid>
             <Grid size={12}>
               <ContratistaBrowse
-                data={{ data: data.contratistas ?? [] }}
+                data={{ data: data.contratistas as ContratistaDTO[] ?? [] }}
                 onCreate={disabled.puestos ? undefined : () => onContratistaAction("create")}
                 onRead={(data, index) => () => onContratistaAction("read", data, index)}
                 onUpdate={disabled.puestos ? undefined : (data, index) => () => onContratistaAction("update", data, index)}
@@ -370,7 +370,7 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
             <Grid size={12}><Typography fontWeight={700} color="#45661f" fontSize="smaller">Responsables</Typography></Grid>
             <Grid size={12}>
               <ResponsableBrowse
-                data={{ data: data.responsables ?? [] }}
+                data={{ data: data.responsables as ResponsableDTO[] ?? [] }}
                 onCreate={disabled.puestos ? undefined : () => onResponsableAction("create")}
                 onRead={(data, index) => () => onResponsableAction("read", data, index)}
                 onUpdate={disabled.puestos ? undefined : (data, index) => () => onResponsableAction("update", data, index)}

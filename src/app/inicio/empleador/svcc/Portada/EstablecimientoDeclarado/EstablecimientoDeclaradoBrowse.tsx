@@ -1,25 +1,15 @@
-import ArtAPI, { EstablecimientoVmDescripcion } from "@/data/artAPI";
 import { EstablecimientoDeclaradoDTO } from "@/data/gestionEmpleadorAPI";
-import Browse, { BrowseProps, CRUDSActions, defaultActionsColumns } from "@/utils/ui/table/Browse";
-import { arrayToRecord } from "@/utils/utils";
-import { useMemo } from "react";
+import Browse, { defaultActionsColumns } from "@/utils/ui/table/Browse";
+import { useSVCCPresentacionContext } from "../../context";
 
-type Actions = CRUDSActions<EstablecimientoDeclaradoDTO>;
-type Props = BrowseProps<EstablecimientoDeclaradoDTO, Actions> & { cuit: number; };
-
-const { useEstablecimientoList } = ArtAPI;
-
-export const EstablecimientoDeclaradoBrowse = Browse<EstablecimientoDeclaradoDTO, Actions, Props>(
+export const EstablecimientoDeclaradoBrowse = Browse<EstablecimientoDeclaradoDTO>(
   (props) => {
-    const { data } = useEstablecimientoList({ cuit: props.cuit }, { revalidateOnFocus: false });
-    const { options } = useMemo(() => (
-      { options: arrayToRecord(data ?? [], (e) => [e.codEstabEmpresa, EstablecimientoVmDescripcion(e)]) }
-    ), [data]);
+    const { establecimientos: { map: establecimientos } } = useSVCCPresentacionContext();
     return [
-      { accessorKey: "idEstablecimientoEmpresa", header: "Establ. Empresa", cell({ getValue }) { return options[getValue<number>()] } },
+      { accessorKey: "idEstablecimientoEmpresa", header: "Establ. Empresa", cell({ getValue }) { return establecimientos[getValue<number>()] } },
       { accessorKey: "descripcionActividad", header: "Actividad" },
       { accessorKey: "mail", header: "Correo" },
-      ...defaultActionsColumns<EstablecimientoDeclaradoDTO, Actions>(props),
+      ...defaultActionsColumns<EstablecimientoDeclaradoDTO>(props),
     ]
   }
 );

@@ -1,10 +1,10 @@
 'use client';
-import CustomTab from '@/utils/ui/tab/CustomTab';
-import PortadaHandler from './Portada/PortadaHandler';
-import AnexoVHandler from './AnexoV/Sustancias/AnexoVHandler';
-import NominasHandler from './Nomina/NominasHandler';
 import { useState } from 'react';
+import CustomTab from '@/utils/ui/tab/CustomTab';
 import CustomButton from '@/utils/ui/button/CustomButton';
+import PortadaHandler from './Portada/PortadaHandler';
+import AnexoVHandler from './AnexoV/AnexoVHandler';
+import NominasHandler from './Nomina/NominasHandler';
 import { SVCCPresentacionContextProvider, useSVCCPresentacionContext } from './context';
 
 export default function SVCCPage() {

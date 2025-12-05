@@ -1,6 +1,6 @@
-import { ContratistaDTO } from "@/data/gestionEmpleadorAPI";
-import { MoreHoriz } from "@mui/icons-material";
 import { Grid, IconButton, InputAdornment, TextField, Tooltip } from "@mui/material";
+import { MoreHoriz } from "@mui/icons-material";
+import { ContratistaDTO } from "@/data/gestionEmpleadorAPI";
 import { Form } from "@/utils/ui/form/Form";
 import Formato from "@/utils/Formato";
 

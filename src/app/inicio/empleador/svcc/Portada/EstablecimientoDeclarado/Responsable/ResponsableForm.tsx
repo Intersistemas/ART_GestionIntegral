@@ -1,10 +1,9 @@
-import { ResponsableDTO } from "@/data/gestionEmpleadorAPI";
 import { FormControl, Grid, InputLabel, MenuItem, Select, TextField, Typography } from "@mui/material";
+import { ResponsableDTO } from "@/data/gestionEmpleadorAPI";
 import { Form } from "@/utils/ui/form/Form";
 import Formato from "@/utils/Formato";
-import { TContratacion_Array, TRepresentacion_Array, TTipoProfesionalResponsable_Array } from "../../../constants";
+import { TContratacion_Array, TRepresentacion_Array, TTipoProfesionalResponsable_Array } from "@/data/SVCC/constants";
 
-const tooltip_SlotProps = { tooltip: { sx: { fontSize: "1.2rem", fontWeight: 500 } } };
 export const ResponsableForm: Form<ResponsableDTO> = ({
   data,
   disabled = {},
@@ -64,7 +63,7 @@ export const ResponsableForm: Form<ResponsableDTO> = ({
           onChange={({ target: { value } }) => onChange({ idContratacion: value ? Number(value) : undefined })}
           displayEmpty
         >
-          {TContratacion_Array.map((e) => (<MenuItem key={e.interno} value={e.interno}>{e.descripcion}</MenuItem>))}
+          {TContratacion_Array.map((e, i) => (<MenuItem key={i} value={e.interno}>{e.descripcion}</MenuItem>))}
         </Select>
         {helpers.idContratacion && (
           <Typography
@@ -91,7 +90,7 @@ export const ResponsableForm: Form<ResponsableDTO> = ({
           onChange={({ target: { value } }) => onChange({ idRepresentacion: value ? Number(value) : undefined })}
           displayEmpty
         >
-          {TRepresentacion_Array.map((e) => (<MenuItem key={e.codigo} value={e.codigo}>{e.descripcion}</MenuItem>))}
+          {TRepresentacion_Array.map((e, i) => (<MenuItem key={i} value={e.codigo}>{e.descripcion}</MenuItem>))}
         </Select>
         {helpers.idRepresentacion && (
           <Typography
@@ -118,7 +117,7 @@ export const ResponsableForm: Form<ResponsableDTO> = ({
           onChange={({ target: { value } }) => onChange({ idTipoProfesionalResponsable: value ? Number(value) : undefined })}
           displayEmpty
         >
-          {TTipoProfesionalResponsable_Array.map((e) => (<MenuItem key={e.interno} value={e.interno}>{e.descripcion}</MenuItem>))}
+          {TTipoProfesionalResponsable_Array.map((e, i) => (<MenuItem key={i} value={e.interno}>{e.descripcion}</MenuItem>))}
         </Select>
         {helpers.idTipoProfesionalResponsable && (
           <Typography

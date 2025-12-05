@@ -1,7 +1,7 @@
 import { ResponsableDTO } from "@/data/gestionEmpleadorAPI";
 import Formato from "@/utils/Formato";
 import Browse, { defaultActionsColumns } from "@/utils/ui/table/Browse";
-import { TTipoProfesionalResponsable_Map } from "../../../constants";
+import { TTipoProfesionalResponsable_Map } from "@/data/SVCC/constants";
 
 export const ResponsableBrowse = Browse<ResponsableDTO>(
   (props) => [

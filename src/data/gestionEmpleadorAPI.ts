@@ -92,15 +92,15 @@ export type UtilizacionDTO = {
 }
 export type MedidaPreventivaDTO = {
   interno?: number;
-  idMedidaPreventiva?: number;
+  idMedidaPreventivaDeclarado?: number;
 }
 export type ElementoProteccionDTO = {
   interno?: number;
-  idElementoDeProteccion?: number;
+  idElementoDeProteccionDeclarado?: number;
 }
 export type PuestoAfectadoDTO = {
   interno?: number;
-  idPuesto?: number;
+  puestoInterno?: number;
   descripcionActividad?: string;
   informaSobreRiesgos?: boolean;
   capacitacionSobreRiesgos?: boolean;
@@ -134,7 +134,7 @@ export type ResponsableInstalacionDTO = {
   fechaExpedicion?: string;
   fechaVencimiento?: string;
 }
-export type EncargadoProteccionDTO= {
+export type EncargadoProteccionDTO = {
   interno?: number;
   cuil?: number;
   tituloProfesional?: string;
@@ -205,10 +205,10 @@ export type ExamenMedicoDTO = {
 }
 export type ActividadDTO = {
   interno?: number;
-  idPuestoDeclarado?: number;
-  idSectorDeclarado?: number;
+  puestoInterno?: number;
+  sectorInterno?: number;
+  sustanciaInterno?: number;
   permanente?: boolean;
-  idSustanciaDeclarada?: number;
   fechaInicioExposicion?: string;
   fechaFinExposicion?: string;
   examenesMedicos?: ExamenMedicoDTO[];
@@ -216,7 +216,7 @@ export type ActividadDTO = {
 export type TrabajadorDTO = {
   interno?: number;
   cuil?: number;
-  idEstablecimientoEmpresa?: number;
+  establecimientoDeclaradoInterno?: number;
   fechaIngreso?: string;
   actividades?: ActividadDTO[];
 }

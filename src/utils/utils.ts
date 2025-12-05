@@ -1,3 +1,14 @@
+export type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends object | undefined ? DeepPartial<T[P]>
+  : T[P];
+};
+
+export type DeepRecord<T, V> = {
+  [P in keyof T]: T[P] extends (infer U)[] | undefined ? DeepRecord<U | T[P], V>
+  : T[P] extends object | undefined ? DeepRecord<T[P], V>
+  : V;
+}
+
 export function camelCaseKeys<Out = any>(o: any): Out {
   if (typeof o !== "object" || !o) return o;
   return Object.fromEntries(Object.entries(o).map(([k, v]) => [

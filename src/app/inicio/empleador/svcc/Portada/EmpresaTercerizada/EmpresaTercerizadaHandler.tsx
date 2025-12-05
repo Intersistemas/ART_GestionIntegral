@@ -1,15 +1,15 @@
-import { ReactNode, useState } from "react";
-import { Data } from "@/utils/ui/table/Browse";
+import { useState } from "react";
+import { Grid, Typography } from "@mui/material";
 import gestionEmpleadorAPI, {
   EmpresaTercerizadaDTO, SVCCEmpresaTercerizadaUpdateParams, SVCCEmpresaTercerizadaDeleteParams
 } from "@/data/gestionEmpleadorAPI";
-import { useAuth } from "@/data/AuthContext";
+import { Data } from "@/utils/ui/table/Browse";
+import { FormProps } from "@/utils/ui/form/Form";
 import CustomModal from "@/utils/ui/form/CustomModal";
-import { Grid, Typography } from "@mui/material";
 import CustomButton from "@/utils/ui/button/CustomButton";
-import { useSVCCPresentacionContext } from "../../context";
 import EmpresaTercerizadaBrowse from "./EmpresaTercerizadaBrowse";
 import EmpresaTercerizadaForm from "./EmpresaTercerizadaForm";
+import { useSVCCPresentacionContext } from "../../context";
 
 const {
   useSVCCEmpresaTercerizadaList,
@@ -19,12 +19,8 @@ const {
 } = gestionEmpleadorAPI;
 
 type EditAction = "create" | "read" | "update" | "delete";
-type EditState = {
+type EditState = Partial<Omit<FormProps<EmpresaTercerizadaDTO>, "onChange">> & {
   action?: EditAction,
-  data?: Partial<EmpresaTercerizadaDTO>,
-  disabled?: Partial<Record<keyof EmpresaTercerizadaDTO, boolean>>,
-  errors?: Partial<Record<keyof EmpresaTercerizadaDTO, boolean>>,
-  helpers?: Partial<Record<keyof EmpresaTercerizadaDTO, ReactNode>>,
   message?: string;
 };
 export default function EmpresaTercerizadaHandler() {
@@ -32,7 +28,6 @@ export default function EmpresaTercerizadaHandler() {
   const { ultima: { data: presentacion }, } = useSVCCPresentacionContext();
   const [{ index, size }, setPage] = useState({ index: 0, size: 100 });
   const [data, setData] = useState<Data<EmpresaTercerizadaDTO>>({ index, size, count: 0, pages: 0, data: [] });
-  const { user } = useAuth();
   const { isLoading, isValidating, mutate } = useSVCCEmpresaTercerizadaList(
     { page: `${index + 1},${size}` },
     {
@@ -51,7 +46,6 @@ export default function EmpresaTercerizadaHandler() {
   return (
     <>
       <EmpresaTercerizadaBrowse
-        cuit={user?.cuit ?? 0}
         isLoading={isLoading || isValidating}
         data={data}
         onPageIndexChange={(index: number) => setPage((o) => ({ ...o, index }))}

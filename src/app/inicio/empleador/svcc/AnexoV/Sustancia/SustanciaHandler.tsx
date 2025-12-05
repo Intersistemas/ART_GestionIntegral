@@ -1,52 +1,52 @@
 import { useState } from "react";
 import { Grid, Typography } from "@mui/material";
-import { Data } from "@/utils/ui/table/Browse";
 import gestionEmpleadorAPI, {
-  EstablecimientoDeclaradoDTO, SVCCEstablecimientoDeclaradoUpdateParams, SVCCEstablecimientoDeclaradoDeleteParams
+  SustanciaDTO, SVCCSustanciaUpdateParams, SVCCSustanciaDeleteParams
 } from "@/data/gestionEmpleadorAPI";
-import CustomModal from "@/utils/ui/form/CustomModal";
-import CustomButton from "@/utils/ui/button/CustomButton";
-import { DeepPartial } from "@/utils/utils";
-import EstablecimientoDeclaradoForm from "./EstablecimientoDeclaradoForm";
-import EstablecimientoDeclaradoBrowse from "./EstablecimientoDeclaradoBrowse";
-import { useSVCCPresentacionContext } from "../../context";
+import { Data } from "@/utils/ui/table/Browse";
 import { FormProps } from "@/utils/ui/form/Form";
+import CustomModal from "@/utils/ui/form/CustomModal";
+import { DeepPartial } from "@/utils/utils";
+import CustomButton from "@/utils/ui/button/CustomButton";
+import SustanciaBrowse from "./SustanciaBrowse";
+import SustanciaForm from "./SustanciaForm";
+import { useSVCCPresentacionContext } from "../../context";
 
 const {
-  useSVCCEstablecimientoDeclaradoList,
-  useSVCCEstablecimientoDeclaradoCreate,
-  useSVCCEstablecimientoDeclaradoUpdate,
-  useSVCCEstablecimientoDeclaradoDelete,
+  useSVCCSustanciaList,
+  useSVCCSustanciaCreate,
+  useSVCCSustanciaUpdate,
+  useSVCCSustanciaDelete,
 } = gestionEmpleadorAPI;
 
 type EditAction = "create" | "read" | "update" | "delete";
-type EditState = Partial<Omit<FormProps<EstablecimientoDeclaradoDTO>, "onChange">> & {
+type EditState = Partial<Omit<FormProps<SustanciaDTO>, "onChange">> & {
   action?: EditAction,
   message?: string;
 };
-export default function EstablecimientoDeclaradoHandler() {
+export default function SustanciaHandler() {
   const [edit, setEdit] = useState<EditState>({});
   const { ultima: { data: presentacion }, } = useSVCCPresentacionContext();
   const [{ index, size }, setPage] = useState({ index: 0, size: 100 });
-  const [data, setData] = useState<Data<EstablecimientoDeclaradoDTO>>({ index, size, count: 0, pages: 0, data: [] });
-  const { isLoading, isValidating, mutate } = useSVCCEstablecimientoDeclaradoList(
+  const [data, setData] = useState<Data<SustanciaDTO>>({ index, size, count: 0, pages: 0, data: [] });
+  const { isLoading, isValidating, mutate } = useSVCCSustanciaList(
     { page: `${index + 1},${size}` },
     {
       revalidateOnFocus: false,
       onSuccess(data) { setData({ ...data, index: data.index - 1 }) },
     }
   );
-  const { trigger: triggerCreate, isMutating: isCreating } = useSVCCEstablecimientoDeclaradoCreate({ onSuccess() { mutate(); } });
-  const [updateParams, setUpdateParams] = useState<SVCCEstablecimientoDeclaradoUpdateParams | undefined>();
-  const { trigger: triggerUpdate, isMutating: isUpdating } = useSVCCEstablecimientoDeclaradoUpdate(updateParams, { onSuccess() { mutate(); } });
-  const [deleteParams, setDeleteParams] = useState<SVCCEstablecimientoDeclaradoDeleteParams | undefined>();
-  const { trigger: triggerDelete, isMutating: isDeleting } = useSVCCEstablecimientoDeclaradoDelete(deleteParams, { onSuccess() { mutate(); } });
+  const { trigger: triggerCreate, isMutating: isCreating } = useSVCCSustanciaCreate({ onSuccess() { mutate(); } });
+  const [updateParams, setUpdateParams] = useState<SVCCSustanciaUpdateParams | undefined>();
+  const { trigger: triggerUpdate, isMutating: isUpdating } = useSVCCSustanciaUpdate(updateParams, { onSuccess() { mutate(); } });
+  const [deleteParams, setDeleteParams] = useState<SVCCSustanciaDeleteParams | undefined>();
+  const { trigger: triggerDelete, isMutating: isDeleting } = useSVCCSustanciaDelete(deleteParams, { onSuccess() { mutate(); } });
   const isWorking = isCreating || isUpdating || isDeleting || isLoading || isValidating;
 
   const readonly = presentacion?.presentacionFecha != null;
   return (
     <>
-      <EstablecimientoDeclaradoBrowse
+      <SustanciaBrowse
         isLoading={isLoading || isValidating}
         data={data}
         onPageIndexChange={(index: number) => setPage((o) => ({ ...o, index }))}
@@ -83,7 +83,7 @@ export default function EstablecimientoDeclaradoHandler() {
       >
         <Grid container spacing={2} justifyContent="center" minHeight="500px">
           {edit.message && <Typography variant="h5" color="var(--naranja)" textAlign="center">{edit.message}</Typography>}
-          <EstablecimientoDeclaradoForm
+          <SustanciaForm
             data={edit?.data ?? {}}
             disabled={edit?.disabled}
             errors={edit?.errors}
@@ -101,7 +101,7 @@ export default function EstablecimientoDeclaradoHandler() {
     if (isDeleting) return "Borrando...";
   }
   function editTitle() {
-    const value = "Establecimiento Declarado";
+    const value = "Sustancia";
     switch (edit.action) {
       case "create": return `Agregando ${value}`;
       case "read": return `Consultando ${value}`;
@@ -109,14 +109,14 @@ export default function EstablecimientoDeclaradoHandler() {
       case "delete": return `Borrando ${value}`;
     }
   }
-  function handleOnChange(changes: DeepPartial<EstablecimientoDeclaradoDTO>) {
+  function handleOnChange(changes: DeepPartial<SustanciaDTO>) {
     setEdit((o) => ({ ...o, data: { ...o.data, ...changes } }));
   }
   function handleEditOnClose() { setEdit({}); }
   function handleEditOnConfirm() {
     switch (edit.action) {
       case "create": {
-        triggerCreate(edit.data as EstablecimientoDeclaradoDTO)
+        triggerCreate(edit.data as SustanciaDTO)
           .then((data) => {
             console.info(data);
             handleEditOnClose();
@@ -127,7 +127,7 @@ export default function EstablecimientoDeclaradoHandler() {
         break;
       }
       case "update": {
-        triggerUpdate(edit.data as EstablecimientoDeclaradoDTO)
+        triggerUpdate(edit.data as SustanciaDTO)
           .then((data) => {
             console.info(data);
             handleEditOnClose();
@@ -138,7 +138,7 @@ export default function EstablecimientoDeclaradoHandler() {
         break;
       }
       case "delete": {
-        triggerDelete(edit.data as EstablecimientoDeclaradoDTO)
+        triggerDelete(edit.data as SustanciaDTO)
           .then((data) => {
             console.info(data);
             handleEditOnClose();
@@ -154,7 +154,7 @@ export default function EstablecimientoDeclaradoHandler() {
       }
     }
   }
-  function onAction(action: EditAction, data?: EstablecimientoDeclaradoDTO) {
+  function onAction(action: EditAction, data?: SustanciaDTO) {
     switch (action) {
       case "update": {
         setUpdateParams({ id: data!.interno! });
@@ -172,20 +172,17 @@ export default function EstablecimientoDeclaradoHandler() {
         ? {
           interno: true,
           idEstablecimientoEmpresa: true,
-          descripcionActividad: true,
-          cantTrabEventualesProd: true,
-          cantTrabEventualesAdmin: true,
-          cantTrabPropiosProd: true,
-          cantTrabPropiosAdmin: true,
-          mail: true,
-          telefono: true,
-          cuilContacto: true,
-          permitidoFumar: true,
-          lugaresCerradosParaFumar: true,
-          puestos: {},
-          sectores: {},
-          responsables: {},
-          contratistas: {},
+          idSustancia: true,
+          nombreComercial: true,
+          cantidadAnual: true,
+          idUnidadDeMedida: true,
+          utilizaciones: {},
+          puestosAfectados: {},
+          equiposRadiologicos: {},
+          proveedores: {},
+          compradores: {},
+          estudiosAmbientalesEspecificos: {},
+          estudiosBiologicosEspecificos: {},
         }
         : {},
     });
