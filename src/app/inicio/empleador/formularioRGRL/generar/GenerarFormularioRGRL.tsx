@@ -4,14 +4,14 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 //import { Box, Grid, TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import { TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { TextField, FormControl, InputLabel, Select, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, Alert, Typography } from '@mui/material';
 import { useSearchParams, useRouter } from 'next/navigation';
 import CustomButton from '@/utils/ui/button/CustomButton';
 import dayjs from 'dayjs';
 import styles from './GenerarFormularioRGRL.module.css';
 import { CUIP } from '@/utils/Formato';
 import CustomModal from '@/utils/ui/form/CustomModal';
-import CustomModalMessage, { MessageType } from '@/utils/ui/message/CustomModalMessage'; // Asumiendo esta ruta
+import CustomModalMessage, { MessageType } from '@/utils/ui/message/CustomModalMessage';
 
 
 import type {
@@ -154,6 +154,8 @@ const GenerarFormularioRGRL: React.FC<{
   const [modalMsgOpen, setModalMsgOpen] = useState(false);
   const [modalMsg, setModalMsg] = useState('');
   const [modalMsgType, setModalMsgType] = useState<MessageType>('alert');
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   // Función para cerrar el modal de mensaje
   const handleCloseModalMsg = () => setModalMsgOpen(false);
@@ -726,13 +728,35 @@ const GenerarFormularioRGRL: React.FC<{
         </div>
 
         <div className={styles.row}>
-            <CustomButton onClick={() => router.back()} disabled={loading}>VOLVER</CustomButton>
-            <CustomButton onClick={() => guardarPUT(true)} disabled={loading}>GUARDAR COMPLETO</CustomButton>
-            <CustomButton onClick={() => guardarPUT(false)} disabled={loading}>GUARDAR INCOMPLETO</CustomButton>
+          <CustomButton onClick={() => router.back()} disabled={loading}>VOLVER</CustomButton>
+          <CustomButton onClick={() => setConfirmOpen(true)} disabled={loading}>GUARDAR Y CONFIRMAR</CustomButton>
+          <CustomButton onClick={() => guardarPUT(false)} disabled={loading}>GUARDAR</CustomButton>
         </div>
 
         {loading && <div className={styles.savingMsg}>Guardando…</div>}
         {!!error && <div className={styles.errorMsg}>{error}</div>}
+
+        <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} maxWidth="xs" fullWidth>
+          <DialogTitle className={styles.confirmDialogTitle}>Confirmar formulario</DialogTitle>
+          <DialogContent className={styles.confirmDialogContent}>
+            <Alert severity="warning" className={styles.confirmAlert}>
+              <Typography variant="body1" align="center">¿Está seguro que desea CONFIRMAR el formulario?</Typography>
+            </Alert>
+          </DialogContent>
+          <DialogActions className={styles.confirmDialogActions}>
+            <div className={styles.confirmActionsInner}>
+              <CustomButton
+                onClick={() => {
+                  setConfirmOpen(false);
+                  guardarPUT(true);
+                }}
+              >
+                SI
+              </CustomButton>
+              <CustomButton onClick={() => setConfirmOpen(false)}>NO</CustomButton>
+            </div>
+          </DialogActions>
+        </Dialog>
 
         <CustomModal open={openGremios} onClose={() => setOpenGremios(false)} title="Representación Gremial" size="mid">
           <div className="formGrid">
