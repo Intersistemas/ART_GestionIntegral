@@ -14,6 +14,7 @@ import Formato from '../../../../../utils/Formato';
 import CustomButton from '../../../../../utils/ui/button/CustomButton';
 import DataTableImport from '../../../../../utils/ui/table/DataTable';
 import CustomModal from '../../../../../utils/ui/form/CustomModal';
+import ExcelImportSection from './ExcelImportSection';
 import styles from '../FormulariosRAR.module.css';
 
 dayjs.extend(customParseFormat);
@@ -108,13 +109,16 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
     codigoAgente: ''
   });
 
+  // Estado para mostrar errores
+  const [mensajeError, setMensajeError] = React.useState<string>('');
+
   const guardandoRef = React.useRef(false);
 
   // ===== Funciones para manejo de trabajadores =====
   // Función para editar un trabajador
   const handleEditarTrabajador = React.useCallback((index: number) => {
     if (modoEdicion) {
-      alert('Ya estás editando un trabajador. Guardá o cancelá los cambios antes de editar otro.');
+      setMensajeError('Ya estás editando un trabajador. Guardá o cancelá los cambios antes de editar otro.');
       return;
     }
 
@@ -328,7 +332,8 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
     return set;
   }, [filas]);
 
-  const trabajadoresCargados = cuilsUnicos.size;
+  // Usar filas.length para contar todos los registros cargados (no solo CUILs únicos)
+  const trabajadoresCargados = filas.length;
   const faltanTrabajadores = totalTrabajadoresRequeridos - trabajadoresCargados;
 
   const esCuilRepetido = React.useMemo(() => {
@@ -341,17 +346,11 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
 
     if (!cantidadesCompletas || !trabajadorCompleto) return false;
 
-    if (totalTrabajadoresRequeridos <= 0) return false;
-
-    if (trabajadoresCargados < totalTrabajadoresRequeridos) return true;
-
-    return esCuilRepetido;
+    // Permitir cargar sin límite de cantidad (sin restricción de totalTrabajadoresRequeridos)
+    return true;
   }, [
     cantidadesCompletas,
     trabajadorCompleto,
-    totalTrabajadoresRequeridos,
-    trabajadoresCargados,
-    esCuilRepetido,
   ]);
 
 
@@ -367,10 +366,11 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
   });
 
   // Nueva validación para el modal completo
+  // Se puede guardar si: hay establecimiento + cantidades + al menos 1 trabajador cargado + no estamos editando
   const puedeGuardarCompleto =
     (establecimientoSeleccionado || '').trim() !== '' &&
     cantidadesCompletas &&
-    trabajadoresCargados >= totalTrabajadoresRequeridos &&
+    trabajadoresCargados >= 1 &&
     !modoEdicion;
 
   // ===== Carga inicial: encabezado + selects =====
@@ -756,7 +756,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
     );
 
     if (duplicado) {
-      alert('Este CUIL ya fue cargado por otro trabajador');
+      setMensajeError('Este CUIL ya fue cargado por otro trabajador');
       return;
     }
 
@@ -786,7 +786,6 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
 
     // Limpiar y salir del modo edición
     handleCancelarEdicion();
-    alert('Trabajador actualizado correctamente');
   };
 
   // Función para cancelar la edición
@@ -818,8 +817,8 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
     });
 
     const total = Number(cantExpuestos) + Number(cantNoExpuestos);
-    if (total === 0) return alert('El total de trabajadores debe ser mayor a 0.');
-    if (total > 99999) return alert('El total no puede exceder 99,999.');
+    if (total === 0) return setMensajeError('El total de trabajadores debe ser mayor a 0.');
+    if (total > 99999) return setMensajeError('El total no puede exceder 99,999.');
 
     if (guardandoRef.current) return;
     guardandoRef.current = true;
@@ -920,7 +919,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
     } catch (e: any) {
       console.error(' Error al guardar (handleGuardarCompleto):', e);
       console.error(' Stack trace:', e.stack);
-      alert(e?.message || 'Error desconocido al guardar');
+      setMensajeError(e?.message || 'Error desconocido al guardar');
     } finally {
       guardandoRef.current = false;
     }
@@ -928,10 +927,10 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
 
   const handleGuardar = async () => {
     if (!numerosValidos(cantExpuestos) || !numerosValidos(cantNoExpuestos)) {
-      return alert('Ingresá cantidades válidas');
+      return setMensajeError('Ingresá cantidades válidas');
     }
-    if (!establecimientoSeleccionado) return alert('Seleccioná un establecimiento válido');
-    if (filas.length === 0) return alert('Cargá al menos un trabajador');
+    if (!establecimientoSeleccionado) return setMensajeError('Seleccioná un establecimiento válido');
+    if (filas.length === 0) return setMensajeError('Cargá al menos un trabajador');
 
     if (guardandoRef.current) return;
     guardandoRef.current = true;
@@ -949,7 +948,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
         horasExposicion: Number(String(f.Exposicion || '').replace(/[^\d]/g, '')) || 4,
         fechaUltimoExamenMedico: dayjs(f.UltimoExamenMedico || fechaActual).toISOString(),
         codigoAgente: Number(f.CodigoAgente) || 1,
-        fechaInicioExposicion: dayjs(f.FechaFin || fechaActual).toISOString(),
+        fechaInicioExposicion: dayjs(f.FechaInicio || fechaActual).toISOString(),
         fechaFinExposicion: f.FechaFinExposicion && f.FechaFinExposicion.trim() !== ''
           ? dayjs(f.FechaFinExposicion).toISOString()
           : dayjs('2099-01-01').toISOString(), // Fecha por defecto: 01/01/2099 para indicar "no especificada"
@@ -980,7 +979,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
       finalizaCarga(true);
     } catch (e: any) {
       console.error('Error al guardar:', e);
-      alert(e?.message || 'Error desconocido al guardar');
+      setMensajeError(e?.message || 'Error desconocido al guardar');
     } finally {
       guardandoRef.current = false;
     }
@@ -1015,6 +1014,22 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
         size="large"
       >
         <div className={styles.modalGridCol}>
+          {/* MOSTRAR ERRORES EN ROJO */}
+          {mensajeError && (
+            <div style={{
+              background: '#ffebee',
+              border: '1px solid #ef5350',
+              color: '#c62828',
+              padding: '12px 15px',
+              borderRadius: '5px',
+              marginBottom: '20px',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}>
+              ✕ {mensajeError}
+            </div>
+          )}
+
           {/* SECCIÓN 0: INFORMACIÓN DEL EMPLEADOR */}
           <div style={{ background: '#e3f2fd', padding: '15px', borderRadius: '5px', marginBottom: '20px' }}>
             <h4 style={{ margin: '0 0 15px 0', color: '#1976d2' }}>Datos del Empleador</h4>
@@ -1039,7 +1054,10 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
                 <InputLabel>Establecimiento</InputLabel>
                 <Select
                   value={establecimientoSeleccionado}
-                  onChange={(e) => setEstablecimientoSeleccionado(e.target.value)}
+                  onChange={(e) => {
+                    setEstablecimientoSeleccionado(e.target.value);
+                    setMensajeError('');
+                  }}
                   label="Establecimiento"
                   disabled={cargandoSelects}
                   MenuProps={{
@@ -1069,6 +1087,19 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
               </FormControl>
             </div>
           </div>
+
+          {/* SECCIÓN 1.5: IMPORTACIÓN DE TRABAJADORES DESDE EXCEL */}
+          <ExcelImportSection
+            establecimientoSeleccionadoValido={establecimientoSeleccionadoValido}
+            agentesCausantes={agentesCausantes}
+            filas={filas}
+            cantExpuestos={cantExpuestos}
+            cantNoExpuestos={cantNoExpuestos}
+            onFilasActualizadas={setFilas}
+            onCantExpuestosActualizada={setCantExpuestos}
+            onCantNoExpuestosActualizada={setCantNoExpuestos}
+            onMensajeError={setMensajeError}
+          />
 
           {/* SECCIÓN 2: CANTIDADES DE TRABAJADORES */}
           <div style={{
@@ -1433,59 +1464,63 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
             {/* BOTÓN CARGAR TRABAJADOR */}
             {cantidadesCompletas && (
               <div style={{
-                textAlign: 'center',
                 marginTop: '25px',
                 paddingTop: '20px',
                 borderTop: '1px solid #e0e0e0'
               }}>
-                {/* Botones Centrados - Modo Edición o Normal */}
-                {modoEdicion ? (
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    gap: '15px'
-                  }}>
+                {/* BOTONES CARGAR TRABAJADOR */}
+                <div style={{
+                  textAlign: 'center'
+                }}>
+                  {/* Botones Centrados - Modo Edición o Normal */}
+                  {modoEdicion ? (
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      gap: '15px'
+                    }}>
+                      <CustomButton
+                        onClick={handleCargarFila}
+                        style={{
+                          background: '#ff9800',
+                          color: 'white',
+                          padding: '12px 24px',
+                          fontSize: '16px',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Guardar Cambios
+                      </CustomButton>
+
+                      <CustomButton
+                        onClick={handleCancelarEdicion}
+                        style={{
+                          background: '#757575',
+                          color: 'white',
+                          padding: '12px 24px',
+                          fontSize: '16px',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Cancelar Edición
+                      </CustomButton>
+                    </div>
+                  ) : (
                     <CustomButton
                       onClick={handleCargarFila}
+                      disabled={!puedeCargarTrabajador}
                       style={{
-                        background: '#ff9800',
+                        background: puedeCargarTrabajador ? '#2196f3' : '#cccccc',
                         color: 'white',
                         padding: '12px 24px',
                         fontSize: '16px',
                         fontWeight: 'bold'
                       }}
                     >
-                      Guardar Cambios
+                      {` Cargar Trabajador (${trabajadoresCargados}/${totalTrabajadoresRequeridos})`}
                     </CustomButton>
-
-                    <CustomButton
-                      onClick={handleCancelarEdicion}
-                      style={{
-                        background: '#757575',
-                        color: 'white',
-                        padding: '12px 24px',
-                        fontSize: '16px',
-                        fontWeight: 'bold'
-                      }}
-                    >
-                      Cancelar Edición
-                    </CustomButton>
-                  </div>
-                ) : (
-                  <CustomButton
-                    onClick={handleCargarFila}
-                    disabled={!puedeCargarTrabajador}
-                    style={{
-                      background: puedeCargarTrabajador ? '#2196f3' : '#cccccc',
-                      color: 'white',
-                      padding: '12px 24px',
-                      fontSize: '16px',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    {` Cargar Trabajador (${trabajadoresCargados}/${totalTrabajadoresRequeridos})`}
-                  </CustomButton>
-                )}
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -1527,7 +1562,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
               }}>
                 {trabajadoresCargados >= totalTrabajadoresRequeridos ? (
                   <span style={{ color: '#2e7d32', fontWeight: 'bold' }}>
-                    Has cargado todos los trabajadores expuestos requeridos
+                    Has cargado todos los trabajadores expuestos y no expuestos requeridos
                   </span>
                 ) : (
                   <span style={{ color: '#f57f17', fontWeight: 'bold' }}>
