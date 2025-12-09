@@ -736,14 +736,11 @@ const GenerarFormularioRGRL: React.FC<{
         {loading && <div className={styles.savingMsg}>Guardando…</div>}
         {!!error && <div className={styles.errorMsg}>{error}</div>}
 
-        <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} maxWidth="xs" fullWidth>
-          <DialogTitle className={styles.confirmDialogTitle}>Confirmar formulario</DialogTitle>
-          <DialogContent className={styles.confirmDialogContent}>
-            <Alert severity="warning" className={styles.confirmAlert}>
-              <Typography variant="body1" align="center">¿Está seguro que desea CONFIRMAR el formulario?</Typography>
-            </Alert>
-          </DialogContent>
-          <DialogActions className={styles.confirmDialogActions}>
+        <CustomModal
+          open={confirmOpen}
+          onClose={() => setConfirmOpen(false)}
+          size="mid"
+          actions={
             <div className={styles.confirmActionsInner}>
               <CustomButton
                 onClick={() => {
@@ -755,8 +752,12 @@ const GenerarFormularioRGRL: React.FC<{
               </CustomButton>
               <CustomButton onClick={() => setConfirmOpen(false)}>NO</CustomButton>
             </div>
-          </DialogActions>
-        </Dialog>
+          }
+        >
+          <div className={styles.confirmDialogContent}>
+            ¿Está seguro que desea CONFIRMAR el formulario?
+          </div>
+        </CustomModal>
 
         <CustomModal open={openGremios} onClose={() => setOpenGremios(false)} title="Representación Gremial" size="mid">
           <div className="formGrid">
