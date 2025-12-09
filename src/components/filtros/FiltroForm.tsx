@@ -107,7 +107,7 @@ export default function FiltroForm({
                     label="Nombre"
                     placeholder="Ingrese nombre"
                     required
-                    value={data.nombre}
+                    value={data.nombre ?? ''}
                     onChange={textFieldOnChange}
                     onBlur={handleCheckDisponibilidad}
                     error={!!errors.nombre}
@@ -152,7 +152,7 @@ export default function FiltroForm({
                   name="deletedObs"
                   label="Observaciones"
                   placeholder="Observaciones de borrado"
-                  value={data.deletedObs}
+                  value={data.deletedObs ?? ''}
                   onChange={textFieldOnChange}
                   error={!!errors.deletedObs}
                   helperText={errors.deletedObs}
@@ -289,6 +289,9 @@ export default function FiltroForm({
   function getInitialState(): State {
     const data: FiltroVm = { ...init };
     data.ambito ??= "todos";
+    // Asegurar que los campos de texto siempre sean strings, no undefined
+    data.nombre ??= '';
+    data.deletedObs ??= '';
     return { data, error: { data: {} }, getDisponibilidad: !!data.nombre && !!data.modulo };
   }
 }
