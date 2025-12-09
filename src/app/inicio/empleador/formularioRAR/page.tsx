@@ -257,7 +257,7 @@ const FormulariosRAR: React.FC = () => {
             0
           );
           if (estId > 0) {
-            establecimiento = await ArtAPI.getEstablecimientoById(estId);
+            establecimiento = await ArtAPI.getEstablecimientoById({ id: estId });
           }
         } catch (e) {
           console.warn("No se pudo obtener el establecimiento", e);
@@ -322,6 +322,21 @@ const FormulariosRAR: React.FC = () => {
           (rowData as any).CIIU ??
           null;
 
+       const establecimientoActividadPrincipal =
+         detallesFormulario.establecimientoActividadPrincipal ??
+         (detallesFormulario as any).establecimientoActividadPrincipal ??
+         rowData.establecimientoActividadPrincipal ??
+         (rowData as any).EstablecimientoActividadPrincipal ??
+         null;
+
+       const establecimientoActividadSecundaria =
+         detallesFormulario.establecimientoActividadSecundaria ??
+         (detallesFormulario as any).establecimientoActividadSecundaria ??
+         rowData.establecimientoActividadSecundaria ??
+         (rowData as any).EstablecimientoActividadSecundaria ??
+         null;
+
+
 
 
 
@@ -332,6 +347,8 @@ const FormulariosRAR: React.FC = () => {
           empresaContrato: contratoEmpresa,
           empresaRazonSocial: razonSocialEmpresa,
           empresaCiiu: empresaCiiu,
+          establecimientoActividadPrincipal,
+          establecimientoActividadSecundaria,          
           cantTrabajadoresExpuestos: cantTrabajadoresExpuestosEmpresa,
           cantTrabajadoresNoExpuestos: cantTrabajadoresNoExpuestosEmpresa,
           detallesTrabajadores: detallesConNombre,
@@ -573,8 +590,8 @@ const FormulariosRAR: React.FC = () => {
       { key: 'sectorTarea', title: 'Sector/Tarea', width: '20%' },
       { key: 'fechaIngreso', title: 'Fecha Ingreso', width: '12%' },
       { key: 'horasExposicion', title: 'Horas Exp.', width: '10%' },
-      { key: 'agenteNombre', title: 'Agente Causante', width: '18%' },
       { key: 'fechaUltimoExamen', title: 'Fecha Últ. Examen', width: '12%' },
+      { key: 'agenteNombre', title: 'Agente Causante', width: '18%' },
     ];
 
     return (
@@ -703,6 +720,15 @@ const FormulariosRAR: React.FC = () => {
                 {datos.cantTrabajadoresNoExpuestos ?? '—'}
               </Text>
 
+             <Text style={{ fontSize: 10, marginTop: 2 }}>
+              Actividad Principal:{' '}
+              {String(datos.establecimientoActividadPrincipal ?? '—')}
+            </Text>
+
+             <Text style={{ fontSize: 10, marginTop: 2 }}>
+              Actividad Secundaria:{' '}
+              {String(datos.establecimientoActividadSecundaria ?? '—')}
+            </Text>        
 
             </View>
 

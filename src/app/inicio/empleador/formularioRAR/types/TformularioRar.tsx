@@ -20,4 +20,17 @@ export type ParametersFormularioRar = {
   OrderBy?: string;
 };
 
+export type ParametersEmpresaByCUIT = {
+  CUIT?: number;
+};
+
+export type EstablecimientoById = {
+  id: number;
+}
+
+export type ParametersEstablecimientoByCUIT = {
+  CUIT?: number;
+}
+
+
 export default FormularioRAR;
