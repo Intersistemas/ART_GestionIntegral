@@ -432,6 +432,60 @@ export type SVCCTrabajadorDeleteOptions = SWRMutationConfiguration<TrabajadorDTO
 //#endregion Types SVCC/Trabajador
 //#endregion Types SVCC
 
+//#region Types SRTSiniestralidadCIUO88
+export type SRTSiniestralidadCIUO88 = {
+  id: number;
+  ciuO88: number;
+  descripcion?: string;
+}
+
+//#region Types SRTSiniestralidadCIUO88 - List
+export type SRTSiniestralidadCIUO88ListSWRKey = [url: string, token: string];
+export type SRTSiniestralidadCIUO88ListOptions = SWRConfiguration<SRTSiniestralidadCIUO88[], any, Fetcher<SRTSiniestralidadCIUO88[], SRTSiniestralidadCIUO88ListSWRKey>>
+//#endregion Types SRTSiniestralidadCIUO88 - List
+
+//#region Types SRTSiniestralidadCIUO88 - Read
+export type SRTSiniestralidadCIUO88ReadParams = {
+  pId: number;
+}
+export type SRTSiniestralidadCIUO88ReadSWRKey = [url: string, token: string, params: string];
+export type SRTSiniestralidadCIUO88ReadOptions = SWRConfiguration<SRTSiniestralidadCIUO88, any, Fetcher<SRTSiniestralidadCIUO88, SVCCTrabajadorReadSWRKey>>
+//#endregion Types SRTSiniestralidadCIUO88 - Read
+//#endregion Types SRTSiniestralidadCIUO88
+
+//#region Types RefCIIU
+export type RefCIIU = {
+  id: number;
+  ciiuRev4?: number;
+  descripcionRev4?: string;
+  descripcionEquivalencia4?: string;
+  ciiuRev2?: number;
+  descripcionRev2?: string;
+  codigo?: number;
+  nivel1Fija?: number;
+  nivel1Variable?: number;
+  nivel2Fija?: number;
+  nivel2Variable?: number;
+  nivel3Fija?: number;
+  nivel3Variable?: number;
+  nivel4Fija?: number;
+  nivel4Variable?: number;
+}
+
+//#region Types RefCIIU - List
+export type RefCIIUListSWRKey = [url: string, token: string];
+export type RefCIIUListOptions = SWRConfiguration<RefCIIU[], any, Fetcher<RefCIIU[], RefCIIUListSWRKey>>
+//#endregion Types RefCIIU - List
+
+//#region Types RefCIIU - Read
+export type RefCIIUReadParams = {
+  pId: number;
+}
+export type RefCIIUReadSWRKey = [url: string, token: string, params: string];
+export type RefCIIUReadOptions = SWRConfiguration<RefCIIU, any, Fetcher<RefCIIU, SVCCTrabajadorReadSWRKey>>
+//#endregion Types RefCIIU - Read
+//#endregion Types RefCIIU
+
 export class GestionEmpleadorAPIClass extends ExternalAPI {
 
   readonly basePath = process.env.NEXT_PUBLIC_API_EMPLEADOR_URL || 'http://fallback-prod.url'; 
@@ -891,6 +945,74 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
   //#endregion SVCC/Trabajador - Delete
   //#endregion SVCC/Trabajador
   //#endregion SVCC
+
+  //#region SRTSiniestralidadCIUO88
+  //#region SRTSiniestralidadCIUO88 - List
+  readonly srtSiniestralidadCIUO88ListURL = this.getURL({ path: "/api/SRTSiniestralidadCIUO88" }).toString();
+  srtSiniestralidadCIUO88List = async () => tokenizable.get<SRTSiniestralidadCIUO88[]>(
+    this.srtSiniestralidadCIUO88ListURL
+  ).then(({ data }) => data);
+  swrSRTSiniestralidadCIUO88List: {
+    key: SRTSiniestralidadCIUO88ListSWRKey,
+    fetcher: (key: SRTSiniestralidadCIUO88ListSWRKey) => Promise<SRTSiniestralidadCIUO88[]>
+  } = Object.freeze({
+    key: [this.srtSiniestralidadCIUO88ListURL, token.getToken()],
+    fetcher: ([_url, _token]) => this.srtSiniestralidadCIUO88List(),
+  });
+  useSRTSiniestralidadCIUO88List = (options?: SRTSiniestralidadCIUO88ListOptions) =>
+    useSWR(this.swrSRTSiniestralidadCIUO88List.key, this.swrSRTSiniestralidadCIUO88List.fetcher, options);
+  //#endregion SRTSiniestralidadCIUO88 - List
+
+  //#region SRTSiniestralidadCIUO88 - Read
+  readonly srtSiniestralidadCIUO88ReadURL = ({ pId }: SRTSiniestralidadCIUO88ReadParams) => this.getURL({ path: `/api/SRTSiniestralidadCIUO88/${pId}` }).toString();
+  srtSiniestralidadCIUO88Read = async (params: SRTSiniestralidadCIUO88ReadParams) => tokenizable.get<SRTSiniestralidadCIUO88>(
+    this.srtSiniestralidadCIUO88ReadURL(params)
+  ).then(({ data }) => data);
+  swrSRTSiniestralidadCIUO88Read: {
+    key:  (params: SRTSiniestralidadCIUO88ReadParams) => SRTSiniestralidadCIUO88ReadSWRKey,
+    fetcher: (key: SRTSiniestralidadCIUO88ReadSWRKey) => Promise<SRTSiniestralidadCIUO88>
+  } = Object.freeze({
+    key: (params) => [this.srtSiniestralidadCIUO88ReadURL(params), token.getToken(), JSON.stringify(params)],
+    fetcher: ([_url, _token, params]) => this.srtSiniestralidadCIUO88Read(JSON.parse(params)),
+  });
+  useSRTSiniestralidadCIUO88Read = (params?: SRTSiniestralidadCIUO88ReadParams, options?: SRTSiniestralidadCIUO88ReadOptions) =>
+    useSWR(params ? this.swrSRTSiniestralidadCIUO88Read.key(params) : null, this.swrSRTSiniestralidadCIUO88Read.fetcher, options);
+  //#endregion SRTSiniestralidadCIUO88 - Read
+  //#endregion SRTSiniestralidadCIUO88
+
+  //#region RefCIIU
+  //#region RefCIIU - List
+  readonly refCIIUURL = this.getURL({ path: "/api/RefCIIU" }).toString();
+  refCIIU = async () => tokenizable.get<RefCIIU[]>(
+    this.refCIIUURL
+  ).then(({ data }) => data);
+  swrRefCIIUList: {
+    key: RefCIIUListSWRKey,
+    fetcher: (key: RefCIIUListSWRKey) => Promise<RefCIIU[]>
+  } = Object.freeze({
+    key: [this.refCIIUURL, token.getToken()],
+    fetcher: ([_url, _token]) => this.refCIIU(),
+  });
+  useRefCIIUList = (options?: RefCIIUListOptions) =>
+    useSWR(this.swrRefCIIUList.key, this.swrRefCIIUList.fetcher, options);
+  //#endregion RefCIIU - List
+
+  //#region RefCIIU - Read
+  readonly refCIIUReadURL = ({ pId }: RefCIIUReadParams) => this.getURL({ path: `/api/RefCIIU/${pId}` }).toString();
+  refCIIUReadRead = async (params: RefCIIUReadParams) => tokenizable.get<RefCIIU>(
+    this.refCIIUReadURL(params)
+  ).then(({ data }) => data);
+  swrRefCIIURead: {
+    key:  (params: RefCIIUReadParams) => RefCIIUReadSWRKey,
+    fetcher: (key: RefCIIUReadSWRKey) => Promise<RefCIIU>
+  } = Object.freeze({
+    key: (params) => [this.refCIIUReadURL(params), token.getToken(), JSON.stringify(params)],
+    fetcher: ([_url, _token, params]) => this.refCIIUReadRead(JSON.parse(params)),
+  });
+  useRefCIIURead = (params?: RefCIIUReadParams, options?: RefCIIUReadOptions) =>
+    useSWR(params ? this.swrRefCIIURead.key(params) : null, this.swrRefCIIURead.fetcher, options);
+  //#endregion RefCIIU - Read
+  //#endregion RefCIIU
 }
 
 const gestionEmpleadorAPI = Object.seal(new GestionEmpleadorAPIClass());
