@@ -4,6 +4,11 @@ import { EmpresaTercerizadaDTO } from "@/data/gestionEmpleadorAPI";
 import Formato from "@/utils/Formato";
 import { Form } from "@/utils/ui/form/Form";
 import { useSVCCPresentacionContext } from "../../context";
+import { useState } from "react";
+import CustomModal from "@/utils/ui/form/CustomModal";
+import CustomButton from "@/utils/ui/button/CustomButton";
+import EstablecimientoBrowse from "@/components/establecimientos/EstablecimientoBrowse";
+import RefCIIUBrowse from "@/components/RefCIIU/RefCIIUBrowse";
 
 const tooltip_SlotProps = { tooltip: { sx: { fontSize: "1.2rem", fontWeight: 500 } } };
 export const EmpresaTercerizadaForm: Form<EmpresaTercerizadaDTO> = ({
@@ -13,7 +18,9 @@ export const EmpresaTercerizadaForm: Form<EmpresaTercerizadaDTO> = ({
   helpers = {},
   onChange = () => { }
 }) => {
-  const { establecimientos: { map: establecimientos } } = useSVCCPresentacionContext();
+  const [lookupEstablecimientos, setLookupEstablecimientos] = useState<boolean>(false);
+  const [lookupCIIU, setLookupCIIU] = useState<boolean>(false);
+  const { establecimientos, refCIIU } = useSVCCPresentacionContext();
 
   return (
     <Grid container size={12} spacing={2} maxHeight="fit-content">
@@ -41,7 +48,7 @@ export const EmpresaTercerizadaForm: Form<EmpresaTercerizadaDTO> = ({
                         color="primary"
                         size="large"
                         disabled={disabled.idEstablecimientoEmpresa}
-                      // onClick={() => onLookup()}
+                        onClick={() => setLookupEstablecimientos(true)}
                       >
                         <MoreHoriz />
                       </IconButton>
@@ -53,12 +60,41 @@ export const EmpresaTercerizadaForm: Form<EmpresaTercerizadaDTO> = ({
           }}
           fullWidth
         />
+        <CustomModal
+          open={lookupEstablecimientos}
+          onClose={() => setLookupEstablecimientos(false)}
+          title="Selección de establecimiento"
+          size="large"
+          actions={(
+            <Grid container spacing={2}>
+              <CustomButton
+                onClick={() => setLookupEstablecimientos(false)}
+                color="secondary"
+              >
+                Cancelar
+              </CustomButton>
+            </Grid>
+          )}
+        >
+          <Grid container spacing={2} justifyContent="center" minHeight="500px">
+            <Grid size={12}>
+              <EstablecimientoBrowse
+                isLoading={establecimientos.isLoading || establecimientos.isValidating}
+                data={{ data: establecimientos.data ?? [] }}
+                onSelect={(establecimiento) => () => {
+                  onChange({ idEstablecimientoEmpresa: establecimiento.codEstabEmpresa });
+                  setLookupEstablecimientos(false);
+                }}
+              />
+            </Grid>
+          </Grid>
+        </CustomModal>
       </Grid>
       <Grid size={9}>
         <TextField
           name="Placeholder"
           label="Establ. Empresa - Descripcion"
-          value={establecimientos[data.idEstablecimientoEmpresa ?? 0]}
+          value={establecimientos.map[data.idEstablecimientoEmpresa ?? 0] ?? ""}
           disabled
           fullWidth
         />
@@ -80,7 +116,7 @@ export const EmpresaTercerizadaForm: Form<EmpresaTercerizadaDTO> = ({
         <TextField
           name="ciiu"
           type="number"
-          label="CIUO"
+          label="CIIU"
           value={data.ciiu}
           disabled={disabled.ciiu}
           onChange={({ target: { value } }) => onChange({ ciiu: Number(value) })}
@@ -100,7 +136,7 @@ export const EmpresaTercerizadaForm: Form<EmpresaTercerizadaDTO> = ({
                         color="primary"
                         size="large"
                         disabled={disabled.ciiu}
-                      // onClick={() => onLookup()}
+                        onClick={() => setLookupCIIU(true)}
                       >
                         <MoreHoriz />
                       </IconButton>
@@ -112,6 +148,35 @@ export const EmpresaTercerizadaForm: Form<EmpresaTercerizadaDTO> = ({
           }}
           fullWidth
         />
+        <CustomModal
+          open={lookupCIIU}
+          onClose={() => setLookupCIIU(false)}
+          title="Selección de CIIUv4"
+          size="large"
+          actions={(
+            <Grid container spacing={2}>
+              <CustomButton
+                onClick={() => setLookupCIIU(false)}
+                color="secondary"
+              >
+                Cancelar
+              </CustomButton>
+            </Grid>
+          )}
+        >
+          <Grid container spacing={2} justifyContent="center" minHeight="500px">
+            <Grid size={12}>
+              <RefCIIUBrowse
+                isLoading={refCIIU.isLoading || refCIIU.isValidating}
+                data={{ data: refCIIU.data ?? [] }}
+                onSelect={(ciiu) => () => {
+                  onChange({ ciiu: ciiu.ciiuRev4 });
+                  setLookupEstablecimientos(false);
+                }}
+              />
+            </Grid>
+          </Grid>
+        </CustomModal>
       </Grid>
       <Grid size={4}>
         <TextField

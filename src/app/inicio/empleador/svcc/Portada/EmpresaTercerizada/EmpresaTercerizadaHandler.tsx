@@ -10,6 +10,7 @@ import CustomButton from "@/utils/ui/button/CustomButton";
 import EmpresaTercerizadaBrowse from "./EmpresaTercerizadaBrowse";
 import EmpresaTercerizadaForm from "./EmpresaTercerizadaForm";
 import { useSVCCPresentacionContext } from "../../context";
+import { headers } from "next/dist/client/components/headers";
 
 const {
   useSVCCEmpresaTercerizadaList,
@@ -25,7 +26,7 @@ type EditState = Partial<Omit<FormProps<EmpresaTercerizadaDTO>, "onChange">> & {
 };
 export default function EmpresaTercerizadaHandler() {
   const [edit, setEdit] = useState<EditState>({});
-  const { ultima: { data: presentacion }, } = useSVCCPresentacionContext();
+  const { ultima: { data: presentacion }, establecimientos } = useSVCCPresentacionContext();
   const [{ index, size }, setPage] = useState({ index: 0, size: 100 });
   const [data, setData] = useState<Data<EmpresaTercerizadaDTO>>({ index, size, count: 0, pages: 0, data: [] });
   const { isLoading, isValidating, mutate } = useSVCCEmpresaTercerizadaList(
@@ -109,7 +110,25 @@ export default function EmpresaTercerizadaHandler() {
     }
   }
   function handleOnChange(changes: Partial<EmpresaTercerizadaDTO>) {
-    setEdit((o) => ({ ...o, data: { ...o.data, ...changes } }));
+    setEdit((o) => {
+      const edit = ({ ...o, data: { ...o.data, ...changes }, errors: { ...o.errors }, helpers: { ...o.helpers } });
+      if ("idEstablecimientoEmpresa" in changes) {
+        if (changes.idEstablecimientoEmpresa) {
+          const ix = establecimientos.data?.findIndex((e) => e.codEstabEmpresa === changes.idEstablecimientoEmpresa) ?? -1;
+          if (ix < 0) {
+            edit.errors.idEstablecimientoEmpresa = true;
+            edit.helpers.idEstablecimientoEmpresa = "No existe el establecimiento";
+          } else {
+            delete edit.errors.idEstablecimientoEmpresa;
+            delete edit.helpers.idEstablecimientoEmpresa;
+          }
+        } else {
+          delete edit.errors.idEstablecimientoEmpresa;
+          edit.helpers.idEstablecimientoEmpresa = "Debe seleccionar un establecimiento";
+        }
+      }
+      return edit;
+    });
   }
   function handleEditOnClose() { setEdit({}); }
   function handleEditOnConfirm() {

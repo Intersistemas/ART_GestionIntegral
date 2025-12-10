@@ -1,6 +1,6 @@
-import { createContext, ReactNode, useCallback, useContext, useMemo } from "react";
+import { createContext, ReactNode, useContext, useMemo } from "react";
 import { useAuth } from "@/data/AuthContext";
-import gestionEmpleadorAPI, { PresentacionDTO } from '@/data/gestionEmpleadorAPI';
+import gestionEmpleadorAPI, { PresentacionDTO, RefCIIU, SRTSiniestralidadCIUO88 } from '@/data/gestionEmpleadorAPI';
 import ArtAPI, { EstablecimientoVm, EstablecimientoVmDescripcion } from "@/data/artAPI";
 import { arrayToRecord } from "@/utils/utils";
 
@@ -31,6 +31,20 @@ export type SVCCPresentacionContextType = {
     error?: any,
     map: Record<number, string>,
   };
+  refCIIU: {
+    isLoading: boolean;
+    isValidating: boolean;
+    data?: RefCIIU[],
+    error?: any,
+    map: Record<number, string>,
+  };
+  ciuo88: {
+    isLoading: boolean;
+    isValidating: boolean;
+    data?: SRTSiniestralidadCIUO88[],
+    error?: any,
+    map: Record<number, string>,
+  };
 }
 
 const SVCCPresentacionContext = createContext<SVCCPresentacionContextType | undefined>(undefined);
@@ -39,6 +53,9 @@ const {
   useSVCCPresentacionUltima,
   useSVCCPresentacionNueva,
   useSVCCPresentacionFinaliza,
+
+  useSRTSiniestralidadCIUO88List,
+  useRefCIIUList,
 } = gestionEmpleadorAPI;
 
 const { useEstablecimientoList } = ArtAPI;
@@ -46,42 +63,57 @@ const { useEstablecimientoList } = ArtAPI;
 export function SVCCPresentacionContextProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   
-  const { isLoading, isValidating, data, error, mutate } = useSVCCPresentacionUltima({ revalidateOnFocus: false });
+  const ultima = useSVCCPresentacionUltima({ revalidateOnFocus: false });
 
-  const {
-    isMutating: nuevaIsMutating, data: nuevaData, error: nuevaError, trigger: triggerNueva
-  } = useSVCCPresentacionNueva({ onSuccess() { mutate() }});
-  const nuevaTrigger = useCallback((data: PresentacionDTO) => triggerNueva(data), []);
+  const nueva = useSVCCPresentacionNueva({ onSuccess() { ultima.mutate() }});
 
-  const {
-    isMutating: finalizaIsMutating, data: finalizaData, error: finalizaError, trigger: triggerFinaliza
-  } = useSVCCPresentacionFinaliza({ onSuccess() { mutate() }});
-  const finalizaTrigger = useCallback((data: PresentacionDTO) => triggerFinaliza(data), []);
+  const finaliza = useSVCCPresentacionFinaliza({ onSuccess() { ultima.mutate() }});
 
-  const {
-    isLoading: estabIsLoading,
-    isValidating: estabIsValidating,
-    data: estabData,
-    error: estabError,
-  } = useEstablecimientoList({ cuit: user?.cuit ?? 0 }, { revalidateOnFocus: false });
+  const establecimientoList = useEstablecimientoList({ cuit: user?.cuit ?? 0 }, { revalidateOnFocus: false });
 
-  const { estabMap } = useMemo(() => (
-    { estabMap: arrayToRecord(estabData ?? [], (e) => [e.codEstabEmpresa, EstablecimientoVmDescripcion(e)]) }
-  ), [estabData]);
+  const establecimientoMap = useMemo(() => (
+    arrayToRecord(establecimientoList.data ?? [], (e) => [e.codEstabEmpresa, EstablecimientoVmDescripcion(e)])
+  ), [establecimientoList.data]);
+
+  const refCIIUList = useRefCIIUList({ revalidateOnFocus: false });
+
+  const refCIIUMap = useMemo(() => (
+    arrayToRecord(refCIIUList.data ?? [], (e) => [e.ciiuRev4 ?? 0, e.descripcionRev4 ?? ""])
+  ), [refCIIUList.data]);
+
+  const ciuo88List = useSRTSiniestralidadCIUO88List({ revalidateOnFocus: false });
+
+  const ciuo88Map = useMemo(() => (
+    arrayToRecord(ciuo88List.data ?? [], (e) => [e.ciuO88, e.descripcion ?? ""])
+  ), [ciuo88List.data]);
 
   return (
     <SVCCPresentacionContext.Provider
       value={{
-        ultima: { isLoading, isValidating, data, error },
-        isMutating: nuevaIsMutating || finalizaIsMutating,
-        nueva: { isMutating: nuevaIsMutating, data: nuevaData, error: nuevaError, trigger: nuevaTrigger },
-        finaliza: { isMutating: finalizaIsMutating, data: finalizaData, error: finalizaError, trigger: finalizaTrigger },
+        ultima: { isLoading: ultima.isLoading, isValidating: ultima.isValidating, data: ultima.data, error: ultima.error },
+        isMutating: nueva.isMutating || finaliza.isMutating,
+        nueva: { isMutating: nueva.isMutating, data: nueva.data, error: nueva.error, trigger: nueva.trigger },
+        finaliza: { isMutating: finaliza.isMutating, data: finaliza.data, error: finaliza.error, trigger: finaliza.trigger },
         establecimientos: {
-          isLoading: estabIsLoading,
-          isValidating: estabIsValidating,
-          data: estabData,
-          error: estabError,
-          map: estabMap,
+          isLoading: establecimientoList.isLoading,
+          isValidating: establecimientoList.isValidating,
+          data: establecimientoList.data,
+          error: establecimientoList.error,
+          map: establecimientoMap,
+        },
+        refCIIU: {
+          isLoading: refCIIUList.isLoading,
+          isValidating: refCIIUList.isValidating,
+          data: refCIIUList.data,
+          error: refCIIUList.error,
+          map: refCIIUMap,
+        },
+        ciuo88: {
+          isLoading: ciuo88List.isLoading,
+          isValidating: ciuo88List.isValidating,
+          data: ciuo88List.data,
+          error: ciuo88List.error,
+          map: ciuo88Map,
         },
       }}
     >
