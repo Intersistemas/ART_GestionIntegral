@@ -81,8 +81,8 @@ export const EmpresaTercerizadaForm: Form<EmpresaTercerizadaDTO> = ({
               <EstablecimientoBrowse
                 isLoading={establecimientos.isLoading || establecimientos.isValidating}
                 data={{ data: establecimientos.data ?? [] }}
-                onSelect={(establecimiento) => () => {
-                  onChange({ idEstablecimientoEmpresa: establecimiento.codEstabEmpresa });
+                onSelect={(select) => () => {
+                  onChange({ idEstablecimientoEmpresa: select.codEstabEmpresa });
                   setLookupEstablecimientos(false);
                 }}
               />
@@ -117,7 +117,7 @@ export const EmpresaTercerizadaForm: Form<EmpresaTercerizadaDTO> = ({
           name="ciiu"
           type="number"
           label="CIIU"
-          value={data.ciiu}
+          value={data.ciiu || ""}
           disabled={disabled.ciiu}
           onChange={({ target: { value } }) => onChange({ ciiu: Number(value) })}
           error={errors.ciiu}
@@ -169,9 +169,9 @@ export const EmpresaTercerizadaForm: Form<EmpresaTercerizadaDTO> = ({
               <RefCIIUBrowse
                 isLoading={refCIIU.isLoading || refCIIU.isValidating}
                 data={{ data: refCIIU.data ?? [] }}
-                onSelect={(ciiu) => () => {
-                  onChange({ ciiu: ciiu.ciiuRev4 });
-                  setLookupEstablecimientos(false);
+                onSelect={(select) => () => {
+                  onChange({ ciiu: select.ciiuRev4 });
+                  setLookupCIIU(false);
                 }}
               />
             </Grid>

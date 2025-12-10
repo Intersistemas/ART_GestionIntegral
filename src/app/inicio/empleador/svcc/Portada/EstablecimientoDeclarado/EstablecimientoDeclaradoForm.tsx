@@ -15,9 +15,11 @@ import SectorForm from "./Sector/SectorForm";
 import ContratistaForm from "./Contratista/ContratistaForm";
 import ResponsableForm from "./Responsable/ResponsableForm";
 import { useSVCCPresentacionContext } from "../../context";
+import EstablecimientoBrowse from "@/components/establecimientos/EstablecimientoBrowse";
+import { DeepPartial } from "@/utils/utils";
 
 type EditAction = "create" | "read" | "update" | "delete";
-type EditState<T extends object> = Partial<Omit<FormProps<T>, "onChange">> & {
+type EditState<T extends object> = Omit<FormProps<T>, "onChange"> & {
   action?: EditAction,
   index?: number,
   message?: string;
@@ -31,12 +33,13 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
   helpers = {},
   onChange = () => { }
 }) => {
-  const [editPuesto, setEditPuesto] = useState<EditState<PuestoDTO>>({});
-  const [editSector, setEditSector] = useState<EditState<SectorDTO>>({});
-  const [editContratista, setEditContratista] = useState<EditState<ContratistaDTO>>({});
-  const [editResponsable, setEditResponsable] = useState<EditState<ResponsableDTO>>({});
+  const [editPuesto, setEditPuesto] = useState<EditState<PuestoDTO>>({ data: {} });
+  const [editSector, setEditSector] = useState<EditState<SectorDTO>>({ data: {} });
+  const [editContratista, setEditContratista] = useState<EditState<ContratistaDTO>>({ data: {} });
+  const [editResponsable, setEditResponsable] = useState<EditState<ResponsableDTO>>({ data: {} });
 
-  const { establecimientos: { map: establecimientos } } = useSVCCPresentacionContext();
+  const { establecimientos, ciuo88, refCIIU } = useSVCCPresentacionContext();
+  const [lookupEstablecimientos, setLookupEstablecimientos] = useState<boolean>(false);
 
   return (
     <Grid container size={12} spacing={2} maxHeight="fit-content">
@@ -64,7 +67,7 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
                         color="primary"
                         size="large"
                         disabled={disabled.idEstablecimientoEmpresa}
-                      // onClick={() => onLookup()}
+                        onClick={() => setLookupEstablecimientos(true)}
                       >
                         <MoreHoriz />
                       </IconButton>
@@ -76,12 +79,41 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
           }}
           fullWidth
         />
+        <CustomModal
+          open={lookupEstablecimientos}
+          onClose={() => setLookupEstablecimientos(false)}
+          title="Selección de establecimiento"
+          size="large"
+          actions={(
+            <Grid container spacing={2}>
+              <CustomButton
+                onClick={() => setLookupEstablecimientos(false)}
+                color="secondary"
+              >
+                Cancelar
+              </CustomButton>
+            </Grid>
+          )}
+        >
+          <Grid container spacing={2} justifyContent="center" minHeight="500px">
+            <Grid size={12}>
+              <EstablecimientoBrowse
+                isLoading={establecimientos.isLoading || establecimientos.isValidating}
+                data={{ data: establecimientos.data ?? [] }}
+                onSelect={(select) => () => {
+                  onChange({ idEstablecimientoEmpresa: select.codEstabEmpresa });
+                  setLookupEstablecimientos(false);
+                }}
+              />
+            </Grid>
+          </Grid>
+        </CustomModal>
       </Grid>
       <Grid size={9}>
         <TextField
           name="Placeholder"
           label="Establ. Empresa - Descripcion"
-          value={establecimientos[data.idEstablecimientoEmpresa ?? 0]}
+          value={establecimientos.map[data.idEstablecimientoEmpresa ?? 0] ?? ""}
           disabled
           fullWidth
         />
@@ -252,10 +284,10 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
                 <Grid container spacing={2} justifyContent="center" minHeight="500px">
                   {editPuesto.message && <Typography variant="h5" color="var(--naranja)" textAlign="center">{editPuesto.message}</Typography>}
                   <PuestoForm
-                    data={editPuesto?.data ?? {}}
-                    disabled={editPuesto?.disabled}
-                    errors={editPuesto?.errors}
-                    helpers={editPuesto?.helpers}
+                    data={editPuesto.data}
+                    disabled={editPuesto.disabled}
+                    errors={editPuesto.errors}
+                    helpers={editPuesto.helpers}
                     onChange={handlePuestoOnChange}
                   />
                 </Grid>
@@ -302,10 +334,10 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
                 <Grid container spacing={2} justifyContent="center" minHeight="500px">
                   {editSector.message && <Typography variant="h5" color="var(--naranja)" textAlign="center">{editSector.message}</Typography>}
                   <SectorForm
-                    data={editSector?.data ?? {}}
-                    disabled={editSector?.disabled}
-                    errors={editSector?.errors}
-                    helpers={editSector?.helpers}
+                    data={editSector.data}
+                    disabled={editSector.disabled}
+                    errors={editSector.errors}
+                    helpers={editSector.helpers}
                     onChange={handleSectorOnChange}
                   />
                 </Grid>
@@ -352,10 +384,10 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
                 <Grid container spacing={2} justifyContent="center" minHeight="500px">
                   {editContratista.message && <Typography variant="h5" color="var(--naranja)" textAlign="center">{editContratista.message}</Typography>}
                   <ContratistaForm
-                    data={editContratista?.data ?? {}}
-                    disabled={editContratista?.disabled}
-                    errors={editContratista?.errors}
-                    helpers={editContratista?.helpers}
+                    data={editContratista.data}
+                    disabled={editContratista.disabled}
+                    errors={editContratista.errors}
+                    helpers={editContratista.helpers}
                     onChange={handleContratistaOnChange}
                   />
                 </Grid>
@@ -402,10 +434,10 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
                 <Grid container spacing={2} justifyContent="center" minHeight="500px">
                   {editResponsable.message && <Typography variant="h5" color="var(--naranja)" textAlign="center">{editResponsable.message}</Typography>}
                   <ResponsableForm
-                    data={editResponsable?.data ?? {}}
-                    disabled={editResponsable?.disabled}
-                    errors={editResponsable?.errors}
-                    helpers={editResponsable?.helpers}
+                    data={editResponsable.data}
+                    disabled={editResponsable.disabled}
+                    errors={editResponsable.errors}
+                    helpers={editResponsable.helpers}
                     onChange={handleResponsableOnChange}
                   />
                 </Grid>
@@ -426,10 +458,48 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
       case "delete": return `Borrando ${value}`;
     }
   }
-  function handlePuestoOnChange(changes: Partial<PuestoDTO>) {
-    setEditPuesto((o) => ({ ...o, data: { ...o.data, ...changes } }));
+  function handlePuestoOnChange(changes: DeepPartial<PuestoDTO>) {
+    setEditPuesto((o) => {
+      const editPuesto: EditState<PuestoDTO> = { ...o, data: { ...o.data }, errors: { ...o.errors }, helpers: { ...o.helpers } };
+      const ciuoOldIx = ciuo88.data?.findIndex((r) => r.ciuO88 === o.data.ciuo) ?? -1;
+      const ciuoOld = ciuoOldIx < 0 ? undefined : ciuo88.data![ciuoOldIx];
+      if ("nombre" in changes) {
+        if (!changes.nombre) changes.nombre = ciuoOld?.descripcion;
+      }
+      if ("ciuo" in changes) {
+        if (changes.ciuo) {
+          const ciuoNewIx = ciuo88.data?.findIndex((r) => r.ciuO88 === changes.ciuo) ?? -1;
+          if (ciuoNewIx < 0) {
+            editPuesto.errors!.ciuo = true;
+            editPuesto.helpers!.ciuo = "No existe CIUO";
+
+            if (editPuesto.data.nombre === ciuoOld?.descripcion && !changes.nombre) {
+              changes.nombre = undefined;
+            }
+          } else {
+            delete editPuesto.errors!.ciuo;
+            delete editPuesto.helpers!.ciuo;
+
+            const ciuoNew = ciuo88.data![ciuoNewIx];
+            if (ciuoNew && (!editPuesto.data.nombre || editPuesto.data.nombre === ciuoOld?.descripcion) && !changes.nombre) {
+              changes.nombre = ciuoNew.descripcion;
+            }
+          }
+        } else {
+          delete editPuesto.errors!.ciuo;
+          // editPuesto.helpers.ciuo = "Debe elegir un CIUO";
+          delete editPuesto.helpers!.ciuo;
+
+          if (editPuesto.data.nombre === ciuoOld?.descripcion && !changes.nombre) {
+            changes.nombre = undefined;
+          }
+        }
+      }
+      editPuesto.data = { ...editPuesto.data, ...changes };
+      return editPuesto;
+    });
   }
-  function handleEditPuestoOnClose() { setEditPuesto({}); }
+  function handleEditPuestoOnClose() { setEditPuesto({ data: {} }); }
   function handleEditPuestoOnConfirm() {
     const puestos = [...data.puestos ?? []];
     switch (editPuesto.action) {
@@ -482,10 +552,48 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
       case "delete": return `Borrando ${value}`;
     }
   }
-  function handleSectorOnChange(changes: Partial<SectorDTO>) {
-    setEditSector((o) => ({ ...o, data: { ...o.data, ...changes } }));
+  function handleSectorOnChange(changes: DeepPartial<SectorDTO>) {
+    setEditSector((o) => {
+      const editSector: EditState<SectorDTO> = { ...o, data: { ...o.data }, errors: { ...o.errors }, helpers: { ...o.helpers } };
+      const ciiuOldIx = refCIIU.data?.findIndex((r) => r.ciiuRev4 === o.data.ciiu) ?? -1;
+      const ciiuOld = ciiuOldIx < 0 ? undefined : refCIIU.data![ciiuOldIx];
+      if ("nombre" in changes) {
+        if (!changes.nombre) changes.nombre = ciiuOld?.descripcionRev4;
+      }
+      if ("ciiu" in changes) {
+        if (changes.ciiu) {
+          const ciiuNewIx = refCIIU.data?.findIndex((r) => r.ciiuRev4 === changes.ciiu) ?? -1;
+          if (ciiuNewIx < 0) {
+            editSector.errors!.ciiu = true;
+            editSector.helpers!.ciiu = "No existe CIIU";
+
+            if (editSector.data.nombre === ciiuOld?.descripcionRev4 && !changes.nombre) {
+              changes.nombre = undefined;
+            }
+          } else {
+            delete editSector.errors!.ciiu;
+            delete editSector.helpers!.ciiu;
+
+            const ciiuNew = refCIIU.data![ciiuNewIx];
+            if (ciiuNew && (!editSector.data.nombre || editSector.data.nombre === ciiuOld?.descripcionRev4) && !changes.nombre) {
+              changes.nombre = ciiuNew.descripcionRev4;
+            }
+          }
+        } else {
+          delete editSector.errors!.ciiu;
+          // editSector.helpers.ciiu = "Debe elegir un CIIU";
+          delete editSector.helpers!.ciiu;
+
+          if (editSector.data.nombre === ciiuOld?.descripcionRev4 && !changes.nombre) {
+            changes.nombre = undefined;
+          }
+        }
+      }
+      editSector.data = { ...editSector.data, ...changes };
+      return editSector;
+    });
   }
-  function handleEditSectorOnClose() { setEditSector({}); }
+  function handleEditSectorOnClose() { setEditSector({ data: {} }); }
   function handleEditSectorOnConfirm() {
     const sectores = [...data.sectores ?? []];
     switch (editSector.action) {
@@ -538,10 +646,30 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
       case "delete": return `Borrando ${value}`;
     }
   }
-  function handleContratistaOnChange(changes: Partial<ContratistaDTO>) {
-    setEditContratista((o) => ({ ...o, data: { ...o.data, ...changes } }));
+  function handleContratistaOnChange(changes: DeepPartial<ContratistaDTO>) {
+    setEditContratista((o) => {
+      const editContratista: EditState<ContratistaDTO> = { ...o, data: { ...o.data }, errors: { ...o.errors }, helpers: { ...o.helpers } };
+      if ("ciiu" in changes) {
+        if (changes.ciiu) {
+          const ciiuNewIx = refCIIU.data?.findIndex((r) => r.ciiuRev4 === changes.ciiu) ?? -1;
+          if (ciiuNewIx < 0) {
+            editContratista.errors!.ciiu = true;
+            editContratista.helpers!.ciiu = "No existe CIIU";
+          } else {
+            delete editContratista.errors!.ciiu;
+            delete editContratista.helpers!.ciiu;
+          }
+        } else {
+          delete editContratista.errors!.ciiu;
+          // editContratista.helpers.ciiu = "Debe elegir un CIIU";
+          delete editContratista.helpers!.ciiu;
+        }
+      }
+      editContratista.data = { ...editContratista.data, ...changes };
+      return editContratista;
+    });
   }
-  function handleEditContratistaOnClose() { setEditContratista({}); }
+  function handleEditContratistaOnClose() { setEditContratista({ data: {} }); }
   function handleEditContratistaOnConfirm() {
     const contratistas = [...data.contratistas ?? []];
     switch (editContratista.action) {
@@ -595,10 +723,10 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
       case "delete": return `Borrando ${value}`;
     }
   }
-  function handleResponsableOnChange(changes: Partial<ResponsableDTO>) {
+  function handleResponsableOnChange(changes: DeepPartial<ResponsableDTO>) {
     setEditResponsable((o) => ({ ...o, data: { ...o.data, ...changes } }));
   }
-  function handleEditResponsableOnClose() { setEditResponsable({}); }
+  function handleEditResponsableOnClose() { setEditResponsable({ data: {} }); }
   function handleEditResponsableOnConfirm() {
     const responsables = [...data.responsables ?? []];
     switch (editResponsable.action) {

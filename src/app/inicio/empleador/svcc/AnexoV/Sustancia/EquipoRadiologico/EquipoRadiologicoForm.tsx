@@ -12,9 +12,10 @@ import ResponsableInstalacionBrowse from "./ResponsableInstalacion/ResponsableIn
 import ResponsableInstalacionForm from "./ResponsableInstalacion/ResponsableInstalacionForm";
 import EncargadoProteccionBrowse from "./EncargadoProteccion/EncargadoProteccionBrowse";
 import EncargadoProteccionForm from "./EncargadoProteccion/EncargadoProteccionForm";
+import { DeepPartial } from "@/utils/utils";
 
 type EditAction = "create" | "read" | "update" | "delete";
-type EditState<T extends object> = Partial<Omit<FormProps<T>, "onChange">> & {
+type EditState<T extends object> = Omit<FormProps<T>, "onChange"> & {
   action?: EditAction,
   index?: number,
   message?: string;
@@ -27,9 +28,9 @@ export const EquipoRadiologicoForm: Form<EquipoRadiologicoDTO> = ({
   helpers = {},
   onChange = () => { }
 }) => {
-  const [editResponsableUso, setEditResponsableUso] = useState<EditState<ResponsableUsoDTO>>({});
-  const [editResponsableInstalacion, setEditResponsableInstalacion] = useState<EditState<ResponsableInstalacionDTO>>({});
-  const [editEncargadoProteccion, setEditEncargadoProteccion] = useState<EditState<EncargadoProteccionDTO>>({});
+  const [editResponsableUso, setEditResponsableUso] = useState<EditState<ResponsableUsoDTO>>({ data: {} });
+  const [editResponsableInstalacion, setEditResponsableInstalacion] = useState<EditState<ResponsableInstalacionDTO>>({ data: {} });
+  const [editEncargadoProteccion, setEditEncargadoProteccion] = useState<EditState<EncargadoProteccionDTO>>({ data: {} });
 
   return (
     <Grid container size={12} spacing={2} maxHeight="fit-content">
@@ -409,10 +410,10 @@ export const EquipoRadiologicoForm: Form<EquipoRadiologicoDTO> = ({
                 <Grid container spacing={2} justifyContent="center" minHeight="500px">
                   {editResponsableUso.message && <Typography variant="h5" color="var(--naranja)" textAlign="center">{editResponsableUso.message}</Typography>}
                   <ResponsableUsoForm
-                    data={editResponsableUso?.data ?? {}}
-                    disabled={editResponsableUso?.disabled}
-                    errors={editResponsableUso?.errors}
-                    helpers={editResponsableUso?.helpers}
+                    data={editResponsableUso.data}
+                    disabled={editResponsableUso.disabled}
+                    errors={editResponsableUso.errors}
+                    helpers={editResponsableUso.helpers}
                     onChange={handleResponsableUsoOnChange}
                   />
                 </Grid>
@@ -459,10 +460,10 @@ export const EquipoRadiologicoForm: Form<EquipoRadiologicoDTO> = ({
                 <Grid container spacing={2} justifyContent="center" minHeight="500px">
                   {editResponsableInstalacion.message && <Typography variant="h5" color="var(--naranja)" textAlign="center">{editResponsableInstalacion.message}</Typography>}
                   <ResponsableInstalacionForm
-                    data={editResponsableInstalacion?.data ?? {}}
-                    disabled={editResponsableInstalacion?.disabled}
-                    errors={editResponsableInstalacion?.errors}
-                    helpers={editResponsableInstalacion?.helpers}
+                    data={editResponsableInstalacion.data}
+                    disabled={editResponsableInstalacion.disabled}
+                    errors={editResponsableInstalacion.errors}
+                    helpers={editResponsableInstalacion.helpers}
                     onChange={handleResponsableInstalacionOnChange}
                   />
                 </Grid>
@@ -509,10 +510,10 @@ export const EquipoRadiologicoForm: Form<EquipoRadiologicoDTO> = ({
                 <Grid container spacing={2} justifyContent="center" minHeight="500px">
                   {editEncargadoProteccion.message && <Typography variant="h5" color="var(--naranja)" textAlign="center">{editEncargadoProteccion.message}</Typography>}
                   <EncargadoProteccionForm
-                    data={editEncargadoProteccion?.data ?? {}}
-                    disabled={editEncargadoProteccion?.disabled}
-                    errors={editEncargadoProteccion?.errors}
-                    helpers={editEncargadoProteccion?.helpers}
+                    data={editEncargadoProteccion.data}
+                    disabled={editEncargadoProteccion.disabled}
+                    errors={editEncargadoProteccion.errors}
+                    helpers={editEncargadoProteccion.helpers}
                     onChange={handleEncargadoProteccionOnChange}
                   />
                 </Grid>
@@ -533,10 +534,10 @@ export const EquipoRadiologicoForm: Form<EquipoRadiologicoDTO> = ({
       case "delete": return `Borrando ${value}`;
     }
   }
-  function handleResponsableUsoOnChange(changes: Partial<ResponsableUsoDTO>) {
+  function handleResponsableUsoOnChange(changes: DeepPartial<ResponsableUsoDTO>) {
     setEditResponsableUso((o) => ({ ...o, data: { ...o.data, ...changes } }));
   }
-  function handleEditResponsableUsoOnClose() { setEditResponsableUso({}); }
+  function handleEditResponsableUsoOnClose() { setEditResponsableUso({ data: {} }); }
   function handleEditResponsableUsoOnConfirm() {
     const responsablesDeUso = [...data.responsablesDeUso ?? []];
     switch (editResponsableUso.action) {
@@ -593,10 +594,10 @@ export const EquipoRadiologicoForm: Form<EquipoRadiologicoDTO> = ({
       case "delete": return `Borrando ${value}`;
     }
   }
-  function handleResponsableInstalacionOnChange(changes: Partial<ResponsableInstalacionDTO>) {
+  function handleResponsableInstalacionOnChange(changes: DeepPartial<ResponsableInstalacionDTO>) {
     setEditResponsableInstalacion((o) => ({ ...o, data: { ...o.data, ...changes } }));
   }
-  function handleEditResponsableInstalacionOnClose() { setEditResponsableInstalacion({}); }
+  function handleEditResponsableInstalacionOnClose() { setEditResponsableInstalacion({ data: {} }); }
   function handleEditResponsableInstalacionOnConfirm() {
     const responsablesDeInstalacion = [...data.responsablesDeInstalacion ?? []];
     switch (editResponsableInstalacion.action) {
@@ -652,10 +653,10 @@ export const EquipoRadiologicoForm: Form<EquipoRadiologicoDTO> = ({
       case "delete": return `Borrando ${value}`;
     }
   }
-  function handleEncargadoProteccionOnChange(changes: Partial<EncargadoProteccionDTO>) {
+  function handleEncargadoProteccionOnChange(changes: DeepPartial<EncargadoProteccionDTO>) {
     setEditEncargadoProteccion((o) => ({ ...o, data: { ...o.data, ...changes } }));
   }
-  function handleEditEncargadoProteccionOnClose() { setEditEncargadoProteccion({}); }
+  function handleEditEncargadoProteccionOnClose() { setEditEncargadoProteccion({ data: {} }); }
   function handleEditEncargadoProteccionOnConfirm() {
     const encargadosDeProteccionRadiologica = [...data.encargadosDeProteccionRadiologica ?? []];
     switch (editEncargadoProteccion.action) {

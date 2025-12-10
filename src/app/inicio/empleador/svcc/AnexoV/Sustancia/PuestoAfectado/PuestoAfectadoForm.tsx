@@ -10,9 +10,10 @@ import MedidaPreventivaBrowse from "./MedidaPreventiva/MedidaPreventivaBrowse";
 import ElementoProteccionBrowse from "./ElementoProteccion/ElementoProteccionBrowse";
 import ElementoProteccionForm from "./ElementoProteccion/ElementoProteccionForm";
 import { useSustanciaContext } from "../context";
+import { DeepPartial } from "@/utils/utils";
 
 type EditAction = "create" | "read" | "update" | "delete";
-type EditState<T extends object> = Partial<Omit<FormProps<T>, "onChange">> & {
+type EditState<T extends object> = Omit<FormProps<T>, "onChange"> & {
   action?: EditAction,
   index?: number,
   message?: string;
@@ -25,8 +26,8 @@ export const PuestoAfectadoForm: Form<PuestoAfectadoDTO> = ({
   helpers = {},
   onChange = () => { }
 }) => {
-  const [editMedidaPreventiva, setEditMedidaPreventiva] = useState<EditState<MedidaPreventivaDTO>>({});
-  const [editElementoProteccion, setEditElementoProteccion] = useState<EditState<ElementoProteccionDTO>>({});
+  const [editMedidaPreventiva, setEditMedidaPreventiva] = useState<EditState<MedidaPreventivaDTO>>({ data: {} });
+  const [editElementoProteccion, setEditElementoProteccion] = useState<EditState<ElementoProteccionDTO>>({ data: {} });
 
   const { establecimientoDeclarado } = useSustanciaContext();
   const puesto = establecimientoDeclarado?.puestos?.find((p) => p.interno === data.puestoInterno);
@@ -197,10 +198,10 @@ export const PuestoAfectadoForm: Form<PuestoAfectadoDTO> = ({
                 <Grid container spacing={2} justifyContent="center" minHeight="500px">
                   {editMedidaPreventiva.message && <Typography variant="h5" color="var(--naranja)" textAlign="center">{editMedidaPreventiva.message}</Typography>}
                   <MedidaPreventivaForm
-                    data={editMedidaPreventiva?.data ?? {}}
-                    disabled={editMedidaPreventiva?.disabled}
-                    errors={editMedidaPreventiva?.errors}
-                    helpers={editMedidaPreventiva?.helpers}
+                    data={editMedidaPreventiva.data}
+                    disabled={editMedidaPreventiva.disabled}
+                    errors={editMedidaPreventiva.errors}
+                    helpers={editMedidaPreventiva.helpers}
                     onChange={handleMedidaPreventivaOnChange}
                   />
                 </Grid>
@@ -248,10 +249,10 @@ export const PuestoAfectadoForm: Form<PuestoAfectadoDTO> = ({
                 <Grid container spacing={2} justifyContent="center" minHeight="500px">
                   {editElementoProteccion.message && <Typography variant="h5" color="var(--naranja)" textAlign="center">{editElementoProteccion.message}</Typography>}
                   <ElementoProteccionForm
-                    data={editElementoProteccion?.data ?? {}}
-                    disabled={editElementoProteccion?.disabled}
-                    errors={editElementoProteccion?.errors}
-                    helpers={editElementoProteccion?.helpers}
+                    data={editElementoProteccion.data}
+                    disabled={editElementoProteccion.disabled}
+                    errors={editElementoProteccion.errors}
+                    helpers={editElementoProteccion.helpers}
                     onChange={handleElementoProteccionOnChange}
                   />
                 </Grid>
@@ -272,10 +273,10 @@ export const PuestoAfectadoForm: Form<PuestoAfectadoDTO> = ({
       case "delete": return `Borrando ${value}`;
     }
   }
-  function handleMedidaPreventivaOnChange(changes: Partial<MedidaPreventivaDTO>) {
+  function handleMedidaPreventivaOnChange(changes: DeepPartial<MedidaPreventivaDTO>) {
     setEditMedidaPreventiva((o) => ({ ...o, data: { ...o.data, ...changes } }));
   }
-  function handleEditMedidaPreventivaOnClose() { setEditMedidaPreventiva({}); }
+  function handleEditMedidaPreventivaOnClose() { setEditMedidaPreventiva({ data: {} }); }
   function handleEditMedidaPreventivaOnConfirm() {
     const medidasPreventivasDelPuesto = [...data.medidasPreventivasDelPuesto ?? []];
     switch (editMedidaPreventiva.action) {
@@ -327,10 +328,10 @@ export const PuestoAfectadoForm: Form<PuestoAfectadoDTO> = ({
       case "delete": return `Borrando ${value}`;
     }
   }
-  function handleElementoProteccionOnChange(changes: Partial<ElementoProteccionDTO>) {
+  function handleElementoProteccionOnChange(changes: DeepPartial<ElementoProteccionDTO>) {
     setEditElementoProteccion((o) => ({ ...o, data: { ...o.data, ...changes } }));
   }
-  function handleEditElementoProteccionOnClose() { setEditElementoProteccion({}); }
+  function handleEditElementoProteccionOnClose() { setEditElementoProteccion({ data: {} }); }
   function handleEditElementoProteccionOnConfirm() {
     const elementosProteccionPersonal = [...data.elementosProteccionPersonal ?? []];
     switch (editElementoProteccion.action) {

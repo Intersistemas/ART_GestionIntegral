@@ -25,7 +25,7 @@ import EstudioBiologicoForm from "./EstudioBiologico/EstudioBiologicoForm";
 import { useSVCCPresentacionContext } from "../../context";
 
 type EditAction = "create" | "read" | "update" | "delete";
-type EditState<T extends object> = Partial<Omit<FormProps<T>, "onChange">> & {
+type EditState<T extends object> = Omit<FormProps<T>, "onChange"> & {
   action?: EditAction,
   index?: number,
   message?: string;
@@ -39,13 +39,13 @@ export const SustanciaForm: Form<SustanciaDTO> = ({
   helpers = {},
   onChange = () => { }
 }) => {
-  const [editUtilizacion, setEditUtilizacion] = useState<EditState<UtilizacionDTO>>({});
-  const [editPuestoAfectado, setEditPuestoAfectado] = useState<EditState<PuestoAfectadoDTO>>({});
-  const [editEquipoRadiologico, setEditEquipoRadiologico] = useState<EditState<EquipoRadiologicoDTO>>({});
-  const [editProveedor, setEditProveedor] = useState<EditState<ProveedorDTO>>({});
-  const [editComprador, setEditComprador] = useState<EditState<CompradorDTO>>({});
-  const [editEstudioAmbiental, setEditEstudioAmbiental] = useState<EditState<EstudioAmbientalDTO>>({});
-  const [editEstudioBiologico, setEditEstudioBiologico] = useState<EditState<EstudioBiologicoDTO>>({});
+  const [editUtilizacion, setEditUtilizacion] = useState<EditState<UtilizacionDTO>>({ data: {} });
+  const [editPuestoAfectado, setEditPuestoAfectado] = useState<EditState<PuestoAfectadoDTO>>({ data: {} });
+  const [editEquipoRadiologico, setEditEquipoRadiologico] = useState<EditState<EquipoRadiologicoDTO>>({ data: {} });
+  const [editProveedor, setEditProveedor] = useState<EditState<ProveedorDTO>>({ data: {} });
+  const [editComprador, setEditComprador] = useState<EditState<CompradorDTO>>({ data: {} });
+  const [editEstudioAmbiental, setEditEstudioAmbiental] = useState<EditState<EstudioAmbientalDTO>>({ data: {} });
+  const [editEstudioBiologico, setEditEstudioBiologico] = useState<EditState<EstudioBiologicoDTO>>({ data: {} });
 
   const { establecimientos: { map: establecimientos } } = useSVCCPresentacionContext();
 
@@ -215,10 +215,10 @@ export const SustanciaForm: Form<SustanciaDTO> = ({
                   <Grid container spacing={2} justifyContent="center" minHeight="500px">
                     {editUtilizacion.message && <Typography variant="h5" color="var(--naranja)" textAlign="center">{editUtilizacion.message}</Typography>}
                     <UtilizacionForm
-                      data={editUtilizacion?.data ?? {}}
-                      disabled={editUtilizacion?.disabled}
-                      errors={editUtilizacion?.errors}
-                      helpers={editUtilizacion?.helpers}
+                      data={editUtilizacion.data}
+                      disabled={editUtilizacion.disabled}
+                      errors={editUtilizacion.errors}
+                      helpers={editUtilizacion.helpers}
                       onChange={handleUtilizacionOnChange}
                     />
                   </Grid>
@@ -265,10 +265,10 @@ export const SustanciaForm: Form<SustanciaDTO> = ({
                   <Grid container spacing={2} justifyContent="center" minHeight="500px">
                     {editPuestoAfectado.message && <Typography variant="h5" color="var(--naranja)" textAlign="center">{editPuestoAfectado.message}</Typography>}
                     <PuestoAfectadoForm
-                      data={editPuestoAfectado?.data ?? {}}
-                      disabled={editPuestoAfectado?.disabled}
-                      errors={editPuestoAfectado?.errors}
-                      helpers={editPuestoAfectado?.helpers}
+                      data={editPuestoAfectado.data}
+                      disabled={editPuestoAfectado.disabled}
+                      errors={editPuestoAfectado.errors}
+                      helpers={editPuestoAfectado.helpers}
                       onChange={handlePuestoAfectadoOnChange}
                     />
                   </Grid>
@@ -315,10 +315,10 @@ export const SustanciaForm: Form<SustanciaDTO> = ({
                   <Grid container spacing={2} justifyContent="center" minHeight="500px">
                     {editEquipoRadiologico.message && <Typography variant="h5" color="var(--naranja)" textAlign="center">{editEquipoRadiologico.message}</Typography>}
                     <EquipoRadiologicoForm
-                      data={editEquipoRadiologico?.data ?? {}}
-                      disabled={editEquipoRadiologico?.disabled}
-                      errors={editEquipoRadiologico?.errors}
-                      helpers={editEquipoRadiologico?.helpers}
+                      data={editEquipoRadiologico.data}
+                      disabled={editEquipoRadiologico.disabled}
+                      errors={editEquipoRadiologico.errors}
+                      helpers={editEquipoRadiologico.helpers}
                       onChange={handleEquipoRadiologicoOnChange}
                     />
                   </Grid>
@@ -365,10 +365,10 @@ export const SustanciaForm: Form<SustanciaDTO> = ({
                   <Grid container spacing={2} justifyContent="center" minHeight="500px">
                     {editProveedor.message && <Typography variant="h5" color="var(--naranja)" textAlign="center">{editProveedor.message}</Typography>}
                     <ProveedorForm
-                      data={editProveedor?.data ?? {}}
-                      disabled={editProveedor?.disabled}
-                      errors={editProveedor?.errors}
-                      helpers={editProveedor?.helpers}
+                      data={editProveedor.data}
+                      disabled={editProveedor.disabled}
+                      errors={editProveedor.errors}
+                      helpers={editProveedor.helpers}
                       onChange={handleProveedorOnChange}
                     />
                   </Grid>
@@ -415,10 +415,10 @@ export const SustanciaForm: Form<SustanciaDTO> = ({
                   <Grid container spacing={2} justifyContent="center" minHeight="500px">
                     {editComprador.message && <Typography variant="h5" color="var(--naranja)" textAlign="center">{editComprador.message}</Typography>}
                     <CompradorForm
-                      data={editComprador?.data ?? {}}
-                      disabled={editComprador?.disabled}
-                      errors={editComprador?.errors}
-                      helpers={editComprador?.helpers}
+                      data={editComprador.data}
+                      disabled={editComprador.disabled}
+                      errors={editComprador.errors}
+                      helpers={editComprador.helpers}
                       onChange={handleCompradorOnChange}
                     />
                   </Grid>
@@ -465,10 +465,10 @@ export const SustanciaForm: Form<SustanciaDTO> = ({
                   <Grid container spacing={2} justifyContent="center" minHeight="500px">
                     {editEstudioAmbiental.message && <Typography variant="h5" color="var(--naranja)" textAlign="center">{editEstudioAmbiental.message}</Typography>}
                     <EstudioAmbientalForm
-                      data={editEstudioAmbiental?.data ?? {}}
-                      disabled={editEstudioAmbiental?.disabled}
-                      errors={editEstudioAmbiental?.errors}
-                      helpers={editEstudioAmbiental?.helpers}
+                      data={editEstudioAmbiental.data}
+                      disabled={editEstudioAmbiental.disabled}
+                      errors={editEstudioAmbiental.errors}
+                      helpers={editEstudioAmbiental.helpers}
                       onChange={handleEstudioAmbientalOnChange}
                     />
                   </Grid>
@@ -515,10 +515,10 @@ export const SustanciaForm: Form<SustanciaDTO> = ({
                   <Grid container spacing={2} justifyContent="center" minHeight="500px">
                     {editEstudioBiologico.message && <Typography variant="h5" color="var(--naranja)" textAlign="center">{editEstudioBiologico.message}</Typography>}
                     <EstudioBiologicoForm
-                      data={editEstudioBiologico?.data ?? {}}
-                      disabled={editEstudioBiologico?.disabled}
-                      errors={editEstudioBiologico?.errors}
-                      helpers={editEstudioBiologico?.helpers}
+                      data={editEstudioBiologico.data}
+                      disabled={editEstudioBiologico.disabled}
+                      errors={editEstudioBiologico.errors}
+                      helpers={editEstudioBiologico.helpers}
                       onChange={handleEstudioBiologicoOnChange}
                     />
                   </Grid>
@@ -540,10 +540,10 @@ export const SustanciaForm: Form<SustanciaDTO> = ({
       case "delete": return `Borrando ${value}`;
     }
   }
-  function handleUtilizacionOnChange(changes: Partial<UtilizacionDTO>) {
+  function handleUtilizacionOnChange(changes: DeepPartial<UtilizacionDTO>) {
     setEditUtilizacion((o) => ({ ...o, data: { ...o.data, ...changes } }));
   }
-  function handleEditUtilizacionOnClose() { setEditUtilizacion({}); }
+  function handleEditUtilizacionOnClose() { setEditUtilizacion({ data: {} }); }
   function handleEditUtilizacionOnConfirm() {
     const utilizaciones = [...data.utilizaciones ?? []];
     switch (editUtilizacion.action) {
@@ -600,7 +600,7 @@ export const SustanciaForm: Form<SustanciaDTO> = ({
   function handlePuestoAfectadoOnChange(changes: DeepPartial<PuestoAfectadoDTO>) {
     setEditPuestoAfectado((o) => ({ ...o, data: { ...o.data, ...changes } }));
   }
-  function handleEditPuestoAfectadoOnClose() { setEditPuestoAfectado({}); }
+  function handleEditPuestoAfectadoOnClose() { setEditPuestoAfectado({ data: {} }); }
   function handleEditPuestoAfectadoOnConfirm() {
     const puestosAfectados = [...data.puestosAfectados ?? []];
     switch (editPuestoAfectado.action) {
@@ -670,7 +670,7 @@ export const SustanciaForm: Form<SustanciaDTO> = ({
       }
     }));
   }
-  function handleEditEquipoRadiologicoOnClose() { setEditEquipoRadiologico({}); }
+  function handleEditEquipoRadiologicoOnClose() { setEditEquipoRadiologico({ data: {} }); }
   function handleEditEquipoRadiologicoOnConfirm() {
     const equiposRadiologicos = [...data.equiposRadiologicos ?? []];
     switch (editEquipoRadiologico.action) {
@@ -751,7 +751,7 @@ export const SustanciaForm: Form<SustanciaDTO> = ({
       data: { ...o.data, ...changes }
     }));
   }
-  function handleEditProveedorOnClose() { setEditProveedor({}); }
+  function handleEditProveedorOnClose() { setEditProveedor({ data: {} }); }
   function handleEditProveedorOnConfirm() {
     const proveedores = [...data.proveedores ?? []];
     switch (editProveedor.action) {
@@ -810,7 +810,7 @@ export const SustanciaForm: Form<SustanciaDTO> = ({
       data: { ...o.data, ...changes }
     }));
   }
-  function handleEditCompradorOnClose() { setEditComprador({}); }
+  function handleEditCompradorOnClose() { setEditComprador({ data: {} }); }
   function handleEditCompradorOnConfirm() {
     const compradores = [...data.compradores ?? []];
     switch (editComprador.action) {
@@ -869,7 +869,7 @@ export const SustanciaForm: Form<SustanciaDTO> = ({
       data: { ...o.data, ...changes }
     }));
   }
-  function handleEditEstudioAmbientalOnClose() { setEditEstudioAmbiental({}); }
+  function handleEditEstudioAmbientalOnClose() { setEditEstudioAmbiental({ data: {} }); }
   function handleEditEstudioAmbientalOnConfirm() {
     const estudiosAmbientalesEspecificos = [...data.estudiosAmbientalesEspecificos ?? []];
     switch (editEstudioAmbiental.action) {
@@ -929,7 +929,7 @@ export const SustanciaForm: Form<SustanciaDTO> = ({
       data: { ...o.data, ...changes }
     }));
   }
-  function handleEditEstudioBiologicoOnClose() { setEditEstudioBiologico({}); }
+  function handleEditEstudioBiologicoOnClose() { setEditEstudioBiologico({ data: {} }); }
   function handleEditEstudioBiologicoOnConfirm() {
     const estudiosBiologicosEspecificos = [...data.estudiosBiologicosEspecificos ?? []];
     switch (editEstudioBiologico.action) {

@@ -11,6 +11,7 @@ import EmpresaTercerizadaBrowse from "./EmpresaTercerizadaBrowse";
 import EmpresaTercerizadaForm from "./EmpresaTercerizadaForm";
 import { useSVCCPresentacionContext } from "../../context";
 import { headers } from "next/dist/client/components/headers";
+import { DeepPartial } from "@/utils/utils";
 
 const {
   useSVCCEmpresaTercerizadaList,
@@ -20,13 +21,13 @@ const {
 } = gestionEmpleadorAPI;
 
 type EditAction = "create" | "read" | "update" | "delete";
-type EditState = Partial<Omit<FormProps<EmpresaTercerizadaDTO>, "onChange">> & {
+type EditState = Omit<FormProps<EmpresaTercerizadaDTO>, "onChange"> & {
   action?: EditAction,
   message?: string;
 };
 export default function EmpresaTercerizadaHandler() {
-  const [edit, setEdit] = useState<EditState>({});
-  const { ultima: { data: presentacion }, establecimientos } = useSVCCPresentacionContext();
+  const [edit, setEdit] = useState<EditState>({ data: {} });
+  const { ultima: { data: presentacion }, establecimientos, refCIIU } = useSVCCPresentacionContext();
   const [{ index, size }, setPage] = useState({ index: 0, size: 100 });
   const [data, setData] = useState<Data<EmpresaTercerizadaDTO>>({ index, size, count: 0, pages: 0, data: [] });
   const { isLoading, isValidating, mutate } = useSVCCEmpresaTercerizadaList(
@@ -84,10 +85,10 @@ export default function EmpresaTercerizadaHandler() {
         <Grid container spacing={2} justifyContent="center" minHeight="500px">
           {edit.message && <Typography variant="h5" color="var(--naranja)" textAlign="center">{edit.message}</Typography>}
           <EmpresaTercerizadaForm
-            data={edit?.data ?? {}}
-            disabled={edit?.disabled}
-            errors={edit?.errors}
-            helpers={edit?.helpers}
+            data={edit.data}
+            disabled={edit.disabled}
+            errors={edit.errors}
+            helpers={edit.helpers}
             onChange={handleOnChange}
           />
         </Grid>
@@ -109,9 +110,9 @@ export default function EmpresaTercerizadaHandler() {
       case "delete": return `Borrando ${value}`;
     }
   }
-  function handleOnChange(changes: Partial<EmpresaTercerizadaDTO>) {
+  function handleOnChange(changes: DeepPartial<EmpresaTercerizadaDTO>) {
     setEdit((o) => {
-      const edit = ({ ...o, data: { ...o.data, ...changes }, errors: { ...o.errors }, helpers: { ...o.helpers } });
+      const edit = ({ ...o, data: { ...o.data }, errors: { ...o.errors }, helpers: { ...o.helpers } });
       if ("idEstablecimientoEmpresa" in changes) {
         if (changes.idEstablecimientoEmpresa) {
           const ix = establecimientos.data?.findIndex((e) => e.codEstabEmpresa === changes.idEstablecimientoEmpresa) ?? -1;
@@ -127,10 +128,27 @@ export default function EmpresaTercerizadaHandler() {
           edit.helpers.idEstablecimientoEmpresa = "Debe seleccionar un establecimiento";
         }
       }
+      if ("ciiu" in changes) {
+        if (changes.ciiu) {
+          const ciiuNewIx = refCIIU.data?.findIndex((r) => r.ciiuRev4 === changes.ciiu) ?? -1;
+          if (ciiuNewIx < 0) {
+            edit.errors!.ciiu = true;
+            edit.helpers!.ciiu = "No existe CIIU";
+          } else {
+            delete edit.errors!.ciiu;
+            delete edit.helpers!.ciiu;
+          }
+        } else {
+          delete edit.errors!.ciiu;
+          // edit.helpers.ciiu = "Debe elegir un CIIU";
+          delete edit.helpers!.ciiu;
+        }
+      }
+      edit.data = { ...edit.data, ...changes };
       return edit;
     });
   }
-  function handleEditOnClose() { setEdit({}); }
+  function handleEditOnClose() { setEdit({ data: {} }); }
   function handleEditOnConfirm() {
     switch (edit.action) {
       case "create": {

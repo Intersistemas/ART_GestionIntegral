@@ -20,12 +20,12 @@ const {
 } = gestionEmpleadorAPI;
 
 type EditAction = "create" | "read" | "update" | "delete";
-type EditState = Partial<Omit<FormProps<EstablecimientoDeclaradoDTO>, "onChange">> & {
+type EditState = Omit<FormProps<EstablecimientoDeclaradoDTO>, "onChange"> & {
   action?: EditAction,
   message?: string;
 };
 export default function EstablecimientoDeclaradoHandler() {
-  const [edit, setEdit] = useState<EditState>({});
+  const [edit, setEdit] = useState<EditState>({ data: {} });
   const { ultima: { data: presentacion }, } = useSVCCPresentacionContext();
   const [{ index, size }, setPage] = useState({ index: 0, size: 100 });
   const [data, setData] = useState<Data<EstablecimientoDeclaradoDTO>>({ index, size, count: 0, pages: 0, data: [] });
@@ -84,10 +84,10 @@ export default function EstablecimientoDeclaradoHandler() {
         <Grid container spacing={2} justifyContent="center" minHeight="500px">
           {edit.message && <Typography variant="h5" color="var(--naranja)" textAlign="center">{edit.message}</Typography>}
           <EstablecimientoDeclaradoForm
-            data={edit?.data ?? {}}
-            disabled={edit?.disabled}
-            errors={edit?.errors}
-            helpers={edit?.helpers}
+            data={edit.data}
+            disabled={edit.disabled}
+            errors={edit.errors}
+            helpers={edit.helpers}
             onChange={handleOnChange}
           />
         </Grid>
@@ -112,7 +112,7 @@ export default function EstablecimientoDeclaradoHandler() {
   function handleOnChange(changes: DeepPartial<EstablecimientoDeclaradoDTO>) {
     setEdit((o) => ({ ...o, data: { ...o.data, ...changes } }));
   }
-  function handleEditOnClose() { setEdit({}); }
+  function handleEditOnClose() { setEdit({ data: {} }); }
   function handleEditOnConfirm() {
     switch (edit.action) {
       case "create": {
