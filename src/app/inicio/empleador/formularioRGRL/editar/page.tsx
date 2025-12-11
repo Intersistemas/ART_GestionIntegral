@@ -330,14 +330,21 @@ export default function Page() {
                             </div>
 
                             <div className={styles.dateRow}>
-                                <label className={styles.dateLabel}>Fecha regularización (AAAAMMDD):</label>
+                                <label className={styles.dateLabel}>Fecha regularización:</label>
                                 <input
-                                    type="number"
-                                    value={rr.fechaRegularizacion ?? ''}
-                                    onChange={(e) =>
-                                        onCambiarRespuesta(key, { fechaRegularizacion: e.target.value ? Number(e.target.value) : 0 })
+                                    type="date"
+                                    value={
+                                        rr.fechaRegularizacionNormal ?? (rr.fechaRegularizacion ? `${String(rr.fechaRegularizacion).slice(0,4)}-${String(rr.fechaRegularizacion).slice(4,6)}-${String(rr.fechaRegularizacion).slice(6,8)}` : '')
                                     }
-                                    placeholder="20251030"
+                                    onChange={(e) => {
+                                        const iso = e.target.value || '';
+                                        const digits = iso ? iso.replace(/-/g, '') : '';
+                                        onCambiarRespuesta(key, {
+                                            fechaRegularizacion: digits ? Number(digits) : 0,
+                                            fechaRegularizacionNormal: iso ? iso : null,
+                                        });
+                                    }}
+                                    placeholder="2025-10-30"
                                     className={styles.dateInputNum}
                                 />
                             </div>
