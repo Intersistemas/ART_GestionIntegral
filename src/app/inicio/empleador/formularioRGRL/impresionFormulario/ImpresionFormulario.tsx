@@ -67,11 +67,6 @@ const ImpresionFormulario: React.FC<ImpresionProps> = (props) => {
 
     return (
       <>
-        <View style={styles.hStrip}>
-          <Text style={styles.stripText}>
-            ESTADO DE CUMPLIMIENTO EN EL ESTABLECIMIENTO DE LA NORMATIVA VIGENTE (DECRETO XXXXX)
-          </Text>
-        </View>
 
         {groups.map((g, gi) => (
           <Fragment key={gi}>

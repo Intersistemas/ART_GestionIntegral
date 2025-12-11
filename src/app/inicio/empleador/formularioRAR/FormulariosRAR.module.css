@@ -34,10 +34,10 @@
 /* Resumen configurado (gris claro con borde) */
 .summaryBox {
   padding: 16px;
-  background-color: #f5f5f5;
+  background-color: var(--grisClaroClaro);
   border-radius: 8px;
   margin-top: 20px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--grisClaro);
 }
 
 /* Contenedor botón centrado */
@@ -89,16 +89,16 @@
 
 /* Bloque explicativo del modal de cantidades */
 .modalTextBlock { text-align: center; margin-bottom: 10px; }
-.modalTextGray { margin: 0; color: #666; }
+.modalTextGray { margin: 0; color: var(--gris); }
 .modalTextBold { margin: 8px 0; font-weight: bold; }
 
 /* Total (azulado) */
 .totalBox {
   padding: 12px;
-  background-color: #f0f8ff;
+  background-color: var(--verdeClaroClaro);
   border-radius: 4px;
   text-align: center;
-  border: 1px solid #e0e8f0;
+  border: 1px solid var(--verdeClaro);
 }
 
 /* Grillas de inputs del modal de trabajador */
@@ -111,34 +111,34 @@
 /* Estilos para la tabla de detalles del interno */
 .detallesTable {
   margin-top: 16px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--grisClaro);
   border-radius: 8px;
   padding: 16px;
-  background-color: #fafafa;
+  background-color: var(--grisClaroClaro);
 }
 
 .detallesInfo {
   margin: 0 0 12px 0;
   padding: 8px;
-  background-color: #e3f2fd;
+  background-color: var(--verdeClaroClaro);
   border-radius: 4px;
   text-align: center;
-  border: 1px solid #bbdefb;
+  border: 1px solid var(--verdeClaro);
 }
 
 .loadingMessage {
   padding: 20px;
   text-align: center;
-  color: #666;
+  color: var(--gris);
   font-style: italic;
 }
 
 .errorMessage {
   padding: 20px;
   text-align: center;
-  color: #d32f2f;
-  background-color: #ffebee;
-  border: 1px solid #ffcdd2;
+  color: var(--rojo);
+  background-color: var(--naranjaClaroClaro);
+  border: 1px solid var(--naranjaClaro);
   border-radius: 4px;
   margin: 10px 0;
 }
@@ -146,10 +146,10 @@
 .noDataMessage {
   padding: 20px;
   text-align: center;
-  color: #666;
+  color: var(--gris);
   font-style: italic;
-  background-color: #f5f5f5;
-  border: 1px solid #e0e0e0;
+  background-color: var(--grisClaroClaro);
+  border: 1px solid var(--grisClaro);
   border-radius: 4px;
   margin: 10px 0;
 }
@@ -166,7 +166,7 @@
 .detallesTable :global(thead th) {
   font-weight: 600;
   white-space: nowrap;
-  background-color: #f0f0f0;
+  background-color: var(--grisClaroClaro);
 }
 .detallesTable :global(tbody td) {
   white-space: nowrap;
@@ -182,13 +182,55 @@
 
 .iconButton {
   font-size: 20px;
-  color: #E4840C;
+  color: var(--naranja);
   cursor: pointer;
   transition: opacity 0.2s ease;
 }
 
 .iconButton:hover {
   opacity: 0.85;
+}
+
+:export {
+  /* Header simple del PDF */
+  pdfHeaderBg: #92bd68;
+  pdfHeaderTextColor: #ffffff;
+  pdfHeaderPadding: 10;
+  pdfHeaderMb: 10;
+  pdfHeaderFontSize: 16;
+  /* Logo en header */
+  pdfHeaderLogoWidth: 120;
+  pdfHeaderLogoHeight: 50;
+  pdfHeaderGap: 8;
+  pdfHeaderLogoMb: 6;
+
+  /* Resumen/encabezado de datos del PDF */
+  pdfResumenPaddingV: 3;
+  pdfResumenPaddingH: 4;
+  pdfResumenMb: 8;
+
+  /* Títulos y textos */
+  pdfRazonFontSize: 12;
+  pdfRazonMb: 2;
+  pdfFechaRowFontSize: 9;
+  pdfContratoLabelFontSize: 9;
+  pdfInfoFontSize: 10;
+  pdfInfoMarginTop: 2;
+
+  /* Spacings comunes */
+  pdfRowMarginTop: 2;
+  pdfSmallMargin: 2;
+  pdfEstabTitleMarginTop: 4;
+
+  /* Títulos secundarios */
+  pdfEstabTitleFontSize: 12;
+  pdfTrabTitleFontSize: 12;
+  pdfTrabTitleMarginTop: 5;
+  pdfTrabTitleMarginBottom: 5;
+
+  /* Layouts específicos */
+  pdfContratoWidthPercent: "33%";
+  pdfContratoMarginRight: 6;
 }
 
 /* Botón de acción en tabla */
@@ -238,22 +280,22 @@
 }
 
 .pdfButton:hover {
-  background-color: #ffe6e6;
+  background-color: var(--naranjaClaroClaro);
 }
 
 /* Estilos para el tab de detalles */
 .emptyStateContainer {
   padding: 40px;
   text-align: center;
-  color: #666;
-  background-color: #f9f9f9;
+  color: var(--gris);
+  background-color: var(--grisClaroClaro);
   border-radius: 8px;
-  border: 2px dashed #ddd;
+  border: 2px dashed var(--grisClaro);
 }
 
 .emptyStateTitle {
   margin-bottom: 10px;
-  color: #999;
+  color: var(--grisClaro);
 }
 
 .emptyStateText {
@@ -262,11 +304,11 @@
 }
 
 .formularioHeader {
-  background-color: #f0f8ff;
+  background-color: var(--verdeClaroClaro);
   padding: 15px;
   border-radius: 8px;
   margin-bottom: 20px;
-  border: 1px solid #e1e8ed;
+  border: 1px solid var(--verdeClaro);
 }
 
 .formularioHeaderTop {
@@ -278,7 +320,7 @@
 
 .formularioTitle {
   margin: 0;
-  color: #2c5282;
+  color: var(--verdeOscuro);
 }
 
 .formularioGrid {
@@ -294,10 +336,36 @@
   align-items: center;
   margin-bottom: 15px;
   padding: 10px;
-  background-color: #e8f5e8;
+  background-color: var(--verdeClaroClaro);
   border-radius: 6px;
 }
 
 .trabajadoresCount {
   margin: 0;
+}
+
+/* Estilos para los iconos de acciones en la tabla */
+.iconActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  align-items: center;
+  width: 80%;
+}
+
+.iconButton {
+  font-size: 20px;
+  color: var(--naranja);
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.iconButton:hover {
+  opacity: 0.85;
+}
+
+/* Tooltip de acciones en tabla */
+.tooltipCustom {
+  font-size: 1.2rem;
+  font-weight: 500;
 }

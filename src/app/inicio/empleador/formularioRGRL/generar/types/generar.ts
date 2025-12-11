@@ -38,6 +38,7 @@ export type RespuestaCuestionarioVm = {
   internoRespuestaFormulario?: number;
   respuesta?: string;
   fechaRegularizacion?: number | null;
+  fechaRegularizacionNormal?: string | null;
   observaciones?: string | null;
   estadoAccion?: string | null;
   estadoFecha?: number | null;

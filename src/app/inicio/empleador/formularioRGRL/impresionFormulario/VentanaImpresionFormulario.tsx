@@ -1,8 +1,8 @@
 'use client';
-import React from 'react';
-import { PDFViewer, type DocumentProps } from '@react-pdf/renderer';
+import React, { useEffect, useState } from 'react';
+import { PDFViewer } from '@react-pdf/renderer';
 import type { Style as PDFStyle } from '@react-pdf/types';
-import type { VentanaImpresionFormularioProps, PDFChild } from './types/impresion';
+import type { VentanaImpresionFormularioProps} from './types/impresion';
 
 // Estilos de elementos HTML (div/button): CSSProperties 
 const overlay: React.CSSProperties = {
@@ -63,6 +63,17 @@ const VentanaImpresionFormulario: React.FC<VentanaImpresionFormularioProps> = ({
   title = 'Impresión de Formulario RGRL',
   children,
 }) => {
+
+  // KEY evitar "Eo is not a function"
+  const [viewerKey, setViewerKey] = useState(0);
+
+  useEffect(() => {
+    if (open) {
+      // cada vez que se abre el modal, se remonta el visor
+      setViewerKey((k) => k + 1);
+    }
+  }, [open]);
+
   if (!open) return null;
 
   return (
@@ -75,8 +86,10 @@ const VentanaImpresionFormulario: React.FC<VentanaImpresionFormularioProps> = ({
           </button>
         </div>
         <div style={body}>
-          {/* PDFViewer requiere children = <Document /> */}
-          <PDFViewer style={viewerStyle /* si falla el import del tipo, hacé: as any */}>
+          <PDFViewer
+            key={viewerKey}
+            style={viewerStyle as any}
+          >
             {children}
           </PDFViewer>
         </div>

@@ -12,6 +12,10 @@ import styles from './GenerarFormularioRGRL.module.css';
 import { CUIP } from '@/utils/Formato';
 import CustomModal from '@/utils/ui/form/CustomModal';
 import CustomModalMessage, { MessageType } from '@/utils/ui/message/CustomModalMessage';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import IconButton from '@mui/material/IconButton';
+import DataTableImport from '@/utils/ui/table/DataTable';
 
 
 import type {
@@ -34,18 +38,6 @@ const toIsoOrNull = (v?: string | Date | null) => {
   return d.isValid() ? d.toISOString() : null;
 };
 
-const addRow = <T,>(setter: React.Dispatch<React.SetStateAction<T[]>>, empty: T) =>
-  setter((rows) => [...rows, empty]);
-// Helpers para manipular arrays de estado (add/remove/change)
-const removeRow = <T,>(setter: React.Dispatch<React.SetStateAction<T[]>>, idx: number) =>
-  setter((rows) => rows.filter((_, i) => i !== idx));
-const changeRow = <T extends object>(
-  setter: React.Dispatch<React.SetStateAction<T[]>>,
-  idx: number,
-  field: keyof T,
-  value: any
-) => setter((rows) => rows.map((r, i) => (i === idx ? { ...r, [field]: value } as T : r)));
-
 // Llamadas a la API para obtener datos (razón social, establecimientos, tipos, formulario)
 const fetchRazonSocial = async (cuit: number): Promise<string> => {
   const url = `${API_BASE}/FormulariosRGRL?CUIT=${encodeURIComponent(cuit)}`;
@@ -57,9 +49,9 @@ const fetchRazonSocial = async (cuit: number): Promise<string> => {
      }
   );
   if (res.status === 404) return '';
-  
+
   if (!res.ok) throw new Error(`GET ${url} -> ${res.status}`);
-  
+
   // Parse robusto: la API puede devolver { DATA: [...] } o { data: [...] } o el array directamente
   const body = await res.json().catch(() => null);
   const arr =
@@ -140,7 +132,6 @@ const GenerarFormularioRGRL: React.FC<{
   const [establecimientoSel, setEstablecimientoSel] = useState<number | undefined>(undefined);
   const [tipos, setTipos] = useState<TipoFormulario[]>([]);
   const [tipoSel, setTipoSel] = useState<number | undefined>(undefined);
-  const [notificacionFecha, setNotificacionFecha] = useState<string>('');
 
   const [estSuperficie, setEstSuperficie] = useState<number | string>('');
   const [estCantTrab, setEstCantTrab] = useState<number | string>('');
@@ -219,7 +210,15 @@ const GenerarFormularioRGRL: React.FC<{
   }, [cuit, canBuscar]);
 
   useEffect(() => {
-    if (!idFromQuery && cuit && !(replicaDe || replicaDeQuery)) cargarTodoPaso1();
+    // Ejecutar la carga automáticamente solo cuando el CUIT tiene 11 dígitos
+    try {
+      const digits = cuit ? String(cuit).replace(/\D/g, '') : '';
+      if (!idFromQuery && digits.length === 11 && !(replicaDe || replicaDeQuery)) {
+        cargarTodoPaso1();
+      }
+    } catch (err) {
+      console.log('Error al cargar datos automáticamente:', err);
+    }
   }, [cuit, idFromQuery, replicaDe, replicaDeQuery, cargarTodoPaso1]);
 
   // Carga datos cuando se solicita replicar un formulario
@@ -251,7 +250,7 @@ const GenerarFormularioRGRL: React.FC<{
       const d = new Date();
       const mm = String(d.getMonth() + 1).padStart(2, '0');
       const dd = String(d.getDate()).padStart(2, '0');
-      setNotificacionFecha(`${d.getFullYear()}-${mm}-${dd}`);
+
     } catch (e: any) {
       setError(e?.message ?? 'Error al cargar datos para replicar.');
     } finally {
@@ -302,7 +301,7 @@ const GenerarFormularioRGRL: React.FC<{
         internoEstablecimiento: establecimientoSel!,
         creacionFechaHora: toIsoOrNull(new Date()),
         completadoFechaHora: toIsoOrNull(new Date()),
-        notificacionFecha: toIsoOrNull(notificacionFecha ? `${notificacionFecha}T00:00:00` : null),
+        notificacionFecha: toIsoOrNull(new Date()),
         internoPresentacion: 0,
         fechaSRT: toIsoOrNull(new Date()),
       };
@@ -420,6 +419,161 @@ const GenerarFormularioRGRL: React.FC<{
   const [contratistasUI, setContratistasUI] = useState<ContratistaUI[]>([]);
   const [responsablesUI, setResponsablesUI] = useState<ResponsableUI[]>([]);
 
+  const [nuevoResponsable, setNuevoResponsable] = useState<ResponsableUI>({
+    cuit: undefined,
+    responsable: '',
+    cargo: '',
+    representacion: undefined,
+    esContratado: undefined,
+    tituloHabilitante: '',
+    matricula: '',
+    entidadOtorganteTitulo: '',
+  });
+  const [editRespIndex, setEditRespIndex] = useState<number | null>(null);
+
+  //Contratistas
+  const [nuevoContratista, setNuevoContratista] = useState<ContratistaUI>({ cuit: undefined, contratista: '' });
+  const [editContrIndex, setEditContrIndex] = useState<number | null>(null);
+
+  const columnasContratistas = useMemo(() => [
+    {
+      accessorKey: 'cuit',
+      header: 'CUIT',
+      size: 160,
+      cell: ({ getValue }: any) => {
+        const v = getValue();
+        return String(v || '').replace(/\D/g, '').length === 11 ? CUIP(v) : String(v ?? '');
+      }
+    },
+    { accessorKey: 'contratista', header: 'Contratista' },
+    {
+      id: 'acciones',
+      header: 'Acciones',
+      size: 110,
+      cell: ({ row }: any) => {
+        const orig = row.original as ContratistaUI;
+        const idx = contratistasUI.findIndex(r => String(r.cuit ?? '') === String(orig.cuit ?? '') && (r.contratista ?? '') === (orig.contratista ?? ''));
+        return (
+          <div className={styles.actionsInline}>
+            <IconButton size="small" onClick={() => { setNuevoContratista(orig); setEditContrIndex(idx); }} title="Editar">
+              <EditIcon fontSize="small" />
+            </IconButton>
+            <IconButton size="small" onClick={() => setContratistasUI(prev => prev.filter((_, i) => i !== idx))} title="Eliminar">
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </div>
+        );
+      },
+      meta: { align: 'center' }
+    }
+  ], [contratistasUI]);
+
+  // Gremios
+  const [nuevoGremio, setNuevoGremio] = useState<GremioUI>({ legajo: undefined, nombre: '' });
+  const [editGremioIndex, setEditGremioIndex] = useState<number | null>(null);
+
+  const columnasGremios = useMemo(() => [
+    { accessorKey: 'legajo', header: 'Nro Legajo', size: 140 },
+    { accessorKey: 'nombre', header: 'Nombre' },
+    {
+      id: 'acciones',
+      header: 'Acciones',
+      size: 110,
+      cell: ({ row }: any) => {
+        const orig = row.original as GremioUI;
+        const idx = gremiosUI.findIndex(r => Number(r.legajo ?? 0) === Number(orig.legajo ?? 0) && (r.nombre ?? '') === (orig.nombre ?? ''));
+        return (
+          <div className={styles.actionsInline}>
+            <IconButton size="small" onClick={() => { setNuevoGremio(orig); setEditGremioIndex(idx); }} title="Editar">
+              <EditIcon fontSize="small" />
+            </IconButton>
+            <IconButton size="small" onClick={() => setGremiosUI(prev => prev.filter((_, i) => i !== idx))} title="Eliminar">
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </div>
+        );
+      },
+      meta: { align: 'center' }
+    }
+  ], [gremiosUI]);
+
+  const columnasResponsables = useMemo(() => [
+    {
+      accessorKey: 'cuit',
+      header: 'CUIT',
+      size: 130,
+      cell: ({ getValue }: any) => {
+        const v = getValue();
+        return String(v || '').replace(/\D/g, '').length === 11 ? CUIP(v) : String(v ?? '');
+      }
+    },
+    {
+      accessorKey: 'responsable',
+      header: 'Nombre y apellido',
+      size: 360,
+    },
+    {
+      accessorKey: 'cargo',
+      header: 'Cargo',
+      size: 180,
+      cell: ({ getValue }: any) => {
+        const val = getValue();
+        if (!val) return '';
+        if (val === 'H') return 'Profesional de Higiene y Seguridad en el Trabajo';
+        if (val === 'M') return 'Profesional de Medicina Laboral';
+        if (val === 'R') return 'Responsable de Datos del Formulario';
+        return String(val);
+      }
+    },
+    {
+      accessorKey: 'representacion',
+      header: 'Representación',
+      size: 120,
+      cell: ({ getValue }: any) => {
+        const v = Number(getValue());
+        switch (v) {
+          case 1: return 'Representante Legal';
+          case 2: return 'Presidente';
+          case 3: return 'VicePresidente';
+          case 4: return 'Director General';
+          case 5: return 'Gerente General';
+          case 6: return 'Administrador General';
+          case 0: return 'Otros';
+          default: return '';
+        }
+      }
+    },
+    {
+      accessorKey: 'esContratado',
+      header: 'Propio/contratado',
+      size: 110,
+      cell: ({ getValue }: any) => (Number(getValue()) === 1 ? 'Propio' : Number(getValue()) === 0 ? 'Contratado' : ''),
+    },
+    { accessorKey: 'tituloHabilitante', header: 'Título', size: 160 },
+    { accessorKey: 'matricula', header: 'Matrícula', size: 120 },
+    { accessorKey: 'entidadOtorganteTitulo', header: 'Entidad', size: 160 },
+    {
+      id: 'acciones',
+      header: 'Acciones',
+      size: 110,
+      cell: ({ row }: any) => {
+        const orig = row.original as ResponsableUI;
+        const idx = responsablesUI.findIndex(r => String(r.cuit ?? '') === String(orig.cuit ?? '') && (r.responsable ?? '') === (orig.responsable ?? ''));
+        return (
+          <div className={styles.actionsInline}>
+            <IconButton size="small" onClick={() => { setNuevoResponsable(orig); setEditRespIndex(idx); }} title="Editar">
+              <EditIcon fontSize="small" />
+            </IconButton>
+            <IconButton size="small" onClick={() => setResponsablesUI(prev => prev.filter((_, i) => i !== idx))} title="Eliminar">
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </div>
+        );
+      },
+      meta: { align: 'center' }
+    }
+  ], [responsablesUI]);
+
   const [openGremios, setOpenGremios] = useState(false);
   const [openContratistas, setOpenContratistas] = useState(false);
   const [openResponsables, setOpenResponsables] = useState(false);
@@ -434,24 +588,75 @@ const GenerarFormularioRGRL: React.FC<{
       setTipos(tfs);
       setForm(frm);
 
-      setGremiosUI((frm.respuestasGremio ?? []).map((g: any) => ({
-        legajo: Number(g?.legajo ?? 0) || 0,
-        nombre: g?.nombre ?? ''
-      })));
-      setContratistasUI((cfrm => (frm.respuestasContratista ?? []).map((c: any) => ({
-        cuit: Number(c?.cuit ?? 0) || 0,
-        contratista: c?.contratista ?? ''
-      })))());
-      setResponsablesUI((frm.respuestasResponsable ?? []).map((r: any) => ({
-        cuit: Number(r?.cuit ?? 0) || 0,
-        responsable: r?.responsable ?? '',
-        cargo: r?.cargo ?? '',
-        representacion: Number(r?.representacion ?? 0) || 0,
-        esContratado: Number(r?.esContratado ?? 0) || 0,
-        tituloHabilitante: r?.tituloHabilitante ?? '',
-        matricula: r?.matricula ?? '',
-        entidadOtorganteTitulo: r?.entidadOtorganteTitulo ?? '',
-      })));
+      try {
+        const respGrem = (frm.respuestasGremio ?? []) as any[];
+        const meaningfulGrem = respGrem.filter(g => {
+          const leg = Number(g?.legajo ?? 0) || 0;
+          const nombre = (g?.nombre ?? '')?.toString().trim();
+          return leg !== 0 || (nombre && nombre.length > 0);
+        });
+        if (meaningfulGrem.length === 0) {
+          console.log('GenerarFormularioRGRL: la API devolvió sólo gremios vacíos; se omiten.');
+          setGremiosUI([]);
+        } else {
+          setGremiosUI(respGrem.map((g: any) => ({
+            legajo: Number(g?.legajo ?? 0) || 0,
+            nombre: g?.nombre ?? ''
+          })));
+        }
+      } catch (err) {
+        console.log('Error procesando respuestasGremio:', err);
+        setGremiosUI([]);
+      }
+
+      try {
+        const respContr = (frm.respuestasContratista ?? []) as any[];
+        const meaningfulContr = respContr.filter(c => {
+          const cuit = Number(c?.cuit ?? 0) || 0;
+          const nombre = (c?.contratista ?? '')?.toString().trim();
+          return cuit !== 0 || (nombre && nombre.length > 0);
+        });
+        if (meaningfulContr.length === 0) {
+          console.log('GenerarFormularioRGRL: la API devolvió sólo contratistas vacíos; se omiten.');
+          setContratistasUI([]);
+        } else {
+          setContratistasUI(respContr.map((c: any) => ({
+            cuit: Number(c?.cuit ?? 0) || undefined,
+            contratista: c?.contratista ?? ''
+          })));
+        }
+      } catch (err) {
+        console.log('Error procesando respuestasContratista:', err);
+        setContratistasUI([]);
+      }
+
+      try {
+        const respResp = (frm.respuestasResponsable ?? []) as any[];
+        // detectamos filas con contenido real (CUIT o nombre)
+        const meaningful = respResp.filter(r => {
+          const c = Number(r?.cuit ?? 0) || 0;
+          const nombre = (r?.responsable ?? '')?.toString().trim();
+          return c !== 0 || (nombre && nombre.length > 0);
+        });
+        if (meaningful.length === 0) {
+          console.log('GenerarFormularioRGRL: la API devolvió sólo responsables vacíos; se omiten.');
+          setResponsablesUI([]);
+        } else {
+          setResponsablesUI(respResp.map((r: any) => ({
+            cuit: Number(r?.cuit ?? 0) || undefined,
+            responsable: r?.responsable ?? '',
+            cargo: r?.cargo ?? '',
+            representacion: Number(r?.representacion ?? 0) || undefined,
+            esContratado: Number(r?.esContratado ?? 0) || undefined,
+            tituloHabilitante: r?.tituloHabilitante ?? '',
+            matricula: r?.matricula ?? '',
+            entidadOtorganteTitulo: r?.entidadOtorganteTitulo ?? '',
+          })));
+        }
+      } catch (err) {
+        console.log('Error procesando respuestasResponsable:', err);
+        setResponsablesUI([]);
+      }
 
       const dict: Record<number, RespuestaCuestionarioVm> = {};
       for (const r of frm.respuestasCuestionario || []) {
@@ -506,14 +711,14 @@ const GenerarFormularioRGRL: React.FC<{
         for (const q of qs) {
           const key = q.codigo as number;
           const r = respuestas[key] ?? {};
-          fullCuest.push({
+            fullCuest.push({
             interno: r.interno ?? 0,
             internoCuestionario: key,
             internoRespuestaFormulario: r.internoRespuestaFormulario ?? form.interno ?? 0,
             respuesta: r.respuesta ?? '',
             fechaRegularizacion: r.fechaRegularizacion ?? 0,
             observaciones: r.observaciones ?? '',
-            fechaRegularizacionNormal: null as string | null,
+              fechaRegularizacionNormal: (r as any).fechaRegularizacionNormal ?? null,
             estadoAccion: r.estadoAccion ?? 'A',
             estadoFecha: r.estadoFecha ?? 0,
             estadoSituacion: r.estadoSituacion ?? '',
@@ -645,13 +850,13 @@ const GenerarFormularioRGRL: React.FC<{
 
       <div className={styles.container}>
         {/* Vista de edición del formulario — preguntas, paginador y listas (gremios/contratistas/responsables). */}
-        <h2 style={{ margin: 0 }} />
-        <div style={{ marginTop: 6, opacity: 0.95, fontWeight: 700 }}>
+        <h2 className={styles.sectionHeaderTitle} />
+        <div className={styles.sectionHeaderSubtitle}>
 
           Sección {secIdx + 1} de {totalSecs} — {secActual?.descripcion}
         </div>
 
-        <div className={styles.row} style={{ marginTop: 10 }}>
+        <div className={`${styles.row} ${styles.sectionHeaderButtons}`}>
           <CustomButton onClick={() => setOpenGremios(true)}>Gremios</CustomButton>
           <CustomButton onClick={() => setOpenContratistas(true)}>Contratistas</CustomButton>
           <CustomButton onClick={() => setOpenResponsables(true)}>Responsables</CustomButton>
@@ -697,7 +902,6 @@ const GenerarFormularioRGRL: React.FC<{
                       /> No aplica
                     </label>
                   ) : null}
-                  <span className={styles.radioHint}>{value ? '' : '(Sin respuesta)'}</span>
                 </div>
 
                 <div className={styles.obsArea}>
@@ -711,14 +915,21 @@ const GenerarFormularioRGRL: React.FC<{
                 </div>
 
                 <div className={styles.dateRow}>
-                  <label className={styles.dateLabel}>Fecha regularización (AAAAMMDD):</label>
+                  <label className={styles.dateLabel}>Fecha regularización:</label>
                   <input
-                    type="number"
-                    value={rr.fechaRegularizacion ?? ''}
-                    onChange={(e) =>
-                      onCambiarRespuesta(key, { fechaRegularizacion: e.target.value ? Number(e.target.value) : 0 })
+                    type="date"
+                    value={
+                      rr.fechaRegularizacionNormal ?? (rr.fechaRegularizacion ? `${String(rr.fechaRegularizacion).slice(0,4)}-${String(rr.fechaRegularizacion).slice(4,6)}-${String(rr.fechaRegularizacion).slice(6,8)}` : '')
                     }
-                    placeholder="20251030"
+                    onChange={(e) => {
+                      const iso = e.target.value || '';
+                      const digits = iso ? iso.replace(/-/g, '') : '';
+                      onCambiarRespuesta(key, {
+                        fechaRegularizacion: digits ? Number(digits) : 0,
+                        fechaRegularizacionNormal: iso ? iso : null,
+                      });
+                    }}
+                    placeholder="2025-10-30"
                     className={styles.dateInputNum}
                   />
                 </div>
@@ -761,263 +972,226 @@ const GenerarFormularioRGRL: React.FC<{
 
         <CustomModal open={openGremios} onClose={() => setOpenGremios(false)} title="Representación Gremial" size="mid">
           <div className="formGrid">
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Nro Legajo</th>
-                  <th>Nombre</th>
-                  <th className={styles.tableActionsCol}></th>
-                </tr>
-              </thead>
-              <tbody>
-                {gremiosUI.map((g, i) => (
-                  <tr key={i}>
-                    <td className={styles.tdPad4}>
-                      <TextField
-                        type="number"
-                        value={g.legajo ?? 0}
-                        onChange={(e) => changeRow(setGremiosUI, i, 'legajo', Number(e.target.value || 0))}
-                        fullWidth
-                      />
-                    </td>
-                    <td className={styles.tdPad4}>
-                      <TextField
-                        value={g.nombre ?? ''}
-                        onChange={(e) => changeRow(setGremiosUI, i, 'nombre', e.target.value)}
-                        fullWidth
-                      />
-                    </td>
-                    <td><CustomButton onClick={() => removeRow(setGremiosUI, i)}>−</CustomButton></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className={styles.modalGrid120}>
+              <TextField
+                label="Nro. Legajo"
+                type="number"
+                value={nuevoGremio.legajo ?? ''}
+                onChange={(e) => setNuevoGremio(prev => ({ ...prev, legajo: e.target.value ? Number(e.target.value) : undefined }))}
+              />
+              <TextField
+                label="Nombre"
+                value={nuevoGremio.nombre ?? ''}
+                onChange={(e) => setNuevoGremio(prev => ({ ...prev, nombre: e.target.value }))}
+                fullWidth
+              />
+            </div>
+            <div className={styles.modalActionsRow}>
+              <CustomButton onClick={() => {
+                if (editGremioIndex != null && editGremioIndex >= 0) {
+                  setGremiosUI(prev => prev.map((p, idx) => idx === editGremioIndex ? (nuevoGremio as GremioUI) : p));
+                  setEditGremioIndex(null);
+                } else {
+                  setGremiosUI(prev => [...prev, nuevoGremio as GremioUI]);
+                }
+                setNuevoGremio({ legajo: undefined, nombre: '' });
+              }}>{editGremioIndex != null ? 'GUARDAR CAMBIOS' : 'AGREGAR'}</CustomButton>
+            </div>
+            <div className={styles.modalTableWrapper}>
+              <DataTableImport
+                data={gremiosUI}
+                columns={columnasGremios as any}
+                size="small"
+                pageSizeOptions={[5, 10, 15]}
+                enableSorting={true}
+                enableFiltering={false}
+                onRowClick={(rowData) => {
+                  const index = gremiosUI.findIndex(r => Number(r.legajo ?? 0) === Number((rowData as any).legajo ?? 0) && (r.nombre ?? '') === ((rowData as any).nombre ?? ''));
+                  if (index >= 0) {
+                    setNuevoGremio(gremiosUI[index]);
+                    setEditGremioIndex(index);
+                  }
+                }}
+              />
+            </div>
+
             <div className={styles.tableFooter}>
-              <CustomButton onClick={() => addRow<GremioUI>(setGremiosUI, { legajo: 0, nombre: '' })}>AGREGAR</CustomButton>
               <CustomButton onClick={() => setOpenGremios(false)}>GUARDAR</CustomButton>
             </div>
           </div>
         </CustomModal>
         <CustomModal open={openContratistas} onClose={() => setOpenContratistas(false)} title="Contratistas" size="mid">
           <div className="formGrid">
-            <table className={`${styles.table} ${styles.tableSmall}`}>
-              <thead>
-                <tr>
-                  <th className={styles.tableWidth160}>CUIT</th>
-                  <th>Contratista</th>
-                  <th className={styles.tableActionsCol}></th>
-                </tr>
-              </thead>
-              <tbody>
-                {contratistasUI.map((c, i) => (
-                  <tr key={i}>
-                    <td className={styles.tdPad4}>
+            <div className={styles.modalGrid160}>
+              <TextField
+                label="CUIT"
+                value={
+                  String(nuevoContratista.cuit ?? '').replace(/[^\d]/g, '').length === 11
+                    ? CUIP(nuevoContratista.cuit)
+                    : String(nuevoContratista.cuit ?? '')
+                }
+                onChange={(e) => {
+                  const digits = e.target.value.replace(/[^\d]/g, '');
+                  setNuevoContratista(prev => ({ ...prev, cuit: digits ? Number(digits) : undefined }));
+                }}
+                inputMode="numeric"
+              />
+              <TextField
+                label="Contratista"
+                value={nuevoContratista.contratista ?? ''}
+                onChange={(e) => setNuevoContratista(prev => ({ ...prev, contratista: e.target.value }))}
+                fullWidth
+              />
+            </div>
+            <div className={styles.modalActionsRow}>
+              <CustomButton onClick={() => {
+                if (editContrIndex != null && editContrIndex >= 0) {
+                  setContratistasUI(prev => prev.map((p, idx) => idx === editContrIndex ? (nuevoContratista as ContratistaUI) : p));
+                  setEditContrIndex(null);
+                } else {
+                  setContratistasUI(prev => [...prev, nuevoContratista as ContratistaUI]);
+                }
+                setNuevoContratista({ cuit: undefined, contratista: '' });
+              }}>{editContrIndex != null ? 'GUARDAR CAMBIOS' : 'AGREGAR'}</CustomButton>
+            </div>
+            <div className={styles.modalTableWrapper}>
+              <DataTableImport
+                data={contratistasUI}
+                columns={columnasContratistas as any}
+                size="small"
+                pageSizeOptions={[5, 10, 15]}
+                enableSorting={true}
+                enableFiltering={false}
+                onRowClick={(rowData) => {
+                  const index = contratistasUI.findIndex(r => String(r.cuit ?? '') === String((rowData as any).cuit ?? '') && (r.contratista ?? '') === ((rowData as any).contratista ?? ''));
+                  if (index >= 0) {
+                    setNuevoContratista(contratistasUI[index]);
+                    setEditContrIndex(index);
+                  }
+                }}
+              />
+            </div>
 
-                      <TextField
-                        value={
-                          String(c.cuit ?? '').replace(/\D/g, '').length === 11
-                            ? CUIP(c.cuit)
-                            : String(c.cuit ?? '')
-                        }
-                        onChange={(e) =>
-                          changeRow(
-                            setContratistasUI,
-                            i,
-                            'cuit',
-                            Number(e.target.value.replace(/[^\d]/g, '')) || 0
-                          )
-                        }
-                        inputMode="numeric"
-                        fullWidth
-                      />
-                    </td>
-
-                    <td className={styles.tdPad4}>
-                      <TextField
-                        value={c.contratista ?? ''}
-                        onChange={(e) => changeRow(setContratistasUI, i, 'contratista', e.target.value)}
-                        fullWidth
-                      />
-                    </td>
-
-                    <td><CustomButton onClick={() => removeRow(setContratistasUI, i)}>−</CustomButton></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
             <div className={styles.tableFooter}>
-              <CustomButton onClick={() => addRow<ContratistaUI>(setContratistasUI, { cuit: 0, contratista: '' })}>AGREGAR</CustomButton>
               <CustomButton onClick={() => setOpenContratistas(false)}>GUARDAR</CustomButton>
             </div>
           </div>
         </CustomModal>
         <CustomModal open={openResponsables} onClose={() => setOpenResponsables(false)} title="Profesional / Responsable" size="large">
           <div className="formGrid">
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th className={styles.tableWidth130}>CUIT</th>
-                  <th>Nombre y apellido</th>
-                  <th>Cargo</th>
-                  <th className={styles.tableWidth120}>Representación</th>
-                  <th className={styles.tableWidth110}>Propio/contratado</th>
-                  <th>Título</th>
-                  <th>Matrícula</th>
-                  <th>Entidad</th>
-                  <th className={styles.tableActionsCol}></th>
-                </tr>
-              </thead>
-              <tbody>
-                {responsablesUI.map((r, i) => (
-                  <tr key={i}>
-                    <td className={styles.tdPad4}>
-                      <TextField
-                        value={
-                          String(r.cuit ?? '').replace(/\D/g, '').length === 11
-                            ? CUIP(r.cuit)
-                            : String(r.cuit ?? '')
-                        }
-                        onChange={(e) =>
-                          changeRow(
-                            setResponsablesUI,
-                            i,
-                            'cuit',
-                            Number(e.target.value.replace(/[^\d]/g, '')) || 0
-                          )
-                        }
-                        inputMode="numeric"
-                        fullWidth
-                      />
-                    </td>
-                    <td className={styles.tdPad4}>
-                      <TextField
-                        value={r.responsable ?? ''}
-                        onChange={(e) => changeRow(setResponsablesUI, i, 'responsable', e.target.value)}
-                        fullWidth
-                      />
-                    </td>
-                    <td className={styles.tdPad4}>
-                      <FormControl fullWidth>
-                        <Select
-                          value={r.cargo ?? ''}
-                          onChange={(e) => changeRow(setResponsablesUI, i, 'cargo', e.target.value)}
-                          renderValue={(val) => {
-                            if (!val) return '';
-                            if (val === 'H') return 'Profesional de Higiene y Seguridad en el Trabajo';
-                            if (val === 'M') return 'Profesional de Medicina Laboral';
-                            if (val === 'R') return 'Responsable de Datos del Formulario';
-                            return String(val);
-                          }}
-                        >
-                          <MenuItem value=""> 
-                            <em>Seleccioná...</em>
-                          </MenuItem>
-                          <MenuItem value={'H'}>Profesional de Higiene y Seguridad en el Trabajo</MenuItem>
-                          <MenuItem value={'M'}>Profesional de Medicina Laboral</MenuItem>
-                          <MenuItem value={'R'}>Responsable de Datos del Formulario</MenuItem>
-                        </Select>
-                      </FormControl>
-                    </td>
-                    <td className={styles.tdPad4}>
-                      <FormControl fullWidth>
-                        <Select
-                          value={r.representacion ?? ''}
-                          onChange={(e) => changeRow(setResponsablesUI, i, 'representacion', Number(e.target.value || 0))}
-                          renderValue={(val) => {
-                            const v = Number(val);
-                            switch (v) {
-                              case 1: return 'Representante Legal';
-                              case 2: return 'Presidente';
-                              case 3: return 'VicePresidente';
-                              case 4: return 'Director General';
-                              case 5: return 'Gerente General';
-                              case 6: return 'Administrador General';
-                              case 0: return 'Otros';
-                              default: return String(val ?? '');
-                            }
-                          }}
-                        >
-                          <MenuItem value=""> 
-                            <em>Seleccioná...</em>
-                          </MenuItem>
-                          <MenuItem value={1}>Representante Legal</MenuItem>
-                          <MenuItem value={2}>Presidente</MenuItem>
-                          <MenuItem value={3}>VicePresidente</MenuItem>
-                          <MenuItem value={4}>Director General</MenuItem>
-                          <MenuItem value={5}>Gerente General</MenuItem>
-                          <MenuItem value={6}>Administrador General</MenuItem>
-                          <MenuItem value={0}>Otros</MenuItem>
-                        </Select>
-                      </FormControl>
-                    </td>
-                    <td className={styles.tdPad4}>
-                      <FormControl fullWidth>
-                        <Select
-                          value={typeof r.esContratado === 'number' ? r.esContratado : ''}
-                          onChange={(e) => changeRow(setResponsablesUI, i, 'esContratado', Number(e.target.value || 0))}
-                          renderValue={(val) => {
-                            const v = Number(val);
-                            switch (v) {
-                              case 0: return 'Contratado';
-                              case 1: return 'Propio';
-                              default: return String(val ?? '');
-                            }
-                          }}
-                        >
-                          <MenuItem value="">
-                            <em>Seleccioná...</em>
-                          </MenuItem>
-                          <MenuItem value={0}>Contratado</MenuItem>
-                          <MenuItem value={1}>Propio</MenuItem>
-                        </Select>
-                      </FormControl>
-                    </td>
-                    <td className={styles.tdPad4}>
-                      <input
-                        type="text"
-                        value={r.tituloHabilitante ?? ''}
-                        onChange={(e) => changeRow(setResponsablesUI, i, 'tituloHabilitante', e.target.value)}
-                        style={{ width: '100%' }}
-                      />
-                    </td>
-                    <td className={styles.tdPad4}>
-                      <input
-                        type="text"
-                        value={r.matricula ?? ''}
-                        onChange={(e) => changeRow(setResponsablesUI, i, 'matricula', e.target.value)}
-                        style={{ width: '100%' }}
-                      />
-                    </td>
-                    <td className={styles.tdPad4}>
-                      <input
-                        type="text"
-                        value={r.entidadOtorganteTitulo ?? ''}
-                        onChange={(e) => changeRow(setResponsablesUI, i, 'entidadOtorganteTitulo', e.target.value)}
-                        style={{ width: '100%' }}
-                      />
-                    </td>
-                    <td><CustomButton onClick={() => removeRow(setResponsablesUI, i)}>−</CustomButton></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <div className={styles.tableFooter}>
-              <CustomButton
-                onClick={() =>
-                  addRow<ResponsableUI>(setResponsablesUI, {
-                    cuit: 0,
-                    responsable: '',
-                    cargo: '',
-                    representacion: 7,
-                    esContratado: 0,
-                    tituloHabilitante: '',
-                    matricula: '',
-                    entidadOtorganteTitulo: '',
-                  })
+            <div className={styles.modalGridRespTop}>
+              <TextField
+                label="CUIT"
+                value={(() => {
+                  const digits = String(nuevoResponsable.cuit ?? '').replace(/[^\d]/g, '');
+                  return digits.length === 11 ? CUIP(digits) : (digits ? digits : '');
+                })()}
+                onChange={(e) => {
+                  const digits = e.target.value.replace(/[^\d]/g, '');
+                  setNuevoResponsable(prev => ({ ...prev, cuit: digits ? Number(digits) : undefined }));
+                }}
+                inputMode="numeric"
+              />
+              <TextField
+                label="Nombre y apellido"
+                value={nuevoResponsable.responsable ?? ''}
+                onChange={(e) => setNuevoResponsable(prev => ({ ...prev, responsable: e.target.value }))}
+                fullWidth
+              />
+              <FormControl>
+                <InputLabel>Cargo</InputLabel>
+                <Select
+                  value={nuevoResponsable.cargo ?? ''}
+                  onChange={(e) => setNuevoResponsable(prev => ({ ...prev, cargo: e.target.value }))}
+                >
+                  <MenuItem value=""><em>Seleccioná...</em></MenuItem>
+                  <MenuItem value={'H'}>Profesional de Higiene y Seguridad en el Trabajo</MenuItem>
+                  <MenuItem value={'M'}>Profesional de Medicina Laboral</MenuItem>
+                  <MenuItem value={'R'}>Responsable de Datos del Formulario</MenuItem>
+                </Select>
+              </FormControl>
+              <FormControl>
+                <InputLabel>Representación</InputLabel>
+                <Select
+                  value={nuevoResponsable.representacion ?? ''}
+                  onChange={(e) => setNuevoResponsable(prev => ({ ...prev, representacion: Number(e.target.value || 0) }))}
+                >
+                  <MenuItem value=""><em>Seleccioná...</em></MenuItem>
+                  <MenuItem value={1}>Representante Legal</MenuItem>
+                  <MenuItem value={2}>Presidente</MenuItem>
+                  <MenuItem value={3}>VicePresidente</MenuItem>
+                  <MenuItem value={4}>Director General</MenuItem>
+                  <MenuItem value={5}>Gerente General</MenuItem>
+                  <MenuItem value={6}>Administrador General</MenuItem>
+                  <MenuItem value={0}>Otros</MenuItem>
+                </Select>
+              </FormControl>
+            </div>
+            <div className={styles.modalGridRespBottom}>
+              <FormControl>
+                <InputLabel>Propio/Contratado</InputLabel>
+                <Select
+                  value={typeof nuevoResponsable.esContratado === 'number' ? nuevoResponsable.esContratado : ''}
+                  onChange={(e) => {
+                    const v = e.target.value as string | number;
+                    setNuevoResponsable(prev => ({ ...prev, esContratado: v === '' ? undefined : Number(v) }));
+                  }}
+                >
+                  <MenuItem value=""><em>Seleccioná...</em></MenuItem>
+                  <MenuItem value={0}>Contratado</MenuItem>
+                  <MenuItem value={1}>Propio</MenuItem>
+                </Select>
+              </FormControl>
+              <TextField
+                label="Título"
+                value={nuevoResponsable.tituloHabilitante ?? ''}
+                onChange={(e) => setNuevoResponsable(prev => ({ ...prev, tituloHabilitante: e.target.value }))}
+              />
+              <TextField
+                label="Matrícula"
+                value={nuevoResponsable.matricula ?? ''}
+                onChange={(e) => setNuevoResponsable(prev => ({ ...prev, matricula: e.target.value }))}
+              />
+              <TextField
+                label="Entidad"
+                value={nuevoResponsable.entidadOtorganteTitulo ?? ''}
+                onChange={(e) => setNuevoResponsable(prev => ({ ...prev, entidadOtorganteTitulo: e.target.value }))}
+                fullWidth
+              />
+            </div>
+            <div className={styles.modalActionsRow}>
+              <CustomButton onClick={() => {
+                if (editRespIndex != null && editRespIndex >= 0) {
+                  setResponsablesUI(prev => prev.map((p, idx) => idx === editRespIndex ? (nuevoResponsable as ResponsableUI) : p));
+                  setEditRespIndex(null);
+                } else {
+                  setResponsablesUI(prev => [...prev, nuevoResponsable as ResponsableUI]);
                 }
-              >
-                AGREGAR
-              </CustomButton>
+                setNuevoResponsable({ cuit: undefined, responsable: '', cargo: '', representacion: undefined, esContratado: undefined, tituloHabilitante: '', matricula: '', entidadOtorganteTitulo: '' });
+              }}>{editRespIndex != null ? 'GUARDAR CAMBIOS' : 'AGREGAR'}</CustomButton>
+            </div>
+
+            {/* Tabla de responsables (usando DataTableImport) */}
+            <div className={styles.modalTableWrapper}>
+              <DataTableImport
+                data={responsablesUI}
+                columns={columnasResponsables as any}
+                size="small"
+                pageSizeOptions={[5, 10, 15]}
+                enableSorting={true}
+                enableFiltering={false}
+                onRowClick={(rowData) => {
+                  // Si se hace click en la fila, seleccionamos para editar si coincide
+                  const index = responsablesUI.findIndex(r => String(r.cuit ?? '') === String((rowData as any).cuit ?? '') && (r.responsable ?? '') === ((rowData as any).responsable ?? ''));
+                  if (index >= 0) {
+                    setNuevoResponsable(responsablesUI[index]);
+                    setEditRespIndex(index);
+                  }
+                }}
+              />
+            </div>
+
+            <div className={styles.tableFooter}>
               <CustomButton onClick={() => setOpenResponsables(false)}>GUARDAR</CustomButton>
             </div>
           </div>
@@ -1029,15 +1203,7 @@ const GenerarFormularioRGRL: React.FC<{
   return (
     <div className={styles.container}>
       {/* Carga de datos inicial y botones para crear/replicar el formulario. */}
-      <Box
-        sx={{
-          mb: 2,
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', sm: '1fr auto' },
-          gap: 2,
-          alignItems: 'center',
-        }}
-      >
+      <Box className={styles.filterCuitBox}>
         <TextField
           label="CUIT"
           value={
@@ -1053,11 +1219,8 @@ const GenerarFormularioRGRL: React.FC<{
           inputMode="numeric"
           fullWidth
         />
-        <CustomButton onClick={cargarTodoPaso1} disabled={!canBuscar}>
-          CARGAR
-        </CustomButton>
       </Box>
-      <Box sx={{ mb: 2 }}>
+      <Box className={styles.razonSocialBox}>
         <TextField
           label="Razón Social"
           value={razonSocial}
@@ -1066,17 +1229,7 @@ const GenerarFormularioRGRL: React.FC<{
           InputProps={{ readOnly: true }}
         />
       </Box>
-      <Box sx={{ mb: 2, maxWidth: 360 }}>
-        <TextField
-          label="Notificación Fecha"
-          type="date"
-          value={notificacionFecha}
-          onChange={(e) => setNotificacionFecha(e.target.value)}
-          fullWidth
-          InputLabelProps={{ shrink: true }}
-        />
-      </Box>
-      <Box sx={{ mb: 2 }}>
+      <Box className={styles.establecimientoBox}>
         <FormControl fullWidth>
           <InputLabel>Establecimiento</InputLabel>
           <Select
@@ -1106,14 +1259,7 @@ const GenerarFormularioRGRL: React.FC<{
         </FormControl>
       </Box>
       {estActual && (
-        <Box
-          sx={{
-            mb: 2,
-            display: 'grid',
-            gap: 2,
-            gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-          }}
-        >
+        <Box className={styles.estDatosGrid}>
           <TextField
             label="Superficie"
             type="number"
@@ -1138,7 +1284,7 @@ const GenerarFormularioRGRL: React.FC<{
           />
         </Box>
       )}
-      <Box sx={{ mb: 2 }}>
+      <Box className={styles.establecimientoBox}>
         <FormControl fullWidth disabled={esReplica} title={esReplica ? 'Tipo fijado por replicación' : undefined}>
           <InputLabel>Formulario</InputLabel>
           <Select
@@ -1153,7 +1299,7 @@ const GenerarFormularioRGRL: React.FC<{
           </Select>
         </FormControl>
       </Box>
-      <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+      <Box className={styles.accionesFooter}>
         <CustomButton
           onClick={() => {
             if (isModal) {
