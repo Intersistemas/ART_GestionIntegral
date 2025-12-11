@@ -182,3 +182,31 @@
   margin-top: 12px;
   color: #b00020;
 }
+
+/* Estilos para el diálogo de confirmación */
+.confirmDialogTitle {
+  text-align: center;
+}
+.confirmDialogContent {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 8px;
+  padding-bottom: 6px;
+}
+.confirmAlert {
+  width: 100%;
+}
+.confirmDialogActions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 24px;
+}
+
+.confirmActionsInner {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}

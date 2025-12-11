@@ -295,18 +295,24 @@ const FormulariosRAREditar: React.FC<EditarProps> = ({ edita, finalizaCarga }) =
       const fechaActual = new Date().toISOString();
       const cantidadesCompletas = numerosValidos(cantExpuestos) && numerosValidos(cantNoExpuestos) && (Number(cantExpuestos) + Number(cantNoExpuestos)) > 0;
       const formularioCompleto = establecimientoSeleccionado.trim() !== '' && cantidadesCompletas && trabajadoresCargados >= totalTrabajadores;
-      const detalle = filas.map((f) => ({
-        internoFormulariosRar: 0,
-        cuil: Number((f.CUIL || '').replace(/\D/g, '')),
-        nombre: f.Nombre || '',
-        sectorTarea: f.SectorTareas || '',
-        fechaIngreso: new Date(f.Ingreso || fechaActual).toISOString(),
-        horasExposicion: Number(String(f.Exposicion || '0').replace(/[^\d]/g, '')) || 4,
-        fechaUltimoExamenMedico: new Date(f.UltimoExamenMedico || fechaActual).toISOString(),
-        codigoAgente: Number(f.CodigoAgente) || 1,
-        fechaInicioExposicion: new Date(f.FechaFin || fechaActual).toISOString(),
-        fechaFinExposicion: new Date(f.FechaFinExposicion || fechaActual).toISOString(),
-      }));
+      const detalle = filas.map((f) => {
+        const raw = String(f.Exposicion ?? '').replace(/[^\d]/g, '').trim();
+        const n = Number(raw);
+        const horas = raw === '' ? 0 : (Number.isFinite(n) ? n : 0);
+
+        return {
+          internoFormulariosRar: 0,
+          cuil: Number((f.CUIL || '').replace(/\D/g, '')),
+          nombre: f.Nombre || '',
+          sectorTarea: f.SectorTareas || '',
+          fechaIngreso: new Date(f.Ingreso || fechaActual).toISOString(),
+          horasExposicion: horas,
+          fechaUltimoExamenMedico: new Date(f.UltimoExamenMedico || fechaActual).toISOString(),
+          codigoAgente: Number(f.CodigoAgente) || 1,
+          fechaInicioExposicion: new Date(f.FechaFin || fechaActual).toISOString(),
+          fechaFinExposicion: new Date(f.FechaFinExposicion || fechaActual).toISOString(),
+        };
+      });
 
       const body = {
         cantTrabajadoresExpuestos: Number(cantExpuestos) || 0,

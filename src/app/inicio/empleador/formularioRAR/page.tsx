@@ -156,7 +156,7 @@ const FormulariosRAR: React.FC = () => {
           fechaIngreso: detalle.fechaIngreso ? formatearFecha(detalle.fechaIngreso) : '',
           fechaInicioExposicion: detalle.fechaInicioExposicion ? formatearFecha(detalle.fechaInicioExposicion) : '',
           fechaFinExposicion: detalle.fechaFinExposicion ? formatearFecha(detalle.fechaFinExposicion) : '',
-          horasExposicion: detalle.horasExposicion || 0,
+          horasExposicion: detalle.horasExposicion ?? 0,
           codigoAgente: detalle.codigoAgente || '',
           fechaUltimoExamenMedico: detalle.fechaUltimoExamenMedico ? formatearFecha(detalle.fechaUltimoExamenMedico) : '',
         }));
@@ -219,9 +219,7 @@ const FormulariosRAR: React.FC = () => {
     const idFormulario = rowData.id || rowData.Id || rowData.ID || rowData.InternoFormularioRAR || rowData.interno;
     if (idFormulario) {
       try {
-        const response = await fetch(`http://arttest.intersistemas.ar:8302/api/FormulariosRAR/${idFormulario}`);
-        if (response.ok) {
-          const detallesFormulario = await response.json();
+        const detallesFormulario = await ArtAPI.getFormularioRARById(Number(idFormulario));
 
           let mapaAgentes = new Map<number, string>();
           try {
@@ -249,15 +247,118 @@ const FormulariosRAR: React.FC = () => {
               }))
             : [];
 
-          const datosCompletos = {
-            ...rowData,
-            detallesTrabajadores: detallesConNombre,
-            totalTrabajadores: detallesConNombre.length || 0,
-          };
-          setDatosPDF(datosCompletos);
-        } else {
-          setDatosPDF(rowData);
+
+        let establecimiento = null;
+        try {
+          const estId = Number(
+            rowData.internoEstablecimiento ||
+            rowData.InternoEstablecimiento ||
+            detallesFormulario.internoEstablecimiento ||
+            0
+          );
+          if (estId > 0) {
+            establecimiento = await ArtAPI.getEstablecimientoById({ id: estId });
+          }
+        } catch (e) {
+          console.warn("No se pudo obtener el establecimiento", e);
         }
+
+        const telefonoEmpresa =
+          detallesFormulario.empresaTelefono ||
+          (detallesFormulario as any).EmpresaTelefono ||
+          rowData.empresaTelefono ||
+          (rowData as any).EmpresaTelefono ||
+          null;
+
+        const contratoEmpresa =
+          detallesFormulario.empresaContrato ||
+          (detallesFormulario as any).EmpresaContrato ||
+          rowData.empresaContrato ||
+          (rowData as any).EmpresaContrato ||
+          null;
+
+        const razonSocialEmpresa =
+          detallesFormulario.empresaRazonSocial ||
+          (detallesFormulario as any).EmpresaRazonSocial ||
+          rowData.empresaRazonSocial ||
+          (rowData as any).EmpresaRazonSocial ||
+          null;
+
+        const cantTrabajadoresExpuestosEmpresa =
+          detallesFormulario.cantTrabajadoresExpuestos ??
+          (detallesFormulario as any).CantTrabajadoresExpuestos ??
+          rowData.cantTrabajadoresExpuestos ??
+          (rowData as any).CantTrabajadoresExpuestos ??
+          null;
+
+        const cantTrabajadoresNoExpuestosEmpresa =
+          detallesFormulario.cantTrabajadoresNoExpuestos ??
+          (detallesFormulario as any).CantTrabajadoresNoExpuestos ??
+          rowData.cantTrabajadoresNoExpuestos ??
+          (rowData as any).CantTrabajadoresNoExpuestos ??
+          null;
+
+        let empresa: any = null;
+        try {
+          const cuitEmpresa =
+            detallesFormulario.cuit ??
+            (detallesFormulario as any).CUIT ??
+            rowData.cuit ??
+            (rowData as any).CUIT ??
+            null;
+
+          if (cuitEmpresa) {
+            empresa = await ArtAPI.getEmpresaByCUIT({ CUIT: Number(cuitEmpresa) });
+          }
+        } catch (e) {
+          console.warn("No se pudo obtener la empresa por CUIT", e);
+        }
+
+        const empresaCiiu =
+          (empresa && (empresa.ciiu ?? (empresa as any).CIIU)) ??
+          detallesFormulario.ciiu ??
+          (detallesFormulario as any).CIIU ??
+          rowData.ciiu ??
+          (rowData as any).CIIU ??
+          null;
+
+       const establecimientoActividadPrincipal =
+         detallesFormulario.establecimientoActividadPrincipal ??
+         (detallesFormulario as any).establecimientoActividadPrincipal ??
+         rowData.establecimientoActividadPrincipal ??
+         (rowData as any).EstablecimientoActividadPrincipal ??
+         null;
+
+       const establecimientoActividadSecundaria =
+         detallesFormulario.establecimientoActividadSecundaria ??
+         (detallesFormulario as any).establecimientoActividadSecundaria ??
+         rowData.establecimientoActividadSecundaria ??
+         (rowData as any).EstablecimientoActividadSecundaria ??
+         null;
+
+
+
+
+
+        const datosCompletos = {
+          ...rowData,
+          establecimiento,
+          empresaTelefono: telefonoEmpresa,
+          empresaContrato: contratoEmpresa,
+          empresaRazonSocial: razonSocialEmpresa,
+          empresaCiiu: empresaCiiu,
+          establecimientoActividadPrincipal,
+          establecimientoActividadSecundaria,          
+          cantTrabajadoresExpuestos: cantTrabajadoresExpuestosEmpresa,
+          cantTrabajadoresNoExpuestos: cantTrabajadoresNoExpuestosEmpresa,
+          detallesTrabajadores: detallesConNombre,
+          totalTrabajadores: detallesConNombre.length || 0,
+        };
+
+        setDatosPDF(datosCompletos);
+
+
+
       } catch (error) {
         console.error('Error obteniendo detalles para PDF:', error);
         setDatosPDF(rowData);
@@ -403,7 +504,7 @@ const FormulariosRAR: React.FC = () => {
     {
       accessorKey: 'horasExposicion',
       header: 'Horas Exp.',
-      cell: (info: any) => info.getValue() || '—',
+      cell: (info: any) => info.getValue() || '0',
       size: 80
     },
     {
@@ -451,7 +552,7 @@ const FormulariosRAR: React.FC = () => {
   const SimpleHeader: React.FC = () => (
     <View style={{ backgroundColor: '#83BC00', padding: 10, marginBottom: 10 }}>
       <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 16, textAlign: 'center' }}>
-        Formulario RAR - Sistema ART
+        Relevamiento de trabajadores Expuestos a Agentes de Riesgo
       </Text>
     </View>
   );
@@ -479,15 +580,17 @@ const FormulariosRAR: React.FC = () => {
       sectorTarea: t.sectorTarea || '',
       fechaIngreso: fechaFormatter(t.fechaIngreso || ''),
       horasExposicion: t.horasExposicion || 0,
+      fechaUltimoExamen: fechaFormatter(t.fechaUltimoExamenMedico || ''),
       agenteNombre: t.agenteNombre || '—',
     }));
 
     const columnasTrabajadores = [
       { key: 'cuil', title: 'CUIL', width: '15%' },
-      { key: 'nombre', title: 'Nombre', width: '25%' },
+      { key: 'nombre', title: 'Apellido y Nombre', width: '25%' },
       { key: 'sectorTarea', title: 'Sector/Tarea', width: '20%' },
       { key: 'fechaIngreso', title: 'Fecha Ingreso', width: '12%' },
       { key: 'horasExposicion', title: 'Horas Exp.', width: '10%' },
+      { key: 'fechaUltimoExamen', title: 'Fecha Últ. Examen', width: '12%' },
       { key: 'agenteNombre', title: 'Agente Causante', width: '18%' },
     ];
 
@@ -495,7 +598,6 @@ const FormulariosRAR: React.FC = () => {
       <BaseDocumentPDF
         title={`Formulario RAR #${resumen.interno}`}
         headerComponent={SimpleHeader}
-        // AHORA la tabla principal es la de TRABAJADORES (la de abajo)
         columns={columnasTrabajadores}
         data={trabajadoresFormateados}
         orientation="landscape"
@@ -503,59 +605,134 @@ const FormulariosRAR: React.FC = () => {
         customStyles={{}}
         renderCustomContent={() => (
           <>
-            {/* Fechas arriba del todo */}
-            <Text style={{ fontSize: 10, marginBottom: 5, textAlign: 'center' }}>
-              Fecha de creación: {formatearFecha(datos.fechaCreacion || datos.FechaHoraCreacion)}
-            </Text>
-            <Text style={{ fontSize: 10, marginBottom: 10, textAlign: 'center' }}>
-              Fecha de presentación: {formatearFecha(datos.fechaPresentacion || datos.FechaHoraConfirmado)}
-            </Text>
+            {/* Encabezado estilo RAR sin recuadro */}
+            <View
+              style={{
+                paddingVertical: 3,
+                paddingHorizontal: 4,
+                marginBottom: 8,
+              }}
+            >
+              {/* Línea 1: Razón Social (más grande) */}
+              <Text
+                style={{
+                  fontSize: 12,
+                  fontWeight: 'bold',
+                  marginBottom: 2,
+                }}
+              >
+                Razón Social: {datos.empresaRazonSocial || '—'}
+              </Text>
 
-            {/* TABLA RESUMEN (Interno / CUIT / Razón Social / etc.) ARRIBA */}
-            <View style={{ marginTop: 10, marginBottom: 15 }}>
-              {/* Encabezado */}
+              {/* Fecha en su propia línea. Debajo: Contrato / CUIT / CIIU en la misma línea exacta */}
               <View
                 style={{
                   flexDirection: 'row',
-                  backgroundColor: '#83BC00',
-                  paddingVertical: 4,
-                  paddingHorizontal: 2,
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  flexWrap: 'nowrap',
                 }}
               >
-                <Text style={{ fontSize: 8, fontWeight: 'bold', width: '10%' }}>Interno</Text>
-                <Text style={{ fontSize: 8, fontWeight: 'bold', width: '15%' }}>CUIT</Text>
-                <Text style={{ fontSize: 8, fontWeight: 'bold', width: '25%' }}>Razón Social</Text>
-                <Text style={{ fontSize: 8, fontWeight: 'bold', width: '20%' }}>Dirección</Text>
-                <Text style={{ fontSize: 8, fontWeight: 'bold', width: '10%' }}>Estado</Text>
-                <Text style={{ fontSize: 8, fontWeight: 'bold', width: '10%' }}>Expuestos</Text>
-                <Text style={{ fontSize: 8, fontWeight: 'bold', width: '10%' }}>No Expuestos</Text>
+                <Text style={{ fontSize: 9 }}>
+                  Fecha:{' '}
+                  {formatearFecha(
+                    datos.fechaCreacion
+                  ) || '—'}
+                </Text>
               </View>
 
-              {/* Fila única con los datos del formulario */}
               <View
                 style={{
                   flexDirection: 'row',
-                  borderWidth: 0.5,
-                  borderColor: '#000',
-                  paddingVertical: 3,
-                  paddingHorizontal: 2,
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  marginTop: 2,
+                  flexWrap: 'nowrap',
                 }}
               >
-                <Text style={{ fontSize: 8, width: '10%' }}>{resumen.interno}</Text>
-                <Text style={{ fontSize: 8, width: '15%' }}>{resumen.cuit}</Text>
-                <Text style={{ fontSize: 8, width: '25%' }}>{resumen.razonSocial}</Text>
-                <Text style={{ fontSize: 8, width: '20%' }}>{resumen.direccion}</Text>
-                <Text style={{ fontSize: 8, width: '10%' }}>{resumen.estado}</Text>
-                <Text style={{ fontSize: 8, width: '10%' }}>
-                  {resumen.cantTrabajadoresExpuestos}
+                <Text style={{ fontSize: 9, width: '33%', marginRight: 6 }}>
+                  Contrato: {String(datos.empresaContrato || datos.Contrato || '—')}
                 </Text>
-                <Text style={{ fontSize: 8, width: '10%' }}>
-                  {resumen.cantTrabajadoresNoExpuestos}
+                <Text style={{ fontSize: 9, width: '33%', marginRight: 6 }}>
+                  CUIT: {resumen.cuit || '—'}
+                </Text>
+                <Text style={{ fontSize: 9, width: '33%' }}>
+                  CIIU: {String(
+                    datos.empresaCiiu ??
+                    datos.ciiu ??
+                    datos.CIIU ??
+                    datos.ciiuPrincipal ??
+                    '—'
+                  )}
                 </Text>
               </View>
+
+              {/* NUEVO - Nro. Establecimiento */}
+              <Text
+                style={{
+                  fontSize: 12,
+                  fontWeight: 'bold',
+                  marginTop: 4,
+                }}
+              >
+                Nro. Establecimiento:{' '}
+                {String(
+                  datos.internoEstablecimiento ||
+                  datos.InternoEstablecimiento ||
+                  '—'
+                )}
+              </Text>
+
+
+              {/* Datos del establecimiento */}
+              <Text style={{ fontSize: 10, marginTop: 2 }}>
+                CIIU: {String(datos.establecimiento?.ciiu ?? '—')}
+              </Text>
+
+              <Text style={{ fontSize: 10, marginTop: 2 }}>
+                Dirección Establecimiento:{' '}
+                {`${datos.establecimiento?.domicilioCalle ?? ''} ${datos.establecimiento?.domicilioNro ?? ''}`.trim() || '—'}
+              </Text>
+
+              <Text style={{ fontSize: 10, marginTop: 2 }}>
+                CP: {String(datos.establecimiento?.cp ?? '—')}
+              </Text>
+
+              <Text style={{ fontSize: 10, marginTop: 2 }}>
+                Localidad: {String(datos.establecimiento?.localidad ?? '—')}
+              </Text>
+
+              <Text style={{ fontSize: 10, marginTop: 2 }}>
+                Provincia: {String(datos.establecimiento?.provincia ?? '—')}
+              </Text>
+
+              <Text style={{ fontSize: 10, marginTop: 2 }}>
+                Teléfono: {String(datos.empresaTelefono ?? '—')}
+              </Text>
+
+              <Text style={{ fontSize: 10, marginTop: 2 }}>
+                Trabajadores Expuestos:{' '}
+                {datos.cantTrabajadoresExpuestos ?? '—'}
+              </Text>
+
+              <Text style={{ fontSize: 10, marginTop: 2 }}>
+                Trabajadores No Expuestos:{' '}
+                {datos.cantTrabajadoresNoExpuestos ?? '—'}
+              </Text>
+
+             <Text style={{ fontSize: 10, marginTop: 2 }}>
+              Actividad Principal:{' '}
+              {String(datos.establecimientoActividadPrincipal ?? '—')}
+            </Text>
+
+             <Text style={{ fontSize: 10, marginTop: 2 }}>
+              Actividad Secundaria:{' '}
+              {String(datos.establecimientoActividadSecundaria ?? '—')}
+            </Text>        
+
             </View>
 
-            {/* TÍTULO antes de la tabla de trabajadores (que es la tabla principal de abajo) */}
+            {/* Título antes de la tabla de trabajadores */}
             {trabajadoresFormateados.length > 0 && (
               <Text
                 style={{

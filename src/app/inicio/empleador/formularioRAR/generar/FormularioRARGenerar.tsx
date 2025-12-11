@@ -416,7 +416,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
             SectorTareas: d.sectorTarea || '',
             Ingreso: d.fechaIngreso ? dayjs(d.fechaIngreso).format('YYYY-MM-DD') : '',
             FechaInicio: d.fechaInicioExposicion ? dayjs(d.fechaInicioExposicion).format('YYYY-MM-DD') : '',
-            Exposicion: String(d.horasExposicion || 0),
+            Exposicion: String(d.horasExposicion ?? 0),
             FechaFinExposicion: d.fechaFinExposicion ? dayjs(d.fechaFinExposicion).format('YYYY-MM-DD') : '',
             UltimoExamenMedico: d.fechaUltimoExamenMedico ? dayjs(d.fechaUltimoExamenMedico).format('YYYY-MM-DD') : '',
             CodigoAgente: String(d.codigoAgente || ''),
@@ -836,13 +836,16 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
 
       // USAR TODOS LOS TRABAJADORES DE LA TABLA, NO SOLO LOS CAMPOS DEL MODAL
       const formularioRARDetalle = filas.map((f, index) => {
-        const trabajador = {
+        const rawHoras = String(f.Exposicion ?? '').replace(/[^\d]/g, '').trim();
+        const nHoras = Number(rawHoras);
+        const horasParsed = rawHoras === '' ? 0 : (Number.isFinite(nHoras) ? nHoras : 0);
+
+        const trabajador: any = {
           internoFormulariosRar: 0,
           cuil: Number(String(f.CUIL || '').replace(/\D/g, '') || 0),
           nombre: f.Nombre || '',
           sectorTarea: f.SectorTareas || '',
           fechaIngreso: dayjs(f.Ingreso || fechaActual).toISOString(),
-          horasExposicion: Number(String(f.Exposicion || '').replace(/[^\d]/g, '')) || 4,
           fechaUltimoExamenMedico: dayjs(f.UltimoExamenMedico || fechaActual).toISOString(),
           codigoAgente: Number(f.CodigoAgente) || 1,
           fechaInicioExposicion: dayjs(f.FechaInicio || fechaActual).toISOString(),
@@ -850,6 +853,8 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
             ? dayjs(f.FechaFinExposicion).toISOString()
             : dayjs('2099-01-01').toISOString(), // Fecha por defecto: 01/01/2099 para indicar "no especificada"
         };
+
+        trabajador.horasExposicion = horasParsed;
         console.log(`👤 DEBUG - Trabajador ${index + 1}:`, trabajador);
         return trabajador;
       });
@@ -893,16 +898,12 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
       console.log(' Respuesta exitosa:', responseData);
 
       // Mostrar mensaje de éxito y preguntar qué hacer
-      const mensajeBase = esModoEdicionFormulario ? 'Formulario RAR actualizado exitosamente!' : 'Formulario RAR creado exitosamente!';
-      const confirmacion = !esModoEdicionFormulario && window.confirm(
-        mensajeBase + '\n\n' +
-        '¿Querés crear otro formulario RAR?\n\n' +
-        '• Presioná "Aceptar" para crear otro formulario\n' +
-        '• Presioná "Cancelar" para volver a la lista'
-      );
 
-      if (!esModoEdicionFormulario && confirmacion) {
-        // Limpiar el formulario para crear otro
+
+      if (!esModoEdicionFormulario) {
+        // Cerrar modal y volver a la lista (después de crear un nuevo formulario)
+        setModalTrabajadorOpen(false);
+        // Opcional: limpiar el estado local antes de regresar
         setCuil(''); setNombre(''); setSector(''); setIngreso('');
         setFechaInicio(''); setExposicion('0'); setFechaFinExposicion('');
         setUltimoExamenMedico(''); setCodigoAgente('');
@@ -911,9 +912,10 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
         setFilas([]);
         setEditandoIndex(-1);
         setModoEdicion(false);
-        // Mantener el modal abierto para crear otro formulario
+        // Informar al padre para que vuelva a la lista y recargue
+        finalizaCarga(true);
       } else {
-        // Cerrar modal y volver a la lista
+        // Cerrar modal y volver a la lista para edición
         setModalTrabajadorOpen(false);
         finalizaCarga(true);
       }
@@ -940,20 +942,28 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
       const fechaActual = dayjs().toISOString();
       const establecimientoParaEnvio = Number(establecimientoSeleccionado) || Number(internoEstablecimiento) || 0;
 
-      const formularioRARDetalle = filas.map((f) => ({
-        internoFormulariosRar: 0,
-        cuil: Number(String(f.CUIL || '').replace(/\D/g, '') || 0),
-        nombre: f.Nombre || '',
-        sectorTarea: f.SectorTareas || '',
-        fechaIngreso: dayjs(f.Ingreso || fechaActual).toISOString(),
-        horasExposicion: Number(String(f.Exposicion || '').replace(/[^\d]/g, '')) || 4,
-        fechaUltimoExamenMedico: dayjs(f.UltimoExamenMedico || fechaActual).toISOString(),
-        codigoAgente: Number(f.CodigoAgente) || 1,
-        fechaInicioExposicion: dayjs(f.FechaFin || fechaActual).toISOString(),
-        fechaFinExposicion: f.FechaFinExposicion && f.FechaFinExposicion.trim() !== ''
-          ? dayjs(f.FechaFinExposicion).toISOString()
-          : dayjs('2099-01-01').toISOString(), // Fecha por defecto: 01/01/2099 para indicar "no especificada"
-      }));
+      const formularioRARDetalle = filas.map((f) => {
+        const rawHoras = String(f.Exposicion ?? '').replace(/[^\d]/g, '').trim();
+        const nHoras = Number(rawHoras);
+        const horasParsed = rawHoras === '' ? 0 : (Number.isFinite(nHoras) ? nHoras : 0);
+
+        const trabajador: any = {
+          internoFormulariosRar: 0,
+          cuil: Number(String(f.CUIL || '').replace(/\D/g, '') || 0),
+          nombre: f.Nombre || '',
+          sectorTarea: f.SectorTareas || '',
+          fechaIngreso: dayjs(f.Ingreso || fechaActual).toISOString(),
+          fechaUltimoExamenMedico: dayjs(f.UltimoExamenMedico || fechaActual).toISOString(),
+          codigoAgente: Number(f.CodigoAgente) || 1,
+          fechaInicioExposicion: dayjs(f.FechaFin || fechaActual).toISOString(),
+          fechaFinExposicion: f.FechaFinExposicion && f.FechaFinExposicion.trim() !== ''
+            ? dayjs(f.FechaFinExposicion).toISOString()
+            : dayjs('2099-01-01').toISOString(), // Fecha por defecto: 01/01/2099 para indicar "no especificada"
+        };
+        trabajador.horasExposicion = horasParsed;
+
+        return trabajador;
+      });
 
       const payload = {
         cantTrabajadoresExpuestos: Number(cantExpuestos) || 0,
