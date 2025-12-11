@@ -137,7 +137,7 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
           label="Cant. Trab. eventuales Prod."
           value={data.cantTrabEventualesProd}
           disabled={disabled.cantTrabEventualesProd}
-          onChange={({ target: { value } }) => onChange({ cantTrabEventualesProd: value ? Number(value) : undefined })}
+          onChange={({ target: { value } }) => onChange({ cantTrabEventualesProd: Number(value) })}
           error={errors.cantTrabEventualesProd}
           helperText={helpers.cantTrabEventualesProd}
           fullWidth
@@ -150,7 +150,7 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
           label="Cant. Trab. eventuales Admin."
           value={data.cantTrabEventualesAdmin}
           disabled={disabled.cantTrabEventualesAdmin}
-          onChange={({ target: { value } }) => onChange({ cantTrabEventualesAdmin: value ? Number(value) : undefined })}
+          onChange={({ target: { value } }) => onChange({ cantTrabEventualesAdmin: Number(value) })}
           error={errors.cantTrabEventualesAdmin}
           helperText={helpers.cantTrabEventualesAdmin}
           fullWidth
@@ -163,7 +163,7 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
           label="Cant. Trab. propios Prod."
           value={data.cantTrabPropiosProd}
           disabled={disabled.cantTrabPropiosProd}
-          onChange={({ target: { value } }) => onChange({ cantTrabPropiosProd: value ? Number(value) : undefined })}
+          onChange={({ target: { value } }) => onChange({ cantTrabPropiosProd: Number(value) })}
           error={errors.cantTrabPropiosProd}
           helperText={helpers.cantTrabPropiosProd}
           fullWidth
@@ -176,7 +176,7 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
           label="Cant. Trab. propios Admin."
           value={data.cantTrabPropiosAdmin}
           disabled={disabled.cantTrabPropiosAdmin}
-          onChange={({ target: { value } }) => onChange({ cantTrabPropiosAdmin: value ? Number(value) : undefined })}
+          onChange={({ target: { value } }) => onChange({ cantTrabPropiosAdmin: Number(value) })}
           error={errors.cantTrabPropiosAdmin}
           helperText={helpers.cantTrabPropiosAdmin}
           fullWidth

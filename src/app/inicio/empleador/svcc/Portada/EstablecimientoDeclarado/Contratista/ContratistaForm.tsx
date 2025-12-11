@@ -108,7 +108,7 @@ export const ContratistaForm: Form<ContratistaDTO> = ({
           label="Cant. trabajadores"
           value={data.cantidadTrabajadores}
           disabled={disabled.cantidadTrabajadores}
-          onChange={({ target: { value } }) => onChange({ cantidadTrabajadores: value ? Number(value) : undefined })}
+          onChange={({ target: { value } }) => onChange({ cantidadTrabajadores: Number(value) })}
           error={errors.cantidadTrabajadores}
           helperText={helpers.cantidadTrabajadores}
           fullWidth

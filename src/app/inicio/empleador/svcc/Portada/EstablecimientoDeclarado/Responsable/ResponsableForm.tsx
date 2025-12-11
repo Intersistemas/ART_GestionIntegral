@@ -43,7 +43,7 @@ export const ResponsableForm: Form<ResponsableDTO> = ({
         label="Cant. Hr. asignadas"
         value={data.cantHorasAsignadas}
         disabled={disabled.cantHorasAsignadas}
-        onChange={({ target: { value } }) => onChange({ cantHorasAsignadas: value ? Number(value) : undefined })}
+        onChange={({ target: { value } }) => onChange({ cantHorasAsignadas: Number(value) })}
         error={errors.cantHorasAsignadas}
         helperText={helpers.cantHorasAsignadas}
         fullWidth
@@ -58,9 +58,9 @@ export const ResponsableForm: Form<ResponsableDTO> = ({
         <InputLabel>Contratacion</InputLabel>
         <Select
           name="idContratacion"
-          value={data.idContratacion || ""}
+          value={data.idContratacion}
           label="Contratacion"
-          onChange={({ target: { value } }) => onChange({ idContratacion: value ? Number(value) : undefined })}
+          onChange={({ target: { value } }) => onChange({ idContratacion: value === undefined ? undefined : Number(value) })}
           displayEmpty
         >
           {TContratacion_Array.map((e, i) => (<MenuItem key={i} value={e.interno}>{e.descripcion}</MenuItem>))}
@@ -85,9 +85,9 @@ export const ResponsableForm: Form<ResponsableDTO> = ({
         <InputLabel>Representacion</InputLabel>
         <Select
           name="idRepresentacion"
-          value={data.idRepresentacion || ""}
+          value={data.idRepresentacion}
           label="Representacion"
-          onChange={({ target: { value } }) => onChange({ idRepresentacion: value ? Number(value) : undefined })}
+          onChange={({ target: { value } }) => onChange({ idRepresentacion: value === undefined ? undefined : Number(value) })}
           displayEmpty
         >
           {TRepresentacion_Array.map((e, i) => (<MenuItem key={i} value={e.codigo}>{e.descripcion}</MenuItem>))}
@@ -112,9 +112,9 @@ export const ResponsableForm: Form<ResponsableDTO> = ({
         <InputLabel>Tipo Prof. responsable</InputLabel>
         <Select
           name="idTipoProfesionalResponsable"
-          value={data.idTipoProfesionalResponsable || ""}
+          value={data.idTipoProfesionalResponsable}
           label="Tipo Prof. responsable"
-          onChange={({ target: { value } }) => onChange({ idTipoProfesionalResponsable: value ? Number(value) : undefined })}
+          onChange={({ target: { value } }) => onChange({ idTipoProfesionalResponsable: value === undefined ? undefined : Number(value) })}
           displayEmpty
         >
           {TTipoProfesionalResponsable_Array.map((e, i) => (<MenuItem key={i} value={e.interno}>{e.descripcion}</MenuItem>))}

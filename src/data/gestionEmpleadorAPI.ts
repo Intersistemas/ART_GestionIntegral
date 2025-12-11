@@ -660,7 +660,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     fetcher: ([_url, _token, params]) => this.svccEmpresaTercerizadaList(JSON.parse(params)),
   });
   useSVCCEmpresaTercerizadaList = (params?: SVCCEmpresaTercerizadaListParams, options?: SVCCEmpresaTercerizadaListOptions) =>
-    useSWR(this.swrSVCCEmpresaTercerizadaList.key(params), this.swrSVCCEmpresaTercerizadaList.fetcher, options);
+    useSWR(params ? this.swrSVCCEmpresaTercerizadaList.key(params) : null, this.swrSVCCEmpresaTercerizadaList.fetcher, options);
   //#endregion SVCC/EmpresaTercerizada - List
 
   //#region SVCC/EmpresaTercerizada - Create
@@ -669,7 +669,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     this.svccEmpresaTercerizadaCreateURL, data
   ).then(({ data }) => data);
   swrSVCCEmpresaTercerizadaCreate: {
-    key:  SVCCEmpresaTercerizadaCreateSWRKey,
+    key: SVCCEmpresaTercerizadaCreateSWRKey,
     fetcher: (key: SVCCEmpresaTercerizadaCreateSWRKey, options: { arg: EmpresaTercerizadaDTO }) => Promise<EmpresaTercerizadaDTO>
   } = Object.freeze({
     key: [this.svccEmpresaTercerizadaCreateURL, token.getToken()],
@@ -685,7 +685,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     this.svccEmpresaTercerizadaUpdateURL(params), data
   ).then(({ data }) => data);
   swrSVCCEmpresaTercerizadaUpdate: {
-    key:  (params: SVCCEmpresaTercerizadaUpdateParams) => SVCCEmpresaTercerizadaUpdateSWRKey,
+    key: (params: SVCCEmpresaTercerizadaUpdateParams) => SVCCEmpresaTercerizadaUpdateSWRKey,
     fetcher: (key: SVCCEmpresaTercerizadaUpdateSWRKey, options: { arg: EmpresaTercerizadaDTO }) => Promise<EmpresaTercerizadaDTO>
   } = Object.freeze({
     key: (params) => [this.svccEmpresaTercerizadaUpdateURL(params), token.getToken(), JSON.stringify(params)],
@@ -701,7 +701,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     this.svccEmpresaTercerizadaDeleteURL(params)
   ).then(({ data }) => data);
   swrSVCCEmpresaTercerizadaDelete: {
-    key:  (params: SVCCEmpresaTercerizadaDeleteParams) => SVCCEmpresaTercerizadaDeleteSWRKey,
+    key: (params: SVCCEmpresaTercerizadaDeleteParams) => SVCCEmpresaTercerizadaDeleteSWRKey,
     fetcher: (key: SVCCEmpresaTercerizadaDeleteSWRKey) => Promise<EmpresaTercerizadaDTO>
   } = Object.freeze({
     key: (params) => [this.svccEmpresaTercerizadaDeleteURL(params), token.getToken(), JSON.stringify(params)],
@@ -727,7 +727,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     fetcher: ([_url, _token, params]) => this.svccEstablecimientoDeclaradoList(JSON.parse(params)),
   });
   useSVCCEstablecimientoDeclaradoList = (params?: SVCCEstablecimientoDeclaradoListParams, options?: SVCCEstablecimientoDeclaradoListOptions) =>
-    useSWR(this.swrSVCCEstablecimientoDeclaradoList.key(params), this.swrSVCCEstablecimientoDeclaradoList.fetcher, options);
+    useSWR(params ? this.swrSVCCEstablecimientoDeclaradoList.key(params) : null, this.swrSVCCEstablecimientoDeclaradoList.fetcher, options);
   //#endregion SVCC/EstablecimientoDeclarado - List
 
   //#region SVCC/EstablecimientoDeclarado - Create
@@ -736,7 +736,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     this.svccEstablecimientoDeclaradoCreateURL, data
   ).then(({ data }) => data);
   swrSVCCEstablecimientoDeclaradoCreate: {
-    key:  SVCCEstablecimientoDeclaradoCreateSWRKey,
+    key: SVCCEstablecimientoDeclaradoCreateSWRKey,
     fetcher: (key: SVCCEstablecimientoDeclaradoCreateSWRKey, options: { arg: EstablecimientoDeclaradoDTO }) => Promise<EstablecimientoDeclaradoDTO>
   } = Object.freeze({
     key: [this.svccEstablecimientoDeclaradoCreateURL, token.getToken()],
@@ -752,7 +752,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     this.svccEstablecimientoDeclaradoUpdateURL(params), data
   ).then(({ data }) => data);
   swrSVCCEstablecimientoDeclaradoUpdate: {
-    key:  (params: SVCCEstablecimientoDeclaradoUpdateParams) => SVCCEstablecimientoDeclaradoUpdateSWRKey,
+    key: (params: SVCCEstablecimientoDeclaradoUpdateParams) => SVCCEstablecimientoDeclaradoUpdateSWRKey,
     fetcher: (key: SVCCEstablecimientoDeclaradoUpdateSWRKey, options: { arg: EstablecimientoDeclaradoDTO }) => Promise<EstablecimientoDeclaradoDTO>
   } = Object.freeze({
     key: (params) => [this.svccEstablecimientoDeclaradoUpdateURL(params), token.getToken(), JSON.stringify(params)],
@@ -768,7 +768,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     this.svccEstablecimientoDeclaradoDeleteURL(params)
   ).then(({ data }) => data);
   swrSVCCEstablecimientoDeclaradoDelete: {
-    key:  (params: SVCCEstablecimientoDeclaradoDeleteParams) => SVCCEstablecimientoDeclaradoDeleteSWRKey,
+    key: (params: SVCCEstablecimientoDeclaradoDeleteParams) => SVCCEstablecimientoDeclaradoDeleteSWRKey,
     fetcher: (key: SVCCEstablecimientoDeclaradoDeleteSWRKey) => Promise<EstablecimientoDeclaradoDTO>
   } = Object.freeze({
     key: (params) => [this.svccEstablecimientoDeclaradoDeleteURL(params), token.getToken(), JSON.stringify(params)],
@@ -794,7 +794,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     fetcher: ([_url, _token, params]) => this.svccSustanciaList(JSON.parse(params)),
   });
   useSVCCSustanciaList = (params?: SVCCSustanciaListParams, options?: SVCCSustanciaListOptions) =>
-    useSWR(this.swrSVCCSustanciaList.key(params), this.swrSVCCSustanciaList.fetcher, options);
+    useSWR(params ? this.swrSVCCSustanciaList.key(params) : null, this.swrSVCCSustanciaList.fetcher, options);
   //#endregion SVCC/Sustancia - List
 
   //#region SVCC/Sustancia - Create
@@ -803,7 +803,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     this.svccSustanciaCreateURL, data
   ).then(({ data }) => data);
   swrSVCCSustanciaCreate: {
-    key:  SVCCSustanciaCreateSWRKey,
+    key: SVCCSustanciaCreateSWRKey,
     fetcher: (key: SVCCSustanciaCreateSWRKey, options: { arg: SustanciaDTO }) => Promise<SustanciaDTO>
   } = Object.freeze({
     key: [this.svccSustanciaCreateURL, token.getToken()],
@@ -819,7 +819,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     this.svccSustanciaReadURL(params)
   ).then(({ data }) => data);
   swrSVCCSustanciaRead: {
-    key:  (params: SVCCSustanciaReadParams) => SVCCSustanciaReadSWRKey,
+    key: (params: SVCCSustanciaReadParams) => SVCCSustanciaReadSWRKey,
     fetcher: (key: SVCCSustanciaReadSWRKey) => Promise<SustanciaDTO>
   } = Object.freeze({
     key: (params) => [this.svccSustanciaReadURL(params), token.getToken(), JSON.stringify(params)],
@@ -835,7 +835,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     this.svccSustanciaUpdateURL(params), data
   ).then(({ data }) => data);
   swrSVCCSustanciaUpdate: {
-    key:  (params: SVCCSustanciaUpdateParams) => SVCCSustanciaUpdateSWRKey,
+    key: (params: SVCCSustanciaUpdateParams) => SVCCSustanciaUpdateSWRKey,
     fetcher: (key: SVCCSustanciaUpdateSWRKey, options: { arg: SustanciaDTO }) => Promise<SustanciaDTO>
   } = Object.freeze({
     key: (params) => [this.svccSustanciaUpdateURL(params), token.getToken(), JSON.stringify(params)],
@@ -851,7 +851,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     this.svccSustanciaDeleteURL(params)
   ).then(({ data }) => data);
   swrSVCCSustanciaDelete: {
-    key:  (params: SVCCSustanciaDeleteParams) => SVCCSustanciaDeleteSWRKey,
+    key: (params: SVCCSustanciaDeleteParams) => SVCCSustanciaDeleteSWRKey,
     fetcher: (key: SVCCSustanciaDeleteSWRKey) => Promise<SustanciaDTO>
   } = Object.freeze({
     key: (params) => [this.svccSustanciaDeleteURL(params), token.getToken(), JSON.stringify(params)],
@@ -877,7 +877,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     fetcher: ([_url, _token, params]) => this.svccTrabajadorList(JSON.parse(params)),
   });
   useSVCCTrabajadorList = (params?: SVCCTrabajadorListParams, options?: SVCCTrabajadorListOptions) =>
-    useSWR(this.swrSVCCTrabajadorList.key(params), this.swrSVCCTrabajadorList.fetcher, options);
+    useSWR(params ? this.swrSVCCTrabajadorList.key(params) : null, this.swrSVCCTrabajadorList.fetcher, options);
   //#endregion SVCC/Trabajador - List
 
   //#region SVCC/Trabajador - Create
@@ -886,7 +886,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     this.svccTrabajadorCreateURL, data
   ).then(({ data }) => data);
   swrSVCCTrabajadorCreate: {
-    key:  SVCCTrabajadorCreateSWRKey,
+    key: SVCCTrabajadorCreateSWRKey,
     fetcher: (key: SVCCTrabajadorCreateSWRKey, options: { arg: TrabajadorDTO }) => Promise<TrabajadorDTO>
   } = Object.freeze({
     key: [this.svccTrabajadorCreateURL, token.getToken()],
@@ -902,7 +902,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     this.svccTrabajadorReadURL(params)
   ).then(({ data }) => data);
   swrSVCCTrabajadorRead: {
-    key:  (params: SVCCTrabajadorReadParams) => SVCCTrabajadorReadSWRKey,
+    key: (params: SVCCTrabajadorReadParams) => SVCCTrabajadorReadSWRKey,
     fetcher: (key: SVCCTrabajadorReadSWRKey) => Promise<TrabajadorDTO>
   } = Object.freeze({
     key: (params) => [this.svccTrabajadorReadURL(params), token.getToken(), JSON.stringify(params)],
@@ -918,7 +918,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     this.svccTrabajadorUpdateURL(params), data
   ).then(({ data }) => data);
   swrSVCCTrabajadorUpdate: {
-    key:  (params: SVCCTrabajadorUpdateParams) => SVCCTrabajadorUpdateSWRKey,
+    key: (params: SVCCTrabajadorUpdateParams) => SVCCTrabajadorUpdateSWRKey,
     fetcher: (key: SVCCTrabajadorUpdateSWRKey, options: { arg: TrabajadorDTO }) => Promise<TrabajadorDTO>
   } = Object.freeze({
     key: (params) => [this.svccTrabajadorUpdateURL(params), token.getToken(), JSON.stringify(params)],
@@ -934,7 +934,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     this.svccTrabajadorDeleteURL(params)
   ).then(({ data }) => data);
   swrSVCCTrabajadorDelete: {
-    key:  (params: SVCCTrabajadorDeleteParams) => SVCCTrabajadorDeleteSWRKey,
+    key: (params: SVCCTrabajadorDeleteParams) => SVCCTrabajadorDeleteSWRKey,
     fetcher: (key: SVCCTrabajadorDeleteSWRKey) => Promise<TrabajadorDTO>
   } = Object.freeze({
     key: (params) => [this.svccTrabajadorDeleteURL(params), token.getToken(), JSON.stringify(params)],
@@ -969,7 +969,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     this.srtSiniestralidadCIUO88ReadURL(params)
   ).then(({ data }) => data);
   swrSRTSiniestralidadCIUO88Read: {
-    key:  (params: SRTSiniestralidadCIUO88ReadParams) => SRTSiniestralidadCIUO88ReadSWRKey,
+    key: (params: SRTSiniestralidadCIUO88ReadParams) => SRTSiniestralidadCIUO88ReadSWRKey,
     fetcher: (key: SRTSiniestralidadCIUO88ReadSWRKey) => Promise<SRTSiniestralidadCIUO88>
   } = Object.freeze({
     key: (params) => [this.srtSiniestralidadCIUO88ReadURL(params), token.getToken(), JSON.stringify(params)],
@@ -1003,7 +1003,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     this.refCIIUReadURL(params)
   ).then(({ data }) => data);
   swrRefCIIURead: {
-    key:  (params: RefCIIUReadParams) => RefCIIUReadSWRKey,
+    key: (params: RefCIIUReadParams) => RefCIIUReadSWRKey,
     fetcher: (key: RefCIIUReadSWRKey) => Promise<RefCIIU>
   } = Object.freeze({
     key: (params) => [this.refCIIUReadURL(params), token.getToken(), JSON.stringify(params)],

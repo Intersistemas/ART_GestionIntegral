@@ -33,9 +33,9 @@ export const EstudioAmbientalForm: Form<EstudioAmbientalDTO> = ({
         <InputLabel>Unidad frecuencia</InputLabel>
         <Select
           name="idUnidadFrecuencia"
-          value={data.idUnidadFrecuencia || ""}
+          value={data.idUnidadFrecuencia}
           label="Unidad frecuencia"
-          onChange={({ target: { value } }) => onChange({ idUnidadFrecuencia: value ? Number(value) : undefined })}
+          onChange={({ target: { value } }) => onChange({ idUnidadFrecuencia: value === undefined ? undefined : Number(value) })}
           displayEmpty
         >
           {TFrecuencia_Array.map((e, i) => (<MenuItem key={i} value={e.codigo}>{e.descripcion}</MenuItem>))}

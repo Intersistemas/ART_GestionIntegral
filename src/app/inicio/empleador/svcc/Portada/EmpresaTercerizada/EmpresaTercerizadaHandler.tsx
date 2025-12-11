@@ -10,7 +10,6 @@ import CustomButton from "@/utils/ui/button/CustomButton";
 import EmpresaTercerizadaBrowse from "./EmpresaTercerizadaBrowse";
 import EmpresaTercerizadaForm from "./EmpresaTercerizadaForm";
 import { useSVCCPresentacionContext } from "../../context";
-import { headers } from "next/dist/client/components/headers";
 import { DeepPartial } from "@/utils/utils";
 
 const {

@@ -43,9 +43,9 @@ export const EquipoRadiologicoForm: Form<EquipoRadiologicoDTO> = ({
           <InputLabel>Tipo equipo</InputLabel>
           <Select
             name="idTipoEquipo"
-            value={data.idTipoEquipo || ""}
+            value={data.idTipoEquipo}
             label="Tipo equipo"
-            onChange={({ target: { value } }) => onChange({ idTipoEquipo: value ? Number(value) : undefined })}
+            onChange={({ target: { value } }) => onChange({ idTipoEquipo: value === undefined ? undefined : Number(value) })}
             displayEmpty
           >
             {TTiposEquipos_Array.map((e, i) => (<MenuItem key={i} value={e.interno}>{e.descripcion}</MenuItem>))}
@@ -70,9 +70,9 @@ export const EquipoRadiologicoForm: Form<EquipoRadiologicoDTO> = ({
           <InputLabel>Caracteristica equipo</InputLabel>
           <Select
             name="idCaracteristicaEquipo"
-            value={data.idCaracteristicaEquipo || ""}
+            value={data.idCaracteristicaEquipo}
             label="Caracteristica equipo"
-            onChange={({ target: { value } }) => onChange({ idCaracteristicaEquipo: value ? Number(value) : undefined })}
+            onChange={({ target: { value } }) => onChange({ idCaracteristicaEquipo: value === undefined ? undefined : Number(value) })}
             displayEmpty
           >
             {TCaracteristicasEquipos_Array.map((e, i) => (<MenuItem key={i} value={e.codigo}>{e.descripcion}</MenuItem>))}
@@ -97,9 +97,9 @@ export const EquipoRadiologicoForm: Form<EquipoRadiologicoDTO> = ({
           <InputLabel>Tipo radiacion</InputLabel>
           <Select
             name="idTipoRadiacion"
-            value={data.idTipoRadiacion || ""}
+            value={data.idTipoRadiacion}
             label="Tipo radiacion"
-            onChange={({ target: { value } }) => onChange({ idTipoRadiacion: value ? Number(value) : undefined })}
+            onChange={({ target: { value } }) => onChange({ idTipoRadiacion: value === undefined ? undefined : Number(value) })}
             displayEmpty
           >
             {TTiposRadiaciones_Array.map((e, i) => (<MenuItem key={i} value={e.interno}>{e.descripcion}</MenuItem>))}
@@ -172,9 +172,9 @@ export const EquipoRadiologicoForm: Form<EquipoRadiologicoDTO> = ({
           <InputLabel>Tipo fuente</InputLabel>
           <Select
             name="idTipoFuente"
-            value={data.idTipoFuente || ""}
+            value={data.idTipoFuente}
             label="Tipo fuente"
-            onChange={({ target: { value } }) => onChange({ idTipoFuente: value ? Number(value) : undefined })}
+            onChange={({ target: { value } }) => onChange({ idTipoFuente: value === undefined ? undefined : Number(value) })}
             displayEmpty
           >
             {TTiposFuentesEquipos_Array.map((e, i) => (<MenuItem key={i} value={e.codigo}>{e.descripcion}</MenuItem>))}
@@ -252,9 +252,9 @@ export const EquipoRadiologicoForm: Form<EquipoRadiologicoDTO> = ({
           <InputLabel>Metodo procesamiento imágenes</InputLabel>
           <Select
             name="metodoProcesamiento"
-            value={data.metodoProcesamiento || ""}
+            value={data.metodoProcesamiento}
             label="Metodo procesamiento imágenes"
-            onChange={({ target: { value } }) => onChange({ metodoProcesamiento: value ? Number(value) : undefined })}
+            onChange={({ target: { value } }) => onChange({ metodoProcesamiento: value === undefined ? undefined : Number(value) })}
             displayEmpty
           >
             {TMetodosProcesadosImagenes_Array.map((e, i) => (<MenuItem key={i} value={e.codigo}>{e.descripcion}</MenuItem>))}
@@ -323,9 +323,9 @@ export const EquipoRadiologicoForm: Form<EquipoRadiologicoDTO> = ({
                   <InputLabel>Tipo dosimetria</InputLabel>
                   <Select
                     name="idTipoDosimetria"
-                    value={data.dosimetria?.idTipoDosimetria || ""}
+                    value={data.dosimetria?.idTipoDosimetria}
                     label="Tipo dosimetria"
-                    onChange={({ target: { value } }) => onChange({ dosimetria: { idTipoDosimetria: value ? Number(value) : undefined } })}
+                    onChange={({ target: { value } }) => onChange({ dosimetria: { idTipoDosimetria: value === undefined ? undefined : Number(value) } })}
                     displayEmpty
                   >
                     {TiposDosimetria_Array.map((e, i) => (<MenuItem key={i} value={e.codigo}>{e.descripcion}</MenuItem>))}
@@ -350,9 +350,9 @@ export const EquipoRadiologicoForm: Form<EquipoRadiologicoDTO> = ({
                   <InputLabel>Metodo dosimetria</InputLabel>
                   <Select
                     name="idMetodoDosimetria"
-                    value={data.dosimetria?.idMetodoDosimetria || ""}
+                    value={data.dosimetria?.idMetodoDosimetria}
                     label="Metodo dosimetria"
-                    onChange={({ target: { value } }) => onChange({ dosimetria: { idMetodoDosimetria: value ? Number(value) : undefined } })}
+                    onChange={({ target: { value } }) => onChange({ dosimetria: { idMetodoDosimetria: value === undefined ? undefined : Number(value) } })}
                     displayEmpty
                   >
                     {MetodosDosimetria_Array.map((e, i) => (<MenuItem key={i} value={e.codigo}>{e.descripcion}</MenuItem>))}

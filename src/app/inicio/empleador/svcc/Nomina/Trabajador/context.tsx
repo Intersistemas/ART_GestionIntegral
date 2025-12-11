@@ -1,7 +1,8 @@
 import { createContext, ReactNode, useContext } from "react";
 import gestionEmpleadorAPI, { EstablecimientoDeclaradoDTO } from "@/data/gestionEmpleadorAPI";
+import { useAnexoVContext } from "../../AnexoV/context";
 
-type SustanciaContextType = {
+type TrabajadorContextType = {
   establecimientoDeclarado: {
     isLoading: boolean;
     isValidating: boolean;
@@ -10,30 +11,30 @@ type SustanciaContextType = {
   },
 }
 
-const SustanciaContext = createContext<SustanciaContextType | undefined>(undefined);
+const TrabajadorContext = createContext<TrabajadorContextType | undefined>(undefined);
 
 const {
   useSVCCEstablecimientoDeclaradoList,
 } = gestionEmpleadorAPI;
 
-export function useSustanciaContext() {
-  const context = useContext(SustanciaContext);
-  if (context === undefined) throw new Error('useSustanciaContext must be used within a SustanciaContextProvider');
+export function useTrabajadorContext() {
+  const context = useContext(TrabajadorContext);
+  if (context === undefined) throw new Error('useTrabajadorContext must be used within a TrabajadorContextProvider');
   return context;
 }
 
-export function SustanciaContextProvider({
-  idEstablecimientoEmpresa,
+export function TrabajadorContextProvider({
+  establecimientoDeclaradoInterno,
   children,
 }: {
-  idEstablecimientoEmpresa?: number;
+  establecimientoDeclaradoInterno?: number;
   children: ReactNode;
 }) {
-  const establecimientosDeclarados = useSVCCEstablecimientoDeclaradoList({ page: "1,1", idEstablecimientoEmpresa }, {});
-  const establecimientoDeclarado = establecimientosDeclarados.data?.data.find(e => e.idEstablecimientoEmpresa === idEstablecimientoEmpresa);
+  const { establecimientosDeclarados } = useAnexoVContext();
+  const establecimientoDeclarado = establecimientosDeclarados.data?.find(e => e.interno === establecimientoDeclaradoInterno);
 
   return (
-    <SustanciaContext.Provider
+    <TrabajadorContext.Provider
       value={{
         establecimientoDeclarado: {
           isLoading: establecimientosDeclarados.isLoading,
@@ -44,6 +45,6 @@ export function SustanciaContextProvider({
       }}
     >
       {children}
-    </SustanciaContext.Provider>
+    </TrabajadorContext.Provider>
   );
 }

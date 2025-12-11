@@ -48,7 +48,7 @@ export const SustanciaForm: Form<SustanciaDTO> = ({
   const [editEstudioAmbiental, setEditEstudioAmbiental] = useState<EditState<EstudioAmbientalDTO>>({ data: {} });
   const [editEstudioBiologico, setEditEstudioBiologico] = useState<EditState<EstudioBiologicoDTO>>({ data: {} });
   const [lookupEstablecimientos, setLookupEstablecimientos] = useState<boolean>(false);
-  
+
   const { establecimientos } = useSVCCPresentacionContext();
 
   return (
@@ -138,9 +138,9 @@ export const SustanciaForm: Form<SustanciaDTO> = ({
             <InputLabel>Sustancia</InputLabel>
             <Select
               name="idSustancia"
-              value={data.idSustancia || ""}
+              value={data.idSustancia}
               label="Sustancia"
-              onChange={({ target: { value } }) => onChange({ idSustancia: value ? Number(value) : undefined })}
+              onChange={({ target: { value } }) => onChange({ idSustancia: value === undefined ? undefined : Number(value) })}
               displayEmpty
             >
               {TSustancias_Array.map((e) => (<MenuItem key={e.codigo} value={e.codigo}>{e.descripcion}</MenuItem>))}
@@ -190,9 +190,9 @@ export const SustanciaForm: Form<SustanciaDTO> = ({
             <InputLabel>Unidad de medida</InputLabel>
             <Select
               name="idUnidadDeMedida"
-              value={data.idUnidadDeMedida || ""}
+              value={data.idUnidadDeMedida}
               label="Unidad de medida"
-              onChange={({ target: { value } }) => onChange({ idUnidadDeMedida: value ? Number(value) : undefined })}
+              onChange={({ target: { value } }) => onChange({ idUnidadDeMedida: value === undefined ? undefined : Number(value) })}
               displayEmpty
             >
               {TUnidadesMedidas_Array.map((e) => (<MenuItem key={e.interno} value={e.interno}>{e.descripcion}</MenuItem>))}

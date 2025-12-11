@@ -20,9 +20,9 @@ export const UtilizacionForm: Form<UtilizacionDTO> = ({
         <InputLabel>Uso origen</InputLabel>
         <Select
           name="usoOrigen"
-          value={data.usoOrigen || ""}
+          value={data.usoOrigen}
           label="Uso origen"
-          onChange={({ target: { value } }) => onChange({ usoOrigen: value ? Number(value) : undefined })}
+          onChange={({ target: { value } }) => onChange({ usoOrigen: value === undefined ? undefined : Number(value) })}
           displayEmpty
         >
           {TUsoOrigen_Array.map((e, i) => (<MenuItem key={i} value={e.codigo}>{e.descripcion}</MenuItem>))}
@@ -47,9 +47,9 @@ export const UtilizacionForm: Form<UtilizacionDTO> = ({
         <InputLabel>Modo de empleo</InputLabel>
         <Select
           name="modoDeEmpleo"
-          value={data.modoDeEmpleo || ""}
+          value={data.modoDeEmpleo}
           label="Modo de empleo"
-          onChange={({ target: { value } }) => onChange({ modoDeEmpleo: value ? Number(value) : undefined })}
+          onChange={({ target: { value } }) => onChange({ modoDeEmpleo: value === undefined ? undefined : Number(value) })}
           displayEmpty
         >
           {TModoEmpleo_Array.map((e, i) => (<MenuItem key={i} value={e.codigo}>{e.descripcion}</MenuItem>))}

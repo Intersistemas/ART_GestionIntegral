@@ -1,52 +1,51 @@
 import { useState } from "react";
-import { Grid, Typography } from "@mui/material";
-import gestionEmpleadorAPI, {
-  SustanciaDTO, SVCCSustanciaUpdateParams, SVCCSustanciaDeleteParams
-} from "@/data/gestionEmpleadorAPI";
-import { Data } from "@/utils/ui/table/Browse";
+import gestionEmpleadorAPI, { SVCCTrabajadorDeleteParams, SVCCTrabajadorUpdateParams, TrabajadorDTO } from "@/data/gestionEmpleadorAPI";
 import { FormProps } from "@/utils/ui/form/Form";
-import CustomModal from "@/utils/ui/form/CustomModal";
-import { DeepPartial } from "@/utils/utils";
-import CustomButton from "@/utils/ui/button/CustomButton";
-import SustanciaBrowse from "./SustanciaBrowse";
-import SustanciaForm from "./SustanciaForm";
 import { useSVCCPresentacionContext } from "../../context";
+import { Data } from "@/utils/ui/table/Browse";
+import TrabajadorBrowse from "./TrabajadorBrowse";
+import { DeepPartial } from "@/utils/utils";
+import { Grid, Typography } from "@mui/material";
+import CustomButton from "@/utils/ui/button/CustomButton";
+import CustomModal from "@/utils/ui/form/CustomModal";
+import TrabajadorForm from "./TrabajadorForm";
 
 const {
-  useSVCCSustanciaList,
-  useSVCCSustanciaCreate,
-  useSVCCSustanciaUpdate,
-  useSVCCSustanciaDelete,
+  useSVCCTrabajadorList,
+  useSVCCTrabajadorCreate,
+  useSVCCTrabajadorUpdate,
+  useSVCCTrabajadorDelete,
 } = gestionEmpleadorAPI;
 
 type EditAction = "create" | "read" | "update" | "delete";
-type EditState = Omit<FormProps<SustanciaDTO>, "onChange"> & {
+type EditState = Omit<FormProps<TrabajadorDTO>, "onChange"> & {
   action?: EditAction,
   message?: string;
 };
-export default function SustanciaHandler() {
+export default function NominaHandler() {
   const [edit, setEdit] = useState<EditState>({ data: {} });
   const { ultima: { data: presentacion }, } = useSVCCPresentacionContext();
   const [{ index, size }, setPage] = useState({ index: 0, size: 100 });
-  const [data, setData] = useState<Data<SustanciaDTO>>({ index, size, count: 0, pages: 0, data: [] });
-  const { isLoading, isValidating, mutate } = useSVCCSustanciaList(
+  const [data, setData] = useState<Data<TrabajadorDTO>>({ index, size, count: 0, pages: 0, data: [] });
+  const { isLoading, isValidating, mutate } = useSVCCTrabajadorList(
     { page: `${index + 1},${size}` },
     {
       revalidateOnFocus: false,
       onSuccess(data) { setData({ ...data, index: data.index - 1 }) },
     }
   );
-  const { trigger: triggerCreate, isMutating: isCreating } = useSVCCSustanciaCreate({ onSuccess() { mutate(); } });
-  const [updateParams, setUpdateParams] = useState<SVCCSustanciaUpdateParams | undefined>();
-  const { trigger: triggerUpdate, isMutating: isUpdating } = useSVCCSustanciaUpdate(updateParams, { onSuccess() { mutate(); } });
-  const [deleteParams, setDeleteParams] = useState<SVCCSustanciaDeleteParams | undefined>();
-  const { trigger: triggerDelete, isMutating: isDeleting } = useSVCCSustanciaDelete(deleteParams, { onSuccess() { mutate(); } });
+  const { trigger: triggerCreate, isMutating: isCreating } = useSVCCTrabajadorCreate({ onSuccess() { mutate(); } });
+  const [updateParams, setUpdateParams] = useState<SVCCTrabajadorUpdateParams | undefined>();
+  const { trigger: triggerUpdate, isMutating: isUpdating } = useSVCCTrabajadorUpdate(updateParams, { onSuccess() { mutate(); } });
+  const [deleteParams, setDeleteParams] = useState<SVCCTrabajadorDeleteParams | undefined>();
+  const { trigger: triggerDelete, isMutating: isDeleting } = useSVCCTrabajadorDelete(deleteParams, { onSuccess() { mutate(); } });
   const isWorking = isCreating || isUpdating || isDeleting || isLoading || isValidating;
 
   const readonly = presentacion?.presentacionFecha != null;
+
   return (
     <>
-      <SustanciaBrowse
+      <TrabajadorBrowse
         isLoading={isLoading || isValidating}
         data={data}
         onPageIndexChange={(index: number) => setPage((o) => ({ ...o, index }))}
@@ -83,7 +82,7 @@ export default function SustanciaHandler() {
       >
         <Grid container spacing={2} justifyContent="center" minHeight="500px">
           {edit.message && <Typography variant="h5" color="var(--naranja)" textAlign="center">{edit.message}</Typography>}
-          <SustanciaForm
+          <TrabajadorForm
             data={edit.data}
             disabled={edit.disabled}
             errors={edit.errors}
@@ -101,7 +100,7 @@ export default function SustanciaHandler() {
     if (isDeleting) return "Borrando...";
   }
   function editTitle() {
-    const value = "Sustancia";
+    const value = "Trabajador";
     switch (edit.action) {
       case "create": return `Agregando ${value}`;
       case "read": return `Consultando ${value}`;
@@ -109,42 +108,42 @@ export default function SustanciaHandler() {
       case "delete": return `Borrando ${value}`;
     }
   }
-  function handleOnChange(changes: DeepPartial<SustanciaDTO>) {
+  function handleOnChange(changes: DeepPartial<TrabajadorDTO>) {
     setEdit((o) => ({ ...o, data: { ...o.data, ...changes } }));
   }
   function handleEditOnClose() { setEdit({ data: {} }); }
   function handleEditOnConfirm() {
     switch (edit.action) {
       case "create": {
-        triggerCreate(edit.data as SustanciaDTO)
+        triggerCreate(edit.data as TrabajadorDTO)
           .then((data) => {
             console.info(data);
             handleEditOnClose();
           }, (error) => {
             console.error(error);
-            setEdit((o) => ({ ...o, message: "Ocurrió un error creando sustancia" }));
+            setEdit((o) => ({ ...o, message: "Ocurrió un error creando trabajador" }));
           });
         break;
       }
       case "update": {
-        triggerUpdate(edit.data as SustanciaDTO)
+        triggerUpdate(edit.data as TrabajadorDTO)
           .then((data) => {
             console.info(data);
             handleEditOnClose();
           }, (error) => {
             console.error(error);
-            setEdit((o) => ({ ...o, message: "Ocurrió un error actualizando sustancia" }));
+            setEdit((o) => ({ ...o, message: "Ocurrió un error actualizando trabajador" }));
           });
         break;
       }
       case "delete": {
-        triggerDelete(edit.data as SustanciaDTO)
+        triggerDelete(edit.data as TrabajadorDTO)
           .then((data) => {
             console.info(data);
             handleEditOnClose();
           }, (error) => {
             console.error(error);
-            setEdit((o) => ({ ...o, message: "Ocurrió un error borrando sustancia" }));
+            setEdit((o) => ({ ...o, message: "Ocurrió un error borrando trabajador" }));
           });
         break;
       }
@@ -154,7 +153,7 @@ export default function SustanciaHandler() {
       }
     }
   }
-  function onAction(action: EditAction, data?: SustanciaDTO) {
+  function onAction(action: EditAction, data?: TrabajadorDTO) {
     switch (action) {
       case "update": {
         setUpdateParams({ id: data!.interno! });
@@ -171,18 +170,10 @@ export default function SustanciaHandler() {
       disabled: ["read", "delete"].includes(action)
         ? {
           interno: true,
-          idEstablecimientoEmpresa: true,
-          idSustancia: true,
-          nombreComercial: true,
-          cantidadAnual: true,
-          idUnidadDeMedida: true,
-          utilizaciones: {},
-          puestosAfectados: {},
-          equiposRadiologicos: {},
-          proveedores: {},
-          compradores: {},
-          estudiosAmbientalesEspecificos: {},
-          estudiosBiologicosEspecificos: {},
+          cuil: true,
+          establecimientoDeclaradoInterno: true,
+          fechaIngreso: true,
+          actividades: {},
         }
         : {},
     });

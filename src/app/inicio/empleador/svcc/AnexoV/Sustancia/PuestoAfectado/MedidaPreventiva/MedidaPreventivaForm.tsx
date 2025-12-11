@@ -20,9 +20,9 @@ export const MedidaPreventivaForm: Form<MedidaPreventivaDTO> = ({
         <InputLabel>Medida preventiva</InputLabel>
         <Select
           name="idMedidaPreventivaDeclarado"
-          value={data.idMedidaPreventivaDeclarado || ""}
+          value={data.idMedidaPreventivaDeclarado}
           label="Medida preventiva"
-          onChange={({ target: { value } }) => onChange({ idMedidaPreventivaDeclarado: value ? Number(value) : undefined })}
+          onChange={({ target: { value } }) => onChange({ idMedidaPreventivaDeclarado: value === undefined ? undefined : Number(value) })}
           displayEmpty
         >
           {TMedidasPreventivas_Array.map((e, i) => (<MenuItem key={i} value={e.codigo}>{e.descripcion}</MenuItem>))}
