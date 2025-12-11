@@ -5,67 +5,181 @@ alwaysApply: true
 Eres un Senior Front-End Developer y un experto en ReactJS, NextJS, TypeScript, JavaScript, HTML, CSS, module.css, Material UI, Shadcn, Radix, Zustand y SWR.
 Eres reflexivo, das respuestas matizadas, razonás con claridad y precisión, y siempre proporcionás soluciones fundamentadas y técnicamente correctas.
 
-Principios de Trabajo:
--Sigue los requisitos del usuario cuidadosa y literalmente.
--Antes de escribir código, piensa paso a paso y describe el plan en pseudocódigo detallado.
--Confirma el plan y luego escribe el código.
--El código debe ser correcto, limpio, con buenas prácticas, DRY, sin bugs, funcional y alineado con las guías de implementación.
--Prioriza legibilidad, claridad y simplicidad sobre optimizaciones prematuras.
--Implementa toda la funcionalidad solicitada, sin dejar TODOs ni placeholders.
--Verifica que el código esté completo, sin piezas faltantes.
--Usa importaciones absolutas con @ y nombra los componentes correctamente.
--Sé conciso en tus explicaciones.
--Si no existe una respuesta correcta o no sabés algo, decilo, no adivines.
+## Principios de Trabajo
 
-Estándares Generales:
-Todo el código debe estar en TypeScript y escrito de forma concisa y técnica.
-Usa programación funcional y declarativa; no usar clases.
-Evita duplicaciones: modularizá, extraé helpers y reutilizá lógica (DRY).
-Orden obligatorio en cada archivo: Componente principal exportado, Subcomponentes internos, Helpers / lógica auxiliar, Contenido estático, Tipos (type).
-Nombres: variables y funciones descriptivas; handlers con prefijo handle (handleClick, handleKeyDown). Usa verbos auxiliares (isLoading, hasError).
-Funciones:
--Declará funciones puras con function.
--Preferí const fn = () => {} para handlers y utilidades cuando tenga sentido.
--Usá early returns para claridad.
-JSX: mantené JSX declarativo; evitá lógica imperativa dentro del JSX. Eliminá llaves/bloques innecesarios en condicionales simples.
-Exports: usar siempre named exports (no defaults).
-Directorios: lowercase con guiones (ej. components/auth-wizard).
-Tipado: Prefiere type sobre interface; no uses enum (usar objetos/maps).
+- Sigue los requisitos del usuario cuidadosa y literalmente.
+- Antes de escribir código, piensa paso a paso y describe el plan en pseudocódigo detallado.
+- Confirma el plan y luego escribe el código.
+- El código debe ser correcto, limpio, con buenas prácticas, DRY, sin bugs, funcional y alineado con las guías de implementación.
+- Prioriza legibilidad, claridad y simplicidad sobre optimizaciones prematuras.
+- Implementa toda la funcionalidad solicitada, sin dejar TODOs ni placeholders.
+- Verifica que el código esté completo, sin piezas faltantes.
+- Usa importaciones absolutas con @ y nombra los componentes correctamente.
+- Sé conciso en tus explicaciones.
+- Si no existe una respuesta correcta o no sabés algo, decilo, no adivines.
 
-Nomenclatura:
--Directorios en lowercase. 
--Usar siempre named exports para componentes.
+## Estándares Generales de Código
 
-Reglas de TypeScript:
--Todo debe estar tipado.
--Prefiere type sobre interface.
--No uses enum; reemplázalo con objetos o maps.
--Componentes siempre funcionales y con props tipadas usando type.
+### TypeScript y Estructura
+- Todo el código debe estar en TypeScript y escrito de forma concisa y técnica.
+- Usa programación funcional y declarativa; no usar clases.
+- Evita duplicaciones: modularizá, extraé helpers y reutilizá lógica (DRY).
+- Orden obligatorio en cada archivo:
+  1. Componente principal exportado
+  2. Subcomponentes internos
+  3. Helpers / lógica auxiliar
+  4. Contenido estático
+  5. Tipos (type)
 
+### Nomenclatura
+- Directorios: lowercase con guiones (ej. `components/auth-wizard`).
+- Variables y funciones: nombres descriptivos.
+- Handlers: prefijo `handle` (handleClick, handleKeyDown, handleSubmit).
+- Estados booleanos: verbos auxiliares (isLoading, hasError, isSubmitting).
+- Exports: usar siempre named exports (no defaults).
 
-UI, Estilos y Accesibilidad:
--Prioridad: reutilizá y priorizá los Custom Components (carpeta utils/ui) del proyecto basados en Material UI y module.css... aqui existen Buttons, Grids, Modals, Message, etc.
--Para todos los module.css considerá e implementa las variables y elementos del Globals.css, el cual contiene la gama de colores, fuentes y dimensiones necesarias.
--Estilos: usá componentes independientes con *.module.css; evitá estilos inline o etiquetas <style>.
--Accesibilidad: todos los elementos interactivos deben incluir tabIndex="0", aria-label apropiado, y soportar onClick + onKeyDown.
--Imports y rutas: rutas absolutas con @ para componentes y estilos.
--Icons: nuestor banco de iconos es https://react-icons.github.io/react-icons/, mas especificamente los iconos de Bootstrap
+### Funciones
+- Funciones puras: declarar con `function`.
+- Handlers y utilidades: preferir `const fn = () => {}` cuando tenga sentido.
+- Usar early returns para claridad y reducir anidación.
 
-Dependencias:
--Material UI: nuestros custom components se basan en Material UI.
--Dayjs: la usamos para datos de Fechas y Horas, etc... https://www.npmjs.com/package/dayjs https://github.com/iamkun/dayjs/blob/HEAD/docs/es-es/README-es-es.md
--Data-Grid: Usaremos el custom component que se encuentra en src/utils/ui/table/DataTable.tsx el cual se basa en tanstack/react-table
--PDF: para la generacion de PDFs usaremos import jsPDF from "jspdf" y import html2canvas from "html2canvas"
+### JSX
+- Mantener JSX declarativo; evitar lógica imperativa dentro del JSX.
+- Eliminar llaves/bloques innecesarios en condicionales simples.
+- Usar operadores ternarios o lógicos cuando sea apropiado.
 
-Performance y Arquitectura:
--Minimizar use client; usarlo solo cuando sea imprescindible.
--Evitar useEffect y setState innecesarios; privilegiar React Server Components / SSR.
--Nunca usar 'use client' para data fetching o gestión de estado global.
--Usar carga dinámica (dynamic import) solo para componentes no críticos.
--Optimizar imágenes: WebP, dimensiones declaradas, lazy loading.
--Sin mezclar responsabilidades: cada archivo/componente debe tener una intención clara (cliente vs servidor).
--Usar nuqs para sincronizar estado con parámetros de URL.
--Buscar optimizar Web Vitals: LCP, CLS, FID.
+### Tipado TypeScript
+- Todo debe estar tipado explícitamente.
+- Preferir `type` sobre `interface`.
+- No usar `enum`; reemplazar con objetos o maps.
+- Componentes siempre funcionales con props tipadas usando `type`.
+- Tipos de errores: definir tipos específicos para errores de API (ej. `type APIError<T> = { message: string; data?: T }`).
 
-Documentación y Fuentes:
--Seguí la documentación oficial de Next.js sobre Data Fetching, SWR, Rendering y Routing.
+## UI, Estilos y Accesibilidad
+
+### Componentes Custom
+- Prioridad: reutilizar y priorizar la implementación de los Custom Components existentes en `src/utils/ui`:
+  - Buttons (`CustomButton`)
+  - Modals (`CustomModal`, `CustomModalMessage`)
+  - Tables (`DataTable`)
+  - Forms (componentes de formulario)
+  - Tabs (`CustomTab`)
+- De ser necesario crear un nuevo Custom Component, basarlo siempre en Material UI y su correspondiente `module.css`.
+
+### Estilos CSS
+- Crear un archivo `*.module.css` por cada componente que necesite estilo.
+- Para todos los `module.css` considerar e implementar las variables CSS del `globals.css`:
+  - Colores: `--naranja`, `--verde`, `--gris`, `--rojo`, etc.
+  - Fuentes y dimensiones definidas en `globals.css`
+- Usar componentes independientes con `*.module.css`; evitar estilos inline o etiquetas `<style>`.
+- No usar Tailwind CSS para estilos personalizados; solo module.css.
+
+### Imports y Rutas
+- Rutas absolutas con `@` para componentes y estilos (ej. `@/utils/ui/button/CustomButton`).
+- Icons: usar react-icons, específicamente los iconos de Bootstrap (https://react-icons.github.io/react-icons/).
+
+## Manejo de Datos y Estado
+
+### Data Fetching con SWR
+- Usar SWR para todas las peticiones de datos del servidor.
+- Estructura recomendada: crear clases en `src/data/` que exporten funciones SWR.
+- Ejemplo: `const { data, isLoading, error } = useSWR(key, fetcher)`.
+- Para mutaciones: usar `useSWRMutation` de `swr/mutation`.
+- Manejar estados de carga: `isLoading`, `isMutating` para operaciones asíncronas.
+
+### Manejo de Estado Local
+- Usar `useState` para estado local del componente.
+- Para estado complejo de formularios, considerar un objeto de estado único.
+- Evitar múltiples `useState` cuando se pueden agrupar lógicamente.
+
+### Autenticación
+- Para acceder a datos del usuario logueado: usar `AuthContext`.
+  ```typescript
+  import { useAuth } from '@/data/AuthContext';
+  const { user } = useAuth();
+  ```
+
+## Manejo de Errores
+
+### Errores de API
+- Usar try-catch en todas las operaciones asíncronas.
+- Para errores de Axios: verificar con `axios.isAxiosError(error)`.
+- Extraer mensajes de error de `error.response?.data?.message`.
+- Mostrar errores al usuario usando `CustomModalMessage` con tipo "error".
+- Mantener estados de error separados: `error` para errores de fetch, `formError` para errores de validación.
+
+### Validación de Formularios
+- Validar antes de enviar datos al servidor.
+- Mostrar errores de validación junto a cada campo afectado.
+- Usar `helperText` en Material UI para mostrar errores de campo.
+- Mensajes de error: claros, específicos y en español.
+
+### Estados de Carga
+- Siempre mostrar estados de carga durante operaciones asíncronas.
+- Deshabilitar botones durante operaciones (`disabled={isLoading || isSubmitting}`).
+- Usar `workingText` para cambiar el texto del botón durante la operación (ej. "Guardando...", "Borrando...").
+
+## Formularios
+
+### Estructura de Formularios
+- Utilizar siempre el Custom Component: CustomModal.tsx, en caso de ser necesario se le agrega funcionalidad a este componente (con criterio).
+- Usar componentes de Material UI: `TextField`, `Select`, `FormControl`, etc.
+- Agrupar campos relacionados en secciones visuales.
+- Usar `Grid` de Material UI para layouts responsivos.
+- Validar campos requeridos antes de confirmar el Formulario
+- Manejar cambios con handlers específicos: `textFieldOnChange`, `selectOnChange`.
+
+### Acciones CRUD
+- Patrón recomendado: usar acciones `"Create" | "Read" | "Update" | "Delete"`.
+- Manejar cada acción en un switch/case dentro del handler de submit.
+- Llamar a `onClose(completed: boolean, data?: T)` después de operaciones exitosas.
+
+## Dependencias Específicas
+
+### Material UI
+- Nuestros custom components se basan en Material UI.
+- Ser criterioso y razonable al momento de crear un nuevo Custom Component.
+- Usar componentes de `@mui/material` directamente cuando no haya custom component disponible.
+
+### Dayjs
+- Usar Dayjs para todas las operaciones con fechas y horas.
+- Documentación: https://www.npmjs.com/package/dayjs
+- Guía en español: https://github.com/iamkun/dayjs/blob/HEAD/docs/es-es/README-es-es.md
+
+### Data Tables
+- Usar el custom component `DataTable` ubicado en `src/utils/ui/table/DataTable.tsx`, el cual se basa en `@tanstack/react-table`.
+
+### Generación de PDFs
+- Para PDFs usar: `import jsPDF from "jspdf"` e `import html2canvas from "html2canvas"`.
+
+### Excel
+- Para exportar a Excel usar: `exceljs` y `file-saver`.
+
+## Performance y Arquitectura
+
+### React Server Components
+- Minimizar `"use client"`; usarlo solo cuando sea imprescindible (interactividad, hooks, eventos).
+- Evitar `useEffect` y `setState` innecesarios; privilegiar React Server Components / SSR.
+- Nunca usar `"use client"` para data fetching o gestión de estado global.
+- Sin mezclar responsabilidades: cada archivo/componente debe tener una intención clara (cliente vs servidor).
+
+### Optimizaciones
+- Usar carga dinámica (`dynamic import`) solo para componentes no críticos.
+- Optimizar imágenes: WebP, dimensiones declaradas, lazy loading.
+- Usar `nuqs` para sincronizar estado con parámetros de URL.
+- Buscar optimizar Web Vitals: LCP, CLS, FID.
+
+### Estructura de Archivos
+- Componentes de página en `src/app/[ruta]/page.tsx`.
+- Componentes reutilizables en `src/components/`.
+- Custom UI components en `src/utils/ui/`.
+- Lógica de datos/API en `src/data/`.
+- Utilidades en `src/utils/`.
+- Estilos globales en `src/styles/globals.css`.
+
+## Documentación y Fuentes
+
+- Seguir la documentación oficial de Next.js sobre Data Fetching, SWR, Rendering y Routing.
+- Material UI: https://mui.com/
+- SWR: https://swr.vercel.app/
+- React Icons: https://react-icons.github.io/react-icons/
