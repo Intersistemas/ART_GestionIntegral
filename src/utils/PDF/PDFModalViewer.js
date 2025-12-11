@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Modal from 'react-modal';
 import { PDFViewer } from '@react-pdf/renderer';
 
@@ -20,7 +20,6 @@ const defaultModalStyles = {
     top: '5%',
     left: '50%',
     right: 'auto', 
-    bottom: 'auto',
     marginRight: '-50%',
     width: '80%',
     height: '90%',
@@ -40,7 +39,7 @@ const defaultPdfViewerStyles = {
   height: '90%',
   width: '100%',
   border: '1px solid #ddd',
-  borderRadius: '4px'
+  borderRadius: '4px',
 };
 
 const PDFModalViewer = ({
@@ -56,18 +55,24 @@ const PDFModalViewer = ({
   closeButtonClassName = 'btn btn-secondary',
   ...props
 }) => {
-  const [modalIsOpen, setModalIsOpen] = useState(isOpen);
+  if (!PDFComponent) {
+    console.error('PDFModalViewer: Se requiere un componente PDF válido');
+    return null;
+  }
+
+  // Si está cerrado, directamente no renderizamos nada
+  if (!isOpen) return null;
 
   // Combinar estilos
   const finalModalStyles = {
     content: {
       ...defaultModalStyles.content,
-      ...modalStyles.content
+      ...(modalStyles.content || {}),
     },
     overlay: {
       ...defaultModalStyles.overlay,
-      ...modalStyles.overlay
-    }
+      ...(modalStyles.overlay || {}),
+    },
   };
 
   const finalPdfViewerStyles = {
@@ -75,27 +80,13 @@ const PDFModalViewer = ({
     ...pdfViewerStyles
   };
 
-  // Manejar cierre del modal
   const handleClose = () => {
-    setModalIsOpen(false);
-    if (onClose) {
-      onClose();
-    }
+    if (onClose) onClose();
   };
-
-  // Actualizar estado cuando cambie la prop isOpen
-  React.useEffect(() => {
-    setModalIsOpen(isOpen);
-  }, [isOpen]);
-
-  if (!PDFComponent) {
-    console.error('PDFModalViewer: Se requiere un componente PDF válido');
-    return null;
-  }
 
   return (
     <Modal
-      isOpen={modalIsOpen}
+      isOpen={isOpen}
       onRequestClose={handleClose}
       style={finalModalStyles}
       contentLabel={title}

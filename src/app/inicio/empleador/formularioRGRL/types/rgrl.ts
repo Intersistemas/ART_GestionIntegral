@@ -138,6 +138,7 @@ export type ApiFormularioDetalle = {
 
 export type ApiEstablecimientoEmpresa = {
   interno: number;
+  cp: number;
   cuit: number;
   nroSucursal: number;
   nombre: string;

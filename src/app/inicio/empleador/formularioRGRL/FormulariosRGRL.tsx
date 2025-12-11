@@ -35,6 +35,7 @@ import type {
   DetallePayload
 } from './types/rgrl';
 import { BsFileEarmarkPdfFill, BsPencilFill, BsFront } from "react-icons/bs";
+import ArtAPI from '@/data/artAPI';
 
 let _tiposCache: ApiTiposFormularios | null = null;
 //#region tipos-catalogos
@@ -143,26 +144,31 @@ const CargarConsultaFormulariosRGRL = async (cuit: number): Promise<FormularioRG
 
 };
 
-const CargarEstablecimientosEmpresa = async (cuit: number): Promise<ApiEstablecimientoEmpresa[]> => {
-  // GET /Establecimientos/Empresa/{cuit}: datos para cabecera de impresión (establecimiento).
-  const url = `http://arttest.intersistemas.ar:8302/api/Establecimientos/Empresa/${encodeURIComponent(cuit)}`;
-  const res = await fetch(url, { cache: 'no-store', headers: { Accept: 'application/json' } });
-  if (res.status === 404) return [];
-  if (!res.ok) {
-    const raw = await res.text().catch(() => '');
-    throw new Error(`GET ${url} -> ${res.status} ${raw}`);
+const CargarEstablecimientoPorId = async (id: number): Promise<ApiEstablecimientoEmpresa | null> => {
+  if (!id) return null;
+  try {
+    const data = await ArtAPI.getEstablecimientoById({ id });
+    return data as ApiEstablecimientoEmpresa;
+  } catch (error) {
+    console.error('[RGRL] Error al cargar establecimiento por id', id, error);
+    return null;
   }
-  return (await res.json()) as ApiEstablecimientoEmpresa[];
 };
+
 
 const mapRespuesta = (v?: string | null) =>
   // Normaliza 'S'/'N'/'A' a 'Sí'/'No'/'No Aplica'.
   v === 'S' ? 'Sí' : v === 'N' ? 'No' : v === 'A' ? 'No Aplica' : (v ?? '');
 
-const normPropioContratado = (v?: string | null): 'Propio' | 'Contratado' => {
-  // Homogeneiza variantes ('contratado','externo','1','true','c') 'Contratado'; resto 'Propio'.
+const normPropioContratado = (v?: string | number | null): 'Propio' | 'Contratado' => {
+  // Convención: 0 => Propio, 1 => Contratado.
+  if (v == null) return 'Propio';
+  const n = Number(v);
+  if (!Number.isNaN(n)) {
+    if (n === 1) return 'Contratado';
+    return 'Propio';
+  }
   const s = String(v ?? '').trim().toLowerCase();
-
   if (s === 'contratado' || s === 'c' || s === 'externo' || s === '1' || s === 'true') return 'Contratado';
   return 'Propio';
 };
@@ -280,7 +286,7 @@ const CargarDetalleRGRL = async (id: number): Promise<DetallePayload> => {
     NombreApellido: r.responsable ?? '',
     Cargo: normCargo(r.cargo),
     Representacion: normRepresentacion(r.representacion ?? r.representacion),
-    PropioContratado: normPropioContratado(r.propioContratado),
+    PropioContratado: normPropioContratado((r as any).esContratado ?? (r as any).propioContratado),
     TituloHabilitante: r.tituloHabilitante ?? '',
     Matricula: r.matricula ?? '',
     EntidadOtorgante: r.entidadOtorganteTitulo ?? '',
@@ -416,57 +422,69 @@ const FormulariosRGRL: React.FC<FormulariosRGRLProps> = ({ cuit, referenteDatos 
         //@ts-ignore
         cell: ({ row }) => {
           console.log("row", row)
-          const onClick = async (e: any) => {
-            console.log("row", row)
-            e.stopPropagation?.();
-            const interno = Number(row.original.InternoFormularioRGRL || 0);
-            console.log("interno", interno)
-            if (!interno) return;
+ const onClick = async (e: any) => {
+  e.stopPropagation?.();
+  const interno = Number(row.original.InternoFormularioRGRL || 0);
+  if (!interno) return;
 
-            const data = await CargarDetalleRGRL(interno);
-            console.log("data", data)
-            const establecimientos = await CargarEstablecimientosEmpresa(Number(row.original.CUIT));
-            const estab =
-              establecimientos.find(e => e.interno === Number(data.internoEstablecimiento ?? 0)) ||
-              establecimientos[0];
+  // 1) Detalle del formulario
+  const data = await CargarDetalleRGRL(interno);
 
-            const cabecera: CabeceraData = {
-              empresa: {
-                razonSocial: row.original.RazonSocial,
-                cuit: CUIP(row.original.CUIT),
-                contrato: '',
-                ciiu: estab?.ciiu != null ? String(estab.ciiu) : '',
-              },
-              establecimiento: {
-                numero: estab ? String(estab.numero || estab.codigo || estab.codEstabEmpresa || '') : '',
-                ciiu: estab?.ciiu != null ? String(estab.ciiu) : '',
-                direccion: estab ? `${estab.domicilioCalle ?? ''} ${estab.domicilioNro ?? ''}`.trim() : row.original.Establecimiento,
-                cp: '',
-                localidad: estab?.localidad ?? '',
-                provincia: estab?.provincia ?? '',
-                superficie: estab?.superficie != null ? String(estab.superficie) : '',
-                cantTrabajadores: estab?.cantTrabajadores != null ? String(estab.cantTrabajadores) : '',
-              },
-              fechaSRT: data.fechaSRT ?? '',
-            };
+  // 2) Establecimiento por ID usando ArtAPI (/api/Establecimientos/{id})
+  const estab = data.internoEstablecimiento
+    ? await CargarEstablecimientoPorId(Number(data.internoEstablecimiento))
+    : null;
 
-            setPrintData({
-              cabecera,
-              detalle: (data.detalle ?? []).filter(r =>
-                (r.Pregunta?.trim()) ||
-                (r.Respuesta?.trim()) ||
-                (r.FechaRegularizacion?.trim()) ||
-                (r.NormaVigente?.trim())
-              ),
-              planillaA: data.planillaA,
-              planillaB: data.planillaB,
-              planillaC: data.planillaC,
-              gremios: data.gremios,
-              contratistas: data.contratistas,
-              responsables: data.responsables,
-            });
-            setPrintOpen(true);
-          };
+  // 3) Cabecera para el PDF
+  const cabecera: CabeceraData = {
+    empresa: {
+      razonSocial: row.original.RazonSocial,
+      cuit: CUIP(row.original.CUIT),
+      contrato: '',
+      ciiu: estab?.ciiu != null ? String(estab.ciiu) : '',
+    },
+    establecimiento: {
+      cuit: estab?.cuit != null ? String(estab.cuit) : String(row.original.CUIT || ''),
+      numero: estab
+        ? String(estab.numero ?? estab.codigo ?? estab.codEstabEmpresa ?? '')
+        : '',
+      ciiu: estab?.ciiu != null ? String(estab.ciiu) : '',
+      direccion: estab
+        ? `${String(estab.domicilioCalle ?? '').trim()} ${String(
+            estab.domicilioNro ?? ''
+          ).trim()}`.trim()
+        : row.original.Establecimiento,
+
+      //  CP real
+      cp: estab?.cp != null && estab.cp !== 0 ? String(estab.cp) : '',
+
+      localidad: estab?.localidad ?? '',
+      provincia: estab?.provincia ?? '',
+
+      superficie: estab?.superficie != null ? String(estab.superficie) : '',
+      cantTrabajadores:
+        estab?.cantTrabajadores != null ? String(estab.cantTrabajadores) : '',
+    },
+    fechaSRT: data.fechaSRT ?? '',
+  };
+
+  setPrintData({
+    cabecera,
+    detalle: (data.detalle ?? []).filter(r =>
+      (r.Pregunta?.trim()) ||
+      (r.Respuesta?.trim()) ||
+      (r.FechaRegularizacion?.trim()) ||
+      (r.NormaVigente?.trim())
+    ),
+    planillaA: data.planillaA,
+    planillaB: data.planillaB,
+    planillaC: data.planillaC,
+    gremios: data.gremios,
+    contratistas: data.contratistas,
+    responsables: data.responsables,
+  });
+  setPrintOpen(true);
+};
           const onEdit = (e: any) => {
             e.stopPropagation?.();
             const interno = Number(row.original.InternoFormularioRGRL || 0);

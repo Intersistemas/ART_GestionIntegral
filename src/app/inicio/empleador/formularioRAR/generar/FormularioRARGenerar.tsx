@@ -14,6 +14,8 @@ import Formato from '../../../../../utils/Formato';
 import CustomButton from '../../../../../utils/ui/button/CustomButton';
 import DataTableImport from '../../../../../utils/ui/table/DataTable';
 import CustomModal from '../../../../../utils/ui/form/CustomModal';
+import CustomModalMessage from '@/utils/ui/message/CustomModalMessage';
+import ArtAPI from '@/data/artAPI';
 import styles from '../FormulariosRAR.module.css';
 
 dayjs.extend(customParseFormat);
@@ -32,6 +34,7 @@ interface CrearProps {
   finalizaCarga: (ret?: boolean) => void;
   formulariosRAR?: any[]; // opcional
   editarId?: number; // interno del formulario a editar (si existe)
+  replicaDe?: number; // interno del formulario a replicar (si existe)
 }
 
 type OpcionEstablecimiento = { interno: string; domicilioCalle: string; displayText: string };
@@ -43,6 +46,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
   finalizaCarga,
   formulariosRAR = [],
   editarId = 0,
+  replicaDe = 0,
 }) => {
   // encabezado
   const [cuitActual, setCuitActual] = React.useState<string>(String(cuit || ''));
@@ -67,6 +71,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
   // modal - Se abre automáticamente al cargar el componente
   const [modalTrabajadorOpen, setModalTrabajadorOpen] = React.useState<boolean>(true);
   const esModoEdicionFormulario = editarId > 0;
+  const esModoReplicaFormulario = replicaDe > 0;
 
   // trabajadores
   const [cuil, setCuil] = React.useState<string>('');
@@ -79,6 +84,11 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
   const [ultimoExamenMedico, setUltimoExamenMedico] = React.useState<string>('');
   const [codigoAgente, setCodigoAgente] = React.useState<string>('');
   const [filas, setFilas] = React.useState<any[]>([]);
+
+  // Modal de mensajes (errores/alertas)
+  const [modalMessageOpen, setModalMessageOpen] = React.useState<boolean>(false);
+  const [modalMessageText, setModalMessageText] = React.useState<string>('');
+  const [modalMessageType, setModalMessageType] = React.useState<'success' | 'error' | 'alert'>('error');
 
   // Estados para edición
   const [editandoIndex, setEditandoIndex] = React.useState<number>(-1);
@@ -113,11 +123,6 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
   // ===== Funciones para manejo de trabajadores =====
   // Función para editar un trabajador
   const handleEditarTrabajador = React.useCallback((index: number) => {
-    if (modoEdicion) {
-      alert('Ya estás editando un trabajador. Guardá o cancelá los cambios antes de editar otro.');
-      return;
-    }
-
     const trabajador = filas[index];
     if (!trabajador) return;
 
@@ -135,13 +140,11 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
     // Activar modo edición
     setEditandoIndex(index);
     setModoEdicion(true);
-  }, [filas, modoEdicion]);
+  }, [filas]);
 
   // Función para eliminar un trabajador
   const handleEliminarTrabajador = React.useCallback((index: number) => {
-    if (window.confirm('¿Estás seguro de que querés eliminar este trabajador?')) {
-      setFilas(prev => prev.filter((_, i) => i !== index));
-    }
+    setFilas(prev => prev.filter((_, i) => i !== index));
   }, []);
 
   // ===== Configuración de columnas para DataTable =====
@@ -431,6 +434,52 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
     return () => { cancel = true; };
   }, [editarId, esModoEdicionFormulario]);
 
+
+  // Cargar datos para modo réplica
+React.useEffect(() => {
+  let cancel = false;
+  (async () => {
+    if (!esModoReplicaFormulario || replicaDe <= 0) return;
+    try {
+      const data = await ArtAPI.getFormularioRARById(replicaDe);
+      if (cancel) return;
+
+      // Cantidades
+      setCantExpuestos(String(data.cantTrabajadoresExpuestos || 0));
+      setCantNoExpuestos(String(data.cantTrabajadoresNoExpuestos || 0));
+
+      // Establecimiento (interno)
+      if (data.internoEstablecimiento) {
+        setEstablecimientoSeleccionado(String(data.internoEstablecimiento));
+      }
+
+      if (Array.isArray(data.formularioRARDetalle)) {
+        const filasMap = data.formularioRARDetalle.map((d: any) => ({
+          CUIL: String(d.cuil || ''),
+          Nombre: d.nombre || '',
+          SectorTareas: d.sectorTarea || '',
+          Ingreso: d.fechaIngreso ? dayjs(d.fechaIngreso).format('YYYY-MM-DD') : '',
+          FechaInicio: d.fechaInicioExposicion ? dayjs(d.fechaInicioExposicion).format('YYYY-MM-DD') : '',
+          Exposicion: String(d.horasExposicion ?? 0),
+          FechaFinExposicion: d.fechaFinExposicion ? dayjs(d.fechaFinExposicion).format('YYYY-MM-DD') : '',
+          UltimoExamenMedico: d.fechaUltimoExamenMedico ? dayjs(d.fechaUltimoExamenMedico).format('YYYY-MM-DD') : '',
+          CodigoAgente: String(d.codigoAgente || ''),
+          AgenteCausanteDisplay: String(d.codigoAgente || ''),
+        }));
+        setFilas(filasMap);
+      }
+    } catch (e) {
+      console.log("Error carga replica", e);
+    }
+  })();
+  return () => { cancel = true; };
+}, [replicaDe, esModoReplicaFormulario]);
+
+
+
+
+  
+
   React.useEffect(() => {
     let cancel = false;
     (async () => {
@@ -479,7 +528,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
           .map((est: any) => ({
             interno: String(est.interno ?? ''),
             domicilioCalle: String(est.domicilioCalle ?? ''),
-            displayText: `${est.interno ?? 'S/C'} - ${est.domicilioCalle ?? 'Sin dirección'}`
+            displayText: `${est.domicilioCalle ?? 'Sin dirección'}`
           }));
 
         console.log(' Opciones finales:', opciones);
@@ -692,6 +741,23 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
     const cuilNum = normalizarCuil(cuil);
 
     const yaExisteCuil = filas.some((f) => normalizarCuil(f.CUIL) === cuilNum);
+    const existeNoExpuesto = filas.some((f) => normalizarCuil(f.CUIL) === cuilNum && Number(String(f.Exposicion || '0')) === 0);
+
+    // Si ya existe un registro NO expuesto con ese CUIL, no permitir repetirlo
+    if (existeNoExpuesto) {
+      setModalMessageType('error');
+      setModalMessageText('No se puede agregar este CUIL: ya existe un trabajador marcado como NO expuesto con el mismo CUIL.');
+      setModalMessageOpen(true);
+      return;
+    }
+
+    // Si estamos intentando agregar este trabajador como NO expuesto y el CUIL ya existe en cualquier fila, bloquear
+    if (String(exposicion).trim() === '0' && yaExisteCuil) {
+      setModalMessageType('error');
+      setModalMessageText('No se puede marcar como NO expuesto: el CUIL ya fue cargado anteriormente.');
+      setModalMessageOpen(true);
+      return;
+    }
 
     const cuilsUnicosAntes = cuilsUnicos.size;
 
@@ -755,8 +821,23 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
       idx !== editandoIndex && f.CUIL?.replace(/\D/g, '') === cuilNum
     );
 
+    // Si existe otro registro NO expuesto con este CUIL (distinto del que editamos), bloquear
+    const existeOtroNoExpuesto = filas.some((f, idx) =>
+      idx !== editandoIndex && f.CUIL?.replace(/\D/g, '') === cuilNum && Number(String(f.Exposicion || '0')) === 0
+    );
+
+    if (existeOtroNoExpuesto) {
+      setModalMessageType('error');
+      setModalMessageText('No se puede guardar: ya existe otro trabajador marcado como NO expuesto con este CUIL.');
+      setModalMessageOpen(true);
+      return;
+    }
+
     if (duplicado) {
-      alert('Este CUIL ya fue cargado por otro trabajador');
+      // Mostrar mensaje de error usando modal en lugar de alert
+      setModalMessageType('error');
+      setModalMessageText('Este CUIL ya fue cargado por otro trabajador');
+      setModalMessageOpen(true);
       return;
     }
 
@@ -786,7 +867,6 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
 
     // Limpiar y salir del modo edición
     handleCancelarEdicion();
-    alert('Trabajador actualizado correctamente');
   };
 
   // Función para cancelar la edición
@@ -818,8 +898,6 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
     });
 
     const total = Number(cantExpuestos) + Number(cantNoExpuestos);
-    if (total === 0) return alert('El total de trabajadores debe ser mayor a 0.');
-    if (total > 99999) return alert('El total no puede exceder 99,999.');
 
     if (guardandoRef.current) return;
     guardandoRef.current = true;
@@ -922,18 +1000,12 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
     } catch (e: any) {
       console.error(' Error al guardar (handleGuardarCompleto):', e);
       console.error(' Stack trace:', e.stack);
-      alert(e?.message || 'Error desconocido al guardar');
     } finally {
       guardandoRef.current = false;
     }
   };
 
   const handleGuardar = async () => {
-    if (!numerosValidos(cantExpuestos) || !numerosValidos(cantNoExpuestos)) {
-      return alert('Ingresá cantidades válidas');
-    }
-    if (!establecimientoSeleccionado) return alert('Seleccioná un establecimiento válido');
-    if (filas.length === 0) return alert('Cargá al menos un trabajador');
 
     if (guardandoRef.current) return;
     guardandoRef.current = true;
@@ -986,11 +1058,11 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
         throw new Error(`Error del servidor (${resp.status}): ${t}`);
       }
 
-      alert('Formulario RAR creado exitosamente');
+
       finalizaCarga(true);
     } catch (e: any) {
       console.error('Error al guardar:', e);
-      alert(e?.message || 'Error desconocido al guardar');
+
     } finally {
       guardandoRef.current = false;
     }
@@ -1304,7 +1376,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
                 helperText={erroresCampos.fechaInicio}
               />
               <TextField
-                label="Nivel de Exposición"
+                label="Horas de Exposición"
                 name="exposicion"
                 type="number"
                 value={exposicion}
@@ -1562,20 +1634,6 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
             </div>
           )}
 
-
-          {/* {cantidadesCompletas && !trabajadorCompleto && (
-            <div style={{ 
-              background: '#e3f2fd', 
-              border: '1px solid #90caf9', 
-              padding: '15px', 
-              borderRadius: '5px', 
-              marginBottom: '20px',
-              textAlign: 'center'
-            }}>
-              <strong>Siguiente paso:</strong> Completá todos los datos del trabajador para poder guardar
-            </div>
-          )} */}
-
           {/* BOTONES DE ACCIÓN */}
           {!establecimientoSeleccionado ? null : (
             <div className={styles.modalButtons}>
@@ -1633,6 +1691,13 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
           }
         </div>
       </CustomModal>
+
+      <CustomModalMessage
+        open={modalMessageOpen}
+        message={modalMessageText}
+        type={modalMessageType}
+        onClose={() => setModalMessageOpen(false)}
+      />
 
     </div>
   );

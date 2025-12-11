@@ -38,6 +38,7 @@ export type CabeceraData = {
     ciiu?: string;
   };
   establecimiento: {
+    cuit?: string;
     numero?: string;
     ciiu?: string;
     direccion?: string;

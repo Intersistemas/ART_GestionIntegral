@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useCallback, useEffect, useState, SyntheticEvent } from 'react';
@@ -9,16 +8,20 @@ import CustomButton from '@/utils/ui/button/CustomButton';
 import DataTable from '@/utils/ui/table/DataTable';
 import PDFModalViewer from '@/utils/PDF/PDFModalViewer';
 import BaseDocumentPDF from '@/utils/PDF/BaseDocumentPDF';
-import { Text, View } from '@react-pdf/renderer';
+import { Text, View, Image, StyleSheet } from '@react-pdf/renderer';
 import CustomTab from '@/utils/ui/tab/CustomTab';
 import styles from './FormulariosRAR.module.css';
-import { BsFileEarmarkPdfFill, BsPencilFill } from "react-icons/bs";
+import { BsFileEarmarkPdfFill, BsPencilFill, BsFront } from "react-icons/bs";
 import FormularioRAR from './types/TformularioRar';
 import ArtAPI from "@/data/artAPI";
 
 // Hijos
 import FormularioRARGenerar from './generar/FormularioRARGenerar';
 // import FormularioRAREditor from './editar/FormularioRAREditor'; // Ya no se usa, reutilizamos el modal de generar para edición
+
+// Ruta del logo para el PDF
+const pdfLogoSrc = '/icons/LogoTexto.png';
+
 
 /* Helpers */
 const fechaFormatter = (v: any) => Formato.Fecha(v);
@@ -54,6 +57,7 @@ const FormulariosRAR: React.FC = () => {
   // modos
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [editaId, setEditaId] = useState<number>(0);
+  const [replicaDe, setReplicaDe] = useState<number | undefined>(undefined);
 
   // PDF
   const [modalPDFOpen, setModalPDFOpen] = useState<boolean>(false);
@@ -176,6 +180,7 @@ const FormulariosRAR: React.FC = () => {
 
   /* Handlers de navegación */
   const handleClickNuevo = () => {
+    setReplicaDe(undefined);
     setViewMode('crear');
     setEditaId(0);
     setInternoFormularioRAR(0);
@@ -388,74 +393,104 @@ const FormulariosRAR: React.FC = () => {
     {
       id: 'acciones',
       header: 'Acciones',
-      meta: { align: "center" },
-      cell: ({ row }: { row: any }) => (
-        <Box >
-          <>
-            <Tooltip
-              title="Editar Formulario"
-              arrow
-              slotProps={{
-                tooltip: {
-                  sx: {
-                    fontSize: "1.2rem",
-                    fontWeight: 500,
-                  },
-                },
-              }}
-            >
-              <IconButton
-                onClick={(e: any) => {
-                  e.stopPropagation?.();
-                  // Seleccionar el registro y activar edición
-                  const internoForm = Number(row.original.InternoFormularioRAR || row.original.interno || 0);
-                  const internoEstab = Number(row.original.internoEstablecimiento || row.original.InternoEstablecimiento || 0);
-                  const est = String(row.original.Estado || row.original.estado || '');
+      meta: { align: "right" },
+      cell: ({ row }: { row: any }) => {
+        const estadoForm = String(row.original.Estado || row.original.estado || '');
+        const mostrarEditar = estadoForm !== 'Confirmado';
+        const mostrarReplicar = true; 
+        
+        return (
+          <Box className={styles.iconActions}>
+            <>
+              {mostrarEditar && (
+                <Tooltip
+                  title="Editar Formulario"
+                  arrow
+                  slotProps={{
+                    tooltip: {
+                      className: styles.tooltipCustom,
+                    },
+                  }}
+                >
+                  <IconButton
+                    onClick={(e: any) => {
+                      e.stopPropagation?.();
+                      // Seleccionar el registro y activar edición
+                      const internoForm = Number(row.original.InternoFormularioRAR || row.original.interno || 0);
+                      const internoEstab = Number(row.original.internoEstablecimiento || row.original.InternoEstablecimiento || 0);
+                      const est = String(row.original.Estado || row.original.estado || '');
 
-                  seleccionaRegistro(internoForm, internoEstab, est);
-                  setIdFormularioSeleccionado(internoForm);
+                      seleccionaRegistro(internoForm, internoEstab, est);
+                      setIdFormularioSeleccionado(internoForm);
 
-                  if (internoForm > 0) {
-                    setEditaId(internoForm);
-                    setViewMode('editar');
-                  } else {
-                    alert('No se pudo obtener el ID del formulario para editar.');
-                  }
-                }}
-                disabled={cuit === 99999999999 || (!row.original.interno && !row.original.InternoFormularioRAR)}
-                color="warning"
-                size="small"
-              >
-                <BsPencilFill fontSize="large" />
-              </IconButton>
-            </Tooltip>
-            {/* Botón Imprimir */}
-            <Tooltip
-              title="Generar PDF"
-              arrow
-              slotProps={{
-                tooltip: {
-                  sx: {
-                    fontSize: "1.2rem",
-                    fontWeight: 500,
+                      if (internoForm > 0) {
+                        setEditaId(internoForm);
+                        setViewMode('editar');
+                      } else {
+                        alert('No se pudo obtener el ID del formulario para editar.');
+                      }
+                    }}
+                    disabled={cuit === 99999999999 || (!row.original.interno && !row.original.InternoFormularioRAR)}
+                    color="warning"
+                    size="small"
+                  >
+                    <BsPencilFill fontSize="large" />
+                  </IconButton>
+                </Tooltip>
+              )}
+              {/* Botón Imprimir */}
+              <Tooltip
+                title="Generar PDF"
+                arrow
+                slotProps={{
+                  tooltip: {
+                    className: styles.tooltipCustom,
                   },
-                },
-              }}
-            >
-              <IconButton
-                onClick={(e: any) => {
-                  e.stopPropagation?.();
-                  handleAbrirPDF(row.original);
                 }}
-                color="warning"
-                size="small"
               >
-                <BsFileEarmarkPdfFill fontSize="large" />
-              </IconButton>
-            </Tooltip>
-          </>
-        </Box>
-      )
+                <IconButton
+                  onClick={(e: any) => {
+                    e.stopPropagation?.();
+                    handleAbrirPDF(row.original);
+                  }}
+                  color="warning"
+                  size="small"
+                >
+                  <BsFileEarmarkPdfFill fontSize="large" />
+                </IconButton>
+              </Tooltip>
+              {/* Botón Replicar */}
+              {mostrarReplicar && (
+                <Tooltip
+                  title="Replicar Formulario"
+                  arrow
+                  slotProps={{
+                    tooltip: {
+                      className: styles.tooltipCustom,
+                    },
+                  }}
+                >
+                  <IconButton
+                    onClick={(e: any) => {
+                      e.stopPropagation?.();
+                      const internoForm = Number(row.original.InternoFormularioRAR || row.original.interno || 0);
+                      if (internoForm > 0) {
+                        setReplicaDe(internoForm);
+                        setViewMode('crear');
+                      }
+                    }}
+                    disabled={cuit === 99999999999 || (!row.original.interno && !row.original.InternoFormularioRAR)}
+                    color="info"
+                    size="small"
+                  >
+                    <BsFront fontSize="large" />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </>
+          </Box>
+        );
+      }
     },
   ];
 
@@ -549,11 +584,95 @@ const FormulariosRAR: React.FC = () => {
   if (loading) return <Spinner />;
 
   /* PDF para listado */
+  const pdfStyles = StyleSheet.create({
+    simpleHeaderContainer: {
+      backgroundColor: styles.pdfHeaderBg,
+      padding: Number(styles.pdfHeaderPadding),
+      marginBottom: Number(styles.pdfHeaderMb),
+    },
+    simpleHeaderTopRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      gap: Number(styles.pdfHeaderGap),
+    },
+    simpleHeaderLogo: {
+      width: Number(styles.pdfHeaderLogoWidth),
+      height: Number(styles.pdfHeaderLogoHeight),
+      objectFit: 'contain',
+      marginBottom: Number(styles.pdfHeaderLogoMb),
+    },
+    simpleHeaderTitle: {
+      color: styles.pdfHeaderTextColor,
+      fontWeight: 'bold',
+      fontSize: Number(styles.pdfHeaderFontSize),
+      textAlign: 'center',
+    },
+    resumenContainer: {
+      paddingVertical: Number(styles.pdfResumenPaddingV),
+      paddingHorizontal: Number(styles.pdfResumenPaddingH),
+      marginBottom: Number(styles.pdfResumenMb),
+    },
+    razonTitle: {
+      fontSize: Number(styles.pdfRazonFontSize),
+      fontWeight: 'bold',
+      marginBottom: Number(styles.pdfRazonMb),
+    },
+    fechaRow: {
+      flexDirection: 'row',
+      justifyContent: 'flex-start',
+      alignItems: 'center',
+      flexWrap: 'nowrap',
+    },
+    fechaText: {
+      fontSize: Number(styles.pdfFechaRowFontSize),
+    },
+    contratoRow: {
+      flexDirection: 'row',
+      justifyContent: 'flex-start',
+      alignItems: 'center',
+      flexWrap: 'nowrap',
+      marginTop: Number(styles.pdfRowMarginTop),
+    },
+    contratoText: {
+      fontSize: Number(styles.pdfContratoLabelFontSize),
+      width: styles.pdfContratoWidthPercent as any,
+      marginRight: Number(styles.pdfContratoMarginRight),
+    },
+    contratoTextNoRight: {
+      fontSize: Number(styles.pdfContratoLabelFontSize),
+      width: styles.pdfContratoWidthPercent as any,
+    },
+    estabNumeroTitle: {
+      fontSize: Number(styles.pdfEstabTitleFontSize),
+      fontWeight: 'bold',
+      marginTop: Number(styles.pdfEstabTitleMarginTop),
+    },
+    infoText: {
+      fontSize: Number(styles.pdfInfoFontSize),
+      marginTop: Number(styles.pdfInfoMarginTop),
+    },
+    trabajadoresTitle: {
+      fontSize: Number(styles.pdfTrabTitleFontSize),
+      marginTop: Number(styles.pdfTrabTitleMarginTop),
+      marginBottom: Number(styles.pdfTrabTitleMarginBottom),
+      fontWeight: 'bold',
+      textAlign: 'left',
+    },
+  });
+
   const SimpleHeader: React.FC = () => (
-    <View style={{ backgroundColor: '#83BC00', padding: 10, marginBottom: 10 }}>
-      <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 16, textAlign: 'center' }}>
-        Relevamiento de trabajadores Expuestos a Agentes de Riesgo
-      </Text>
+    <View>
+      {/* Logo por fuera del header verde, arriba a la izquierda */}
+      <View style={pdfStyles.simpleHeaderTopRow}>
+        <Image style={pdfStyles.simpleHeaderLogo} src={pdfLogoSrc} />
+      </View>
+      {/* Banda verde con el título centrado */}
+      <View style={pdfStyles.simpleHeaderContainer}>
+        <Text style={pdfStyles.simpleHeaderTitle}>
+          Relevamiento de trabajadores Expuestos a Agentes de Riesgo
+        </Text>
+      </View>
     </View>
   );
 
@@ -606,34 +725,15 @@ const FormulariosRAR: React.FC = () => {
         renderCustomContent={() => (
           <>
             {/* Encabezado estilo RAR sin recuadro */}
-            <View
-              style={{
-                paddingVertical: 3,
-                paddingHorizontal: 4,
-                marginBottom: 8,
-              }}
-            >
+            <View style={pdfStyles.resumenContainer}>
               {/* Línea 1: Razón Social (más grande) */}
-              <Text
-                style={{
-                  fontSize: 12,
-                  fontWeight: 'bold',
-                  marginBottom: 2,
-                }}
-              >
+              <Text style={pdfStyles.razonTitle}>
                 Razón Social: {datos.empresaRazonSocial || '—'}
               </Text>
 
               {/* Fecha en su propia línea. Debajo: Contrato / CUIT / CIIU en la misma línea exacta */}
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'flex-start',
-                  alignItems: 'center',
-                  flexWrap: 'nowrap',
-                }}
-              >
-                <Text style={{ fontSize: 9 }}>
+              <View style={pdfStyles.fechaRow}>
+                <Text style={pdfStyles.fechaText}>
                   Fecha:{' '}
                   {formatearFecha(
                     datos.fechaCreacion
@@ -641,22 +741,14 @@ const FormulariosRAR: React.FC = () => {
                 </Text>
               </View>
 
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'flex-start',
-                  alignItems: 'center',
-                  marginTop: 2,
-                  flexWrap: 'nowrap',
-                }}
-              >
-                <Text style={{ fontSize: 9, width: '33%', marginRight: 6 }}>
+              <View style={pdfStyles.contratoRow}>
+                <Text style={pdfStyles.contratoText}>
                   Contrato: {String(datos.empresaContrato || datos.Contrato || '—')}
                 </Text>
-                <Text style={{ fontSize: 9, width: '33%', marginRight: 6 }}>
+                <Text style={pdfStyles.contratoText}>
                   CUIT: {resumen.cuit || '—'}
                 </Text>
-                <Text style={{ fontSize: 9, width: '33%' }}>
+                <Text style={pdfStyles.contratoTextNoRight}>
                   CIIU: {String(
                     datos.empresaCiiu ??
                     datos.ciiu ??
@@ -668,13 +760,7 @@ const FormulariosRAR: React.FC = () => {
               </View>
 
               {/* NUEVO - Nro. Establecimiento */}
-              <Text
-                style={{
-                  fontSize: 12,
-                  fontWeight: 'bold',
-                  marginTop: 4,
-                }}
-              >
+              <Text style={pdfStyles.estabNumeroTitle}>
                 Nro. Establecimiento:{' '}
                 {String(
                   datos.internoEstablecimiento ||
@@ -685,47 +771,47 @@ const FormulariosRAR: React.FC = () => {
 
 
               {/* Datos del establecimiento */}
-              <Text style={{ fontSize: 10, marginTop: 2 }}>
+              <Text style={pdfStyles.infoText}>
                 CIIU: {String(datos.establecimiento?.ciiu ?? '—')}
               </Text>
 
-              <Text style={{ fontSize: 10, marginTop: 2 }}>
+              <Text style={pdfStyles.infoText}>
                 Dirección Establecimiento:{' '}
                 {`${datos.establecimiento?.domicilioCalle ?? ''} ${datos.establecimiento?.domicilioNro ?? ''}`.trim() || '—'}
               </Text>
 
-              <Text style={{ fontSize: 10, marginTop: 2 }}>
+              <Text style={pdfStyles.infoText}>
                 CP: {String(datos.establecimiento?.cp ?? '—')}
               </Text>
 
-              <Text style={{ fontSize: 10, marginTop: 2 }}>
+              <Text style={pdfStyles.infoText}>
                 Localidad: {String(datos.establecimiento?.localidad ?? '—')}
               </Text>
 
-              <Text style={{ fontSize: 10, marginTop: 2 }}>
+              <Text style={pdfStyles.infoText}>
                 Provincia: {String(datos.establecimiento?.provincia ?? '—')}
               </Text>
 
-              <Text style={{ fontSize: 10, marginTop: 2 }}>
+              <Text style={pdfStyles.infoText}>
                 Teléfono: {String(datos.empresaTelefono ?? '—')}
               </Text>
 
-              <Text style={{ fontSize: 10, marginTop: 2 }}>
+              <Text style={pdfStyles.infoText}>
                 Trabajadores Expuestos:{' '}
                 {datos.cantTrabajadoresExpuestos ?? '—'}
               </Text>
 
-              <Text style={{ fontSize: 10, marginTop: 2 }}>
+              <Text style={pdfStyles.infoText}>
                 Trabajadores No Expuestos:{' '}
                 {datos.cantTrabajadoresNoExpuestos ?? '—'}
               </Text>
 
-             <Text style={{ fontSize: 10, marginTop: 2 }}>
+             <Text style={pdfStyles.infoText}>
               Actividad Principal:{' '}
               {String(datos.establecimientoActividadPrincipal ?? '—')}
             </Text>
 
-             <Text style={{ fontSize: 10, marginTop: 2 }}>
+             <Text style={pdfStyles.infoText}>
               Actividad Secundaria:{' '}
               {String(datos.establecimientoActividadSecundaria ?? '—')}
             </Text>        
@@ -734,15 +820,7 @@ const FormulariosRAR: React.FC = () => {
 
             {/* Título antes de la tabla de trabajadores */}
             {trabajadoresFormateados.length > 0 && (
-              <Text
-                style={{
-                  fontSize: 12,
-                  marginTop: 5,
-                  marginBottom: 5,
-                  fontWeight: 'bold',
-                  textAlign: 'left',
-                }}
-              >
+              <Text style={pdfStyles.trabajadoresTitle}>
                 Trabajadores Registrados ({trabajadoresFormateados.length})
               </Text>
             )}
@@ -879,6 +957,7 @@ const FormulariosRAR: React.FC = () => {
           internoEstablecimiento={internoEstablecimiento}
           finalizaCarga={handleFinalizaCarga}
           formulariosRAR={formulariosRAR}
+          replicaDe={replicaDe}
         />
       ) : (
         <FormularioRARGenerar
