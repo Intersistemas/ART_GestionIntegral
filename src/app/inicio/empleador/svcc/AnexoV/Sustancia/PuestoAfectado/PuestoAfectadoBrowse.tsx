@@ -12,7 +12,7 @@ export const PuestoAfectadoBrowse = Browse<PuestoAfectadoDTO>(
         accessorKey: "puestoInterno",
         header: "Puesto",
         cell({ getValue }) {
-          const puesto = establecimientoDeclarado?.puestos?.find((p) => p.interno === getValue<number>() );
+          const puesto = establecimientoDeclarado.data?.puestos?.find((p) => p.interno === getValue<number>());
           return puesto === undefined ? undefined : [puesto.ciuo, puesto.nombre].filter(r => r !== undefined).join(" - ");
         }
       },

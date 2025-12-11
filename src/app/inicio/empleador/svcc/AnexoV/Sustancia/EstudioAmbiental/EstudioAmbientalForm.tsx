@@ -24,7 +24,7 @@ export const EstudioAmbientalForm: Form<EstudioAmbientalDTO> = ({
         fullWidth
       />
     </Grid>
-    <Grid size={4}>
+    <Grid size={6}>
       <FormControl
         fullWidth
         error={errors.idUnidadFrecuencia}

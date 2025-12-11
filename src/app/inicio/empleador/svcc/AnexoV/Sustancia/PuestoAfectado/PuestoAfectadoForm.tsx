@@ -5,12 +5,13 @@ import { ElementoProteccionDTO, MedidaPreventivaDTO, PuestoAfectadoDTO } from "@
 import { Form, FormProps } from "@/utils/ui/form/Form";
 import CustomModal from "@/utils/ui/form/CustomModal";
 import CustomButton from "@/utils/ui/button/CustomButton";
+import { DeepPartial } from "@/utils/utils";
 import MedidaPreventivaForm from "./MedidaPreventiva/MedidaPreventivaForm";
 import MedidaPreventivaBrowse from "./MedidaPreventiva/MedidaPreventivaBrowse";
 import ElementoProteccionBrowse from "./ElementoProteccion/ElementoProteccionBrowse";
 import ElementoProteccionForm from "./ElementoProteccion/ElementoProteccionForm";
 import { useSustanciaContext } from "../context";
-import { DeepPartial } from "@/utils/utils";
+import PuestoBrowse from "../../../Portada/EstablecimientoDeclarado/Puesto/PuestoBrowse";
 
 type EditAction = "create" | "read" | "update" | "delete";
 type EditState<T extends object> = Omit<FormProps<T>, "onChange"> & {
@@ -30,7 +31,10 @@ export const PuestoAfectadoForm: Form<PuestoAfectadoDTO> = ({
   const [editElementoProteccion, setEditElementoProteccion] = useState<EditState<ElementoProteccionDTO>>({ data: {} });
 
   const { establecimientoDeclarado } = useSustanciaContext();
-  const puesto = establecimientoDeclarado?.puestos?.find((p) => p.interno === data.puestoInterno);
+  const puestos = establecimientoDeclarado.data?.puestos ?? [];
+  const puesto = puestos.find((p) => p.interno === data.puestoInterno);
+
+  const [lookupPuesto, setLookupPuesto] = useState<boolean>(false);
 
   return (
     <Grid container size={12} spacing={2} maxHeight="fit-content">
@@ -58,7 +62,7 @@ export const PuestoAfectadoForm: Form<PuestoAfectadoDTO> = ({
                         color="primary"
                         size="large"
                         disabled={disabled.puestoInterno}
-                      // onClick={() => onLookup()}
+                        onClick={() => setLookupPuesto(true)}
                       >
                         <MoreHoriz />
                       </IconButton>
@@ -70,6 +74,35 @@ export const PuestoAfectadoForm: Form<PuestoAfectadoDTO> = ({
           }}
           fullWidth
         />
+        <CustomModal
+          open={lookupPuesto}
+          onClose={() => setLookupPuesto(false)}
+          title="Selección de puesto"
+          size="large"
+          actions={(
+            <Grid container spacing={2}>
+              <CustomButton
+                onClick={() => setLookupPuesto(false)}
+                color="secondary"
+              >
+                Cancelar
+              </CustomButton>
+            </Grid>
+          )}
+        >
+          <Grid container spacing={2} justifyContent="center" minHeight="500px">
+            <Grid size={12}>
+              <PuestoBrowse
+                isLoading={establecimientoDeclarado.isLoading || establecimientoDeclarado.isValidating}
+                data={{ data: puestos }}
+                onSelect={(select) => () => {
+                  onChange({ puestoInterno: select.interno });
+                  setLookupPuesto(false);
+                }}
+              />
+            </Grid>
+          </Grid>
+        </CustomModal>
       </Grid>
       <Grid size={9}>
         <TextField

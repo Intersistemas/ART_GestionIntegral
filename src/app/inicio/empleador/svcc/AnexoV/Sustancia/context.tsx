@@ -3,7 +3,12 @@ import { EstablecimientoDeclaradoDTO } from "@/data/gestionEmpleadorAPI";
 import { useAnexoVContext } from "../context";
 
 type SustanciaContextType = {
-  establecimientoDeclarado?: EstablecimientoDeclaradoDTO;
+  establecimientoDeclarado: {
+    isLoading: boolean;
+    isValidating: boolean;
+    data?: EstablecimientoDeclaradoDTO;
+    error?: any;
+  },
 }
 
 const SustanciaContext = createContext<SustanciaContextType | undefined>(undefined);
@@ -25,7 +30,12 @@ export function SustanciaContextProvider({
   return (
     <SustanciaContext.Provider
       value={{
-        establecimientoDeclarado: establecimientosDeclarados.data.find(e => e.idEstablecimientoEmpresa === idEstablecimientoEmpresa),
+        establecimientoDeclarado: {
+          isLoading: establecimientosDeclarados.isLoading,
+          isValidating: establecimientosDeclarados.isValidating,
+          data: establecimientosDeclarados.data.find(e => e.idEstablecimientoEmpresa === idEstablecimientoEmpresa),
+          error: establecimientosDeclarados.error,
+        },
       }}
     >
       {children}

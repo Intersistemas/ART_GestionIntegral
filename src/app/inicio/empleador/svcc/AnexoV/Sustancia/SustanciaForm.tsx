@@ -7,6 +7,7 @@ import { Form, FormProps } from "@/utils/ui/form/Form";
 import CustomModal from "@/utils/ui/form/CustomModal";
 import CustomButton from "@/utils/ui/button/CustomButton";
 import { TSustancias_Array, TUnidadesMedidas_Array } from "@/data/SVCC/constants";
+import EstablecimientoBrowse from "@/components/establecimientos/EstablecimientoBrowse";
 import PuestoAfectadoBrowse from "./PuestoAfectado/PuestoAfectadoBrowse";
 import { SustanciaContextProvider } from "./context";
 import UtilizacionForm from "./Utilizacion/UtilizacionForm";
@@ -46,8 +47,9 @@ export const SustanciaForm: Form<SustanciaDTO> = ({
   const [editComprador, setEditComprador] = useState<EditState<CompradorDTO>>({ data: {} });
   const [editEstudioAmbiental, setEditEstudioAmbiental] = useState<EditState<EstudioAmbientalDTO>>({ data: {} });
   const [editEstudioBiologico, setEditEstudioBiologico] = useState<EditState<EstudioBiologicoDTO>>({ data: {} });
-
-  const { establecimientos: { map: establecimientos } } = useSVCCPresentacionContext();
+  const [lookupEstablecimientos, setLookupEstablecimientos] = useState<boolean>(false);
+  
+  const { establecimientos } = useSVCCPresentacionContext();
 
   return (
     <SustanciaContextProvider idEstablecimientoEmpresa={data.idEstablecimientoEmpresa}>
@@ -76,7 +78,7 @@ export const SustanciaForm: Form<SustanciaDTO> = ({
                           color="primary"
                           size="large"
                           disabled={disabled.idEstablecimientoEmpresa}
-                        // onClick={() => onLookup()}
+                          onClick={() => setLookupEstablecimientos(true)}
                         >
                           <MoreHoriz />
                         </IconButton>
@@ -88,12 +90,41 @@ export const SustanciaForm: Form<SustanciaDTO> = ({
             }}
             fullWidth
           />
+          <CustomModal
+            open={lookupEstablecimientos}
+            onClose={() => setLookupEstablecimientos(false)}
+            title="Selección de establecimiento"
+            size="large"
+            actions={(
+              <Grid container spacing={2}>
+                <CustomButton
+                  onClick={() => setLookupEstablecimientos(false)}
+                  color="secondary"
+                >
+                  Cancelar
+                </CustomButton>
+              </Grid>
+            )}
+          >
+            <Grid container spacing={2} justifyContent="center" minHeight="500px">
+              <Grid size={12}>
+                <EstablecimientoBrowse
+                  isLoading={establecimientos.isLoading || establecimientos.isValidating}
+                  data={{ data: establecimientos.data ?? [] }}
+                  onSelect={(select) => () => {
+                    onChange({ idEstablecimientoEmpresa: select.codEstabEmpresa });
+                    setLookupEstablecimientos(false);
+                  }}
+                />
+              </Grid>
+            </Grid>
+          </CustomModal>
         </Grid>
         <Grid size={9}>
           <TextField
             name="Placeholder"
             label="Establ. Empresa - Descripcion"
-            value={establecimientos[data.idEstablecimientoEmpresa ?? 0]}
+            value={establecimientos.map[data.idEstablecimientoEmpresa ?? 0] ?? ""}
             disabled
             fullWidth
           />
