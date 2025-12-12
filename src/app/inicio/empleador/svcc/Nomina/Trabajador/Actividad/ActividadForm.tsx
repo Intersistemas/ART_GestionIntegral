@@ -294,7 +294,7 @@ export const ActividadForm: Form<ActividadDTO> = ({
           name="fechaInicioExposicion"
           type="date"
           label="Fecha inicio exposicion"
-          value={data.fechaInicioExposicion}
+          value={data.fechaInicioExposicion?.slice(0, 10)}
           disabled={disabled.fechaInicioExposicion}
           onChange={({ target: { value } }) => onChange({ fechaInicioExposicion: value })}
           error={errors.fechaInicioExposicion}
@@ -308,7 +308,7 @@ export const ActividadForm: Form<ActividadDTO> = ({
           name="fechaFinExposicion"
           type="date"
           label="Fecha fin exposicion"
-          value={data.fechaFinExposicion}
+          value={data.fechaFinExposicion?.slice(0, 10)}
           disabled={disabled.fechaFinExposicion}
           onChange={({ target: { value } }) => onChange({ fechaFinExposicion: value })}
           error={errors.fechaFinExposicion}

@@ -29,7 +29,7 @@ export const ResponsableInstalacionForm: Form<ResponsableInstalacionDTO> = ({
         name="fechaExpedicion"
         type="date"
         label="Fecha expedicion"
-        value={data.fechaExpedicion}
+        value={data.fechaExpedicion?.slice(0, 10)}
         disabled={disabled.fechaExpedicion}
         onChange={({ target: { value } }) => onChange({ fechaExpedicion: value })}
         error={errors.fechaExpedicion}
@@ -43,7 +43,7 @@ export const ResponsableInstalacionForm: Form<ResponsableInstalacionDTO> = ({
         name="fechaVencimiento"
         type="date"
         label="Fecha vencimiento"
-        value={data.fechaVencimiento}
+        value={data.fechaVencimiento?.slice(0, 10)}
         disabled={disabled.fechaVencimiento}
         onChange={({ target: { value } }) => onChange({ fechaVencimiento: value })}
         error={errors.fechaVencimiento}

@@ -57,7 +57,7 @@ export const TrabajadorForm: Form<TrabajadorDTO> = ({
             name="fechaIngreso"
             type="date"
             label="Fecha de ingreso"
-            value={data.fechaIngreso}
+            value={data.fechaIngreso?.slice(0, 10)}
             disabled={disabled.fechaIngreso}
             onChange={({ target: { value } }) => onChange({ fechaIngreso: value })}
             error={errors.fechaIngreso}

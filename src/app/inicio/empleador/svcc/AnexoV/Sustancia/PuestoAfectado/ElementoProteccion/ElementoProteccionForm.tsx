@@ -20,7 +20,7 @@ export const ElementoProteccionForm: Form<ElementoProteccionDTO> = ({
         <InputLabel>Elemento de proteccion</InputLabel>
         <Select
           name="idElementoDeProteccionDeclarado"
-          value={data.idElementoDeProteccionDeclarado}
+          value={data.idElementoDeProteccionDeclarado ?? ""}
           label="Elemento de proteccion"
           onChange={({ target: { value } }) => onChange({ idElementoDeProteccionDeclarado: value === undefined ? undefined : Number(value) })}
           displayEmpty

@@ -33,7 +33,7 @@ export const EstudioBiologicoForm: Form<EstudioBiologicoDTO> = ({
         <InputLabel>Unidad frecuencia</InputLabel>
         <Select
           name="idUnidadFrecuencia"
-          value={data.idUnidadFrecuencia}
+          value={data.idUnidadFrecuencia ?? ""}
           label="Unidad frecuencia"
           onChange={({ target: { value } }) => onChange({ idUnidadFrecuencia: value === undefined ? undefined : Number(value) })}
           displayEmpty

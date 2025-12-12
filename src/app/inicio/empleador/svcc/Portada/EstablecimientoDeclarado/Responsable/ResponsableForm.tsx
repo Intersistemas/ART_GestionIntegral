@@ -58,7 +58,7 @@ export const ResponsableForm: Form<ResponsableDTO> = ({
         <InputLabel>Contratacion</InputLabel>
         <Select
           name="idContratacion"
-          value={data.idContratacion}
+          value={data.idContratacion ?? ""}
           label="Contratacion"
           onChange={({ target: { value } }) => onChange({ idContratacion: value === undefined ? undefined : Number(value) })}
           displayEmpty
@@ -85,7 +85,7 @@ export const ResponsableForm: Form<ResponsableDTO> = ({
         <InputLabel>Representacion</InputLabel>
         <Select
           name="idRepresentacion"
-          value={data.idRepresentacion}
+          value={data.idRepresentacion ?? ""}
           label="Representacion"
           onChange={({ target: { value } }) => onChange({ idRepresentacion: value === undefined ? undefined : Number(value) })}
           displayEmpty
@@ -112,7 +112,7 @@ export const ResponsableForm: Form<ResponsableDTO> = ({
         <InputLabel>Tipo Prof. responsable</InputLabel>
         <Select
           name="idTipoProfesionalResponsable"
-          value={data.idTipoProfesionalResponsable}
+          value={data.idTipoProfesionalResponsable ?? ""}
           label="Tipo Prof. responsable"
           onChange={({ target: { value } }) => onChange({ idTipoProfesionalResponsable: value === undefined ? undefined : Number(value) })}
           displayEmpty

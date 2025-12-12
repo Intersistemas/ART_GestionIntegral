@@ -138,7 +138,7 @@ export const SustanciaForm: Form<SustanciaDTO> = ({
             <InputLabel>Sustancia</InputLabel>
             <Select
               name="idSustancia"
-              value={data.idSustancia}
+              value={data.idSustancia ?? ""}
               label="Sustancia"
               onChange={({ target: { value } }) => onChange({ idSustancia: value === undefined ? undefined : Number(value) })}
               displayEmpty
@@ -190,7 +190,7 @@ export const SustanciaForm: Form<SustanciaDTO> = ({
             <InputLabel>Unidad de medida</InputLabel>
             <Select
               name="idUnidadDeMedida"
-              value={data.idUnidadDeMedida}
+              value={data.idUnidadDeMedida ?? ""}
               label="Unidad de medida"
               onChange={({ target: { value } }) => onChange({ idUnidadDeMedida: value === undefined ? undefined : Number(value) })}
               displayEmpty

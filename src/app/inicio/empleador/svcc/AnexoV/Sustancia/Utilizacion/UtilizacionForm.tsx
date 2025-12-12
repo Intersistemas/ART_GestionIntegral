@@ -20,7 +20,7 @@ export const UtilizacionForm: Form<UtilizacionDTO> = ({
         <InputLabel>Uso origen</InputLabel>
         <Select
           name="usoOrigen"
-          value={data.usoOrigen}
+          value={data.usoOrigen ?? ""}
           label="Uso origen"
           onChange={({ target: { value } }) => onChange({ usoOrigen: value === undefined ? undefined : Number(value) })}
           displayEmpty
@@ -47,7 +47,7 @@ export const UtilizacionForm: Form<UtilizacionDTO> = ({
         <InputLabel>Modo de empleo</InputLabel>
         <Select
           name="modoDeEmpleo"
-          value={data.modoDeEmpleo}
+          value={data.modoDeEmpleo ?? ""}
           label="Modo de empleo"
           onChange={({ target: { value } }) => onChange({ modoDeEmpleo: value === undefined ? undefined : Number(value) })}
           displayEmpty

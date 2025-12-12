@@ -20,7 +20,7 @@ export const ExamenMedicoForm: Form<ExamenMedicoDTO> = ({
         <InputLabel>Exámen</InputLabel>
         <Select
           name="idExamen"
-          value={data.idExamen}
+          value={data.idExamen ?? ""}
           label="Exámen"
           onChange={({ target: { value } }) => onChange({ idExamen: value === undefined ? undefined : Number(value) })}
           displayEmpty
