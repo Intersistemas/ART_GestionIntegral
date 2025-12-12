@@ -1,3 +1,14 @@
+export type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends object | undefined ? DeepPartial<T[P]>
+  : T[P];
+};
+
+export type DeepRecord<T, V> = {
+  [P in keyof T]: T[P] extends (infer U)[] | undefined ? DeepRecord<U | T[P], V>
+  : T[P] extends object | undefined ? DeepRecord<T[P], V>
+  : V;
+}
+
 export function camelCaseKeys<Out = any>(o: any): Out {
   if (typeof o !== "object" || !o) return o;
   return Object.fromEntries(Object.entries(o).map(([k, v]) => [
@@ -77,4 +88,17 @@ export function getObjectKeys<T extends object>(o: T): Array<keyof T> {
     if (isObjectKey(k, o)) acc.push(k);
     return acc;
   }, []);
+}
+
+export function arrayToRecord<T = any, K extends keyof any = number, V = any>(
+  array: readonly T[],
+  entryBuilder: (item: T, index: number) => [K, V] | undefined = (e, i) => [i as K, e as unknown as V],
+) {
+  const result = {} as Record<K, V>;
+  array.forEach((e, i) => {
+    const r = entryBuilder(e, i);
+    if (!r) return;
+    result[r[0]] = r[1];
+  });
+  return result;
 }
