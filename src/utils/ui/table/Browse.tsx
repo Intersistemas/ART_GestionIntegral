@@ -1,4 +1,3 @@
-import { DependencyList, useMemo } from "react";
 import DataTable from "@/utils/ui/table/DataTable";
 import { ColumnDef } from "@tanstack/react-table";
 import { IconButton, Tooltip } from "@mui/material";
@@ -7,6 +6,7 @@ import ChangeCircleIcon from '@mui/icons-material/ChangeCircle';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import InfoIcon from '@mui/icons-material/Info';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { DataTableProps } from "./types";
 
 export type Data<T> = {
   index?: number;
@@ -26,7 +26,9 @@ export type CRUDActions<T> = Actions & {
 export type CRUDSActions<T> = CRUDActions<T> & {
   onSelect?: (record: T, index: number) => ActionCallback | undefined;
 }
-export type BrowseProps<T extends object, A extends Actions = CRUDSActions<T>> = {
+export type SelectedDataTableProps<T extends object> = Omit<DataTableProps<T>,
+  "columns" | "isLoading" | "data" | "manualPagination" | "pageIndex" | "pageSize" | "pageCount" | "onPageChange" | "onPageSizeChange">;
+export type BrowseProps<T extends object, A extends Actions = CRUDSActions<T>> = SelectedDataTableProps<T> & {
   data: Data<T>;
   isLoading?: boolean;
   manualPagination?: boolean;
@@ -155,12 +157,14 @@ export default function Browse<
   columnsBuilder: ColumnsBuilderCallback<T, A, P> = (props: P) => defaultActionsColumns<T, A>(props)
 ) {
   function BrowseComponent(props: P) {
+    const selectedDataTableProps: SelectedDataTableProps<T> = props;
     const { isLoading, data: { data, index, size, pages }, onPageIndexChange, onPageSizeChange } = props;
     const manualPagination = props.manualPagination
       ?? ((index !== undefined && onPageIndexChange !== undefined) || (size !== undefined && onPageSizeChange !== undefined));
 
     return (
       <DataTable
+        {...selectedDataTableProps}
         columns={columnsBuilder({ ...props, manualPagination })}
         isLoading={isLoading}
         data={data}
