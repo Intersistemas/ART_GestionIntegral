@@ -39,9 +39,6 @@ function CuentaCorrientePage() {
 
     // 2. HANDLER DE CAMBIO: Convertimos el valor (string) que devuelve MUI a number
     const handleTabChange = (event: SyntheticEvent, newTabValue: string | number) => {
-        // Tabs de MUI siempre devuelve un string si el valor de la Tab es un string, 
-        // o un número si el valor es un número.
-        // Como CustomTab usa 'value: number', newTabValue será number.
         setCurrentTab(newTabValue as number); 
     };
 
