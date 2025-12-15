@@ -195,6 +195,9 @@ export class ArtAPIClass extends ExternalAPI {
           : [];
     return arr as ApiFormularioRGRL[];
   };
+  //#endregion
+
+  //#region Establecimientos por CUIT
   getEstablecimientosEmpresa = async (cuit: number): Promise<ApiEstablecimientoEmpresa[]> => {
     const url = this.getURL({
       path: `/api/Establecimientos/Empresa/${encodeURIComponent(cuit)}`,
@@ -208,7 +211,8 @@ export class ArtAPIClass extends ExternalAPI {
     return (await res.json()) as ApiEstablecimientoEmpresa[];
   };
   //#endregion
-    //#region Empresas por CUIT
+
+  //#region Empresas por CUIT
   readonly getEmpresaByCUITURL = (params: { CUIT?: number | string } = {}) => {
     return this.getURL({ path: "/api/Empresas/CUIT", search: toURLSearch(params) }).toString();
   };

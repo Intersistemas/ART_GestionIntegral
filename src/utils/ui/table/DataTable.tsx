@@ -68,12 +68,22 @@ export function DataTable<TData extends object>({
   onSelectedRowChange,
   persistSelectedRowKey = null,
 }: DataTableProps<TData>) {
-  // -------------------------
-  // Estados
-  // -------------------------
+
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+
+  // Inicializar columnVisibility: ocultar columnas con hidden: true
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => {  
+    const visibility: VisibilityState = {};
+    columns.forEach((col) => {
+      const colDef = col as any;
+      if (colDef.hidden === true) {
+        const columnId = colDef.id || colDef.accessorKey;
+        if (columnId) visibility[columnId] = false;
+      }
+    });
+    return visibility;
+  });
   const [globalFilter, setGlobalFilter] = useState("");
   const [rowSelection, setRowSelection] = useState<RowSelectionState>(initialRowSelection);
   const [selectedRowKey, setSelectedRowKey] = useState<string | null>(

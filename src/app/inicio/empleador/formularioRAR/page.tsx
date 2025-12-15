@@ -380,10 +380,10 @@ const FormulariosRAR: React.FC = () => {
 
   /* Columnas para tabla principal de formularios */
   const tableColumns = [
-    { accessorKey: 'interno', header: 'Interno' },
+    { accessorKey: 'interno', header: 'Interno', hidden: true },
     { accessorKey: 'cuit', header: 'CUIT', cell: (info: any) => Formato.CUIP(info.getValue()) },
-    { accessorKey: 'razonSocial', header: 'Razón Social' },
-    { accessorKey: 'direccion', header: 'Dirección' },
+    { accessorKey: 'empresaRazonSocial', header: 'Razón Social' },
+    { accessorKey: 'empresaDireccion', header: 'Dirección' },
     { accessorKey: 'estado', header: 'Estado' },
     { accessorKey: 'fechaCreacion', header: 'Fecha Creación', cell: (info: any) => fechaFormatter(info.getValue()), meta: { align: "center" } },
     { accessorKey: 'fechaPresentacion', header: 'Fecha Presentación', cell: (info: any) => fechaFormatter(info.getValue()), meta: { align: "center" } },
