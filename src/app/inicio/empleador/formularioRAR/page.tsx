@@ -15,6 +15,7 @@ import { BsFileEarmarkPdfFill, BsPencilFill, BsFront } from "react-icons/bs";
 import FormularioRAR from './types/TformularioRar';
 import ArtAPI from "@/data/artAPI";
 
+
 // Hijos
 import FormularioRARGenerar from './generar/FormularioRARGenerar';
 // import FormularioRAREditor from './editar/FormularioRAREditor'; // Ya no se usa, reutilizamos el modal de generar para edición
@@ -79,9 +80,9 @@ const FormulariosRAR: React.FC = () => {
 
   // Usamos el hook SWR del API (solo hace fetch si existe token y respeta las opciones de revalidate)
   // Pasamos PageIndex y PageSize al hook (cambia la clave de SWR y dispara fetch)
-  const apiPageIndex = PageIndex + 1;
+  const apiPageIndex = PageIndex;
   const { data: formulariosData, error: formulariosError, isValidating, mutate: mutateFormularios } =
-    ArtAPI.useGetFormulariosRARURL(empresaCUIT ? { CUIT: empresaCUIT, PageIndex: apiPageIndex, PageSize: PageSize } : { PageIndex: apiPageIndex, PageSize: PageSize });
+    ArtAPI.useGetFormulariosRARURL(empresaCUIT ? { CUIT: empresaCUIT, PageIndex: apiPageIndex, PageSize: PageSize, OrderBy: 'interno' } : { PageIndex: apiPageIndex, PageSize: PageSize, OrderBy: 'interno' });
 
   // Una sola vez: cuando llegan datos, los mapeamos al estado local
   useEffect(() => {

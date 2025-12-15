@@ -168,7 +168,6 @@ export class ArtAPIClass extends ExternalAPI {
       revalidateOnReconnect: false,
     }
   );
-
   //#endregion
 
   //#region FormulariosRGRL
