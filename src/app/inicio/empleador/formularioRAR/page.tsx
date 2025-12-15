@@ -381,14 +381,14 @@ const FormulariosRAR: React.FC = () => {
 
   /* Columnas para tabla principal de formularios */
   const tableColumns = [
-    { accessorKey: 'interno', header: 'Interno', hidden: true },
+    { accessorKey: 'interno', header: 'Interno'},
     { accessorKey: 'cuit', header: 'CUIT', cell: (info: any) => Formato.CUIP(info.getValue()) },
     { accessorKey: 'empresaRazonSocial', header: 'Razón Social' },
     { accessorKey: 'empresaDireccion', header: 'Dirección' },
     { accessorKey: 'estado', header: 'Estado' },
     { accessorKey: 'fechaCreacion', header: 'Fecha Creación', cell: (info: any) => fechaFormatter(info.getValue()), meta: { align: "center" } },
     { accessorKey: 'fechaPresentacion', header: 'Fecha Presentación', cell: (info: any) => fechaFormatter(info.getValue()), meta: { align: "center" } },
-    { accessorKey: 'internoEstablecimiento', header: 'Interno Establecimiento', meta: { align: "center" } },
+    { accessorKey: 'internoEstablecimiento', header: 'Interno Establecimiento', meta: { align: "center" }, hidden: true  },
     { accessorKey: 'cantTrabajadoresExpuestos', header: 'Expuestos', meta: { align: "center" } },
     { accessorKey: 'cantTrabajadoresNoExpuestos', header: 'No Expuestos', meta: { align: "center" } },
     {
