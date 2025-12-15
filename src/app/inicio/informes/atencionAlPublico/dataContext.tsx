@@ -27,6 +27,8 @@ import Formato from "@/utils/Formato";
 import propositionFormat from "@/utils/PropositionFormatQuery";
 import { operators } from "@/utils/ui/queryBuilder/QueryBuilderDefaults";
 import { ColumnDef } from "@tanstack/react-table";
+import dayjs from "dayjs";
+import { saveTable, type TableColumn, type AddTableOptions } from "@/utils/excelUtils";
 
 // ===== Tipos =====
 type Row = Record<string, any>;
@@ -42,6 +44,7 @@ interface TablesField {
   values?: any[];
 }
 type Tables = Record<TablesName, TablesField[]>;
+type Headers = { columns: Record<string, TableColumn>; options: AddTableOptions };
 interface DataContextType {
   fields: Field[];
   columns: ColumnDef<Row>[];
@@ -50,6 +53,7 @@ interface DataContextType {
   dialog?: React.ReactNode;
   onAplica: () => void;
   onLimpia: () => void;
+  onExport: () => void;
 }
 
 // ===== Helpers / formatters =====
@@ -101,19 +105,26 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
 
 
   // Columnas + campos para QB (excluyo Interno del QB, como en tu implementación previa)
-  const { columns, fields } = useMemo(() => {
+  const { columns, fields, headers } = useMemo(() => {
     const all = tables.vw_AtencionAlPublico;
     const fieldsForQB = all.filter(c => c.name !== "Interno");
 
-    const columns: ColumnDef<Row>[] = all.map(({ name, label, formatter }) => ({
-      accessorKey: name,
-      header: label ?? name,
-      cell: (info) => {
-        const raw = tolerantGet(info.row.original, name);
-        const val = display(raw);
-        return formatter ? formatter(val) : (val ?? "");
-      },
-    }));
+    const columns: ColumnDef<Row>[] = [];
+    const headers: Headers = { columns: {}, options: { formatters: { row: {} } } };
+
+    all.forEach(({ name, label, formatter }) => {
+      columns.push({
+        accessorKey: name,
+        header: label ?? name,
+        cell: (info) => {
+          const raw = tolerantGet(info.row.original, name);
+          const val = display(raw);
+          return formatter ? formatter(val) : (val ?? "");
+        },
+      });
+      headers.columns[name] = { key: name, header: label ?? name };
+      if (formatter) headers.options.formatters!.row![name] = formatter;
+    });
 
     const fields: Field[] = fieldsForQB.map(({ name, label, operators: colOps, valueEditorType, values, type }) => ({
       name,
@@ -125,7 +136,7 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
       inputType: type ? (type === "dateTime" ? "datetime-local" : type) : undefined,
     }));
 
-    return { columns, fields };
+    return { columns, fields, headers };
   }, [tables.vw_AtencionAlPublico]);
 
   const [rows, setRows] = useState<Row[]>([]);
@@ -237,6 +248,33 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
     setRows([]);
   }, []);
 
+  const onExport = useCallback(async () => {
+    const now = dayjs();
+    const options = { sheet: { name: "Atencion Al Publico" }, table: headers.options };
+    const fileName = `${options.sheet.name.replaceAll(" ", "_")}-${now.format("YYYYMMDDHHmmssSSS")}.xlsx`;
+    options.sheet.name += ` (${now.format("DD-MM-YYYY")})`;
+
+    setDialog(
+      <Dialog
+        open
+        scroll="paper"
+        onClose={onCloseDialog}
+        aria-labelledby="scroll-dialog-title"
+        aria-describedby="scroll-dialog-description"
+      >
+        <DialogTitle id="scroll-dialog-title">Exportando a excel.</DialogTitle>
+      </Dialog>
+    );
+
+    await saveTable(headers.columns, rows, fileName, options).then(
+      onCloseDialog,
+      (e) => errorDialog({
+        title: "Error al generar excel",
+        message: e?.message ?? "Ocurrió un error desconocido al generar excel"
+      })
+    );
+  }, [headers, rows, onCloseDialog, errorDialog]);
+
   const value: DataContextType = {
     fields,
     columns,
@@ -245,6 +283,7 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
     query: { state: query, setState: setQuery },
     onAplica,
     onLimpia,
+    onExport,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

@@ -27,13 +27,13 @@ import { BsSliders } from "react-icons/bs";
    return <DataTable data={rows} columns={columns} />;
  }
 
- function AtencionAlPublicoPageInner() {
-   const { dialog, onAplica, onLimpia } = useDataContext();
-   return (
-     <Grid container spacing={1} size="grow">
-       <Grid size={12}>
-         <Accordion defaultExpanded>
-           <AccordionSummary expandIcon={<MdExpandMore className={styles.accordionIcon} />} aria-controls="panel1-content" id="panel1-header">
+function AtencionAlPublicoPageInner() {
+  const { dialog, rows: { length: habilita }, onAplica, onLimpia, onExport } = useDataContext();
+  return (
+    <Grid container spacing={1} size="grow">
+      <Grid size={12}>
+        <Accordion defaultExpanded>
+          <AccordionSummary expandIcon={<MdExpandMore className={styles.accordionIcon} />} aria-controls="panel1-content" id="panel1-header">
             <Grid container spacing={1} alignItems="center">
               <BsSliders size={20}/>
               <Typography component="span" className={styles.accordionTitle} >Configuración de Filtros</Typography>
@@ -50,6 +50,7 @@ import { BsSliders } from "react-icons/bs";
                     <CustomButton onClick={onAplica}>Aplicar Filtro</CustomButton>
                     <CustomButton onClick={onLimpia}>Limpiar Filtro</CustomButton>
                   </Grid>
+                  <CustomButton width="auto" onClick={onExport} disabled={!habilita}>Exportar a Excel</CustomButton>
                 </Grid>
               </Grid>
             </AccordionDetails>
