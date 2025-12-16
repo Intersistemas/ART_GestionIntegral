@@ -8,6 +8,7 @@ import CustomTab from '@/utils/ui/tab/CustomTab';
 import Formato from '@/utils/Formato';
 import gestionEmpleadorAPI from "@/data/gestionEmpleadorAPI";
 import type { CuentaCorrienteRegistro, DDJJRegistro } from './types/cuentaCorriente';
+import { saveTable } from '@/utils/excelUtils';
 
 
 
@@ -31,6 +32,16 @@ const formatCurrency = (value: number | string) => {
 function CuentaCorrientePage() {
     
     const { data: CtaCteRawData, isLoading: isCtaCteLoading } = gestionEmpleadorAPI.useGetVEmpleadorDDJJ(); 
+    
+    // Ordenar datos por periodo en forma descendente (más recientes primero)
+    const sortedData = useMemo(() => {
+        if (!CtaCteRawData?.data) return [];
+        return [...CtaCteRawData.data].sort((a: any, b: any) => {
+            const periodoA = parseInt(String(a.periodo));
+            const periodoB = parseInt(String(b.periodo));
+            return periodoB - periodoA; // Orden descendente
+        });
+    }, [CtaCteRawData]);
     
     // 1. CONTROL DE LA PESTAÑA: Usamos useState para el valor numérico
     // Iniciamos con 0 si queremos 'Estado de Cuenta', o 1 si queremos 'Últimas DDJJ'
@@ -98,30 +109,188 @@ function CuentaCorrientePage() {
         { header: 'Masa Salarial', accessorKey: 'masaSalarial', cell: info => formatCurrency(info.getValue() as string), meta: { align: 'center'} },
     ], []);
 
+    // Funciones de exportación para Estado de Cuenta
+    const handleExportCtaCteCSV = async () => {
+        const data = sortedData || [];
+        if (data.length === 0) {
+            alert('No hay datos para exportar');
+            return;
+        }
+        
+        // Transformar datos para incluir ambos períodos
+        const transformedData = data.map((row: any) => ({
+            ...row,
+            periodoCobertura: Formato.Fecha(sumarleUnMesAlPeriodo(row.periodo), "MM-YYYY"),
+            periodoDDJJ: Formato.Fecha(row.periodo, "MM-YYYY"),
+        }));
+        
+        const exportColumns = {
+            periodoCobertura: { header: 'Período Cobertura', key: 'periodoCobertura' },
+            periodoDDJJ: { header: 'Período DDJJ', key: 'periodoDDJJ' },
+            presentacion: { header: 'Fecha de Presentación', key: 'presentacion' },
+            origenDDJJ: { header: 'Tipo', key: 'origenDDJJ' },
+            masaSalarial: { header: 'Masa Salarial', key: 'masaSalarial' },
+            cantidadTrabajadores: { header: 'Cant. Trabajadores', key: 'cantidadTrabajadores' },
+            alicuotaFijaVigenteTrabajador: { header: 'Alic. Fija', key: 'alicuotaFijaVigenteTrabajador' },
+            alicuotaVariableVigenteSobreMasaSalarial: { header: 'Alic. Var.', key: 'alicuotaVariableVigenteSobreMasaSalarial' },
+            alicuotaFijaDeclaradaTrabajador: { header: 'Alic. Fija + FFEP Declarado', key: 'alicuotaFijaDeclaradaTrabajador' },
+            alicuotaVariableDeclaradaMasaSalarial: { header: 'Alic. Var. Declarada', key: 'alicuotaVariableDeclaradaMasaSalarial' },
+            primaAPagar: { header: 'Premio A Pagar', key: 'primaAPagar' },
+            totalDevengadoFFEP: { header: 'Total Devengado FFEP', key: 'totalDevengadoFFEP' },
+            ffep: { header: 'FFEP S/Res', key: 'ffep' },
+            totalCuota: { header: 'Total Cuota a Pagar', key: 'totalCuota' },
+            totalPagadoCuota: { header: 'Total Pagado Cuota', key: 'totalPagadoCuota' },
+            saldo: { header: 'Saldo Mensual', key: 'saldo' },
+            saldoAcumulado: { header: 'Saldo Acumulado', key: 'saldoAcumulado' },
+        };
+        
+        await saveTable(exportColumns, transformedData, 'estado_cuenta_empleador.csv', { format: 'csv' });
+    };
+
+    const handleExportCtaCteExcel = async () => {
+        const data = sortedData || [];
+        if (data.length === 0) {
+            alert('No hay datos para exportar');
+            return;
+        }
+        
+        // Transformar datos para incluir ambos períodos
+        const transformedData = data.map((row: any) => ({
+            ...row,
+            periodoCobertura: Formato.Fecha(sumarleUnMesAlPeriodo(row.periodo), "MM-YYYY"),
+            periodoDDJJ: Formato.Fecha(row.periodo, "MM-YYYY"),
+        }));
+        
+        const exportColumns = {
+            periodoCobertura: { header: 'Período Cobertura', key: 'periodoCobertura' },
+            periodoDDJJ: { header: 'Período DDJJ', key: 'periodoDDJJ' },
+            presentacion: { header: 'Fecha de Presentación', key: 'presentacion' },
+            origenDDJJ: { header: 'Tipo', key: 'origenDDJJ' },
+            masaSalarial: { header: 'Masa Salarial', key: 'masaSalarial' },
+            cantidadTrabajadores: { header: 'Cant. Trabajadores', key: 'cantidadTrabajadores' },
+            alicuotaFijaVigenteTrabajador: { header: 'Alic. Fija', key: 'alicuotaFijaVigenteTrabajador' },
+            alicuotaVariableVigenteSobreMasaSalarial: { header: 'Alic. Var.', key: 'alicuotaVariableVigenteSobreMasaSalarial' },
+            alicuotaFijaDeclaradaTrabajador: { header: 'Alic. Fija + FFEP Declarado', key: 'alicuotaFijaDeclaradaTrabajador' },
+            alicuotaVariableDeclaradaMasaSalarial: { header: 'Alic. Var. Declarada', key: 'alicuotaVariableDeclaradaMasaSalarial' },
+            primaAPagar: { header: 'Premio A Pagar', key: 'primaAPagar' },
+            totalDevengadoFFEP: { header: 'Total Devengado FFEP', key: 'totalDevengadoFFEP' },
+            ffep: { header: 'FFEP S/Res', key: 'ffep' },
+            totalCuota: { header: 'Total Cuota a Pagar', key: 'totalCuota' },
+            totalPagadoCuota: { header: 'Total Pagado Cuota', key: 'totalPagadoCuota' },
+            saldo: { header: 'Saldo Mensual', key: 'saldo' },
+            saldoAcumulado: { header: 'Saldo Acumulado', key: 'saldoAcumulado' },
+        };
+        
+        await saveTable(exportColumns, transformedData, 'estado_cuenta_empleador.xlsx', { 
+            format: 'xlsx',
+            sheet: { name: 'Estado de Cuenta' }
+        });
+    };
+
+    // Funciones de exportación para Últimas DDJJ
+    const handleExportDDJJCSV = async () => {
+        const data = sortedData || [];
+        if (data.length === 0) {
+            alert('No hay datos para exportar');
+            return;
+        }
+        
+        const exportColumns = {
+            periodo: { header: 'Período DDJJ', key: 'periodo' },
+            presentacion: { header: 'Presentación', key: 'presentacion' },
+            origenDDJJ: { header: 'Tipo', key: 'origenDDJJ' },
+            alicuotaFijaDeclaradaTrabajador: { header: 'Alic. Fija', key: 'alicuotaFijaDeclaradaTrabajador' },
+            alicuotaVariableDeclaradaMasaSalarial: { header: 'Alic. Variable', key: 'alicuotaVariableDeclaradaMasaSalarial' },
+            cantidadTrabajadores: { header: 'Cant. Trabajadores', key: 'cantidadTrabajadores' },
+            masaSalarial: { header: 'Masa Salarial', key: 'masaSalarial' },
+        };
+        
+        await saveTable(exportColumns, data, 'ultimas_ddjj_empleador.csv', { format: 'csv' });
+    };
+
+    const handleExportDDJJExcel = async () => {
+        const data = sortedData || [];
+        if (data.length === 0) {
+            alert('No hay datos para exportar');
+            return;
+        }
+        
+        const exportColumns = {
+            periodo: { header: 'Período DDJJ', key: 'periodo' },
+            presentacion: { header: 'Presentación', key: 'presentacion' },
+            origenDDJJ: { header: 'Tipo', key: 'origenDDJJ' },
+            alicuotaFijaDeclaradaTrabajador: { header: 'Alic. Fija', key: 'alicuotaFijaDeclaradaTrabajador' },
+            alicuotaVariableDeclaradaMasaSalarial: { header: 'Alic. Variable', key: 'alicuotaVariableDeclaradaMasaSalarial' },
+            cantidadTrabajadores: { header: 'Cant. Trabajadores', key: 'cantidadTrabajadores' },
+            masaSalarial: { header: 'Masa Salarial', key: 'masaSalarial' },
+        };
+        
+        await saveTable(exportColumns, data, 'ultimas_ddjj_empleador.xlsx', { 
+            format: 'xlsx',
+            sheet: { name: 'Últimas DDJJ' }
+        });
+    };
+
 
     const tabItems = [
         {
             label: 'Estado de Cuenta',
             value: 0,
             content: (
-                <DataTable
-                    data={CtaCteRawData?.data || []} 
-                    columns={columns} 
-                    size="mid"
-                    isLoading={false}
-                />
+                <>
+                    <DataTable
+                        data={sortedData || []} 
+                        columns={columns} 
+                        size="mid"
+                        isLoading={false}
+                    />
+                    <Box sx={{ display: 'flex', gap: 2, mt: 2, justifyContent: 'flex-end' }}>
+                        <CustomButton 
+                            color="primary"
+                            onClick={handleExportCtaCteCSV}
+                            disabled={sortedData.length === 0}
+                        >
+                            Exportar a CSV
+                        </CustomButton>
+                        <CustomButton 
+                            color="primary"
+                            onClick={handleExportCtaCteExcel}
+                            disabled={sortedData.length === 0}
+                        >
+                            Exportar a Excel
+                        </CustomButton>
+                    </Box>
+                </>
             ),
         },
         {
             label: 'Últimas DDJJ',
             value: 1,
             content: (
-                <DataTable
-                    data={CtaCteRawData?.data || []} 
-                    columns={columnsDDJJ} 
-                    size="mid"
-                    isLoading={false}
-                />
+                <>
+                    <DataTable
+                        data={sortedData || []} 
+                        columns={columnsDDJJ} 
+                        size="mid"
+                        isLoading={false}
+                    />
+                    <Box sx={{ display: 'flex', gap: 2, mt: 2, justifyContent: 'flex-end' }}>
+                        <CustomButton 
+                            color="primary"
+                            onClick={handleExportDDJJCSV}
+                            disabled={sortedData.length === 0}
+                        >
+                            Exportar a CSV
+                        </CustomButton>
+                        <CustomButton 
+                            color="primary"
+                            onClick={handleExportDDJJExcel}
+                            disabled={sortedData.length === 0}
+                        >
+                            Exportar a Excel
+                        </CustomButton>
+                    </Box>
+                </>
             ),
         },
     ];
