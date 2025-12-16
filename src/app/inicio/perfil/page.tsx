@@ -2,6 +2,7 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
+import { useState } from "react";
 import {
   Typography,
   Card,
@@ -19,12 +20,18 @@ import MailIcon from '@mui/icons-material/Mail';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import BadgeIcon from '@mui/icons-material/Badge';
 import CodeIcon from '@mui/icons-material/Code';
+import InfoIcon from '@mui/icons-material/Info';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import BusinessIcon from '@mui/icons-material/Business';
+import PersonIcon from '@mui/icons-material/Person';
 
 import styles from './perfil.module.css';
 import Formato from "@/utils/Formato";
 
 function ProfilePage() {
   const { data: session, status } = useSession();
+  const [mostrarDetalles, setMostrarDetalles] = useState(false);
 
   if (status === "loading") {
     return (
@@ -42,7 +49,7 @@ function ProfilePage() {
     );
   }
 
-  const { rol, nombre, cuit } = session.user as any;
+  const { rol, nombre, cuit, empresaCUIT, empresaRazonSocial } = session.user as any;
 
   return (
     <Box className={styles.pagePadding}>
@@ -73,6 +80,13 @@ function ProfilePage() {
                 <Divider className={styles.dividerMargin} />
                 
                 <Box className={styles.dataItem}>
+                  <PersonIcon className={styles.icon} />
+                  <Typography variant="body1" component="span">
+                    <span className={styles.label}>Nombre: {nombre ?? "N/A"}</span>  
+                  </Typography>
+                </Box>
+                
+                <Box className={styles.dataItem}>
                   <MailIcon className={styles.icon} />
                   <Typography variant="body1" component="span">
                     <span className={styles.label}>Email: {session.user?.email}</span>  
@@ -92,6 +106,31 @@ function ProfilePage() {
                     <span className={styles.label}>Rol: {rol ?? "N/A"}</span> 
                   </Typography>
                 </Box>
+
+                {(empresaCUIT || empresaRazonSocial) && (
+                  <>
+                    <Divider className={styles.dividerMargin} sx={{ marginTop: 3 }} />
+                    
+                    <Typography variant="h6" gutterBottom className={styles.sectionTitle} sx={{ marginTop: 2 }}>
+                      <BusinessIcon className={styles.iconSectionTitle} />
+                      Empresa Relacionada
+                    </Typography>
+                    
+                    <Box className={styles.dataItem}>
+                      <BusinessIcon className={styles.icon} />
+                      <Typography variant="body1" component="span">
+                        <span className={styles.label}>Razón Social: {empresaRazonSocial ?? "N/A"}</span>  
+                      </Typography>
+                    </Box>
+                    
+                    <Box className={styles.dataItem}>
+                      <BadgeIcon className={styles.icon} />
+                      <Typography variant="body1" component="span">
+                        <span className={styles.label}>CUIT Empresa: {Formato.CUIP(empresaCUIT) ?? "N/A"}</span> 
+                      </Typography>
+                    </Box>
+                  </>
+                )}
               </CardContent>
             </Card>
           </Grid>
@@ -100,12 +139,35 @@ function ProfilePage() {
             <Card raised className={styles.card}>
               <CardContent>
                 <Typography variant="h6" gutterBottom className={styles.sectionTitle}>
+                  <InfoIcon className={styles.iconSectionTitle} />
                   Detalles de la Sesión
                 </Typography>
                 <Divider className={styles.dividerMargin} />
-                <pre className={styles.pre}>
-                  {JSON.stringify(session, null, 2)}
-                </pre>
+                
+                <Box className={styles.dataItem} style={{ justifyContent: 'center' }}>
+                  <Button 
+                    variant="contained" 
+                    onClick={() => setMostrarDetalles(!mostrarDetalles)}
+                    startIcon={mostrarDetalles ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                    fullWidth
+                    sx={{
+                      textTransform: 'none',
+                      fontWeight: 500,
+                      padding: '10px 20px',
+                      borderRadius: '8px'
+                    }}
+                  >
+                    {mostrarDetalles ? 'Ocultar detalles de sesión' : 'Ver detalles de sesión'}
+                  </Button>
+                </Box>
+                
+                {mostrarDetalles && (
+                  <Box sx={{ marginTop: 2 }}>
+                    <pre className={styles.pre}>
+                      {JSON.stringify(session, null, 2)}
+                    </pre>
+                  </Box>
+                )}
               </CardContent>
             </Card>
           </Grid>
