@@ -82,7 +82,7 @@ const FormulariosRAR: React.FC = () => {
   // Pasamos PageIndex y PageSize al hook (cambia la clave de SWR y dispara fetch)
   const apiPageIndex = PageIndex;
   const { data: formulariosData, error: formulariosError, isValidating, mutate: mutateFormularios } =
-    ArtAPI.useGetFormulariosRARURL(empresaCUIT ? { CUIT: empresaCUIT, PageIndex: apiPageIndex, PageSize: PageSize, OrderBy: 'Interno' } : { PageIndex: apiPageIndex, PageSize: PageSize, OrderBy: 'Interno' });
+    ArtAPI.useGetFormulariosRARURL(empresaCUIT ? { CUIT: empresaCUIT, PageIndex: apiPageIndex, PageSize: PageSize, OrderBy: '-Interno' } : { PageIndex: apiPageIndex, PageSize: PageSize, OrderBy: '-Interno' });
 
   // Una sola vez: cuando llegan datos, los mapeamos al estado local
   useEffect(() => {
