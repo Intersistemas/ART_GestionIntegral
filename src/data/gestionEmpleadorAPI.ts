@@ -6,6 +6,7 @@ import Persona, { Parameters } from "@/app/inicio/empleador/cobertura/types/pers
 import dayjs from "dayjs";
 import { toURLSearch } from "@/utils/utils";
 import { useAuth } from '@/data/AuthContext';
+import { AxiosError } from "axios";
 
 const tokenizable = token.configure();
 
@@ -226,19 +227,19 @@ export type TrabajadorDTO = {
 //#region Types SVCC/Presentacion
 //#region Types SVCC/Presentacion/Ultima
 export type SVCCPresentacionUltimaSWRKey = [url: string, token: string];
-export type SVCCPresentacionUltimaOptions = SWRConfiguration<PresentacionDTO, any, Fetcher<PresentacionDTO, SVCCPresentacionUltimaSWRKey>>
+export type SVCCPresentacionUltimaOptions = SWRConfiguration<PresentacionDTO, AxiosError, Fetcher<PresentacionDTO, SVCCPresentacionUltimaSWRKey>>
 //#endregion Types SVCC/Presentacion/Ultima
 
 //#region Types SVCC/Presentacion/Nueva
 export type SVCCPresentacionNuevaSWRKey = [url: string, token: string];
-export type SVCCPresentacionNuevaOptions = SWRMutationConfiguration<PresentacionDTO, any, SVCCPresentacionNuevaSWRKey, PresentacionDTO, PresentacionDTO> & {
+export type SVCCPresentacionNuevaOptions = SWRMutationConfiguration<PresentacionDTO, AxiosError, SVCCPresentacionNuevaSWRKey, PresentacionDTO, PresentacionDTO> & {
   throwOnError?: boolean;
 }
 //#endregion Types SVCC/Presentacion/Nueva
 
 //#region Types SVCC/Presentacion/Finaliza
 export type SVCCPresentacionFinalizaSWRKey = [url: string, token: string];
-export type SVCCPresentacionFinalizaOptions = SWRMutationConfiguration<PresentacionDTO, any, SVCCPresentacionNuevaSWRKey, PresentacionDTO, PresentacionDTO> & {
+export type SVCCPresentacionFinalizaOptions = SWRMutationConfiguration<PresentacionDTO, AxiosError, SVCCPresentacionNuevaSWRKey, PresentacionDTO, PresentacionDTO> & {
   throwOnError?: boolean;
 }
 //#endregion Types SVCC/Presentacion/Finaliza
@@ -253,12 +254,12 @@ export type SVCCEmpresaTercerizadaListParams = {
   sort?: string;
 }
 export type SVCCEmpresaTercerizadaListSWRKey = [url: string, token: string, params: string];
-export type SVCCEmpresaTercerizadaListOptions = SWRConfiguration<Pagination<EmpresaTercerizadaDTO>, any, Fetcher<Pagination<EmpresaTercerizadaDTO>, SVCCEmpresaTercerizadaListSWRKey>>
+export type SVCCEmpresaTercerizadaListOptions = SWRConfiguration<Pagination<EmpresaTercerizadaDTO>, AxiosError, Fetcher<Pagination<EmpresaTercerizadaDTO>, SVCCEmpresaTercerizadaListSWRKey>>
 //#endregion Types SVCC/EmpresaTercerizada - List
 
 //#region Types SVCC/EmpresaTercerizada - Create
 export type SVCCEmpresaTercerizadaCreateSWRKey = [url: string, token: string];
-export type SVCCEmpresaTercerizadaCreateOptions = SWRMutationConfiguration<EmpresaTercerizadaDTO, any, SVCCEmpresaTercerizadaCreateSWRKey, EmpresaTercerizadaDTO, EmpresaTercerizadaDTO> & {
+export type SVCCEmpresaTercerizadaCreateOptions = SWRMutationConfiguration<EmpresaTercerizadaDTO, AxiosError, SVCCEmpresaTercerizadaCreateSWRKey, EmpresaTercerizadaDTO, EmpresaTercerizadaDTO> & {
   throwOnError?: boolean;
 }
 //#endregion Types SVCC/EmpresaTercerizada - Create
@@ -268,7 +269,7 @@ export type SVCCEmpresaTercerizadaUpdateParams = {
   id: number;
 }
 export type SVCCEmpresaTercerizadaUpdateSWRKey = [url: string, token: string, params: string];
-export type SVCCEmpresaTercerizadaUpdateOptions = SWRMutationConfiguration<EmpresaTercerizadaDTO, any, SVCCEmpresaTercerizadaUpdateSWRKey | null, EmpresaTercerizadaDTO, EmpresaTercerizadaDTO> & {
+export type SVCCEmpresaTercerizadaUpdateOptions = SWRMutationConfiguration<EmpresaTercerizadaDTO, AxiosError, SVCCEmpresaTercerizadaUpdateSWRKey | null, EmpresaTercerizadaDTO, EmpresaTercerizadaDTO> & {
   throwOnError?: boolean;
 }
 //#endregion Types SVCC/EmpresaTercerizada - Update
@@ -278,7 +279,7 @@ export type SVCCEmpresaTercerizadaDeleteParams = {
   id: number;
 }
 export type SVCCEmpresaTercerizadaDeleteSWRKey = [url: string, token: string, params: string];
-export type SVCCEmpresaTercerizadaDeleteOptions = SWRMutationConfiguration<EmpresaTercerizadaDTO, any, SVCCEmpresaTercerizadaDeleteSWRKey | null, EmpresaTercerizadaDTO, EmpresaTercerizadaDTO> & {
+export type SVCCEmpresaTercerizadaDeleteOptions = SWRMutationConfiguration<EmpresaTercerizadaDTO, AxiosError, SVCCEmpresaTercerizadaDeleteSWRKey | null, EmpresaTercerizadaDTO, EmpresaTercerizadaDTO> & {
   throwOnError?: boolean;
 }
 //#endregion Types SVCC/EmpresaTercerizada - Delete
@@ -302,12 +303,12 @@ export type SVCCEstablecimientoDeclaradoListParams = {
   sort?: string;
 }
 export type SVCCEstablecimientoDeclaradoListSWRKey = [url: string, token: string, params: string];
-export type SVCCEstablecimientoDeclaradoListOptions = SWRConfiguration<Pagination<EstablecimientoDeclaradoDTO>, any, Fetcher<Pagination<EstablecimientoDeclaradoDTO>, SVCCEstablecimientoDeclaradoListSWRKey>>
+export type SVCCEstablecimientoDeclaradoListOptions = SWRConfiguration<Pagination<EstablecimientoDeclaradoDTO>, AxiosError, Fetcher<Pagination<EstablecimientoDeclaradoDTO>, SVCCEstablecimientoDeclaradoListSWRKey>>
 //#endregion Types SVCC/EstablecimientoDeclarado - List
 
 //#region Types SVCC/EstablecimientoDeclarado - Create
 export type SVCCEstablecimientoDeclaradoCreateSWRKey = [url: string, token: string];
-export type SVCCEstablecimientoDeclaradoCreateOptions = SWRMutationConfiguration<EstablecimientoDeclaradoDTO, any, SVCCEstablecimientoDeclaradoCreateSWRKey, EstablecimientoDeclaradoDTO, EstablecimientoDeclaradoDTO> & {
+export type SVCCEstablecimientoDeclaradoCreateOptions = SWRMutationConfiguration<EstablecimientoDeclaradoDTO, AxiosError, SVCCEstablecimientoDeclaradoCreateSWRKey, EstablecimientoDeclaradoDTO, EstablecimientoDeclaradoDTO> & {
   throwOnError?: boolean;
 }
 //#endregion Types SVCC/EstablecimientoDeclarado - Create
@@ -317,7 +318,7 @@ export type SVCCEstablecimientoDeclaradoUpdateParams = {
   id: number;
 }
 export type SVCCEstablecimientoDeclaradoUpdateSWRKey = [url: string, token: string, params: string];
-export type SVCCEstablecimientoDeclaradoUpdateOptions = SWRMutationConfiguration<EstablecimientoDeclaradoDTO, any, SVCCEstablecimientoDeclaradoUpdateSWRKey | null, EstablecimientoDeclaradoDTO, EstablecimientoDeclaradoDTO> & {
+export type SVCCEstablecimientoDeclaradoUpdateOptions = SWRMutationConfiguration<EstablecimientoDeclaradoDTO, AxiosError, SVCCEstablecimientoDeclaradoUpdateSWRKey | null, EstablecimientoDeclaradoDTO, EstablecimientoDeclaradoDTO> & {
   throwOnError?: boolean;
 }
 //#endregion Types SVCC/EstablecimientoDeclarado - Update
@@ -327,7 +328,7 @@ export type SVCCEstablecimientoDeclaradoDeleteParams = {
   id: number;
 }
 export type SVCCEstablecimientoDeclaradoDeleteSWRKey = [url: string, token: string, params: string];
-export type SVCCEstablecimientoDeclaradoDeleteOptions = SWRMutationConfiguration<EstablecimientoDeclaradoDTO, any, SVCCEstablecimientoDeclaradoDeleteSWRKey | null, EstablecimientoDeclaradoDTO, EstablecimientoDeclaradoDTO> & {
+export type SVCCEstablecimientoDeclaradoDeleteOptions = SWRMutationConfiguration<EstablecimientoDeclaradoDTO, AxiosError, SVCCEstablecimientoDeclaradoDeleteSWRKey | null, EstablecimientoDeclaradoDTO, EstablecimientoDeclaradoDTO> & {
   throwOnError?: boolean;
 }
 //#endregion Types SVCC/EstablecimientoDeclarado - Delete
@@ -345,12 +346,12 @@ export type SVCCSustanciaListParams = {
   sort?: string;
 }
 export type SVCCSustanciaListSWRKey = [url: string, token: string, params: string];
-export type SVCCSustanciaListOptions = SWRConfiguration<Pagination<SustanciaDTO>, any, Fetcher<Pagination<SustanciaDTO>, SVCCSustanciaListSWRKey>>
+export type SVCCSustanciaListOptions = SWRConfiguration<Pagination<SustanciaDTO>, AxiosError, Fetcher<Pagination<SustanciaDTO>, SVCCSustanciaListSWRKey>>
 //#endregion Types SVCC/Sustancia - List
 
 //#region Types SVCC/Sustancia - Create
 export type SVCCSustanciaCreateSWRKey = [url: string, token: string];
-export type SVCCSustanciaCreateOptions = SWRMutationConfiguration<SustanciaDTO, any, SVCCSustanciaCreateSWRKey, SustanciaDTO, SustanciaDTO> & {
+export type SVCCSustanciaCreateOptions = SWRMutationConfiguration<SustanciaDTO, AxiosError, SVCCSustanciaCreateSWRKey, SustanciaDTO, SustanciaDTO> & {
   throwOnError?: boolean;
 }
 //#endregion Types SVCC/Sustancia - Create
@@ -360,7 +361,7 @@ export type SVCCSustanciaReadParams = {
   id: number;
 }
 export type SVCCSustanciaReadSWRKey = [url: string, token: string, params: string];
-export type SVCCSustanciaReadOptions = SWRConfiguration<SustanciaDTO, any, Fetcher<SustanciaDTO, SVCCSustanciaReadSWRKey>>
+export type SVCCSustanciaReadOptions = SWRConfiguration<SustanciaDTO, AxiosError, Fetcher<SustanciaDTO, SVCCSustanciaReadSWRKey>>
 //#endregion Types SVCC/Sustancia - Read
 
 //#region Types SVCC/Sustancia - Update
@@ -368,7 +369,7 @@ export type SVCCSustanciaUpdateParams = {
   id: number;
 }
 export type SVCCSustanciaUpdateSWRKey = [url: string, token: string, params: string];
-export type SVCCSustanciaUpdateOptions = SWRMutationConfiguration<SustanciaDTO, any, SVCCSustanciaUpdateSWRKey | null, SustanciaDTO, SustanciaDTO> & {
+export type SVCCSustanciaUpdateOptions = SWRMutationConfiguration<SustanciaDTO, AxiosError, SVCCSustanciaUpdateSWRKey | null, SustanciaDTO, SustanciaDTO> & {
   throwOnError?: boolean;
 }
 //#endregion Types SVCC/Sustancia - Update
@@ -378,7 +379,7 @@ export type SVCCSustanciaDeleteParams = {
   id: number;
 }
 export type SVCCSustanciaDeleteSWRKey = [url: string, token: string, params: string];
-export type SVCCSustanciaDeleteOptions = SWRMutationConfiguration<SustanciaDTO, any, SVCCSustanciaDeleteSWRKey | null, SustanciaDTO, SustanciaDTO> & {
+export type SVCCSustanciaDeleteOptions = SWRMutationConfiguration<SustanciaDTO, AxiosError, SVCCSustanciaDeleteSWRKey | null, SustanciaDTO, SustanciaDTO> & {
   throwOnError?: boolean;
 }
 //#endregion Types SVCC/Sustancia - Delete
@@ -393,12 +394,12 @@ export type SVCCTrabajadorListParams = {
   sort?: string;
 }
 export type SVCCTrabajadorListSWRKey = [url: string, token: string, params: string];
-export type SVCCTrabajadorListOptions = SWRConfiguration<Pagination<TrabajadorDTO>, any, Fetcher<Pagination<TrabajadorDTO>, SVCCTrabajadorListSWRKey>>
+export type SVCCTrabajadorListOptions = SWRConfiguration<Pagination<TrabajadorDTO>, AxiosError, Fetcher<Pagination<TrabajadorDTO>, SVCCTrabajadorListSWRKey>>
 //#endregion Types SVCC/Trabajador - List
 
 //#region Types SVCC/Trabajador - Create
 export type SVCCTrabajadorCreateSWRKey = [url: string, token: string];
-export type SVCCTrabajadorCreateOptions = SWRMutationConfiguration<TrabajadorDTO, any, SVCCTrabajadorCreateSWRKey, TrabajadorDTO, TrabajadorDTO> & {
+export type SVCCTrabajadorCreateOptions = SWRMutationConfiguration<TrabajadorDTO, AxiosError, SVCCTrabajadorCreateSWRKey, TrabajadorDTO, TrabajadorDTO> & {
   throwOnError?: boolean;
 }
 //#endregion Types SVCC/Trabajador - Create
@@ -408,7 +409,7 @@ export type SVCCTrabajadorReadParams = {
   id: number;
 }
 export type SVCCTrabajadorReadSWRKey = [url: string, token: string, params: string];
-export type SVCCTrabajadorReadOptions = SWRConfiguration<TrabajadorDTO, any, Fetcher<TrabajadorDTO, SVCCTrabajadorReadSWRKey>>
+export type SVCCTrabajadorReadOptions = SWRConfiguration<TrabajadorDTO, AxiosError, Fetcher<TrabajadorDTO, SVCCTrabajadorReadSWRKey>>
 //#endregion Types SVCC/Trabajador - Read
 
 //#region Types SVCC/Trabajador - Update
@@ -416,7 +417,7 @@ export type SVCCTrabajadorUpdateParams = {
   id: number;
 }
 export type SVCCTrabajadorUpdateSWRKey = [url: string, token: string, params: string];
-export type SVCCTrabajadorUpdateOptions = SWRMutationConfiguration<TrabajadorDTO, any, SVCCTrabajadorUpdateSWRKey | null, TrabajadorDTO, TrabajadorDTO> & {
+export type SVCCTrabajadorUpdateOptions = SWRMutationConfiguration<TrabajadorDTO, AxiosError, SVCCTrabajadorUpdateSWRKey | null, TrabajadorDTO, TrabajadorDTO> & {
   throwOnError?: boolean;
 }
 //#endregion Types SVCC/Trabajador - Update
@@ -426,7 +427,7 @@ export type SVCCTrabajadorDeleteParams = {
   id: number;
 }
 export type SVCCTrabajadorDeleteSWRKey = [url: string, token: string, params: string];
-export type SVCCTrabajadorDeleteOptions = SWRMutationConfiguration<TrabajadorDTO, any, SVCCTrabajadorDeleteSWRKey | null, TrabajadorDTO, TrabajadorDTO> & {
+export type SVCCTrabajadorDeleteOptions = SWRMutationConfiguration<TrabajadorDTO, AxiosError, SVCCTrabajadorDeleteSWRKey | null, TrabajadorDTO, TrabajadorDTO> & {
   throwOnError?: boolean;
 }
 //#endregion Types SVCC/Trabajador - Delete
@@ -442,7 +443,7 @@ export type SRTSiniestralidadCIUO88 = {
 
 //#region Types SRTSiniestralidadCIUO88 - List
 export type SRTSiniestralidadCIUO88ListSWRKey = [url: string, token: string];
-export type SRTSiniestralidadCIUO88ListOptions = SWRConfiguration<SRTSiniestralidadCIUO88[], any, Fetcher<SRTSiniestralidadCIUO88[], SRTSiniestralidadCIUO88ListSWRKey>>
+export type SRTSiniestralidadCIUO88ListOptions = SWRConfiguration<SRTSiniestralidadCIUO88[], AxiosError, Fetcher<SRTSiniestralidadCIUO88[], SRTSiniestralidadCIUO88ListSWRKey>>
 //#endregion Types SRTSiniestralidadCIUO88 - List
 
 //#region Types SRTSiniestralidadCIUO88 - Read
@@ -450,7 +451,7 @@ export type SRTSiniestralidadCIUO88ReadParams = {
   pId: number;
 }
 export type SRTSiniestralidadCIUO88ReadSWRKey = [url: string, token: string, params: string];
-export type SRTSiniestralidadCIUO88ReadOptions = SWRConfiguration<SRTSiniestralidadCIUO88, any, Fetcher<SRTSiniestralidadCIUO88, SVCCTrabajadorReadSWRKey>>
+export type SRTSiniestralidadCIUO88ReadOptions = SWRConfiguration<SRTSiniestralidadCIUO88, AxiosError, Fetcher<SRTSiniestralidadCIUO88, SVCCTrabajadorReadSWRKey>>
 //#endregion Types SRTSiniestralidadCIUO88 - Read
 //#endregion Types SRTSiniestralidadCIUO88
 
@@ -475,7 +476,7 @@ export type RefCIIU = {
 
 //#region Types RefCIIU - List
 export type RefCIIUListSWRKey = [url: string, token: string];
-export type RefCIIUListOptions = SWRConfiguration<RefCIIU[], any, Fetcher<RefCIIU[], RefCIIUListSWRKey>>
+export type RefCIIUListOptions = SWRConfiguration<RefCIIU[], AxiosError, Fetcher<RefCIIU[], RefCIIUListSWRKey>>
 //#endregion Types RefCIIU - List
 
 //#region Types RefCIIU - Read
@@ -483,7 +484,7 @@ export type RefCIIUReadParams = {
   pId: number;
 }
 export type RefCIIUReadSWRKey = [url: string, token: string, params: string];
-export type RefCIIUReadOptions = SWRConfiguration<RefCIIU, any, Fetcher<RefCIIU, SVCCTrabajadorReadSWRKey>>
+export type RefCIIUReadOptions = SWRConfiguration<RefCIIU, AxiosError, Fetcher<RefCIIU, SVCCTrabajadorReadSWRKey>>
 //#endregion Types RefCIIU - Read
 //#endregion Types RefCIIU
 
@@ -623,7 +624,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     fetcher: (_key) => this.svccPresentacionUltima(),
   });
   useSVCCPresentacionUltima = (options?: SVCCPresentacionUltimaOptions) =>
-    useSWR(this.swrSVCCPresentacionUltima.key, this.swrSVCCPresentacionUltima.fetcher, options);
+    useSWR<PresentacionDTO, AxiosError>(this.swrSVCCPresentacionUltima.key, this.swrSVCCPresentacionUltima.fetcher, options);
   //#endregion SVCC/Presentacion/Ultima
 
   //#region SVCC/Presentacion/Nueva
@@ -674,7 +675,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     fetcher: ([_url, _token, params]) => this.svccEmpresaTercerizadaList(JSON.parse(params)),
   });
   useSVCCEmpresaTercerizadaList = (params?: SVCCEmpresaTercerizadaListParams, options?: SVCCEmpresaTercerizadaListOptions) =>
-    useSWR(params ? this.swrSVCCEmpresaTercerizadaList.key(params) : null, this.swrSVCCEmpresaTercerizadaList.fetcher, options);
+    useSWR<Pagination<EmpresaTercerizadaDTO>, AxiosError>(params ? this.swrSVCCEmpresaTercerizadaList.key(params) : null, this.swrSVCCEmpresaTercerizadaList.fetcher, options);
   //#endregion SVCC/EmpresaTercerizada - List
 
   //#region SVCC/EmpresaTercerizada - Create
@@ -741,7 +742,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     fetcher: ([_url, _token, params]) => this.svccEstablecimientoDeclaradoList(JSON.parse(params)),
   });
   useSVCCEstablecimientoDeclaradoList = (params?: SVCCEstablecimientoDeclaradoListParams, options?: SVCCEstablecimientoDeclaradoListOptions) =>
-    useSWR(params ? this.swrSVCCEstablecimientoDeclaradoList.key(params) : null, this.swrSVCCEstablecimientoDeclaradoList.fetcher, options);
+    useSWR<Pagination<EstablecimientoDeclaradoDTO>, AxiosError>(params ? this.swrSVCCEstablecimientoDeclaradoList.key(params) : null, this.swrSVCCEstablecimientoDeclaradoList.fetcher, options);
   //#endregion SVCC/EstablecimientoDeclarado - List
 
   //#region SVCC/EstablecimientoDeclarado - Create
@@ -808,7 +809,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     fetcher: ([_url, _token, params]) => this.svccSustanciaList(JSON.parse(params)),
   });
   useSVCCSustanciaList = (params?: SVCCSustanciaListParams, options?: SVCCSustanciaListOptions) =>
-    useSWR(params ? this.swrSVCCSustanciaList.key(params) : null, this.swrSVCCSustanciaList.fetcher, options);
+    useSWR<Pagination<SustanciaDTO>, AxiosError>(params ? this.swrSVCCSustanciaList.key(params) : null, this.swrSVCCSustanciaList.fetcher, options);
   //#endregion SVCC/Sustancia - List
 
   //#region SVCC/Sustancia - Create
@@ -840,7 +841,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     fetcher: ([_url, _token, params]) => this.svccSustanciaRead(JSON.parse(params)),
   });
   useSVCCSustanciaRead = (params?: SVCCSustanciaReadParams, options?: SVCCSustanciaReadOptions) =>
-    useSWR(params ? this.swrSVCCSustanciaRead.key(params) : null, this.swrSVCCSustanciaRead.fetcher, options);
+    useSWR<SustanciaDTO, AxiosError>(params ? this.swrSVCCSustanciaRead.key(params) : null, this.swrSVCCSustanciaRead.fetcher, options);
   //#endregion SVCC/Sustancia - Read
 
   //#region SVCC/Sustancia - Update
@@ -891,7 +892,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     fetcher: ([_url, _token, params]) => this.svccTrabajadorList(JSON.parse(params)),
   });
   useSVCCTrabajadorList = (params?: SVCCTrabajadorListParams, options?: SVCCTrabajadorListOptions) =>
-    useSWR(params ? this.swrSVCCTrabajadorList.key(params) : null, this.swrSVCCTrabajadorList.fetcher, options);
+    useSWR<Pagination<TrabajadorDTO>, AxiosError>(params ? this.swrSVCCTrabajadorList.key(params) : null, this.swrSVCCTrabajadorList.fetcher, options);
   //#endregion SVCC/Trabajador - List
 
   //#region SVCC/Trabajador - Create
@@ -923,7 +924,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     fetcher: ([_url, _token, params]) => this.svccTrabajadorRead(JSON.parse(params)),
   });
   useSVCCTrabajadorRead = (params?: SVCCTrabajadorReadParams, options?: SVCCTrabajadorReadOptions) =>
-    useSWR(params ? this.swrSVCCTrabajadorRead.key(params) : null, this.swrSVCCTrabajadorRead.fetcher, options);
+    useSWR<TrabajadorDTO, AxiosError>(params ? this.swrSVCCTrabajadorRead.key(params) : null, this.swrSVCCTrabajadorRead.fetcher, options);
   //#endregion SVCC/Trabajador - Read
 
   //#region SVCC/Trabajador - Update
@@ -974,7 +975,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     fetcher: ([_url, _token]) => this.srtSiniestralidadCIUO88List(),
   });
   useSRTSiniestralidadCIUO88List = (options?: SRTSiniestralidadCIUO88ListOptions) =>
-    useSWR(this.swrSRTSiniestralidadCIUO88List.key, this.swrSRTSiniestralidadCIUO88List.fetcher, options);
+    useSWR<SRTSiniestralidadCIUO88[], AxiosError>(this.swrSRTSiniestralidadCIUO88List.key, this.swrSRTSiniestralidadCIUO88List.fetcher, options);
   //#endregion SRTSiniestralidadCIUO88 - List
 
   //#region SRTSiniestralidadCIUO88 - Read
@@ -990,7 +991,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     fetcher: ([_url, _token, params]) => this.srtSiniestralidadCIUO88Read(JSON.parse(params)),
   });
   useSRTSiniestralidadCIUO88Read = (params?: SRTSiniestralidadCIUO88ReadParams, options?: SRTSiniestralidadCIUO88ReadOptions) =>
-    useSWR(params ? this.swrSRTSiniestralidadCIUO88Read.key(params) : null, this.swrSRTSiniestralidadCIUO88Read.fetcher, options);
+    useSWR<SRTSiniestralidadCIUO88, AxiosError>(params ? this.swrSRTSiniestralidadCIUO88Read.key(params) : null, this.swrSRTSiniestralidadCIUO88Read.fetcher, options);
   //#endregion SRTSiniestralidadCIUO88 - Read
   //#endregion SRTSiniestralidadCIUO88
 
@@ -1008,7 +1009,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     fetcher: ([_url, _token]) => this.refCIIU(),
   });
   useRefCIIUList = (options?: RefCIIUListOptions) =>
-    useSWR(this.swrRefCIIUList.key, this.swrRefCIIUList.fetcher, options);
+    useSWR<RefCIIU[], AxiosError>(this.swrRefCIIUList.key, this.swrRefCIIUList.fetcher, options);
   //#endregion RefCIIU - List
 
   //#region RefCIIU - Read
@@ -1024,7 +1025,7 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     fetcher: ([_url, _token, params]) => this.refCIIUReadRead(JSON.parse(params)),
   });
   useRefCIIURead = (params?: RefCIIUReadParams, options?: RefCIIUReadOptions) =>
-    useSWR(params ? this.swrRefCIIURead.key(params) : null, this.swrRefCIIURead.fetcher, options);
+    useSWR<RefCIIU, AxiosError>(params ? this.swrRefCIIURead.key(params) : null, this.swrRefCIIURead.fetcher, options);
   //#endregion RefCIIU - Read
   //#endregion RefCIIU
 }

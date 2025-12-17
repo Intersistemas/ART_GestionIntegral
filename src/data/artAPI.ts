@@ -3,9 +3,10 @@ import { ExternalAPI } from "./api";
 import { token } from "./usuarioAPI";
 import RefEmpleador from "@/app/inicio/usuarios/interfaces/RefEmpleador";
 import FormularioRAR, { ParametersFormularioRar, ParametersEmpresaByCUIT, EstablecimientoById, ParametersEstablecimientoByCUIT } from "@/app/inicio/empleador/formularioRAR/types/TformularioRar";
-import { useAuth } from '@/data/AuthContext';
 import { toURLSearch } from "@/utils/utils";
 import type { ApiFormularioRGRL, ApiEstablecimientoEmpresa } from "@/app/inicio/empleador/formularioRGRL/types/rgrl";
+import Formato from "@/utils/Formato";
+import { AxiosError } from "axios";
 
 const tokenizable = token.configure();
 
@@ -30,24 +31,36 @@ export type EstablecimientoVm = {
   numero: number;
   codEstabEmpresa: number;
   ciiu: number;
+  descripcion?: string;
 }
 export type EstablecimientoListParams = {
   cuit: number;
 }
 export type EstablecimientoListSWRKey = [url: string, token: string, params: string];
-export type EstablecimientoListOptions = SWRConfiguration<EstablecimientoVm[], any, Fetcher<EstablecimientoVm[], EstablecimientoListSWRKey>>
+export type EstablecimientoListOptions = SWRConfiguration<EstablecimientoVm[], AxiosError, Fetcher<EstablecimientoVm[], EstablecimientoListSWRKey>>
 //#endregion Types Establecimiento
 //#endregion Types
 
 export function EstablecimientoVmDescripcion(establecimiento?: EstablecimientoVm) {
   if (establecimiento == null) return "";
-  const { nombre, domicilioCalle, domicilioNro, localidad, provincia } = establecimiento;
+  const { nombre, numero, codEstabEmpresa, descripcion } = establecimiento;
   return [
+    Formato.Numero(codEstabEmpresa),
+    Formato.Numero(numero),
     nombre,
+    descripcion,
+    EstablecimientoVmUbicacion(establecimiento),
+  ].filter(e => e).join(" - ");
+}
+
+export function EstablecimientoVmUbicacion(establecimiento?: EstablecimientoVm) {
+  if (establecimiento == null) return "";
+  const {domicilioCalle, domicilioNro, localidad, provincia } = establecimiento;
+  return [
     [domicilioCalle, domicilioNro].filter(e => e).join(" "),
     localidad,
     provincia,
-  ].filter(e => e).join(" - ");
+  ].filter(e => e).join(", ");
 }
 
 export class ArtAPIClass extends ExternalAPI {
@@ -126,7 +139,7 @@ export class ArtAPIClass extends ExternalAPI {
     fetcher: ([_url, _token, params]) => this.establecimientoList(JSON.parse(params)),
   });
   useEstablecimientoList = (params?: EstablecimientoListParams, options?: EstablecimientoListOptions) =>
-    useSWR(params ? this.swrEstablecimientoList.key(params) : null, this.swrEstablecimientoList.fetcher, options);
+    useSWR<EstablecimientoVm[], AxiosError>(params ? this.swrEstablecimientoList.key(params) : null, this.swrEstablecimientoList.fetcher, options);
   //#endregion Establecimiento
 
   //#region FormulariosRAR
