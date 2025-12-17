@@ -7,11 +7,12 @@ import DataTable from '@/utils/ui/table/DataTable';
 import { ColumnDef } from '@tanstack/react-table';
 import styles from "./cobertura.module.css";
 import CustomButton from '@/utils/ui/button/CustomButton';
-import { BsBoxArrowInLeft, BsBoxArrowInRight, BsDownload } from "react-icons/bs";
+import { BsBoxArrowInLeft, BsBoxArrowInRight, BsDownload, BsFileEarmarkExcel } from "react-icons/bs";
 import { Box, Checkbox, FormControlLabel, TextField, Typography } from '@mui/material';
 import Image from 'next/image';
 import Formato from '@/utils/Formato';
 import Cobertura_PDF from './Cobertura_PDF';
+import ExcelJS from 'exceljs';
 
 const { useGetPersonal, useGetPoliza } = gestionEmpleadorAPI;
 
@@ -24,6 +25,7 @@ export default function CoberturaPage() {
     const [personalPendiente, setPersonalPendiente] = useState<Persona[]>([]);
     const [personalCubierto, setPersonalCubierto] = useState<Persona[]>([]);
     const inputReference = useRef<HTMLInputElement | null>(null);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     const [presentadoA, setPresentadoA] = useState<string>('');
     const [abrirPDF, setAbrirPDF] = useState<boolean>(false);
@@ -59,12 +61,30 @@ export default function CoberturaPage() {
         // continuar con la descarga / abrir PDF
         setAbrirPDF(true);
     };
+    
     // Inicializa personalPendiente con los datos crudos cuando se cargan
     useEffect(() => {
         if (personalRawData && personalRawData.length > 0) {
             setPersonalPendiente(personalRawData);
         }
     }, [personalRawData]);
+
+    // Generar objeto de selección inicial para todas las filas
+    const initialRowSelectionPendiente = useMemo(() => {
+        const selection: Record<string, boolean> = {};
+        personalPendiente.forEach((_, index) => {
+            selection[index.toString()] = true;
+        });
+        return selection;
+    }, [personalPendiente]);
+
+    const initialRowSelectionCubierto = useMemo(() => {
+        const selection: Record<string, boolean> = {};
+        personalCubierto.forEach((_, index) => {
+            selection[index.toString()] = true;
+        });
+        return selection;
+    }, [personalCubierto]);
 
     const columns: ColumnDef<Persona>[] = useMemo(() => [
         {
@@ -155,7 +175,7 @@ export default function CoberturaPage() {
         // Crear el nuevo objeto Persona usando newCuil (que ya es number)
         const newPerson: Persona = {
             cuil: newCuil, 
-            nombreEmpleador: newNombre.trim(),
+            nombreEmpleador: newNombre.trim().toUpperCase(),
         };
 
         // Añadir a la lista de cubiertos
@@ -167,6 +187,78 @@ export default function CoberturaPage() {
     };
 
     const isAddButtonDisabled = newCuil === null || newNombre.trim() === '';
+
+    // Función para importar datos desde Excel
+    const handleImportExcel = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        try {
+            const workbook = new ExcelJS.Workbook();
+            const arrayBuffer = await file.arrayBuffer();
+            await workbook.xlsx.load(arrayBuffer);
+            
+            const worksheet = workbook.worksheets[0];
+            if (!worksheet) {
+                alert('El archivo Excel está vacío');
+                return;
+            }
+
+            const importedData: Persona[] = [];
+            const duplicados: number[] = [];
+
+            // Empezar desde la fila 2 para saltar encabezados
+            worksheet.eachRow((row, rowNumber) => {
+                if (rowNumber === 1) return; // Saltar encabezado
+
+                const cuilValue = row.getCell(1).value;
+                const nombreValue = row.getCell(2).value;
+
+                // Validar que haya datos
+                if (!cuilValue || !nombreValue) return;
+
+                const cuil = typeof cuilValue === 'number' ? cuilValue : parseInt(String(cuilValue).replace(/\D/g, ''), 10);
+                const nombre = String(nombreValue).trim().toUpperCase();
+
+                if (isNaN(cuil) || !nombre) return;
+
+                // Verificar duplicados
+                const isDuplicate = personalCubierto.some(p => p.cuil === cuil) || 
+                                  personalPendiente.some(p => p.cuil === cuil) ||
+                                  importedData.some(p => p.cuil === cuil);
+                
+                if (isDuplicate) {
+                    duplicados.push(cuil);
+                    return;
+                }
+
+                importedData.push({
+                    cuil,
+                    nombreEmpleador: nombre,
+                });
+            });
+
+            if (importedData.length > 0) {
+                setPersonalCubierto(prev => [...prev, ...importedData]);
+                alert(`Se importaron ${importedData.length} registros exitosamente.${duplicados.length > 0 ? `\n${duplicados.length} duplicados omitidos.` : ''}`);
+            } else {
+                alert('No se encontraron datos válidos en el archivo.');
+            }
+
+        } catch (error) {
+            console.error('Error al importar Excel:', error);
+            alert('Error al leer el archivo Excel. Asegúrese de que tenga el formato correcto (Columna 1: CUIL, Columna 2: Nombre).');
+        }
+
+        // Limpiar el input para permitir reimportar el mismo archivo
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
+    const handleImportClick = () => {
+        fileInputRef.current?.click();
+    };
 
     // Calcular valores formateados solo cuando polizaData esté disponible y el componente esté montado
     // Esto evita errores de hidratación al asegurar que los valores se calculen solo en el cliente
@@ -209,6 +301,7 @@ export default function CoberturaPage() {
                         size="mid"
                         isLoading={isPersonalLoading}
                         enableRowSelection={true}
+                        initialRowSelection={initialRowSelectionPendiente}
                         onRowSelectionChange={handleSelectionPendiente}
                         key={`pendiente-${isMounted ? personalPendiente.length : 0}`} 
                     />
@@ -231,6 +324,21 @@ export default function CoberturaPage() {
                     >
                     <BsBoxArrowInLeft style={{fontSize: "2.5rem"}} />QUITAR
                     </CustomButton>
+                    <CustomButton 
+                        color="secondary"
+                        onClick={handleImportClick}
+                        title="Importar personal desde archivo Excel"
+                        
+                    >
+                        IMPORTAR
+                    </CustomButton>
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".xlsx,.xls"
+                        onChange={handleImportExcel}
+                        style={{ display: 'none' }}
+                    />
                 </div>
 
                 {/* -------------------- TABLA DE PERSONAL CUBIERTO -------------------- */}
@@ -245,6 +353,7 @@ export default function CoberturaPage() {
                         size="mid"
                         isLoading={isPersonalLoading}
                         enableRowSelection={true}
+                        initialRowSelection={initialRowSelectionCubierto}
                         onRowSelectionChange={handleSelectionCubierto}
                         key={`cubierto-${isMounted ? personalCubierto.length : 0}`}
                     />
