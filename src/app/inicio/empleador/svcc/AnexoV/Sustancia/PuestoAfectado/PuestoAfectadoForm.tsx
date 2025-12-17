@@ -43,12 +43,13 @@ export const PuestoAfectadoForm: Form<PuestoAfectadoDTO> = ({
           name="puestoInterno"
           type="number"
           label="Puesto"
-          value={data.puestoInterno}
+          value={data.puestoInterno ?? ""}
           disabled={disabled.puestoInterno}
           onChange={({ target: { value } }) => onChange({ puestoInterno: Number(value) })}
           error={errors.puestoInterno}
           helperText={helpers.puestoInterno}
           slotProps={{
+            inputLabel: { shrink: data.puestoInterno != null },
             input: {
               endAdornment: (
                 <InputAdornment position="end">
@@ -116,7 +117,7 @@ export const PuestoAfectadoForm: Form<PuestoAfectadoDTO> = ({
         <TextField
           name="descripcionActividad"
           label="Actividad"
-          value={data.descripcionActividad}
+          value={data.descripcionActividad ?? ""}
           disabled={disabled.descripcionActividad}
           onChange={({ target: { value } }) => onChange({ descripcionActividad: value })}
           error={errors.descripcionActividad}
@@ -184,7 +185,7 @@ export const PuestoAfectadoForm: Form<PuestoAfectadoDTO> = ({
         <TextField
           name="descripcionEstudios"
           label="Descripcion estudios"
-          value={data.descripcionEstudios}
+          value={data.descripcionEstudios ?? ""}
           disabled={disabled.descripcionEstudios}
           onChange={({ target: { value } }) => onChange({ descripcionEstudios: value })}
           error={errors.descripcionEstudios}

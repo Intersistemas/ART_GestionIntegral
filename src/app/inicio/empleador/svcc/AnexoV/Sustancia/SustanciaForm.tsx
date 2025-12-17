@@ -24,6 +24,7 @@ import EstudioAmbientalForm from "./EstudioAmbiental/EstudioAmbientalForm";
 import EstudioBiologicoBrowse from "./EstudioBiologico/EstudioBiologicoBrowse";
 import EstudioBiologicoForm from "./EstudioBiologico/EstudioBiologicoForm";
 import { useSVCCPresentacionContext } from "../../context";
+import { useAnexoVContext } from "../context";
 
 type EditAction = "create" | "read" | "update" | "delete";
 type EditState<T extends object> = Omit<FormProps<T>, "onChange"> & {
@@ -50,6 +51,8 @@ export const SustanciaForm: Form<SustanciaDTO> = ({
   const [lookupEstablecimientos, setLookupEstablecimientos] = useState<boolean>(false);
 
   const { establecimientos } = useSVCCPresentacionContext();
+  const { establecimientosDeclarados } = useAnexoVContext();
+  const establecimientoDeclarado = establecimientosDeclarados.data.find(e => e.idEstablecimientoEmpresa === data.idEstablecimientoEmpresa);
 
   return (
     <SustanciaContextProvider idEstablecimientoEmpresa={data.idEstablecimientoEmpresa}>
@@ -59,12 +62,13 @@ export const SustanciaForm: Form<SustanciaDTO> = ({
             name="idEstablecimientoEmpresa"
             type="number"
             label="Establ. Empresa"
-            value={data.idEstablecimientoEmpresa}
+            value={data.idEstablecimientoEmpresa ?? ""}
             disabled={disabled.idEstablecimientoEmpresa}
             onChange={({ target: { value } }) => onChange({ idEstablecimientoEmpresa: Number(value) })}
             error={errors.idEstablecimientoEmpresa}
             helperText={helpers.idEstablecimientoEmpresa}
             slotProps={{
+              inputLabel: { shrink: data.idEstablecimientoEmpresa != null },
               input: {
                 endAdornment: (
                   <InputAdornment position="end">
@@ -160,7 +164,7 @@ export const SustanciaForm: Form<SustanciaDTO> = ({
           <TextField
             name="nombreComercial"
             label="Nombre comercial"
-            value={data.nombreComercial}
+            value={data.nombreComercial ?? ""}
             disabled={disabled.nombreComercial}
             onChange={({ target: { value } }) => onChange({ nombreComercial: value })}
             error={errors.nombreComercial}
@@ -173,11 +177,12 @@ export const SustanciaForm: Form<SustanciaDTO> = ({
             name="cantidadAnual"
             type="number"
             label="Cantidad anual"
-            value={data.cantidadAnual}
+            value={data.cantidadAnual ?? ""}
             disabled={disabled.cantidadAnual}
             onChange={({ target: { value } }) => onChange({ cantidadAnual: value ? Number(value) : undefined })}
             error={errors.cantidadAnual}
             helperText={helpers.cantidadAnual}
+            slotProps={{ inputLabel: { shrink: data.cantidadAnual != null }}}
             fullWidth
           />
         </Grid>
@@ -629,7 +634,26 @@ export const SustanciaForm: Form<SustanciaDTO> = ({
     }
   }
   function handlePuestoAfectadoOnChange(changes: DeepPartial<PuestoAfectadoDTO>) {
-    setEditPuestoAfectado((o) => ({ ...o, data: { ...o.data, ...changes } }));
+    setEditPuestoAfectado((o) => {
+      const edit = ({ ...o, data: { ...o.data }, errors: { ...o.errors }, helpers: { ...o.helpers } });
+      if ("puestoInterno" in changes) {
+        if (changes.puestoInterno) {
+          const ix = establecimientoDeclarado?.puestos?.findIndex((e) => e.interno === changes.puestoInterno) ?? -1;
+          if (ix < 0) {
+            edit.errors.puestoInterno = true;
+            edit.helpers.puestoInterno = "No existe el puesto en el establecimiento declarado";
+          } else {
+            delete edit.errors.puestoInterno;
+            delete edit.helpers.puestoInterno;
+          }
+        } else {
+          delete edit.errors.puestoInterno;
+          edit.helpers.puestoInterno = "Debe seleccionar un puesto del establecimiento declarado";
+        }
+      }
+      edit.data = { ...edit.data, ...changes };
+      return edit;
+    });
   }
   function handleEditPuestoAfectadoOnClose() { setEditPuestoAfectado({ data: {} }); }
   function handleEditPuestoAfectadoOnConfirm() {

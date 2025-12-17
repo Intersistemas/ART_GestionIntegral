@@ -9,6 +9,7 @@ import { Grid, Typography } from "@mui/material";
 import CustomButton from "@/utils/ui/button/CustomButton";
 import CustomModal from "@/utils/ui/form/CustomModal";
 import TrabajadorForm from "./TrabajadorForm";
+import { useAnexoVContext } from "../../AnexoV/context";
 
 const {
   useSVCCTrabajadorList,
@@ -24,7 +25,8 @@ type EditState = Omit<FormProps<TrabajadorDTO>, "onChange"> & {
 };
 export default function NominaHandler() {
   const [edit, setEdit] = useState<EditState>({ data: {} });
-  const { ultima: { data: presentacion }, } = useSVCCPresentacionContext();
+  const { ultima: { data: presentacion } } = useSVCCPresentacionContext();
+  const { establecimientosDeclarados } = useAnexoVContext();
   const [{ index, size }, setPage] = useState({ index: 0, size: 100 });
   const [data, setData] = useState<Data<TrabajadorDTO>>({ index, size, count: 0, pages: 0, data: [] });
   const { isLoading, isValidating, mutate } = useSVCCTrabajadorList(
@@ -109,7 +111,26 @@ export default function NominaHandler() {
     }
   }
   function handleOnChange(changes: DeepPartial<TrabajadorDTO>) {
-    setEdit((o) => ({ ...o, data: { ...o.data, ...changes } }));
+    setEdit((o) => {
+      const edit = ({ ...o, data: { ...o.data }, errors: { ...o.errors }, helpers: { ...o.helpers } });
+      if ("establecimientoDeclaradoInterno" in changes) {
+        if (changes.establecimientoDeclaradoInterno) {
+          const ix = establecimientosDeclarados.data?.findIndex((e) => e.interno === changes.establecimientoDeclaradoInterno) ?? -1;
+          if (ix < 0) {
+            edit.errors.establecimientoDeclaradoInterno = true;
+            edit.helpers.establecimientoDeclaradoInterno = "No existe el establecimiento declarado";
+          } else {
+            delete edit.errors.establecimientoDeclaradoInterno;
+            delete edit.helpers.establecimientoDeclaradoInterno;
+          }
+        } else {
+          delete edit.errors.establecimientoDeclaradoInterno;
+          edit.helpers.establecimientoDeclaradoInterno = "Debe seleccionar un establecimiento declarado";
+        }
+      }
+      edit.data = { ...edit.data, ...changes };
+      return edit;
+    });
   }
   function handleEditOnClose() { setEdit({ data: {} }); }
   function handleEditOnConfirm() {

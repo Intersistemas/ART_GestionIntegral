@@ -26,13 +26,13 @@ export const SectorForm: Form<SectorDTO> = ({
           name="ciiu"
           type="number"
           label="CIIU"
-          value={data.ciiu || ""}
+          value={data.ciiu ?? ""}
           disabled={disabled.ciiu}
           onChange={({ target: { value } }) => onChange({ ciiu: Number(value) })}
           error={errors.ciiu}
           helperText={helpers.ciiu}
           slotProps={{
-            inputLabel: { shrink: !!data.ciiu },
+            inputLabel: { shrink: data.ciiu != null },
             input: {
               endAdornment: (
                 <InputAdornment position="end">
@@ -97,7 +97,6 @@ export const SectorForm: Form<SectorDTO> = ({
           onChange={({ target: { value } }) => onChange({ nombre: value })}
           error={errors.nombre}
           helperText={helpers.nombre}
-          slotProps={{ inputLabel: { shrink: !!data.nombre } }}
           fullWidth
         />
       </Grid>

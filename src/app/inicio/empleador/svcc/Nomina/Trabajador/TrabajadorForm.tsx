@@ -13,6 +13,7 @@ import EstablecimientoDeclaradoBrowse from "../../Portada/EstablecimientoDeclara
 import ActividadBrowse from "./Actividad/ActividadBrowse";
 import ActividadForm from "./Actividad/ActividadForm";
 import { TrabajadorContextProvider } from "./context";
+import { useNominaContext } from "../context";
 
 type EditAction = "create" | "read" | "update" | "delete";
 type EditState<T extends object> = Omit<FormProps<T>, "onChange"> & {
@@ -35,6 +36,7 @@ export const TrabajadorForm: Form<TrabajadorDTO> = ({
 
   const { establecimientos } = useSVCCPresentacionContext();
   const { establecimientosDeclarados } = useAnexoVContext();
+  const { sustancias } = useNominaContext();
   const establecimientoDeclarado = establecimientosDeclarados.data.find(e => e.interno === data.establecimientoDeclaradoInterno);
 
   return (
@@ -57,7 +59,7 @@ export const TrabajadorForm: Form<TrabajadorDTO> = ({
             name="fechaIngreso"
             type="date"
             label="Fecha de ingreso"
-            value={data.fechaIngreso?.slice(0, 10)}
+            value={data.fechaIngreso?.slice(0, 10) ?? ""}
             disabled={disabled.fechaIngreso}
             onChange={({ target: { value } }) => onChange({ fechaIngreso: value })}
             error={errors.fechaIngreso}
@@ -71,12 +73,13 @@ export const TrabajadorForm: Form<TrabajadorDTO> = ({
             name="establecimientoDeclaradoInterno"
             type="number"
             label="Establ. Declarado"
-            value={data.establecimientoDeclaradoInterno}
+            value={data.establecimientoDeclaradoInterno ?? ""}
             disabled={disabled.establecimientoDeclaradoInterno}
             onChange={({ target: { value } }) => onChange({ establecimientoDeclaradoInterno: Number(value) })}
             error={errors.establecimientoDeclaradoInterno}
             helperText={helpers.establecimientoDeclaradoInterno}
             slotProps={{
+              inputLabel: { shrink: data.establecimientoDeclaradoInterno != null },
               input: {
                 endAdornment: (
                   <InputAdornment position="end">
@@ -205,7 +208,56 @@ export const TrabajadorForm: Form<TrabajadorDTO> = ({
     }
   }
   function handleActividadOnChange(changes: DeepPartial<ActividadDTO>) {
-    setEditActividad((o) => ({ ...o, data: { ...o.data, ...changes } }));
+    setEditActividad((o) => {
+      const edit = ({ ...o, data: { ...o.data }, errors: { ...o.errors }, helpers: { ...o.helpers } });
+      if ("puestoInterno" in changes) {
+        if (changes.puestoInterno) {
+          const ix = establecimientoDeclarado?.puestos?.findIndex((e) => e.interno === changes.puestoInterno) ?? -1;
+          if (ix < 0) {
+            edit.errors.puestoInterno = true;
+            edit.helpers.puestoInterno = "No existe el puesto en el establecimiento declarado";
+          } else {
+            delete edit.errors.puestoInterno;
+            delete edit.helpers.puestoInterno;
+          }
+        } else {
+          delete edit.errors.puestoInterno;
+          edit.helpers.puestoInterno = "Debe seleccionar un puesto del establecimiento declarado";
+        }
+      }
+      if ("sectorInterno" in changes) {
+        if (changes.sectorInterno) {
+          const ix = establecimientoDeclarado?.sectores?.findIndex((e) => e.interno === changes.sectorInterno) ?? -1;
+          if (ix < 0) {
+            edit.errors.sectorInterno = true;
+            edit.helpers.sectorInterno = "No existe el sector en el establecimiento declarado";
+          } else {
+            delete edit.errors.sectorInterno;
+            delete edit.helpers.sectorInterno;
+          }
+        } else {
+          delete edit.errors.sectorInterno;
+          edit.helpers.sectorInterno = "Debe seleccionar un sector del establecimiento declarado";
+        }
+      }
+      if ("sustanciaInterno" in changes) {
+        if (changes.sustanciaInterno) {
+          const ix = sustancias.data.findIndex((e) => e.interno === changes.sustanciaInterno) ?? -1;
+          if (ix < 0) {
+            edit.errors.sustanciaInterno = true;
+            edit.helpers.sustanciaInterno = "No existe la sustancia declarada";
+          } else {
+            delete edit.errors.sustanciaInterno;
+            delete edit.helpers.sustanciaInterno;
+          }
+        } else {
+          delete edit.errors.sustanciaInterno;
+          edit.helpers.sustanciaInterno = "Debe seleccionar una sustancia declarada";
+        }
+      }
+      edit.data = { ...edit.data, ...changes };
+      return edit;
+    });
   }
   function handleEditActividadOnClose() { setEditActividad({ data: {} }); }
   function handleEditActividadOnConfirm() {

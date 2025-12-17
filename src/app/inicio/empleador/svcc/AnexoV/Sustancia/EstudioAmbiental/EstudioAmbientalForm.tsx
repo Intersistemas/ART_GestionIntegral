@@ -16,11 +16,12 @@ export const EstudioAmbientalForm: Form<EstudioAmbientalDTO> = ({
         name="cantidadFrecuencia"
         type="number"
         label="Cantidad frecuencia"
-        value={data.cantidadFrecuencia}
+        value={data.cantidadFrecuencia ?? ""}
         disabled={disabled.cantidadFrecuencia}
         onChange={({ target: { value } }) => onChange({ cantidadFrecuencia: Number(value) })}
         error={errors.cantidadFrecuencia}
         helperText={helpers.cantidadFrecuencia}
+        slotProps={{ inputLabel: { shrink: data.cantidadFrecuencia != null }}}
         fullWidth
       />
     </Grid>
@@ -55,7 +56,7 @@ export const EstudioAmbientalForm: Form<EstudioAmbientalDTO> = ({
       <TextField
         name="metodologiaEmpleada"
         label="Metodologia empleada"
-        value={data.metodologiaEmpleada}
+        value={data.metodologiaEmpleada ?? ""}
         disabled={disabled.metodologiaEmpleada}
         onChange={({ target: { value } }) => onChange({ metodologiaEmpleada: value })}
         error={errors.metodologiaEmpleada}

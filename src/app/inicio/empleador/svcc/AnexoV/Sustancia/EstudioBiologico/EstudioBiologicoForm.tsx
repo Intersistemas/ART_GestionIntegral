@@ -16,11 +16,12 @@ export const EstudioBiologicoForm: Form<EstudioBiologicoDTO> = ({
         name="cantidadFrecuencia"
         type="number"
         label="Cantidad frecuencia"
-        value={data.cantidadFrecuencia}
+        value={data.cantidadFrecuencia ?? ""}
         disabled={disabled.cantidadFrecuencia}
         onChange={({ target: { value } }) => onChange({ cantidadFrecuencia: Number(value) })}
         error={errors.cantidadFrecuencia}
         helperText={helpers.cantidadFrecuencia}
+        slotProps={{ inputLabel: { shrink: data.cantidadFrecuencia != null }}}
         fullWidth
       />
     </Grid>
@@ -55,7 +56,7 @@ export const EstudioBiologicoForm: Form<EstudioBiologicoDTO> = ({
       <TextField
         name="analisisEstudiosComplementacion"
         label="Analisis estudios complementacion"
-        value={data.analisisEstudiosComplementacion}
+        value={data.analisisEstudiosComplementacion ?? ""}
         disabled={disabled.analisisEstudiosComplementacion}
         onChange={({ target: { value } }) => onChange({ analisisEstudiosComplementacion: value })}
         error={errors.analisisEstudiosComplementacion}
