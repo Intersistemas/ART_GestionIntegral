@@ -10,10 +10,10 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 
-import Formato from '../../../../../utils/Formato';
-import CustomButton from '../../../../../utils/ui/button/CustomButton';
-import DataTableImport from '../../../../../utils/ui/table/DataTable';
-import CustomModal from '../../../../../utils/ui/form/CustomModal';
+import Formato from '@/utils/Formato';
+import CustomButton from '@/utils/ui/button/CustomButton';
+import DataTableImport from '@/utils/ui/table/DataTable';
+import CustomModal from '@/utils/ui/form/CustomModal';
 import CustomModalMessage from '@/utils/ui/message/CustomModalMessage';
 import ArtAPI from '@/data/artAPI';
 import styles from '../FormulariosRAR.module.css';
@@ -476,10 +476,6 @@ React.useEffect(() => {
 }, [replicaDe, esModoReplicaFormulario]);
 
 
-
-
-  
-
   React.useEffect(() => {
     let cancel = false;
     (async () => {
@@ -496,8 +492,6 @@ React.useEffect(() => {
           }
           return;
         }
-
-        console.log(' Cargando selects para CUIT:', cuitParaUsar);
 
         // Establecimientos
         const url = `http://arttest.intersistemas.ar:8302/api/Establecimientos/Empresa/${cuitParaUsar}`;
@@ -1111,11 +1105,7 @@ React.useEffect(() => {
           </div>
 
           {/* SECCIÓN 1: SELECTOR DE ESTABLECIMIENTO */}
-          <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '5px', marginBottom: '20px' }}>
-            <h4 style={{ margin: '0 0 15px 0', color: '#495057' }}>
-              Selección de Establecimiento
-              <span style={{ color: '#d32f2f', fontSize: '16px' }}>*</span>
-            </h4>
+
             <div className={styles.modalRow}>
               <FormControl fullWidth required className={styles.flex1}>
                 <InputLabel>Establecimiento</InputLabel>
@@ -1150,33 +1140,8 @@ React.useEffect(() => {
                 </Select>
               </FormControl>
             </div>
-          </div>
 
           {/* SECCIÓN 2: CANTIDADES DE TRABAJADORES */}
-          <div style={{
-            background: establecimientoSeleccionadoValido ? '#f8f9fa' : '#f5f5f5',
-            padding: '15px',
-            borderRadius: '5px',
-            marginBottom: '20px',
-            opacity: establecimientoSeleccionadoValido ? 1 : 0.6
-          }}>
-            <h4 style={{
-              margin: '0 0 15px 0',
-              color: establecimientoSeleccionadoValido ? '#495057' : '#9e9e9e'
-            }}>
-              Cantidades de Trabajadores
-              <span style={{ color: '#d32f2f', fontSize: '16px' }}>*</span>
-              {!establecimientoSeleccionadoValido && (
-                <span style={{ fontSize: '14px', fontWeight: 'normal', marginLeft: '10px' }}>
-                  (Seleccioná primero un establecimiento)
-                </span>
-              )}
-              {establecimientoSeleccionadoValido && (
-                <span style={{ fontSize: '14px', fontWeight: 'normal', marginLeft: '10px' }}>
-                  (Requerido para habilitar datos del trabajador)
-                </span>
-              )}
-            </h4>
             <div className={styles.modalRow}>
               <TextField
                 label="Cantidad de Trabajadores Expuestos"
@@ -1210,7 +1175,6 @@ React.useEffect(() => {
                 <strong>Total de Trabajadores: {(Number(cantExpuestos) || 0) + (Number(cantNoExpuestos) || 0)}</strong>
               </div>
             )}
-          </div>
 
           {/* SECCIÓN 3: DATOS DEL TRABAJADOR */}
           <div style={{

@@ -5,10 +5,10 @@ import React from 'react';
 import { Button, ButtonProps } from '@mui/material';
 import styles from './CustomButton.module.css';
 
-interface CustomButtonProps extends Omit<ButtonProps, 'classes' | 'size' | 'fullWidth'> {
+interface CustomButtonProps extends Omit<ButtonProps, 'classes' | 'size' | 'fullWidth' | 'color'> {
   children: React.ReactNode;
   variant?: 'contained' | 'outlined' | 'text';
-  color?: 'primary' | 'secondary' | 'error' ;
+  color?: 'primary' | 'secondary' | 'error' | 'white';
   isLoading?: boolean;
   width?: string;
   icon?: React.ReactNode;
@@ -38,6 +38,7 @@ const CustomButton: React.FC<CustomButtonProps> = ({
     primary: styles.primary,
     secondary: styles.secondary,
     error: styles.error,
+    white: styles.white,
   };
   
   const baseColorClass = colorClass[color] || styles.primary; 
