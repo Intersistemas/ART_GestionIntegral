@@ -12,11 +12,12 @@ const TrabajadorBrowse = Browse<TrabajadorDTO>(
     return [
       { accessorKey: "cuil", header: "CUIL", cell({ getValue }) { return Formato.CUIP(getValue<number>()) } },
       {
-        accessorKey: "establecimientoDeclaradoInterno",
+        accessorKey: "idEstablecimientoEmpresa",
         header: "Establ. Empresa - Actividad",
         cell({ getValue }) {
-          const establecimiento = establecimientosDeclarados.data?.find(e => e.interno === getValue<number>());
-          const empresa = establecimiento?.idEstablecimientoEmpresa ? establecimientos[establecimiento?.idEstablecimientoEmpresa] : undefined;
+          const value = getValue<number | undefined>();
+          const establecimiento = establecimientosDeclarados.data?.find(e => e.idEstablecimientoEmpresa === value);
+          const empresa = value ? establecimientos[value] : undefined;
           return [empresa, establecimiento?.descripcionActividad].filter(r => r).join(" - ");
         },
       },

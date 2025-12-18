@@ -218,7 +218,7 @@ export type ActividadDTO = {
 export type TrabajadorDTO = {
   interno?: number;
   cuil?: number;
-  establecimientoDeclaradoInterno?: number;
+  idEstablecimientoEmpresa?: number;
   fechaIngreso?: string;
   actividades?: ActividadDTO[];
 }

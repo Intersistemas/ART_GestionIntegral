@@ -1,5 +1,7 @@
 import { createContext, ReactNode, useContext } from "react";
-import gestionEmpleadorAPI, { EstablecimientoDeclaradoDTO } from "@/data/gestionEmpleadorAPI";
+import { useSVCCPresentacionContext } from "../../context";
+import { EstablecimientoVm } from "@/data/artAPI";
+import { EstablecimientoDeclaradoDTO } from "@/data/gestionEmpleadorAPI";
 import { useAnexoVContext } from "../../AnexoV/context";
 
 type TrabajadorContextType = {
@@ -9,13 +11,15 @@ type TrabajadorContextType = {
     data?: EstablecimientoDeclaradoDTO;
     error?: any;
   },
+  establecimiento: {
+    isLoading: boolean;
+    isValidating: boolean;
+    data?: EstablecimientoVm;
+    error?: any;
+  },
 }
 
 const TrabajadorContext = createContext<TrabajadorContextType | undefined>(undefined);
-
-const {
-  useSVCCEstablecimientoDeclaradoList,
-} = gestionEmpleadorAPI;
 
 export function useTrabajadorContext() {
   const context = useContext(TrabajadorContext);
@@ -24,14 +28,16 @@ export function useTrabajadorContext() {
 }
 
 export function TrabajadorContextProvider({
-  establecimientoDeclaradoInterno,
+  idEstablecimientoEmpresa,
   children,
 }: {
-  establecimientoDeclaradoInterno?: number;
+  idEstablecimientoEmpresa?: number;
   children: ReactNode;
 }) {
+  const { establecimientos } = useSVCCPresentacionContext();
   const { establecimientosDeclarados } = useAnexoVContext();
-  const establecimientoDeclarado = establecimientosDeclarados.data?.find(e => e.interno === establecimientoDeclaradoInterno);
+  const establecimiento = establecimientos.data?.find(e => e.codEstabEmpresa === idEstablecimientoEmpresa);
+  const establecimientoDeclarado = establecimientosDeclarados.data?.find(e => e.idEstablecimientoEmpresa === idEstablecimientoEmpresa);
 
   return (
     <TrabajadorContext.Provider
@@ -41,6 +47,12 @@ export function TrabajadorContextProvider({
           isValidating: establecimientosDeclarados.isValidating,
           data: establecimientoDeclarado,
           error: establecimientosDeclarados.error,
+        },
+        establecimiento: {
+          isLoading: establecimientos.isLoading,
+          isValidating: establecimientos.isValidating,
+          data: establecimiento,
+          error: establecimientos.error,
         },
       }}
     >

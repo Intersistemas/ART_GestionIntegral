@@ -9,7 +9,6 @@ import { Grid, Typography } from "@mui/material";
 import CustomButton from "@/utils/ui/button/CustomButton";
 import CustomModal from "@/utils/ui/form/CustomModal";
 import TrabajadorForm from "./TrabajadorForm";
-import { useAnexoVContext } from "../../AnexoV/context";
 
 const {
   useSVCCTrabajadorList,
@@ -25,8 +24,7 @@ type EditState = Omit<FormProps<TrabajadorDTO>, "onChange"> & {
 };
 export default function NominaHandler() {
   const [edit, setEdit] = useState<EditState>({ data: {} });
-  const { ultima: { data: presentacion } } = useSVCCPresentacionContext();
-  const { establecimientosDeclarados } = useAnexoVContext();
+  const { ultima, establecimientos } = useSVCCPresentacionContext();
   const [{ index, size }, setPage] = useState({ index: 0, size: 100 });
   const [data, setData] = useState<Data<TrabajadorDTO>>({ index, size, count: 0, pages: 0, data: [] });
   const { isLoading, isValidating, mutate } = useSVCCTrabajadorList(
@@ -43,7 +41,7 @@ export default function NominaHandler() {
   const { trigger: triggerDelete, isMutating: isDeleting } = useSVCCTrabajadorDelete(deleteParams, { onSuccess() { mutate(); } });
   const isWorking = isCreating || isUpdating || isDeleting || isLoading || isValidating;
 
-  const readonly = presentacion?.presentacionFecha != null;
+  const readonly = ultima.data?.presentacionFecha != null;
 
   return (
     <>
@@ -113,19 +111,19 @@ export default function NominaHandler() {
   function handleOnChange(changes: DeepPartial<TrabajadorDTO>) {
     setEdit((o) => {
       const edit = ({ ...o, data: { ...o.data }, errors: { ...o.errors }, helpers: { ...o.helpers } });
-      if ("establecimientoDeclaradoInterno" in changes) {
-        if (changes.establecimientoDeclaradoInterno) {
-          const ix = establecimientosDeclarados.data?.findIndex((e) => e.interno === changes.establecimientoDeclaradoInterno) ?? -1;
+      if ("idEstablecimientoEmpresa" in changes) {
+        if (changes.idEstablecimientoEmpresa) {
+          const ix = establecimientos.data?.findIndex((e) => e.codEstabEmpresa === changes.idEstablecimientoEmpresa) ?? -1;
           if (ix < 0) {
-            edit.errors.establecimientoDeclaradoInterno = true;
-            edit.helpers.establecimientoDeclaradoInterno = "No existe el establecimiento declarado";
+            edit.errors.idEstablecimientoEmpresa = true;
+            edit.helpers.idEstablecimientoEmpresa = "No existe el establecimiento";
           } else {
-            delete edit.errors.establecimientoDeclaradoInterno;
-            delete edit.helpers.establecimientoDeclaradoInterno;
+            delete edit.errors.idEstablecimientoEmpresa;
+            delete edit.helpers.idEstablecimientoEmpresa;
           }
         } else {
-          delete edit.errors.establecimientoDeclaradoInterno;
-          edit.helpers.establecimientoDeclaradoInterno = "Debe seleccionar un establecimiento declarado";
+          delete edit.errors.idEstablecimientoEmpresa;
+          edit.helpers.idEstablecimientoEmpresa = "Debe seleccionar un establecimiento";
         }
       }
       edit.data = { ...edit.data, ...changes };
@@ -192,7 +190,7 @@ export default function NominaHandler() {
         ? {
           interno: true,
           cuil: true,
-          establecimientoDeclaradoInterno: true,
+          idEstablecimientoEmpresa: true,
           fechaIngreso: true,
           actividades: {},
         }
