@@ -24,7 +24,7 @@ type EditState = Omit<FormProps<TrabajadorDTO>, "onChange"> & {
 };
 export default function NominaHandler() {
   const [edit, setEdit] = useState<EditState>({ data: {} });
-  const { ultima: { data: presentacion }, } = useSVCCPresentacionContext();
+  const { ultima, establecimientos } = useSVCCPresentacionContext();
   const [{ index, size }, setPage] = useState({ index: 0, size: 100 });
   const [data, setData] = useState<Data<TrabajadorDTO>>({ index, size, count: 0, pages: 0, data: [] });
   const { isLoading, isValidating, mutate } = useSVCCTrabajadorList(
@@ -41,7 +41,7 @@ export default function NominaHandler() {
   const { trigger: triggerDelete, isMutating: isDeleting } = useSVCCTrabajadorDelete(deleteParams, { onSuccess() { mutate(); } });
   const isWorking = isCreating || isUpdating || isDeleting || isLoading || isValidating;
 
-  const readonly = presentacion?.presentacionFecha != null;
+  const readonly = ultima.data?.presentacionFecha != null;
 
   return (
     <>
@@ -109,7 +109,26 @@ export default function NominaHandler() {
     }
   }
   function handleOnChange(changes: DeepPartial<TrabajadorDTO>) {
-    setEdit((o) => ({ ...o, data: { ...o.data, ...changes } }));
+    setEdit((o) => {
+      const edit = ({ ...o, data: { ...o.data }, errors: { ...o.errors }, helpers: { ...o.helpers } });
+      if ("idEstablecimientoEmpresa" in changes) {
+        if (changes.idEstablecimientoEmpresa) {
+          const ix = establecimientos.data?.findIndex((e) => e.codEstabEmpresa === changes.idEstablecimientoEmpresa) ?? -1;
+          if (ix < 0) {
+            edit.errors.idEstablecimientoEmpresa = true;
+            edit.helpers.idEstablecimientoEmpresa = "No existe el establecimiento";
+          } else {
+            delete edit.errors.idEstablecimientoEmpresa;
+            delete edit.helpers.idEstablecimientoEmpresa;
+          }
+        } else {
+          delete edit.errors.idEstablecimientoEmpresa;
+          edit.helpers.idEstablecimientoEmpresa = "Debe seleccionar un establecimiento";
+        }
+      }
+      edit.data = { ...edit.data, ...changes };
+      return edit;
+    });
   }
   function handleEditOnClose() { setEdit({ data: {} }); }
   function handleEditOnConfirm() {
@@ -171,7 +190,7 @@ export default function NominaHandler() {
         ? {
           interno: true,
           cuil: true,
-          establecimientoDeclaradoInterno: true,
+          idEstablecimientoEmpresa: true,
           fechaIngreso: true,
           actividades: {},
         }

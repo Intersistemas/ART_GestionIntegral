@@ -28,7 +28,7 @@ export const ResponsableForm: Form<ResponsableDTO> = ({
       <TextField
         name="matricula"
         label="Matricula"
-        value={data.matricula}
+        value={data.matricula ?? ""}
         disabled={disabled.matricula}
         onChange={({ target: { value } }) => onChange({ matricula: value })}
         error={errors.matricula}
@@ -41,11 +41,12 @@ export const ResponsableForm: Form<ResponsableDTO> = ({
         name="cantHorasAsignadas"
         type="number"
         label="Cant. Hr. asignadas"
-        value={data.cantHorasAsignadas}
+        value={data.cantHorasAsignadas ?? ""}
         disabled={disabled.cantHorasAsignadas}
         onChange={({ target: { value } }) => onChange({ cantHorasAsignadas: Number(value) })}
         error={errors.cantHorasAsignadas}
         helperText={helpers.cantHorasAsignadas}
+        slotProps={{ inputLabel: { shrink: data.cantHorasAsignadas != null }}}
         fullWidth
       />
     </Grid>

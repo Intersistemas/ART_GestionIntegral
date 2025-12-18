@@ -27,7 +27,7 @@ export const EncargadoProteccionForm: Form<EncargadoProteccionDTO> = ({
       <TextField
         name="matriculaProfesional"
         label="Matricula profesional"
-        value={data.matriculaProfesional}
+        value={data.matriculaProfesional ?? ""}
         disabled={disabled.matriculaProfesional}
         onChange={({ target: { value } }) => onChange({ matriculaProfesional: value })}
         error={errors.matriculaProfesional}
@@ -39,7 +39,7 @@ export const EncargadoProteccionForm: Form<EncargadoProteccionDTO> = ({
       <TextField
         name="nroHabilitacion"
         label="Nro. habilitacion"
-        value={data.nroHabilitacion}
+        value={data.nroHabilitacion ?? ""}
         disabled={disabled.nroHabilitacion}
         onChange={({ target: { value } }) => onChange({ nroHabilitacion: value })}
         error={errors.nroHabilitacion}
@@ -51,7 +51,7 @@ export const EncargadoProteccionForm: Form<EncargadoProteccionDTO> = ({
       <TextField
         name="tituloProfesional"
         label="Titulo profesional"
-        value={data.tituloProfesional}
+        value={data.tituloProfesional ?? ""}
         disabled={disabled.tituloProfesional}
         onChange={({ target: { value } }) => onChange({ tituloProfesional: value })}
         error={errors.tituloProfesional}

@@ -29,7 +29,7 @@ export const ResponsableInstalacionForm: Form<ResponsableInstalacionDTO> = ({
         name="fechaExpedicion"
         type="date"
         label="Fecha expedicion"
-        value={data.fechaExpedicion?.slice(0, 10)}
+        value={data.fechaExpedicion?.slice(0, 10) ?? ""}
         disabled={disabled.fechaExpedicion}
         onChange={({ target: { value } }) => onChange({ fechaExpedicion: value })}
         error={errors.fechaExpedicion}
@@ -43,7 +43,7 @@ export const ResponsableInstalacionForm: Form<ResponsableInstalacionDTO> = ({
         name="fechaVencimiento"
         type="date"
         label="Fecha vencimiento"
-        value={data.fechaVencimiento?.slice(0, 10)}
+        value={data.fechaVencimiento?.slice(0, 10) ?? ""}
         disabled={disabled.fechaVencimiento}
         onChange={({ target: { value } }) => onChange({ fechaVencimiento: value })}
         error={errors.fechaVencimiento}
@@ -56,7 +56,7 @@ export const ResponsableInstalacionForm: Form<ResponsableInstalacionDTO> = ({
       <TextField
         name="nroLicenciaHabilitante"
         label="Nro. licencia habilitante"
-        value={data.nroLicenciaHabilitante}
+        value={data.nroLicenciaHabilitante ?? ""}
         disabled={disabled.nroLicenciaHabilitante}
         onChange={({ target: { value } }) => onChange({ nroLicenciaHabilitante: value })}
         error={errors.nroLicenciaHabilitante}
@@ -68,7 +68,7 @@ export const ResponsableInstalacionForm: Form<ResponsableInstalacionDTO> = ({
       <TextField
         name="domicilioHabilitacion"
         label="Domicilio habilitacion"
-        value={data.domicilioHabilitacion}
+        value={data.domicilioHabilitacion ?? ""}
         disabled={disabled.domicilioHabilitacion}
         onChange={({ target: { value } }) => onChange({ domicilioHabilitacion: value })}
         error={errors.domicilioHabilitacion}

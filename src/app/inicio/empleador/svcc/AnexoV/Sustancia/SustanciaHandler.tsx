@@ -26,7 +26,7 @@ type EditState = Omit<FormProps<SustanciaDTO>, "onChange"> & {
 };
 export default function SustanciaHandler() {
   const [edit, setEdit] = useState<EditState>({ data: {} });
-  const { ultima: { data: presentacion }, } = useSVCCPresentacionContext();
+  const { ultima: { data: presentacion }, establecimientos } = useSVCCPresentacionContext();
   const [{ index, size }, setPage] = useState({ index: 0, size: 100 });
   const [data, setData] = useState<Data<SustanciaDTO>>({ index, size, count: 0, pages: 0, data: [] });
   const { isLoading, isValidating, mutate } = useSVCCSustanciaList(
@@ -110,7 +110,26 @@ export default function SustanciaHandler() {
     }
   }
   function handleOnChange(changes: DeepPartial<SustanciaDTO>) {
-    setEdit((o) => ({ ...o, data: { ...o.data, ...changes } }));
+    setEdit((o) => {
+      const edit = ({ ...o, data: { ...o.data }, errors: { ...o.errors }, helpers: { ...o.helpers } });
+      if ("idEstablecimientoEmpresa" in changes) {
+        if (changes.idEstablecimientoEmpresa) {
+          const ix = establecimientos.data?.findIndex((e) => e.codEstabEmpresa === changes.idEstablecimientoEmpresa) ?? -1;
+          if (ix < 0) {
+            edit.errors.idEstablecimientoEmpresa = true;
+            edit.helpers.idEstablecimientoEmpresa = "No existe el establecimiento";
+          } else {
+            delete edit.errors.idEstablecimientoEmpresa;
+            delete edit.helpers.idEstablecimientoEmpresa;
+          }
+        } else {
+          delete edit.errors.idEstablecimientoEmpresa;
+          edit.helpers.idEstablecimientoEmpresa = "Debe seleccionar un establecimiento";
+        }
+      }
+      edit.data = { ...edit.data, ...changes };
+      return edit;
+    });
   }
   function handleEditOnClose() { setEdit({ data: {} }); }
   function handleEditOnConfirm() {

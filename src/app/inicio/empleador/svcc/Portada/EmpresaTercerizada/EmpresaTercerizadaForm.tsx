@@ -29,12 +29,13 @@ export const EmpresaTercerizadaForm: Form<EmpresaTercerizadaDTO> = ({
           name="idEstablecimientoEmpresa"
           type="number"
           label="Establ. Empresa"
-          value={data.idEstablecimientoEmpresa}
+          value={data.idEstablecimientoEmpresa ?? ""}
           disabled={disabled.idEstablecimientoEmpresa}
           onChange={({ target: { value } }) => onChange({ idEstablecimientoEmpresa: Number(value) })}
           error={errors.idEstablecimientoEmpresa}
           helperText={helpers.idEstablecimientoEmpresa}
           slotProps={{
+            inputLabel: { shrink: data.idEstablecimientoEmpresa != null },
             input: {
               endAdornment: (
                 <InputAdornment position="end">
@@ -117,12 +118,13 @@ export const EmpresaTercerizadaForm: Form<EmpresaTercerizadaDTO> = ({
           name="ciiu"
           type="number"
           label="CIIU"
-          value={data.ciiu || ""}
+          value={data.ciiu ?? ""}
           disabled={disabled.ciiu}
           onChange={({ target: { value } }) => onChange({ ciiu: Number(value) })}
           error={errors.ciiu}
           helperText={helpers.ciiu}
           slotProps={{
+            inputLabel: { shrink: data.ciiu != null },
             input: {
               endAdornment: (
                 <InputAdornment position="end">
@@ -183,11 +185,12 @@ export const EmpresaTercerizadaForm: Form<EmpresaTercerizadaDTO> = ({
           name="cantidadTrabajadores"
           type="number"
           label="Cant. trabajadores"
-          value={data.cantidadTrabajadores}
+          value={data.cantidadTrabajadores ?? ""}
           disabled={disabled.cantidadTrabajadores}
           onChange={({ target: { value } }) => onChange({ cantidadTrabajadores: value ? Number(value) : undefined })}
           error={errors.cantidadTrabajadores}
           helperText={helpers.cantidadTrabajadores}
+          slotProps={{ inputLabel: { shrink: data.cantidadTrabajadores != null }}}
           fullWidth
         />
       </Grid>

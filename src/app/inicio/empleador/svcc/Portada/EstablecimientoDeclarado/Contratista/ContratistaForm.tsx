@@ -39,13 +39,13 @@ export const ContratistaForm: Form<ContratistaDTO> = ({
           name="ciiu"
           type="number"
           label="CIIU"
-          value={data.ciiu || ""}
+          value={data.ciiu ?? ""}
           disabled={disabled.ciiu}
           onChange={({ target: { value } }) => onChange({ ciiu: Number(value) })}
           error={errors.ciiu}
           helperText={helpers.ciiu}
           slotProps={{
-            inputLabel: { shrink: !!data.ciiu },
+            inputLabel: { shrink: data.ciiu != null },
             input: {
               endAdornment: (
                 <InputAdornment position="end">
@@ -106,11 +106,12 @@ export const ContratistaForm: Form<ContratistaDTO> = ({
           name="cantidadTrabajadores"
           type="number"
           label="Cant. trabajadores"
-          value={data.cantidadTrabajadores}
+          value={data.cantidadTrabajadores ?? ""}
           disabled={disabled.cantidadTrabajadores}
           onChange={({ target: { value } }) => onChange({ cantidadTrabajadores: Number(value) })}
           error={errors.cantidadTrabajadores}
           helperText={helpers.cantidadTrabajadores}
+          slotProps={{ inputLabel: { shrink: data.cantidadTrabajadores != null }}}
           fullWidth
         />
       </Grid>

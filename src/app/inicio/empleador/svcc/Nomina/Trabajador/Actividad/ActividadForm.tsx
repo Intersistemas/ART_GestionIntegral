@@ -55,13 +55,13 @@ export const ActividadForm: Form<ActividadDTO> = ({
           name="puestoInterno"
           type="number"
           label="Puesto declarado"
-          value={data.puestoInterno}
+          value={data.puestoInterno ?? ""}
           disabled={disabled.puestoInterno}
           onChange={({ target: { value } }) => onChange({ puestoInterno: Number(value) })}
           error={errors.puestoInterno}
           helperText={helpers.puestoInterno}
           slotProps={{
-            inputLabel: { shrink: !!data.puestoInterno },
+            inputLabel: { shrink: data.puestoInterno != null },
             input: {
               endAdornment: (
                 <InputAdornment position="end">
@@ -130,13 +130,13 @@ export const ActividadForm: Form<ActividadDTO> = ({
           name="sectorInterno"
           type="number"
           label="Sector declarado"
-          value={data.sectorInterno}
+          value={data.sectorInterno ?? ""}
           disabled={disabled.sectorInterno}
           onChange={({ target: { value } }) => onChange({ sectorInterno: Number(value) })}
           error={errors.sectorInterno}
           helperText={helpers.sectorInterno}
           slotProps={{
-            inputLabel: { shrink: !!data.sectorInterno },
+            inputLabel: { shrink: data.sectorInterno != null },
             input: {
               endAdornment: (
                 <InputAdornment position="end">
@@ -205,13 +205,13 @@ export const ActividadForm: Form<ActividadDTO> = ({
           name="sustanciaInterno"
           type="number"
           label="Sustancia declarada"
-          value={data.sustanciaInterno}
+          value={data.sustanciaInterno ?? ""}
           disabled={disabled.sustanciaInterno}
           onChange={({ target: { value } }) => onChange({ sustanciaInterno: Number(value) })}
           error={errors.sustanciaInterno}
           helperText={helpers.sustanciaInterno}
           slotProps={{
-            inputLabel: { shrink: !!data.sustanciaInterno },
+            inputLabel: { shrink: data.sustanciaInterno != null },
             input: {
               endAdornment: (
                 <InputAdornment position="end">
@@ -294,7 +294,7 @@ export const ActividadForm: Form<ActividadDTO> = ({
           name="fechaInicioExposicion"
           type="date"
           label="Fecha inicio exposicion"
-          value={data.fechaInicioExposicion?.slice(0, 10)}
+          value={data.fechaInicioExposicion?.slice(0, 10) ?? ""}
           disabled={disabled.fechaInicioExposicion}
           onChange={({ target: { value } }) => onChange({ fechaInicioExposicion: value })}
           error={errors.fechaInicioExposicion}
@@ -308,7 +308,7 @@ export const ActividadForm: Form<ActividadDTO> = ({
           name="fechaFinExposicion"
           type="date"
           label="Fecha fin exposicion"
-          value={data.fechaFinExposicion?.slice(0, 10)}
+          value={data.fechaFinExposicion?.slice(0, 10) ?? ""}
           disabled={disabled.fechaFinExposicion}
           onChange={({ target: { value } }) => onChange({ fechaFinExposicion: value })}
           error={errors.fechaFinExposicion}

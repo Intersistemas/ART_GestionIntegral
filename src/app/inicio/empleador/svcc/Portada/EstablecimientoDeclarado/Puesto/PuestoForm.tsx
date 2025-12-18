@@ -26,13 +26,13 @@ export const PuestoForm: Form<PuestoDTO> = ({
           name="ciuo"
           type="number"
           label="CIUO"
-          value={data.ciuo || ""}
+          value={data.ciuo ?? ""}
           disabled={disabled.ciuo}
           onChange={({ target: { value } }) => onChange({ ciuo: Number(value) })}
           error={errors.ciuo}
           helperText={helpers.ciuo}
           slotProps={{
-            inputLabel: { shrink: !!data.ciuo },
+            inputLabel: { shrink: data.ciuo != null },
             input: {
               endAdornment: (
                 <InputAdornment position="end">
@@ -97,7 +97,6 @@ export const PuestoForm: Form<PuestoDTO> = ({
           onChange={({ target: { value } }) => onChange({ nombre: value })}
           error={errors.nombre}
           helperText={helpers.nombre}
-          slotProps={{ inputLabel: { shrink: !!data.nombre } }}
           fullWidth
         />
       </Grid>
