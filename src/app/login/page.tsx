@@ -13,14 +13,11 @@ import {
   Alert,
   InputAdornment,
   IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
 } from "@mui/material";
 import { Person, Lock, Visibility, VisibilityOff, Mail } from "@mui/icons-material";
 import CustomButton from "@/utils/ui/button/CustomButton";
+import CustomModal from "@/utils/ui/form/CustomModal";
+import usuarioAPI from "@/data/usuarioAPI";
 import styles from "./Signin.module.css";
 
 export default function Signin() {
@@ -64,6 +61,8 @@ export default function Signin() {
 
       console.debug("[Login] signIn result:", res);
 
+      console.debug("[Login] signIn result:", res);
+
       if (res?.error) {
         // Mostrar el error tal cual lo devuelve next-auth
         setError(String(res.error));
@@ -96,39 +95,19 @@ export default function Signin() {
     setRecoveryMessage("");
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_SEGURIDAD_URL || '';
-      const urlWithPort = baseUrl.replace(/:\d+/, ':8301');
-      const response = await fetch(
-        `${urlWithPort}/Usuario/RecuperarClaveEmail`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: emailRecovery,
-          }),
-        }
+      await usuarioAPI.reestablecer(emailRecovery);
+      
+      setRecoveryMessage(
+        "Se ha enviado un correo con las instrucciones para restablecer tu contraseña."
       );
-
-      if (response.ok) {
-        setRecoveryMessage(
-          "Se ha enviado un correo con las instrucciones para restablecer tu contraseña."
-        );
-        setEmailRecovery("");
-        setTimeout(() => {
-          setOpenForgotPassword(false);
-          setRecoveryMessage("");
-        }, 3000);
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        setRecoveryError(
-          errorData.message || "Error al enviar el correo de recuperación"
-        );
-      }
+      setEmailRecovery("");
+      setTimeout(() => {
+        setOpenForgotPassword(false);
+        setRecoveryMessage("");
+      }, 3000);
     } catch (err: any) {
       console.error("[ForgotPassword] Error:", err);
-      setRecoveryError("Error al conectar con el servidor");
+      setRecoveryError(err?.message || "Error al enviar el correo de recuperación");
     } finally {
       setIsSendingEmail(false);
     }
@@ -277,107 +256,84 @@ export default function Signin() {
         </Box>
       </Box>
 
-      <Dialog 
-        open={openForgotPassword} 
+      <CustomModal
+        open={openForgotPassword}
         onClose={() => setOpenForgotPassword(false)}
-        maxWidth="md"
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: 2,
-            boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-          }
-        }}
+        title="Recuperar Contraseña"
+        size="mid"
+        actions={
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+            <CustomButton
+              onClick={() => {
+                setOpenForgotPassword(false);
+                setRecoveryError("");
+                setRecoveryMessage("");
+                setEmailRecovery("");
+              }}
+              disabled={isSendingEmail}
+              color="secondary"
+            >
+              Cancelar
+            </CustomButton>
+            <CustomButton
+              onClick={handleForgotPassword}
+              isLoading={isSendingEmail}
+              disabled={isSendingEmail}
+              size="mid"
+            >
+              ENVIAR
+            </CustomButton>
+          </Box>
+        }
       >
-        <DialogTitle 
-          sx={{ 
-            backgroundColor: "#567a2e", 
-            color: "white",
-            fontWeight: 600,
-            fontSize: "1.5rem",
-            py: 2.5
+        <Typography variant="body1" sx={{ mb: 3, color: "#666", fontSize: "1.4rem", lineHeight: 1.7 }}>
+          Ingresa tu correo electrónico y te enviaremos las instrucciones para restablecer tu contraseña.
+        </Typography>
+        
+        {recoveryError && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {recoveryError}
+          </Alert>
+        )}
+        
+        {recoveryMessage && (
+          <Alert severity="success" sx={{ mb: 2 }}>
+            {recoveryMessage}
+          </Alert>
+        )}
+        
+        <TextField
+          fullWidth
+          type="email"
+          label="Correo Electrónico"
+          value={emailRecovery}
+          onChange={(e) => setEmailRecovery(e.target.value)}
+          disabled={isSendingEmail}
+          placeholder="ejemplo@correo.com"
+          variant="outlined"
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Mail sx={{ color: "#567a2e", fontSize: "2rem" }} />
+              </InputAdornment>
+            ),
+            sx: { fontSize: "1.7rem" }
           }}
-        >
-          Recuperar Contraseña
-        </DialogTitle>
-        <DialogContent sx={{ mt: 2, px: 3 }}>
-          <Typography variant="body1" sx={{ mb: 3, color: "#666", fontSize: "1.4rem", lineHeight: 1.7 }}>
-            Ingresa tu correo electrónico y te enviaremos las instrucciones para restablecer tu contraseña.
-          </Typography>
-          
-          {recoveryError && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {recoveryError}
-            </Alert>
-          )}
-          
-          {recoveryMessage && (
-            <Alert severity="success" sx={{ mb: 2 }}>
-              {recoveryMessage}
-            </Alert>
-          )}
-          
-          <TextField
-            fullWidth
-            type="email"
-            label="Correo Electrónico"
-            value={emailRecovery}
-            onChange={(e) => setEmailRecovery(e.target.value)}
-            disabled={isSendingEmail}
-            placeholder="ejemplo@correo.com"
-            variant="outlined"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Mail sx={{ color: "#567a2e", fontSize: "2rem" }} />
-                </InputAdornment>
-              ),
-              sx: { fontSize: "1.7rem" }
-            }}
-            InputLabelProps={{
-              sx: { fontSize: "1.7rem" }
-            }}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                '&.Mui-focused fieldset': {
-                  borderColor: '#567a2e',
-                },
+          InputLabelProps={{
+            sx: { fontSize: "1.7rem" }
+          }}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              '&.Mui-focused fieldset': {
+                borderColor: '#567a2e',
               },
-              '& .MuiInputLabel-root.Mui-focused': {
-                color: '#567a2e',
-              },
-            }}
-          />
-        </DialogContent>
-        <DialogActions sx={{ padding: 2.5, gap: 1 }}>
-          <Button 
-            onClick={() => {
-              setOpenForgotPassword(false);
-              setRecoveryError("");
-              setRecoveryMessage("");
-              setEmailRecovery("");
-            }}
-            disabled={isSendingEmail}
-            sx={{
-              color: "#666",
-              fontSize: "1rem",
-              '&:hover': {
-                backgroundColor: "#f5f5f5"
-              }
-            }}
-          >
-            Cancelar
-          </Button>
-          <CustomButton
-            onClick={handleForgotPassword}
-            isLoading={isSendingEmail}
-            disabled={isSendingEmail}
-            size="mid"
-          >
-            ENVIAR
-          </CustomButton>
-        </DialogActions>
-      </Dialog>
+            },
+            '& .MuiInputLabel-root.Mui-focused': {
+              color: '#567a2e',
+            },
+          }}
+        />
+      </CustomModal>
     </Box>
   );
 }
