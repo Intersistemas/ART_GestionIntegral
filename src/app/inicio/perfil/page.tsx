@@ -8,7 +8,6 @@ import {
   Card,
   CardContent,
   Box,
-  Button,
   Paper,
   Divider,
   Avatar
@@ -25,6 +24,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import BusinessIcon from '@mui/icons-material/Business';
 import PersonIcon from '@mui/icons-material/Person';
+import CustomButton from '@/utils/ui/button/CustomButton';
 
 import styles from './perfil.module.css';
 import Formato from "@/utils/Formato";
@@ -145,20 +145,22 @@ function ProfilePage() {
                 <Divider className={styles.dividerMargin} />
                 
                 <Box className={styles.dataItem} style={{ justifyContent: 'center' }}>
-                  <Button 
-                    variant="contained" 
+                  <CustomButton 
                     onClick={() => setMostrarDetalles(!mostrarDetalles)}
-                    startIcon={mostrarDetalles ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                    fullWidth
-                    sx={{
-                      textTransform: 'none',
-                      fontWeight: 500,
-                      padding: '10px 20px',
-                      borderRadius: '8px'
-                    }}
+                    size="mid"
                   >
-                    {mostrarDetalles ? 'Ocultar detalles de sesión' : 'Ver detalles de sesión'}
-                  </Button>
+                    {mostrarDetalles ? (
+                      <>
+                        <VisibilityOffIcon sx={{ marginRight: 1 }} />
+                        Ocultar detalles de sesión
+                      </>
+                    ) : (
+                      <>
+                        <VisibilityIcon sx={{ marginRight: 1 }} />
+                        Ver detalles de sesión
+                      </>
+                    )}
+                  </CustomButton>
                 </Box>
                 
                 {mostrarDetalles && (
