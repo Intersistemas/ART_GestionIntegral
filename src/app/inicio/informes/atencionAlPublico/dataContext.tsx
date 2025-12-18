@@ -86,19 +86,21 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
   const [tables] = useState<Tables>({
     vw_AtencionAlPublico: [
       // NOTA: Había dos "Interno" duplicados; dejo uno solo
-      { name: "Interno", label: "Número de Evento", type: "number", formatter: numeroFormatter },
+      { name: "Interno", label: "Número", type: "number", formatter: numeroFormatter },
+
+      { name: "OrigenDescripcion", label: "Origen", type: "text"},
+      { name: "ContactoDocNro", label: "CUIT/DNI", type: "text", formatter: cuipFormatter },
+      { name: "ContactoNombre", label: "Contacto", type: "text" },
+
+      { name: "TemaDescripcion", label: "Tema", type: "text" },
+      { name: "CategoriaDescripcion", label: "Categoría", type: "text" },
+      { name: "TipoTramiteDescripcion", label: "Trámite", type: "text" },
+      
+      { name: "MedioDireccion", label: "Email", type: "text" },
 
       { name: "Apertura", label: "Fecha Contacto", type: "date", formatter: fechaFormatter },
       { name: "Cierre", label: "Fecha Último Estado", type: "date", formatter: fechaFormatter },
-
-      { name: "TemaDescripcion", label: "Motivo", type: "text" },
-      { name: "CategoriaDescripcion", label: "Categoría", type: "text" },
-      { name: "TipoTramiteDescripcion", label: "Tipo Consultante", type: "text" },
-
-      { name: "ContactoNombre", label: "Nombre", type: "text" },
-      { name: "ContactoDocNro", label: "Número de Documento", type: "text", formatter: cuipFormatter },
-      { name: "MedioDireccion", label: "Email", type: "text" },
-      { name: "AfiliadoComentario", label: "Departamento", type: "text" },
+      //{ name: "AfiliadoComentario", label: "Departamento", type: "text" },
     ],
   });
 
