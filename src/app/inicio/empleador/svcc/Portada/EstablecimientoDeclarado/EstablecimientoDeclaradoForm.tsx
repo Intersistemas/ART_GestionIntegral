@@ -48,12 +48,13 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
           name="idEstablecimientoEmpresa"
           type="number"
           label="Establ. Empresa"
-          value={data.idEstablecimientoEmpresa}
+          value={data.idEstablecimientoEmpresa ?? ""}
           disabled={disabled.idEstablecimientoEmpresa}
           onChange={({ target: { value } }) => onChange({ idEstablecimientoEmpresa: Number(value) })}
           error={errors.idEstablecimientoEmpresa}
           helperText={helpers.idEstablecimientoEmpresa}
           slotProps={{
+            inputLabel: { shrink: data.idEstablecimientoEmpresa != null },
             input: {
               endAdornment: (
                 <InputAdornment position="end">
@@ -122,7 +123,7 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
         <TextField
           name="descripcionActividad"
           label="Actividad"
-          value={data.descripcionActividad}
+          value={data.descripcionActividad ?? ""}
           disabled={disabled.descripcionActividad}
           onChange={({ target: { value } }) => onChange({ descripcionActividad: value })}
           error={errors.descripcionActividad}
@@ -135,11 +136,12 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
           name="cantTrabEventualesProd"
           type="number"
           label="Cant. Trab. eventuales Prod."
-          value={data.cantTrabEventualesProd}
+          value={data.cantTrabEventualesProd ?? ""}
           disabled={disabled.cantTrabEventualesProd}
           onChange={({ target: { value } }) => onChange({ cantTrabEventualesProd: Number(value) })}
           error={errors.cantTrabEventualesProd}
           helperText={helpers.cantTrabEventualesProd}
+          slotProps={{ inputLabel: { shrink: data.cantTrabEventualesProd != null }}}
           fullWidth
         />
       </Grid>
@@ -148,11 +150,12 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
           name="cantTrabEventualesAdmin"
           type="number"
           label="Cant. Trab. eventuales Admin."
-          value={data.cantTrabEventualesAdmin}
+          value={data.cantTrabEventualesAdmin ?? ""}
           disabled={disabled.cantTrabEventualesAdmin}
           onChange={({ target: { value } }) => onChange({ cantTrabEventualesAdmin: Number(value) })}
           error={errors.cantTrabEventualesAdmin}
           helperText={helpers.cantTrabEventualesAdmin}
+          slotProps={{ inputLabel: { shrink: data.cantTrabEventualesAdmin != null }}}
           fullWidth
         />
       </Grid>
@@ -161,7 +164,7 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
           name="cantTrabPropiosProd"
           type="number"
           label="Cant. Trab. propios Prod."
-          value={data.cantTrabPropiosProd}
+          value={data.cantTrabPropiosProd ?? ""}
           disabled={disabled.cantTrabPropiosProd}
           onChange={({ target: { value } }) => onChange({ cantTrabPropiosProd: Number(value) })}
           error={errors.cantTrabPropiosProd}
@@ -174,11 +177,12 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
           name="cantTrabPropiosAdmin"
           type="number"
           label="Cant. Trab. propios Admin."
-          value={data.cantTrabPropiosAdmin}
+          value={data.cantTrabPropiosAdmin ?? ""}
           disabled={disabled.cantTrabPropiosAdmin}
           onChange={({ target: { value } }) => onChange({ cantTrabPropiosAdmin: Number(value) })}
           error={errors.cantTrabPropiosAdmin}
           helperText={helpers.cantTrabPropiosAdmin}
+          slotProps={{ inputLabel: { shrink: data.cantTrabPropiosAdmin != null }}}
           fullWidth
         />
       </Grid>
@@ -186,7 +190,7 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
         <TextField
           name="mail"
           label="Correo"
-          value={data.mail}
+          value={data.mail ?? ""}
           disabled={disabled.mail}
           onChange={({ target: { value } }) => onChange({ mail: value })}
           error={errors.mail}
@@ -198,7 +202,7 @@ export const EstablecimientoDeclaradoForm: Form<EstablecimientoDeclaradoDTO> = (
         <TextField
           name="telefono"
           label="Teléfonos"
-          value={data.telefono}
+          value={data.telefono ?? ""}
           disabled={disabled.telefono}
           onChange={({ target: { value } }) => onChange({ telefono: value })}
           error={errors.telefono}

@@ -119,7 +119,7 @@ export const EquipoRadiologicoForm: Form<EquipoRadiologicoDTO> = ({
         <TextField
           name="marca"
           label="Marca"
-          value={data.marca}
+          value={data.marca ?? ""}
           disabled={disabled.marca}
           onChange={({ target: { value } }) => onChange({ marca: value })}
           error={errors.marca}
@@ -131,7 +131,7 @@ export const EquipoRadiologicoForm: Form<EquipoRadiologicoDTO> = ({
         <TextField
           name="modelo"
           label="Modelo"
-          value={data.modelo}
+          value={data.modelo ?? ""}
           disabled={disabled.modelo}
           onChange={({ target: { value } }) => onChange({ modelo: value })}
           error={errors.modelo}
@@ -143,7 +143,7 @@ export const EquipoRadiologicoForm: Form<EquipoRadiologicoDTO> = ({
         <TextField
           name="actividad"
           label="Actividad"
-          value={data.actividad}
+          value={data.actividad ?? ""}
           disabled={disabled.actividad}
           onChange={({ target: { value } }) => onChange({ actividad: value })}
           error={errors.actividad}
@@ -155,7 +155,7 @@ export const EquipoRadiologicoForm: Form<EquipoRadiologicoDTO> = ({
         <TextField
           name="radioisotopoFuente"
           label="Radioisotopo fuente"
-          value={data.radioisotopoFuente}
+          value={data.radioisotopoFuente ?? ""}
           disabled={disabled.radioisotopoFuente}
           onChange={({ target: { value } }) => onChange({ radioisotopoFuente: value })}
           error={errors.radioisotopoFuente}
@@ -195,11 +195,12 @@ export const EquipoRadiologicoForm: Form<EquipoRadiologicoDTO> = ({
           name="potenciaEquipoKVP"
           type="number"
           label="Potencia equipo KVP"
-          value={data.potenciaEquipoKVP}
+          value={data.potenciaEquipoKVP ?? ""}
           disabled={disabled.potenciaEquipoKVP}
           onChange={({ target: { value } }) => onChange({ potenciaEquipoKVP: Number(value) })}
           error={errors.potenciaEquipoKVP}
           helperText={helpers.potenciaEquipoKVP}
+          slotProps={{ inputLabel: { shrink: data.potenciaEquipoKVP != null }}}
           fullWidth
         />
       </Grid>
@@ -208,11 +209,12 @@ export const EquipoRadiologicoForm: Form<EquipoRadiologicoDTO> = ({
           name="potenciaEquipomAp"
           type="number"
           label="Potencia Equipo mAp"
-          value={data.potenciaEquipomAp}
+          value={data.potenciaEquipomAp ?? ""}
           disabled={disabled.potenciaEquipomAp}
           onChange={({ target: { value } }) => onChange({ potenciaEquipomAp: Number(value) })}
           error={errors.potenciaEquipomAp}
           helperText={helpers.potenciaEquipomAp}
+          slotProps={{ inputLabel: { shrink: data.potenciaEquipomAp != null }}}
           fullWidth
         />
       </Grid>
@@ -221,11 +223,12 @@ export const EquipoRadiologicoForm: Form<EquipoRadiologicoDTO> = ({
           name="potenciaEquipoMeV"
           type="number"
           label="Potencia equipo MeV"
-          value={data.potenciaEquipoMeV}
+          value={data.potenciaEquipoMeV ?? ""}
           disabled={disabled.potenciaEquipoMeV}
           onChange={({ target: { value } }) => onChange({ potenciaEquipoMeV: Number(value) })}
           error={errors.potenciaEquipoMeV}
           helperText={helpers.potenciaEquipoMeV}
+          slotProps={{ inputLabel: { shrink: data.potenciaEquipoMeV != null }}}
           fullWidth
         />
       </Grid>
@@ -274,7 +277,7 @@ export const EquipoRadiologicoForm: Form<EquipoRadiologicoDTO> = ({
         <TextField
           name="observaciones"
           label="Observaciones"
-          value={data.observaciones}
+          value={data.observaciones ?? ""}
           disabled={disabled.observaciones}
           onChange={({ target: { value } }) => onChange({ observaciones: value })}
           error={errors.observaciones}
@@ -294,11 +297,12 @@ export const EquipoRadiologicoForm: Form<EquipoRadiologicoDTO> = ({
                   name="cantidadDePersonal"
                   type="number"
                   label="Cantidad de personal"
-                  value={data.dosimetria?.cantidadDePersonal}
+                  value={data.dosimetria?.cantidadDePersonal ?? ""}
                   disabled={disabled.dosimetria?.cantidadDePersonal}
                   onChange={({ target: { value } }) => onChange({ dosimetria: { cantidadDePersonal: Number(value) } })}
                   error={errors.dosimetria?.cantidadDePersonal}
                   helperText={helpers.dosimetria?.cantidadDePersonal}
+                  slotProps={{ inputLabel: { shrink: data.dosimetria?.cantidadDePersonal != null }}}
                   fullWidth
                 />
               </Grid>

@@ -27,7 +27,7 @@ export const ProveedorForm: Form<ProveedorDTO> = ({
       <TextField
         name="nombreComercial"
         label="Nombre comercial"
-        value={data.nombreComercial}
+        value={data.nombreComercial ?? ""}
         disabled={disabled.nombreComercial}
         onChange={({ target: { value } }) => onChange({ nombreComercial: value })}
         error={errors.nombreComercial}

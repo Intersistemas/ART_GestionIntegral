@@ -28,7 +28,7 @@ export const ResponsableUsoForm: Form<ResponsableUsoDTO> = ({
       <TextField
         name="autorizacionIndividual"
         label="Autorizacion individual"
-        value={data.autorizacionIndividual}
+        value={data.autorizacionIndividual ?? ""}
         disabled={disabled.autorizacionIndividual}
         onChange={({ target: { value } }) => onChange({ autorizacionIndividual: value })}
         error={errors.autorizacionIndividual}
@@ -40,7 +40,7 @@ export const ResponsableUsoForm: Form<ResponsableUsoDTO> = ({
       <TextField
         name="nroPermisoHabilitante"
         label="Nro. permiso habilitante"
-        value={data.nroPermisoHabilitante}
+        value={data.nroPermisoHabilitante ?? ""}
         disabled={disabled.nroPermisoHabilitante}
         onChange={({ target: { value } }) => onChange({ nroPermisoHabilitante: value })}
         error={errors.nroPermisoHabilitante}
@@ -52,7 +52,7 @@ export const ResponsableUsoForm: Form<ResponsableUsoDTO> = ({
       <TextField
         name="matriculaProfesional"
         label="Matricula profesional"
-        value={data.matriculaProfesional}
+        value={data.matriculaProfesional ?? ""}
         disabled={disabled.matriculaProfesional}
         onChange={({ target: { value } }) => onChange({ matriculaProfesional: value })}
         error={errors.matriculaProfesional}
@@ -65,7 +65,7 @@ export const ResponsableUsoForm: Form<ResponsableUsoDTO> = ({
         name="fechaExpedicion"
         type="date"
         label="Fecha expedicion"
-        value={data.fechaExpedicion?.slice(0, 10)}
+        value={data.fechaExpedicion?.slice(0, 10) ?? ""}
         disabled={disabled.fechaExpedicion}
         onChange={({ target: { value } }) => onChange({ fechaExpedicion: value })}
         error={errors.fechaExpedicion}
@@ -79,7 +79,7 @@ export const ResponsableUsoForm: Form<ResponsableUsoDTO> = ({
         name="fechaVencimiento"
         type="date"
         label="Fecha vencimiento"
-        value={data.fechaVencimiento?.slice(0, 10)}
+        value={data.fechaVencimiento?.slice(0, 10) ?? ""}
         disabled={disabled.fechaVencimiento}
         onChange={({ target: { value } }) => onChange({ fechaVencimiento: value })}
         error={errors.fechaVencimiento}

@@ -3,46 +3,47 @@ import { useAuth } from "@/data/AuthContext";
 import gestionEmpleadorAPI, { PresentacionDTO, RefCIIU, SRTSiniestralidadCIUO88 } from '@/data/gestionEmpleadorAPI';
 import ArtAPI, { EstablecimientoVm, EstablecimientoVmDescripcion } from "@/data/artAPI";
 import { arrayToRecord } from "@/utils/utils";
+import { AxiosError } from "axios";
 
 export type SVCCPresentacionContextType = {
   ultima: {
     isLoading: boolean;
     isValidating: boolean;
     data?: PresentacionDTO;
-    error?: any
+    error?: AxiosError
   };
   isMutating: boolean;
   nueva: {
     isMutating: boolean;
     data?: PresentacionDTO;
-    error?: any;
+    error?: AxiosError;
     trigger: (data: PresentacionDTO) => void;
   };
   finaliza: {
     isMutating: boolean;
     data?: PresentacionDTO;
-    error?: any;
+    error?: AxiosError;
     trigger: (data: PresentacionDTO) => void;
   };
   establecimientos: {
     isLoading: boolean;
     isValidating: boolean;
     data?: EstablecimientoVm[],
-    error?: any,
+    error?: AxiosError,
     map: Record<number, string>,
   };
   refCIIU: {
     isLoading: boolean;
     isValidating: boolean;
     data?: RefCIIU[],
-    error?: any,
+    error?: AxiosError,
     map: Record<number, string>,
   };
   ciuo88: {
     isLoading: boolean;
     isValidating: boolean;
     data?: SRTSiniestralidadCIUO88[],
-    error?: any,
+    error?: AxiosError,
     map: Record<number, string>,
   };
 }
