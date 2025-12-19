@@ -1,13 +1,13 @@
 "use client";
-import React, { useMemo, useState, SyntheticEvent } from 'react'; // Importamos SyntheticEvent
+import React, { useMemo, useState, SyntheticEvent } from 'react';
 import DataTable from '@/utils/ui/table/DataTable'; 
-import CustomButton from '@/utils/ui/button/CustomButton';
 import { ColumnDef } from '@tanstack/react-table';
-import { Box, Typography, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import CustomTab from '@/utils/ui/tab/CustomTab';
 import Formato from '@/utils/Formato';
 import gestionEmpleadorAPI from "@/data/gestionEmpleadorAPI";
 import type { CuentaCorrienteRegistro, DDJJRegistro } from './types/cuentaCorriente';
+import ExportButtons from './components/ExportButtons';
 
 
 
@@ -30,7 +30,16 @@ const formatCurrency = (value: number | string) => {
 // ----------------------------------------------------
 function CuentaCorrientePage() {
     
-    const { data: CtaCteRawData, isLoading: isCtaCteLoading } = gestionEmpleadorAPI.useGetVEmpleadorDDJJ(); 
+    // Consultar datos con ordenamiento por periodo descendente desde el backend
+    const { data: CtaCteRawData, isLoading: isCtaCteLoading } = gestionEmpleadorAPI.useGetVEmpleadorDDJJ({ 
+        Sort: '-Periodo',
+        Page: '0,1000'
+    });
+    
+    // Usar los datos directamente sin ordenar en el frontend
+    const sortedData = useMemo(() => {
+        return CtaCteRawData?.data || [];
+    }, [CtaCteRawData]);
     
     // 1. CONTROL DE LA PESTAÑA: Usamos useState para el valor numérico
     // Iniciamos con 0 si queremos 'Estado de Cuenta', o 1 si queremos 'Últimas DDJJ'
@@ -98,30 +107,42 @@ function CuentaCorrientePage() {
         { header: 'Masa Salarial', accessorKey: 'masaSalarial', cell: info => formatCurrency(info.getValue() as string), meta: { align: 'center'} },
     ], []);
 
-
     const tabItems = [
         {
             label: 'Estado de Cuenta',
             value: 0,
             content: (
-                <DataTable
-                    data={CtaCteRawData?.data || []} 
-                    columns={columns} 
-                    size="mid"
-                    isLoading={false}
-                />
+                <>
+                    <DataTable
+                        data={sortedData || []} 
+                        columns={columns} 
+                        size="mid"
+                        isLoading={false}
+                    />
+                    <ExportButtons 
+                        data={sortedData || []}
+                        type="estadoCuenta"
+                        sumarleUnMesAlPeriodo={sumarleUnMesAlPeriodo}
+                    />
+                </>
             ),
         },
         {
             label: 'Últimas DDJJ',
             value: 1,
             content: (
-                <DataTable
-                    data={CtaCteRawData?.data || []} 
-                    columns={columnsDDJJ} 
-                    size="mid"
-                    isLoading={false}
-                />
+                <>
+                    <DataTable
+                        data={sortedData || []} 
+                        columns={columnsDDJJ} 
+                        size="mid"
+                        isLoading={false}
+                    />
+                    <ExportButtons 
+                        data={sortedData || []}
+                        type="ultimasDDJJ"
+                    />
+                </>
             ),
         },
     ];
