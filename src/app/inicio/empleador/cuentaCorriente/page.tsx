@@ -32,8 +32,8 @@ function CuentaCorrientePage() {
     
     // Consultar datos con ordenamiento por periodo descendente desde el backend
     const { data: CtaCteRawData, isLoading: isCtaCteLoading } = gestionEmpleadorAPI.useGetVEmpleadorDDJJ({ 
-        Sort: '-Periodo',
-        Page: '0,1000'
+        sort: '-Periodo',
+        page: '0,1000'
     });
     
     // Usar los datos directamente sin ordenar en el frontend
