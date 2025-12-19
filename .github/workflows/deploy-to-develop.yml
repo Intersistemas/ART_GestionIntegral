@@ -13,14 +13,30 @@ jobs:
       SITE_PATH: ${{ secrets.SITE_PATH }}
       BACKUP_PATH: ${{ secrets.BACKUP_PATH }}
       MAX_BACKUPS: ${{ secrets.MAX_BACKUPS }}
+      TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+      REPO: ${{ github.repository }}
+      BRANCH: ${{ github.ref_name }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      COMMIT: ${{ github.sha }}
+      ACTOR: ${{ github.actor }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Use Node.js 18
+      - name: Notify Teams - Start
+        if: ${{ env.TEAMS_WEBHOOK_URL != '' }}
+        shell: powershell
+        run: |
+          $webhook = $env:TEAMS_WEBHOOK_URL
+          if ([string]::IsNullOrEmpty($webhook)) { Write-Host "No Teams webhook configured - skipping"; exit 0 }
+          $msg = "**Deployment started**`nRepository: $env:REPO`nBranch: $env:BRANCH`nCommit: $env:COMMIT`nActor: $env:ACTOR`nRun: $env:RUN_URL"
+          $body = @{ text = $msg } | ConvertTo-Json
+          Invoke-RestMethod -Uri $webhook -Method Post -Body $body -ContentType 'application/json'
+
+      - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
@@ -112,3 +128,13 @@ jobs:
         shell: powershell
         run: |
           pm2 status
+
+      - name: Notify Teams - Finish
+        if: always() && env.TEAMS_WEBHOOK_URL != ''
+        shell: powershell
+        run: |
+          $webhook = $env:TEAMS_WEBHOOK_URL
+          $conclusion = '${{ job.status }}'  # SUCCESS, FAILURE, CANCELLED
+          $msg = "**Deployment finished**`nRepository: $env:REPO`nBranch: $env:BRANCH`nCommit: $env:COMMIT`nActor: $env:ACTOR`nResult: $conclusion`nRun: $env:RUN_URL"
+          $body = @{ text = $msg } | ConvertTo-Json
+          Invoke-RestMethod -Uri $webhook -Method Post -Body $body -ContentType 'application/json'
