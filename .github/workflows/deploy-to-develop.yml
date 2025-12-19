@@ -55,9 +55,18 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Install dependencies
+      - name: Install dependencies (capture log)
+        shell: powershell
         run: |
-          npm ci --prefer-offline --no-audit --progress=false
+          # Run npm ci and capture all output to npmci.log for debugging
+          npm ci --prefer-offline --no-audit --progress=false 2>&1 | Tee-Object -FilePath npmci.log
+
+      - name: Upload npm ci log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: npmci-log
+          path: npmci.log
 
       - name: Build
         run: |
