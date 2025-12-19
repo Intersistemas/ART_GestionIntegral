@@ -12,15 +12,24 @@ import {
   Box,
   Alert,
   InputAdornment,
+  IconButton,
 } from "@mui/material";
-import { Person, Lock } from "@mui/icons-material";
+import { Person, Lock, Visibility, VisibilityOff, Mail } from "@mui/icons-material";
 import CustomButton from "@/utils/ui/button/CustomButton";
+import CustomModal from "@/utils/ui/form/CustomModal";
+import usuarioAPI from "@/data/usuarioAPI";
 import styles from "./Signin.module.css";
 
 export default function Signin() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [rememberSession, setRememberSession] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [openForgotPassword, setOpenForgotPassword] = useState(false);
+  const [emailRecovery, setEmailRecovery] = useState("");
+  const [recoveryMessage, setRecoveryMessage] = useState("");
+  const [recoveryError, setRecoveryError] = useState("");
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
   const router = useRouter();
 
 // ...existing code...
@@ -52,6 +61,8 @@ export default function Signin() {
 
       console.debug("[Login] signIn result:", res);
 
+      console.debug("[Login] signIn result:", res);
+
       if (res?.error) {
         // Mostrar el error tal cual lo devuelve next-auth
         setError(String(res.error));
@@ -72,7 +83,35 @@ export default function Signin() {
       setIsLoading(false);
     }
   };
-// ...existing code...
+
+  const handleForgotPassword = async () => {
+    if (!emailRecovery.trim()) {
+      setRecoveryError("Por favor ingresa tu email");
+      return;
+    }
+
+    setIsSendingEmail(true);
+    setRecoveryError("");
+    setRecoveryMessage("");
+
+    try {
+      await usuarioAPI.reestablecer(emailRecovery);
+      
+      setRecoveryMessage(
+        "Se ha enviado un correo con las instrucciones para restablecer tu contraseña."
+      );
+      setEmailRecovery("");
+      setTimeout(() => {
+        setOpenForgotPassword(false);
+        setRecoveryMessage("");
+      }, 3000);
+    } catch (err: any) {
+      console.error("[ForgotPassword] Error:", err);
+      setRecoveryError(err?.message || "Error al enviar el correo de recuperación");
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
 
   return (
     <Box className={styles.loginContainer}>
@@ -130,7 +169,7 @@ export default function Signin() {
               </Alert>
             )}
 
-            <label className={styles.fieldLabel}>Usuario / Email</label>
+            <label className={styles.fieldLabel}>Usuario</label>
             <TextField
               fullWidth
               id="loginUser"
@@ -153,7 +192,7 @@ export default function Signin() {
               fullWidth
               id="loginPassword"
               name="loginPassword"
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Ingrese su contraseña"
               required
               disabled={isLoading}
@@ -161,6 +200,18 @@ export default function Signin() {
                 startAdornment: (
                   <InputAdornment position="start">
                     <Lock sx={{ color: "#567a2e" }} />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      onMouseDown={(e) => e.preventDefault()}
+                      disabled={isLoading}
+                      sx={{ marginRight: '-4px' }}
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
                   </InputAdornment>
                 ),
               }}
@@ -193,13 +244,96 @@ export default function Signin() {
             </CustomButton>
 
             <Box className={styles.forgotPassword}>
-              <a className={styles.forgotLink} href="#">
+              <a 
+                className={styles.forgotLink} 
+                onClick={() => setOpenForgotPassword(true)}
+                style={{ cursor: 'pointer' }}
+              >
                 Olvidaste la contraseña?
               </a>
             </Box>
           </Box>
         </Box>
       </Box>
+
+      <CustomModal
+        open={openForgotPassword}
+        onClose={() => setOpenForgotPassword(false)}
+        title="Recuperar Contraseña"
+        size="mid"
+        actions={
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+            <CustomButton
+              onClick={() => {
+                setOpenForgotPassword(false);
+                setRecoveryError("");
+                setRecoveryMessage("");
+                setEmailRecovery("");
+              }}
+              disabled={isSendingEmail}
+              color="secondary"
+            >
+              Cancelar
+            </CustomButton>
+            <CustomButton
+              onClick={handleForgotPassword}
+              isLoading={isSendingEmail}
+              disabled={isSendingEmail}
+              size="mid"
+            >
+              ENVIAR
+            </CustomButton>
+          </Box>
+        }
+      >
+        <Typography variant="body1" sx={{ mb: 3, color: "#666", fontSize: "1.4rem", lineHeight: 1.7 }}>
+          Ingresa tu correo electrónico y te enviaremos las instrucciones para restablecer tu contraseña.
+        </Typography>
+        
+        {recoveryError && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {recoveryError}
+          </Alert>
+        )}
+        
+        {recoveryMessage && (
+          <Alert severity="success" sx={{ mb: 2 }}>
+            {recoveryMessage}
+          </Alert>
+        )}
+        
+        <TextField
+          fullWidth
+          type="email"
+          label="Correo Electrónico"
+          value={emailRecovery}
+          onChange={(e) => setEmailRecovery(e.target.value)}
+          disabled={isSendingEmail}
+          placeholder="ejemplo@correo.com"
+          variant="outlined"
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Mail sx={{ color: "#567a2e", fontSize: "2rem" }} />
+              </InputAdornment>
+            ),
+            sx: { fontSize: "1.7rem" }
+          }}
+          InputLabelProps={{
+            sx: { fontSize: "1.7rem" }
+          }}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              '&.Mui-focused fieldset': {
+                borderColor: '#567a2e',
+              },
+            },
+            '& .MuiInputLabel-root.Mui-focused': {
+              color: '#567a2e',
+            },
+          }}
+        />
+      </CustomModal>
     </Box>
   );
 }
