@@ -1,0 +1,114 @@
+name: Deploy to Develop
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  build-and-deploy:
+    name: Build and deploy on self-hosted Windows runner
+    runs-on: [self-hosted, windows, x64, art-front-develop]
+    env:
+      SITE_PATH: ${{ secrets.SITE_PATH }}
+      BACKUP_PATH: ${{ secrets.BACKUP_PATH }}
+      MAX_BACKUPS: ${{ secrets.MAX_BACKUPS }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+
+      - name: Build
+        run: |
+          npm run build
+
+      - name: Backup current deployment (keep configured count)
+        shell: powershell
+        run: |
+          # Determine deploy dir from secret or fallback
+          if ([string]::IsNullOrEmpty($env:SITE_PATH)) { $DEPLOY_DIR = 'C:\inetpub\sitios\ArtFrontGestionIntegral' } else { $DEPLOY_DIR = $env:SITE_PATH }
+          if (-not (Test-Path $DEPLOY_DIR)) { Write-Host "No existing deploy dir: $DEPLOY_DIR - skipping backup"; exit 0 }
+
+          # Determine backup dir: use BACKUP_PATH secret if provided, otherwise use DEPLOY_DIR\backups
+          if ([string]::IsNullOrEmpty($env:BACKUP_PATH)) { $BACKUP_DIR = Join-Path $DEPLOY_DIR 'backups' } else { $BACKUP_DIR = $env:BACKUP_PATH }
+          New-Item -ItemType Directory -Force -Path $BACKUP_DIR | Out-Null
+
+          $timestamp = Get-Date -Format "yyyyMMddHHmmss"
+          $temp = Join-Path $env:TEMP ("deploy_backup_$timestamp")
+          New-Item -ItemType Directory -Force -Path $temp | Out-Null
+
+          # Mirror current deployment to temp excluding backups and large folders
+          robocopy $DEPLOY_DIR $temp /MIR /XD .git .github\workflows node_modules backups || if ($LASTEXITCODE -gt 3) { throw "robocopy failed with code $LASTEXITCODE" }
+
+          $backupFile = Join-Path $BACKUP_DIR ("backup_$timestamp.zip")
+          Compress-Archive -Path (Join-Path $temp '*') -DestinationPath $backupFile -Force
+
+          # Remove temp
+          Remove-Item -Recurse -Force $temp
+
+          # Keep only MAX_BACKUPS latest backups (default 5)
+          if ([string]::IsNullOrEmpty($env:MAX_BACKUPS)) { $max = 5 } else { $max = [int]$env:MAX_BACKUPS }
+          $backups = Get-ChildItem -Path $BACKUP_DIR -Filter '*.zip' | Sort-Object LastWriteTime -Descending
+          if ($backups.Count -gt $max) {
+            $backups | Select-Object -Skip $max | ForEach-Object { Remove-Item $_.FullName -Force }
+          }
+
+      - name: Copy build to deployment directory (Windows)
+        shell: powershell
+        run: |
+          # SITE_PATH is provided via repository secret (secrets.SITE_PATH). If not set, fallback to C:\inetpub\sitios\ArtFrontGestionIntegral
+          if ([string]::IsNullOrEmpty($env:SITE_PATH)) { $DEPLOY_DIR = 'C:\inetpub\sitios\ArtFrontGestionIntegral' } else { $DEPLOY_DIR = $env:SITE_PATH }
+          New-Item -ItemType Directory -Force -Path $DEPLOY_DIR | Out-Null
+          # Use robocopy to mirror repository to deploy dir while excluding .git, workflows and node_modules
+          # /MIR mirrors the directory, /XD excludes directories, /XF excludes files
+          robocopy . $DEPLOY_DIR /MIR /XD .git .github\workflows node_modules .github /XF .env web.config server.js || $LASTEXITCODE -le 3
+
+      - name: Install production dependencies on deploy dir (Windows)
+        shell: powershell
+        run: |
+          if ([string]::IsNullOrEmpty($env:SITE_PATH)) { $DEPLOY_DIR = 'C:\inetpub\sitios\ArtFrontGestionIntegral' } else { $DEPLOY_DIR = $env:SITE_PATH }
+          Set-Location -Path $DEPLOY_DIR
+          npm ci --omit=dev
+
+      - name: Ensure PM2 is installed (Windows)
+        shell: powershell
+        run: |
+          if (-not (Get-Command pm2 -ErrorAction SilentlyContinue)) {
+            npm install -g pm2
+          }
+
+      - name: Start/Reload application with PM2 (Windows)
+        shell: powershell
+        run: |
+          if ([string]::IsNullOrEmpty($env:SITE_PATH)) { $DEPLOY_DIR = 'C:\inetpub\sitios\ArtFrontGestionIntegral' } else { $DEPLOY_DIR = $env:SITE_PATH }
+          Set-Location -Path $DEPLOY_DIR
+
+          # Ensure production start script exists in package.json (start -> next start)
+          # Use PM2 to run `npm start` which will execute `next start` as defined in package.json
+          $exists = $false
+          try { pm2 describe art_gestionintegral | Out-Null; $exists = $true } catch { $exists = $false }
+          if ($exists) {
+            # reload using ecosystem file for zero-downtime if supported
+            pm2 reload ecosystem.config.js --only art_gestionintegral --update-env || pm2 restart art_gestionintegral
+          } else {
+            pm2 start ecosystem.config.js --env production
+          }
+
+      - name: Save PM2 process list (Windows)
+        shell: powershell
+        run: |
+          pm2 save
+
+      - name: Show PM2 status (Windows)
+        shell: powershell
+        run: |
+          pm2 status
