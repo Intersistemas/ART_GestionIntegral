@@ -91,7 +91,10 @@ jobs:
 
           # Mirror current deployment to temp excluding backups and large folders
           robocopy $DEPLOY_DIR $temp /MIR /XD .git .github\workflows node_modules backups
-          if ($LASTEXITCODE -gt 3) { throw "robocopy failed with code $LASTEXITCODE" }
+          $rc = $LASTEXITCODE
+          # robocopy exit codes: 0=no files copied, 1=some files copied, 2=some files mismatched, 3=some files copied and mismatched
+          if ($rc -gt 3) { throw "robocopy failed with code $rc" }
+          Write-Host "robocopy finished with exit code $rc (treated as success)"
 
           $backupFile = Join-Path $BACKUP_DIR ("backup_$timestamp.zip")
           Compress-Archive -Path (Join-Path $temp '*') -DestinationPath $backupFile -Force
@@ -115,7 +118,9 @@ jobs:
           # Use robocopy to mirror repository to deploy dir while excluding .git, workflows and node_modules
           # /MIR mirrors the directory, /XD excludes directories, /XF excludes files
           robocopy . $DEPLOY_DIR /MIR /XD .git .github\workflows node_modules .github /XF .env web.config server.js
-          if ($LASTEXITCODE -gt 3) { throw "robocopy failed with code $LASTEXITCODE" }
+          $rc = $LASTEXITCODE
+          if ($rc -gt 3) { throw "robocopy failed with code $rc" }
+          Write-Host "robocopy finished with exit code $rc (treated as success)"
 
       - name: Install production dependencies on deploy dir (Windows)
         shell: powershell
