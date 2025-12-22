@@ -19,7 +19,6 @@ const permissionMap: { [key: string]: string | null } = {
   "/inicio/comercializador/cuentaCorriente": "Comercializador_CuentaCorriente",
   "/inicio/comercializador/polizas": "Comercializador_Polizas",
   "/inicio/cotizaciones": "Cotizaciones",
-  "/inicio/cotizador": "Cotizador",
   "/inicio/denuncias": "Denuncias",
   "/inicio/informes/comisionesMedicas": "Informes_ComisionesMedicas",
   "/inicio/informes/siniestros": "Informes_Siniestros",

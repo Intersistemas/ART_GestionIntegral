@@ -60,8 +60,7 @@ const menuItems: MenuItem[] = [
     {
         name: "Cotizaciones",
         icon: FaFileInvoiceDollar,
-        //link: "/inicio/cotizaciones",
-        link: "http://arttest.intersistemas.ar:8687/Cotizador",
+        link: "/inicio/cotizaciones",
         permissionTask: "Cotizaciones",
     },
     {
