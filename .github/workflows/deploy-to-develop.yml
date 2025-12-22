@@ -57,11 +57,14 @@ jobs:
 
       - name: Install dependencies (verbose, save log)
         shell: powershell
+        timeout-minutes: 45
         run: |
-          # Run npm ci in verbose mode and capture output to npmci_verbose.log
-          npm ci --verbose 2>&1 | Tee-Object -FilePath npmci_verbose.log
+          # Run npm ci using cmd.exe to ensure stdout/stderr redirection works reliably on Windows
+          # This writes all output to npmci_verbose.log in the working directory.
+          cmd /c "npm ci --verbose > npmci_verbose.log 2>&1"
 
       - name: Upload npm ci verbose log
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: npmci-verbose-log
