@@ -95,6 +95,7 @@ jobs:
           # robocopy exit codes: 0=no files copied, 1=some files copied, 2=some files mismatched, 3=some files copied and mismatched
           if ($rc -gt 3) { throw "robocopy failed with code $rc" }
           Write-Host "robocopy finished with exit code $rc (treated as success)"
+          exit 0
 
           $backupFile = Join-Path $BACKUP_DIR ("backup_$timestamp.zip")
           Compress-Archive -Path (Join-Path $temp '*') -DestinationPath $backupFile -Force
@@ -121,6 +122,7 @@ jobs:
           $rc = $LASTEXITCODE
           if ($rc -gt 3) { throw "robocopy failed with code $rc" }
           Write-Host "robocopy finished with exit code $rc (treated as success)"
+          exit 0
 
       - name: Install production dependencies on deploy dir (Windows)
         shell: powershell
