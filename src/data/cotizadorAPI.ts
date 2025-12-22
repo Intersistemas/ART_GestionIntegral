@@ -141,6 +141,17 @@ export type ARTSellosIIBBSWRKey = [url: string, token: string, params: string];
 export type ARTSellosIIBBOptions = SWRConfiguration<ARTSellosIIBBDTO[], AxiosError, Fetcher<ARTSellosIIBBDTO[], ARTSellosIIBBSWRKey>>;
 //#endregion Types ARTSellosIIBB
 
+//#region Types RefEvolucionFFEP
+export type RefEvolucionFFEPDTO = {
+  fecha: string; // Fecha en formato ISO o similar
+  importe: number;
+};
+
+export type RefEvolucionFFEPSWRKey = [url: string, token: string];
+export type RefEvolucionFFEPOptions = SWRConfiguration<RefEvolucionFFEPDTO[], AxiosError, Fetcher<RefEvolucionFFEPDTO[], RefEvolucionFFEPSWRKey>>;
+//#endregion Types RefEvolucionFFEP
+
+
 //#region Types CotizacionGenerar
 export type DatosContactoDTO = {
   nombre: string;
@@ -171,6 +182,7 @@ export type CotizacionGenerarDTO = {
 
 export class CotizadorAPIClass extends ExternalAPI {
   readonly basePath = process.env.NEXT_PUBLIC_API_COTIZADOR_URL || 'http://arttest.intersistemas.ar:8686';
+  readonly basePathRefEvolucionFFEP = process.env.NEXT_PUBLIC_API_URL || 'http://fallback-prod.url';
 
   //#region Validaciones
   readonly validarCuitURL = (params: ValidacionesParams) => {
@@ -341,6 +353,37 @@ export class CotizadorAPIClass extends ExternalAPI {
       }
     );
   //#endregion ARTSellosIIBB
+
+  //#region RefEvolucionFFEP
+  readonly getRefEvolucionFFEPURL = () => {
+    const url = new URL("/api/RefEvolucionFFEP/GetRefEvolucionFFEP", this.basePathRefEvolucionFFEP);
+    return url.toString();
+  };
+
+  getRefEvolucionFFEP = async () => 
+    tokenizable.get<RefEvolucionFFEPDTO[]>(
+      this.getRefEvolucionFFEPURL()
+    ).then(({ data }) => data);
+
+  swrRefEvolucionFFEP = Object.freeze({
+    key: (): RefEvolucionFFEPSWRKey => [
+      this.getRefEvolucionFFEPURL(), 
+      token.getToken()
+    ],
+    fetcher: () => this.getRefEvolucionFFEP(),
+  });
+
+  useGetRefEvolucionFFEP = (options?: RefEvolucionFFEPOptions) =>
+    useSWR<RefEvolucionFFEPDTO[], AxiosError>(
+      this.swrRefEvolucionFFEP.key(),
+      this.swrRefEvolucionFFEP.fetcher,
+      {
+        revalidateOnFocus: false,
+        revalidateOnReconnect: false,
+        ...options,
+      }
+    );
+  //#endregion RefEvolucionFFEP
 
   //#region Cotizaciones
   readonly generarCotizacionURL = () => {

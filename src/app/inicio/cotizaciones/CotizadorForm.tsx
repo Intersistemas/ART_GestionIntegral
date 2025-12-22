@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { Grid, TextField, FormControl, InputLabel, Select, MenuItem, FormControlLabel, Checkbox, Typography } from '@mui/material';
-import cotizadorAPI, { CIIUIndicesDTO, ARTSellosIIBBDTO, EmpleadoresPadronDTO, EmpleadoresPESEDTO, EmpleadoresSiniestrosDTO, CotizacionGenerarDTO, CotizacionesDTO } from '@/data/cotizadorAPI';
+import cotizadorAPI, { CIIUIndicesDTO, ARTSellosIIBBDTO, EmpleadoresPadronDTO, EmpleadoresPESEDTO, EmpleadoresSiniestrosDTO, CotizacionGenerarDTO, CotizacionesDTO, RefEvolucionFFEPDTO } from '@/data/cotizadorAPI';
 import Formato from '@/utils/Formato';
 import CustomButton from '@/utils/ui/button/CustomButton';
 import CustomSelectSearch from '@/utils/ui/form/CustomSelectSearch';
 import { tieneActividadesSiniestras, debeSolicitar } from './validaciones';
 import { CotizacionResultadoModal } from './CotizacionResultadoModal';
+import { CotizadorPDFPreview } from './CotizadorPDFPreview';
+import { CotizadorFormData, CotizadorPDFFormData } from './types';
 import styles from './cotizadorForm.module.css';
 
 // Función helper para formatear CUIT sin rellenar con ceros mientras se escribe
@@ -35,23 +37,6 @@ const formatCUIT = (value: string): string => {
     // 11 dígitos: formato completo ##-##.###.###-#
     return `${digits.slice(0, 2)}-${digits.slice(2, 4)}.${digits.slice(4, 7)}.${digits.slice(7, 10)}-${digits.slice(10)}`;
   }
-};
-
-type CotizadorFormData = {
-  cuit: string;
-  jurisdiccion: number | '';
-  ciiuPrincipal: string;
-  ciiuSecundario1: string;
-  ciiuSecundario2: string;
-  actividadCotizacion: string; // CIIU de la actividad seleccionada para cotizar
-  trabajadoresDeclarados: string;
-  masaSalarial: string;
-  nombre: string;
-  email: string;
-  tipoTel: string;
-  numeroTelefono: string;
-  alicuota: string;
-  empresaNueva: boolean;
 };
 
 type CotizadorFormProps = {
@@ -100,6 +85,11 @@ export const CotizadorForm = ({ onClose }: CotizadorFormProps) => {
     esSolicitud: false,
     error: null,
   });
+  const [datosParaPDF, setDatosParaPDF] = useState<{
+    formData: CotizadorPDFFormData;
+    resultado: CotizacionesDTO | null;
+  } | null>(null);
+  const [mostrarPreviewPDF, setMostrarPreviewPDF] = useState(false);
 
   // Consultar actividades CIIU desde el endpoint de CIIUIndices cuando hay CUIT validado
   const { data: actividadesCIIU, isLoading: isLoadingActividades } = cotizadorAPI.useGetCIIUIndices(
@@ -109,6 +99,18 @@ export const CotizadorForm = ({ onClose }: CotizadorFormProps) => {
       revalidateOnReconnect: false,
     }
   );
+
+  // Consultar RefEvolucionFFEP automáticamente (no requiere CUIT)
+  const { data: refEvolucionFFEPData } = cotizadorAPI.useGetRefEvolucionFFEP({
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
+
+  // Obtener el último importe de FFEP (el más reciente por fecha)
+  const ultimoFFEP = refEvolucionFFEPData && refEvolucionFFEPData.length > 0
+    ? refEvolucionFFEPData
+        .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())[0]
+    : null;
 
   // Consultar ARTSellosIIBB automáticamente cuando hay CUIT validado
   const { data: artSellosIIBBData, isLoading: isLoadingArtSellosIIBB } = cotizadorAPI.useGetARTSellosIIBB(
@@ -421,6 +423,22 @@ export const CotizadorForm = ({ onClose }: CotizadorFormProps) => {
         setCotizacionRealizada(true);
       }
 
+      // Guardar datos para PDF (solo si no es solicitud)
+      if (!debeSolicitarCotizacion) {
+        const pdfFormData: CotizadorPDFFormData = {
+          nombre: formData.nombre,
+          cuit: formData.cuit,
+          trabajadoresDeclarados: formData.trabajadoresDeclarados,
+          masaSalarial: formData.masaSalarial,
+          actividadCotizacion: formData.actividadCotizacion,
+          alicuota: formData.alicuota,
+        };
+        setDatosParaPDF({
+          formData: pdfFormData,
+          resultado,
+        });
+      }
+
       // Mostrar modal con el resultado
       setResultadoCotizacion({
         open: true,
@@ -452,14 +470,13 @@ export const CotizadorForm = ({ onClose }: CotizadorFormProps) => {
     }
   };
 
-  const handleGenerarPDF = () => {
-    if (!resultadoCotizacion.resultado) {
+  const handleImprimir = () => {
+    if (!datosParaPDF || !datosParaPDF.resultado) {
       return;
     }
 
-    // Aquí implementarías la lógica para generar PDF
-    console.log('Generando PDF con datos:', resultadoCotizacion.resultado);
-    // TODO: Implementar generación de PDF
+    // Mostrar el modal de vista previa del PDF
+    setMostrarPreviewPDF(true);
   };
 
   const handleEnviarMail = () => {
@@ -514,9 +531,28 @@ export const CotizadorForm = ({ onClose }: CotizadorFormProps) => {
         resultado={resultadoCotizacion.resultado}
         esSolicitud={resultadoCotizacion.esSolicitud}
         error={resultadoCotizacion.error}
-        onImprimir={resultadoCotizacion.esSolicitud ? undefined : handleGenerarPDF}
-        onEnviarEmail={resultadoCotizacion.esSolicitud ? undefined : handleEnviarMail}
+        onImprimir={handleImprimir}
+        onEnviarEmail={handleEnviarMail}
       />
+      {datosParaPDF && datosParaPDF.resultado && (
+        <CotizadorPDFPreview
+          open={mostrarPreviewPDF}
+          onClose={() => setMostrarPreviewPDF(false)}
+          resultado={datosParaPDF.resultado}
+          formData={{
+            nombre: datosParaPDF.formData.nombre,
+            cuit: datosParaPDF.formData.cuit,
+            trabajadoresDeclarados: datosParaPDF.formData.trabajadoresDeclarados,
+            masaSalarial: datosParaPDF.formData.masaSalarial,
+            actividadCotizacion: datosParaPDF.formData.actividadCotizacion,
+            alicuota: datosParaPDF.formData.alicuota,
+          }}
+          actividadesCIIU={actividadesCIIU}
+          artSellosIIBB={artSellosIIBB}
+          empleadoresPadron={empleadoresPadron}
+          ffepImporte={ultimoFFEP?.importe}
+        />
+      )}
       <div className={styles.formContainer}>
       <Grid container spacing={2}>
         {/* CUIT y Validar */}
@@ -543,6 +579,20 @@ export const CotizadorForm = ({ onClose }: CotizadorFormProps) => {
             VALIDAR
           </CustomButton>
         </Grid>
+
+        {/* Denominación (mostrar entre CUIT y VALIDAR) */}
+        {empleadoresPadron?.denominacion && (
+          <Grid size={12}>
+            <TextField
+              label="Razón Social"
+              value={empleadoresPadron.denominacion}
+              fullWidth
+              InputProps={{
+                readOnly: true,
+              }}
+            />
+          </Grid>
+        )}
 
         {/* Jurisdicción */}
         <Grid size={12}>
@@ -763,25 +813,10 @@ export const CotizadorForm = ({ onClose }: CotizadorFormProps) => {
               onClick={handleCotizar}
               color="secondary"
               width="fit-content"
-              disabled={!isCuitValidated}
+              disabled={!isCuitValidated || isGeneratingCotizacion}
+              isLoading={isGeneratingCotizacion}
             >
               {debeMostrarSolicitar ? 'SOLICITAR' : 'COTIZAR'}
-            </CustomButton>
-            <CustomButton
-              onClick={handleGenerarPDF}
-              color="secondary"
-              width="fit-content"
-              disabled={!isCuitValidated || !cotizacionRealizada || debeMostrarSolicitar}
-            >
-              GENERA PDF AL CLIENTE
-            </CustomButton>
-            <CustomButton
-              onClick={handleEnviarMail}
-              color="secondary"
-              width="fit-content"
-              disabled={!isCuitValidated || !cotizacionRealizada || debeMostrarSolicitar}
-            >
-              ENVIA MAIL
             </CustomButton>
             <CustomButton
               onClick={handleNuevaCotizacion}

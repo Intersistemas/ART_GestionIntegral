@@ -132,12 +132,12 @@ export const CotizacionResultadoModal = ({
           </>
         )}
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 3 }}>
-          {onImprimir && (
+          {onImprimir && !esSolicitud && (
             <CustomButton onClick={onImprimir} color="secondary">
               Imprimir
             </CustomButton>
           )}
-          {onEnviarEmail && (
+          {onEnviarEmail && !esSolicitud && (
             <CustomButton onClick={onEnviarEmail} color="secondary">
               Enviar por Email
             </CustomButton>
