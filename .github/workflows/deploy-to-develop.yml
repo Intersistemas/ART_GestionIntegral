@@ -150,7 +150,11 @@ jobs:
           try { pm2 describe art_gestionintegral | Out-Null; $exists = $true } catch { $exists = $false }
           if ($exists) {
             # reload using ecosystem file for zero-downtime if supported
-            pm2 reload ecosystem.config.js --only art_gestionintegral --update-env || pm2 restart art_gestionintegral
+            pm2 reload ecosystem.config.js --only art_gestionintegral --update-env
+            if ($LASTEXITCODE -ne 0) {
+              Write-Host "pm2 reload failed with code $LASTEXITCODE, attempting restart"
+              pm2 restart art_gestionintegral
+            }
           } else {
             pm2 start ecosystem.config.js --env production
           }
