@@ -79,6 +79,7 @@
     padding: 1.5rem 2rem; /* Añadir padding al cuerpo para los lados y arriba */
     /* El padding-bottom se añade al final de los elementos del formulario si es necesario */
     overflow-y: auto; /* cuando el formulario tiene muchos componentes en vertical, mostrar el scroll dentro del body en lugar de junto al modal */
+    font-size: 1.6rem !important; /* Aumentar tamaño de fuente base del cuerpo */
 }
 
 

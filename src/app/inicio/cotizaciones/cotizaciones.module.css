@@ -1,12 +1,30 @@
 /* app/inicio/cotizaciones/cotizaciones.module.css */
 
+.inicioContainer {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .header {
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  width: 100%;
 }
 
 .mainTitle {
   font-size: 2.5rem;
   font-weight: bold;
   color: var(--negro);
-  margin-top: 5px;
+  margin: 0;
+  text-align: center;
+}
+
+.buttonsContainer {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
 }

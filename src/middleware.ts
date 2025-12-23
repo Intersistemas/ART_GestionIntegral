@@ -1,13 +1,10 @@
 // src/middleware.ts
-// NOTE: Next.js 16 muestra un warning sobre middleware deprecado en favor de "proxy"
-// Este middleware sigue funcionando correctamente. El warning es informativo sobre futuros cambios.
 
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 
 // Mapeo de rutas a tareas de permiso
-// Si una ruta requiere una tarea, agrégala aquí.
-// Si no, no la incluyas.
+// Si una ruta requiere una tarea, agrégala aquí, si no, no la incluyas.
 const permissionMap: { [key: string]: string | null } = {
   "/inicio/favoritos": "Favoritos",
   "/inicio/empleador/poliza": "empleador_Poliza",

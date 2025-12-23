@@ -89,8 +89,10 @@ export function DataContextProvider({ children }: { children: ReactNode }) {
       { name: "Interno", label: "Número", type: "number", formatter: numeroFormatter },
 
       { name: "OrigenDescripcion", label: "Origen", type: "text"},
+      
+      { name: "ContactoTrabajadorEmpleador", label: "Contacto Tipo", type: "text"},
       { name: "ContactoDocNro", label: "CUIT/DNI", type: "text", formatter: cuipFormatter },
-      { name: "ContactoNombre", label: "Contacto", type: "text" },
+      { name: "ContactoNombre", label: "Contacto Nombre", type: "text" },
 
       { name: "TemaDescripcion", label: "Tema", type: "text" },
       { name: "CategoriaDescripcion", label: "Categoría", type: "text" },

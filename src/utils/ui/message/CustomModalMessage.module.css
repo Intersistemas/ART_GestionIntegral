@@ -40,7 +40,7 @@
 .titleText {
     font-weight: 700 !important; 
     color: var(--grisOscuro) !important;
-    font-size: 2rem !important; /* Reutilizamos la variable de fuente grande */
+    font-size: 2.4rem !important; /* Aumentar tamaño del título */
 }
 
 .icon {
@@ -68,5 +68,5 @@
 
 .messageText {
     color: var(--gris) !important;
-    font-size: 1.5rem !important;
+    font-size: 1.8rem !important; /* Aumentar tamaño del mensaje */
 }
