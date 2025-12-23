@@ -18,7 +18,6 @@ export type CotizadorFormData = {
   tipoTel: string;
   numeroTelefono: string;
   alicuota: string;
-  empresaNueva: boolean;
 };
 
 export type CotizadorPDFFormData = {
@@ -28,6 +27,7 @@ export type CotizadorPDFFormData = {
   masaSalarial: string;
   actividadCotizacion: string;
   alicuota: string;
+  email?: string;
 };
 
 export type CotizadorPDFContentProps = {
