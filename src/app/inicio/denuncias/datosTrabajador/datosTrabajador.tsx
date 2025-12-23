@@ -474,7 +474,7 @@ const DatosTrabajador: React.FC<DatosTrabajadorProps> = ({
             disabled={isDisabled}
             className={styles.compactField}
           >
-            <InputLabel>Doc Tipo</InputLabel>
+            <InputLabel>Doc. Tipo</InputLabel>
             <Select
               name="docTipo"
               value={form.docTipo}
@@ -500,7 +500,7 @@ const DatosTrabajador: React.FC<DatosTrabajadorProps> = ({
           </FormControl>
 
           <TextField
-            label="Doc Numero"
+            label="Doc. Número"
             name="docNumero"
             value={form.docNumero}
             onChange={numericChange("docNumero", { format: (d) => Formato.DNI(d), formatWhenLen: 8 })}
@@ -673,7 +673,7 @@ const DatosTrabajador: React.FC<DatosTrabajadorProps> = ({
 
         <div className={styles.formRow}>
           <TextField
-            label="Nro"
+            label="Nro."
             name="domicilioNro"
             value={form.domicilioNro}
             onChange={numericChange("domicilioNro")}
@@ -691,7 +691,7 @@ const DatosTrabajador: React.FC<DatosTrabajadorProps> = ({
             placeholder="Piso"
           />
           <TextField
-            label="Dpto"
+            label="Dpto."
             name="domicilioDpto"
             value={form.domicilioDpto}
             onChange={onTextFieldChange}
@@ -735,7 +735,7 @@ const DatosTrabajador: React.FC<DatosTrabajadorProps> = ({
 
         <div className={styles.formRow}>
           <TextField
-            label="Busqueda Localidad / C.P."
+            label="Búsqueda Localidad / C.P."
             name="busqueda"
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
@@ -799,7 +799,7 @@ const DatosTrabajador: React.FC<DatosTrabajadorProps> = ({
           </div>
 
           <TextField
-            label="Cod Postal"
+            label="Cod. Postal"
             name="codPostalTrabajador"
             value={form.codPostalTrabajador}
             className={styles.smallField}

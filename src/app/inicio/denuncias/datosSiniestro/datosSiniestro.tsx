@@ -577,7 +577,7 @@ const DatosSiniestro: React.FC<DatosSiniestroProps> = ({
             />
 
             <TextField
-              label="Dpto"
+              label="Dpto."
               name="establecimientoDpto"
               value={form.establecimientoDpto}
               onChange={onTextFieldChange}
@@ -694,7 +694,7 @@ const DatosSiniestro: React.FC<DatosSiniestroProps> = ({
           />
 
           <TextField
-            label="ROAM Nro"
+            label="ROAM Nro."
             name="roamNro"
             value={form.roamNro}
             onChange={numericChange("roamNro")}
