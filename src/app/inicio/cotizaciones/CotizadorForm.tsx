@@ -9,6 +9,7 @@ import CustomSelectSearch from '@/utils/ui/form/CustomSelectSearch';
 import { tieneActividadesSiniestras, debeSolicitar } from './validaciones';
 import { CotizacionResultadoModal } from './CotizacionResultadoModal';
 import { CotizadorPDFPreview } from './CotizadorPDFPreview';
+import { CotizadorEmailModal } from './CotizadorEmailModal';
 import { CotizadorFormData, CotizadorPDFFormData } from './types';
 import styles from './cotizadorForm.module.css';
 
@@ -57,7 +58,6 @@ const initialFormData: CotizadorFormData = {
   tipoTel: 'Celular',
   numeroTelefono: '',
   alicuota: '',
-  empresaNueva: false,
 };
 
 export const CotizadorForm = ({ onClose }: CotizadorFormProps) => {
@@ -90,6 +90,7 @@ export const CotizadorForm = ({ onClose }: CotizadorFormProps) => {
     resultado: CotizacionesDTO | null;
   } | null>(null);
   const [mostrarPreviewPDF, setMostrarPreviewPDF] = useState(false);
+  const [mostrarEmailModal, setMostrarEmailModal] = useState(false);
 
   // Consultar actividades CIIU desde el endpoint de CIIUIndices cuando hay CUIT validado
   const { data: actividadesCIIU, isLoading: isLoadingActividades } = cotizadorAPI.useGetCIIUIndices(
@@ -432,6 +433,7 @@ export const CotizadorForm = ({ onClose }: CotizadorFormProps) => {
           masaSalarial: formData.masaSalarial,
           actividadCotizacion: formData.actividadCotizacion,
           alicuota: formData.alicuota,
+          email: formData.email,
         };
         setDatosParaPDF({
           formData: pdfFormData,
@@ -480,13 +482,10 @@ export const CotizadorForm = ({ onClose }: CotizadorFormProps) => {
   };
 
   const handleEnviarMail = () => {
-    if (!resultadoCotizacion.resultado) {
+    if (!resultadoCotizacion.resultado || !datosParaPDF) {
       return;
     }
-
-    // Aquí implementarías la lógica para enviar mail
-    console.log('Enviando mail con datos:', resultadoCotizacion.resultado);
-    // TODO: Implementar envío de email
+    setMostrarEmailModal(true);
   };
 
   const handleNuevaCotizacion = () => {
@@ -535,23 +534,43 @@ export const CotizadorForm = ({ onClose }: CotizadorFormProps) => {
         onEnviarEmail={handleEnviarMail}
       />
       {datosParaPDF && datosParaPDF.resultado && (
-        <CotizadorPDFPreview
-          open={mostrarPreviewPDF}
-          onClose={() => setMostrarPreviewPDF(false)}
-          resultado={datosParaPDF.resultado}
-          formData={{
-            nombre: datosParaPDF.formData.nombre,
-            cuit: datosParaPDF.formData.cuit,
-            trabajadoresDeclarados: datosParaPDF.formData.trabajadoresDeclarados,
-            masaSalarial: datosParaPDF.formData.masaSalarial,
-            actividadCotizacion: datosParaPDF.formData.actividadCotizacion,
-            alicuota: datosParaPDF.formData.alicuota,
-          }}
-          actividadesCIIU={actividadesCIIU}
-          artSellosIIBB={artSellosIIBB}
-          empleadoresPadron={empleadoresPadron}
-          ffepImporte={ultimoFFEP?.importe}
-        />
+        <>
+          <CotizadorPDFPreview
+            open={mostrarPreviewPDF}
+            onClose={() => setMostrarPreviewPDF(false)}
+            resultado={datosParaPDF.resultado}
+            formData={{
+              nombre: datosParaPDF.formData.nombre,
+              cuit: datosParaPDF.formData.cuit,
+              trabajadoresDeclarados: datosParaPDF.formData.trabajadoresDeclarados,
+              masaSalarial: datosParaPDF.formData.masaSalarial,
+              actividadCotizacion: datosParaPDF.formData.actividadCotizacion,
+              alicuota: datosParaPDF.formData.alicuota,
+            }}
+            actividadesCIIU={actividadesCIIU}
+            artSellosIIBB={artSellosIIBB}
+            empleadoresPadron={empleadoresPadron}
+            ffepImporte={ultimoFFEP?.importe}
+          />
+          <CotizadorEmailModal
+            open={mostrarEmailModal}
+            onClose={() => setMostrarEmailModal(false)}
+            resultado={datosParaPDF.resultado}
+            formData={{
+              nombre: datosParaPDF.formData.nombre,
+              cuit: datosParaPDF.formData.cuit,
+              trabajadoresDeclarados: datosParaPDF.formData.trabajadoresDeclarados,
+              masaSalarial: datosParaPDF.formData.masaSalarial,
+              actividadCotizacion: datosParaPDF.formData.actividadCotizacion,
+              alicuota: datosParaPDF.formData.alicuota,
+              email: formData.email,
+            }}
+            actividadesCIIU={actividadesCIIU}
+            artSellosIIBB={artSellosIIBB}
+            empleadoresPadron={empleadoresPadron}
+            ffepImporte={ultimoFFEP?.importe}
+          />
+        </>
       )}
       <div className={styles.formContainer}>
       <Grid container spacing={2}>
@@ -779,8 +798,8 @@ export const CotizadorForm = ({ onClose }: CotizadorFormProps) => {
           />
         </Grid>
 
-        {/* Alicuota y Empresa Nueva */}
-        <Grid size={8}>
+        {/* Alicuota y Botones de acción */}
+        <Grid size={3}>
           <TextField
             label="Alicuota*"
             value={formData.alicuota}
@@ -792,22 +811,7 @@ export const CotizadorForm = ({ onClose }: CotizadorFormProps) => {
             disabled={!isCuitValidated}
           />
         </Grid>
-        <Grid size={4}>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={formData.empresaNueva}
-                onChange={handleCheckboxChange('empresaNueva')}
-                disabled={!isCuitValidated}
-              />
-            }
-            label="Empresa Nueva"
-            sx={{ mt: 2 }}
-          />
-        </Grid>
-
-        {/* Botones de acción */}
-        <Grid size={12}>
+        <Grid size={9}>
           <div className={styles.actionsContainer}>
             <CustomButton
               onClick={handleCotizar}
@@ -825,10 +829,14 @@ export const CotizadorForm = ({ onClose }: CotizadorFormProps) => {
             >
               NUEVA COTIZACIÓN
             </CustomButton>
-            <Typography variant="body2" className={styles.disclaimer}>
-              Compará la alícuota que te ofrecemos con la que estas pagando
-            </Typography>
           </div>
+        </Grid>
+
+        {/* Disclaimer */}
+        <Grid size={12}>
+          <Typography variant="h5" className={styles.disclaimer}>
+            Compará la alícuota que te ofrecemos con la que estas pagando
+          </Typography>
         </Grid>
       </Grid>
     </div>
