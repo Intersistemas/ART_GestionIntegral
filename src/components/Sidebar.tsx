@@ -72,19 +72,20 @@ const menuItems: MenuItem[] = [
             { name: "Comisiones Médicas", icon: BsGraphUpArrow, link: "/inicio/informes/comisionesMedicas", permissionTask: "Informes_ComisionesMedicas" },
             { name: "Siniestros", icon: BsGraphUpArrow, link: "/inicio/informes/siniestros", permissionTask: "Informes_Siniestros" },
             { name: "Atención Al Público", icon: BsGraphUpArrow, link: "/inicio/informes/atencionAlPublico", permissionTask: "Informes_AtencionAlPublico" },
-        ],
-    },
-     {
-        name: "Denuncias",
-        icon: BsFillChatRightQuoteFill ,
-        permissionTask: "Denuncias",
-    },
-    {
-        name: "Usuarios",
-        icon: BsPersonFillGear,
-        link: "/inicio/usuarios",
-        permissionTask: "Usuarios",
-    },
+    ],
+  },
+  {
+    name: "Denuncias",
+    icon: BsFillChatRightQuoteFill,
+    link: "/inicio/denuncias",
+    permissionTask: "Denuncias",
+  },
+  {
+    name: "Usuarios",
+    icon: BsPersonFillGear,
+    link: "/inicio/usuarios",
+    permissionTask: "Usuarios",
+  },
 ];
 
 
