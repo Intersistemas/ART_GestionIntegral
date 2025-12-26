@@ -25,6 +25,8 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({ data, type, sumarleUnMesA
             ...row,
             periodoCobertura: Formato.Fecha(sumarleUnMesAlPeriodo?.(row.periodo), "MM-YYYY"),
             periodoDDJJ: Formato.Fecha(row.periodo, "MM-YYYY"),
+            saldo: row.saldo != null ? parseFloat(row.saldo.toFixed(2)) : row.saldo,
+            saldoAcumulado: row.saldoAcumulado != null ? parseFloat(row.saldoAcumulado.toFixed(2)) : row.saldoAcumulado,
         }));
         
         const exportColumns = {
@@ -61,6 +63,8 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({ data, type, sumarleUnMesA
             ...row,
             periodoCobertura: Formato.Fecha(sumarleUnMesAlPeriodo?.(row.periodo), "MM-YYYY"),
             periodoDDJJ: Formato.Fecha(row.periodo, "MM-YYYY"),
+            saldo: row.saldo != null ? parseFloat(row.saldo.toFixed(2)) : row.saldo,
+            saldoAcumulado: row.saldoAcumulado != null ? parseFloat(row.saldoAcumulado.toFixed(2)) : row.saldoAcumulado,
         }));
         
         const exportColumns = {
