@@ -519,7 +519,7 @@ export class ArtAPIClass extends ExternalAPI {
 
 }
 
-const ArtAPI = Object.seal(new ArtAPIClass());
+const ArtAPI = Object.seal(new ArtAPIClass()) as ArtAPIClass;
 
 export default ArtAPI;
 
