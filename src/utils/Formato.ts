@@ -154,6 +154,34 @@ export function DNI(numero: any) {
 	return Mascara(numero, "##.###.###");
 }
 
+
+/**
+ * Formatea un número de teléfono con el formato: +cc aaa aaaaaaa
+ * @param input Cadena con el número de teléfono a formatear
+ * @returns Número formateado con el patrón +cc aaa aaaaaaa
+ */
+export function Telefono(input: string): string {
+	if (!input) return "";
+	// normalizar: permitir + inicial, eliminar otros caracteres no numéricos
+	const hasPlus = input.trim().startsWith("+");
+	const raw = hasPlus ? input.trim().slice(1) : input;
+	const digits = raw.replace(/\D/g, "");
+	if (!digits) return hasPlus ? "+" : "";
+	// Formato +cc aaa aaaaaaa
+	if (digits.length <= 2) {
+		return `+${digits}`;
+	}
+	const cc = digits.slice(0, 2);
+	const part1 = digits.slice(2, 5);
+	const rest = digits.slice(5);
+	let result = `+${cc}`;
+	if (part1) result += ` ${part1}`;
+	if (rest) result += ` ${rest}`;
+	return result;
+}
+
+
+
 export function Entero(numero: any) {
 	if (numero == null || numero === "") return numero;
 	numero = `${numero}`;
@@ -186,6 +214,7 @@ class _Formato {
 	Entero = Entero;
 	Decimal = Decimal;
 	DNI = DNI;
+	Telefono = Telefono;
 }
 
 const Formato = new _Formato();
