@@ -1,0 +1,24 @@
+/* Estilos para el modal de resultado de cotización */
+.container {
+  padding: 1rem;
+}
+
+.detailsContainer {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.label {
+  color: var(--gris);
+}
+
+.value {
+  font-weight: bold;
+}
+

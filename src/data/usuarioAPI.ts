@@ -132,6 +132,20 @@ export type TablasUsuarioSWRKey = [url: string, token: string, params: string];
 //#endregion /api/Tablas/Usuario/{usuarioId}
 //#endregion Types
 
+//#region EnviarCorreo Cotización Types
+export type EnviarCorreoAttachment = {
+  fileName: string;
+  contentType: string;
+  base64Data: string;
+};
+
+export type EnviarCorreoRequest = {
+  to: string[];
+  cuerpo: string;
+  attachments: EnviarCorreoAttachment[];
+};
+//#endregion EnviarCorreo Cotización Types
+
 //#region token
 export const token = Object.seal(new TokenConfigurator());
 //#endregion token
@@ -403,6 +417,23 @@ export class UsuarioAPIClass extends ExternalAPI {
     useSWR([this.postReenviarCorreoURL(), token.getToken()], () =>
       this.reenviarCorreo(query)
     );
+  //#endregion
+
+  //#region EnviarCorreo Cotización
+  readonly postEnviarCorreoURL = () =>
+    this.getURL({ path: '/Api/Usuario/EnviarCorreo' }).toString();
+
+  enviarCorreo = async (data: EnviarCorreoRequest) =>
+    axios
+      .post(this.postEnviarCorreoURL(), data, {
+        headers: { 'Content-Type': 'application/json' },
+      })
+      .then(async (response) => {
+        if (response.status === 200 || response.status === 201) return response.data;
+        return Promise.reject(
+          new AxiosError(`Error en la petición: ${response.data}`)
+        );
+      });
   //#endregion
 
   //#region Confirmar Email

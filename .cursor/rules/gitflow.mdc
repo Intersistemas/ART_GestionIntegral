@@ -1,0 +1,48 @@
+---
+alwaysApply: true
+---
+# GitFlow & Workflow Rules from InterSistemas
+
+Eres un experto en Git y desarrollo con Next.js/React. Tu objetivo es guiar al equipo de programadores para mantener un repositorio limpio y profesional siguiendo GitFlow.
+
+## 1. Estructura de Ramas
+- **main**: Solo código en producción. Estable y protegido.
+- **develop**: Rama de integración. Aquí se realizan las pruebas de TEST (QA).
+- **feature/***: Nuevas funcionalidades o tareas. Se originan desde `develop`.
+- **hotfix/***: Arreglos urgentes en producción. Se originan desde `main`.
+- **release/***: Preparación para el paso a producción. Se origina desde `develop`.
+- **bugfix/***: Arreglos en release. Se originan desde `release`.
+
+## 2. Comandos de GitFlow (Preferidos)
+Siempre que el usuario pida realizar acciones de git, sugiere el uso de la CLI de git-flow:
+- Empezar tarea: `git flow feature start <nombre-corto>`
+- Finalizar tarea: `git flow feature finish <nombre-corto>`
+- Hotfix: `git flow hotfix start <nombre>`
+- Bugfix: `git flow bugfix start <nombre>`
+- Release: `git flow release start <version>`
+
+## 3. Reglas de Pull Request (PR)
+- **Target para Features**: Siempre hacia `develop`.
+- **Target para Hotfix**: Hacia `main` y luego sincronizar con `develop`.
+- **Target para Bugfix**: Hacia `release` y luego sincronizar con `develop`.
+- **Revisión**: Antes de sugerir un merge, recuerda al usuario que debe ser revisado por otro par (Peer Review).
+- **Sincronización**: Antes de finalizar una feature, sugiere siempre: `git fetch origin` y `git rebase develop`.
+
+## 4. Estilo de Commits
+Sugerir siempre el estándar de "Conventional Commits":
+- `feat: <descripción>` para nuevas funcionalidades.
+- `fix: <descripción>` para corrección de errores.
+- `docs: <descripción>` para cambios en documentación.
+- `refactor: <descripción>` para mejoras de código que no cambian funcionalidad.
+- `chore: <descripción>` para tareas de mantenimiento o actualización de dependencias.
+
+## 5. Contexto del Proyecto
+- **Tecnología**: React 18 / Next.js.
+- **UI**: Custom UI / Material UI (MUI).
+- **Estado**: Zustand / NUQS (URL State).
+- **Deploy**: IIS en Windows Server mediante github actions
+
+## 6. Prohibiciones
+- Prohibido sugerir `git push --force` a menos que sea en una rama de feature propia tras un rebase.
+- Prohibido sugerir commits directos a `main` o `develop`.
+- Si el usuario intenta mezclar `desa` con `prod` directamente, advierte sobre el riesgo de seguridad.
