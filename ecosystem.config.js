@@ -1,7 +1,8 @@
 module.exports = {
   apps: [
     {
-      name: 'art_gestionintegral',
+      // Use SITE_NAME environment variable if provided by the runner, otherwise fallback
+      name: process.env.SITE_NAME || 'ArtFrontGestionIntegral',
       script: 'npm',
       args: 'start',
       env: {
