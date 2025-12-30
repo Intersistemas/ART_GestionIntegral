@@ -1,9 +1,9 @@
-name: Deploy to Develop
+name: Deploy to Test
 
 on:
   push:
     branches:
-      - develop
+      - release/**
     paths-ignore:
       - '**/*.yml'
       - '**/*.yaml'
@@ -12,7 +12,7 @@ on:
 jobs:
   build-and-deploy:
     name: Build and deploy on self-hosted Windows runner
-    runs-on: [self-hosted, windows, x64, art-front-develop]
+    runs-on: [self-hosted, windows, x64, art-front-test]
     env:
       SITE_PATH: ${{ secrets.SITE_PATH }}
       SITE_NAME: ${{ secrets.SITE_NAME }}
