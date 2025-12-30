@@ -4,10 +4,6 @@ on:
   push:
     branches:
       - develop
-    paths-ignore:
-      - '**/*.yml'
-      - '**/*.yaml'
-      - 'ecosystem.config.js'
 
 jobs:
   build-and-deploy:
