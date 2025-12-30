@@ -41,10 +41,10 @@ jobs:
           $body = @{ text = $msg } | ConvertTo-Json
           Invoke-RestMethod -Uri $webhook -Method Post -Body $body -ContentType 'application/json'
 
-      - name: Use Node.js 20
+      - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Show node/npm versions and timestamp
