@@ -85,7 +85,21 @@ const fechaFormatter: Formatter = (v) => {
 const numeroFormatter: Formatter = (v) => Formato.Numero(v);
 const cuipFormatter: Formatter = (v) => Formato.CUIP(v);
 
-const valueOptionsFormatter: OptionsFormatter = (options) => ((v: string) => (options?.[v] ?? v));
+const valueOptionsFormatter: OptionsFormatter = (options) => {
+  const map = options ?? {};
+  return (v: string) => {
+    if (v == null) return v;
+    // exact key match
+    if (v in map) return map[v];
+    const nk = normalizeKey(v);
+    // try matching against keys or labels ignoring spaces/underscores and case
+    for (const [k, label] of Object.entries(map)) {
+      if (normalizeKey(k) === nk) return label;
+      if (typeof label === 'string' && normalizeKey(label) === nk) return label;
+    }
+    return v;
+  };
+};
 const optionsValues: OptionsValues = (options) => Object.entries<string>(options ?? {}).map(([name, label]) => ({ name, label }));
 const optionsSelect = (options: any, formatter = valueOptionsFormatter, values = optionsValues): {
   operators: DefaultOperators,
@@ -100,7 +114,12 @@ const optionsSelect = (options: any, formatter = valueOptionsFormatter, values =
 });
 
 const SNOptions = { S: "Si", N: "No" };
-const tipoSiniestroOptions = { T: "Accidente Trabajo", P: "Enfermedad Profesional", I: "Accidente In-Itinere", R: "Reingreso" };
+const tipoSiniestroOptions = {
+  AccidenteTrabajo: "Accidente Trabajo",
+  Enfermedad: "Enfermedad Profesional",
+  AccidenteInItinere: "Accidente In-Itinere",
+  Reingreso: "Reingreso",
+};
 
 const SiniestrosContext = createContext<DataContextType | undefined>(undefined);
 //#endregion globales
@@ -314,7 +333,7 @@ export function SiniestrosContextProvider({ children }: { children: ReactNode })
       from: [{ table }],
       order: { by: [tables[table][0].name] } // ordena por la primera (Siniestro)
     };
-    if (proposition) apiQuery.where = proposition;
+    if (proposition) apiQuery.where = normalizeProposition(proposition);
 
     async function onConfirm() {
       await execute<Row>(apiQuery).then((ok) => {
@@ -353,6 +372,21 @@ export function SiniestrosContextProvider({ children }: { children: ReactNode })
         message: typeof error === "string" ? error : error.detail ?? error.message ?? JSON.stringify(error)
       }));
   }, [proposition, tables, execute, analyze, onCloseDialog, errorDialog]);
+  
+  function escapeRegExp(s: string) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+  function normalizeProposition(prop?: string) {
+    if (!prop) return prop;
+    let p = String(prop);
+    try {
+      for (const [key, label] of Object.entries(tipoSiniestroOptions)) {
+        const re = new RegExp("\\b" + escapeRegExp(key) + "\\b", 'g');
+        p = p.replace(re, String(label));
+      }
+    } catch (_e) { /* ignore */ }
+    return p;
+  }
 
   const onLimpiaFiltro = useCallback(() => {
     setFiltro(undefined);
