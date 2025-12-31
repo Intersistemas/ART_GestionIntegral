@@ -1,9 +1,10 @@
-name: Deploy to Develop
+name: Deploy to Test
 
 on:
   push:
     branches:
-      - develop
+      - release/**
+
   workflow_dispatch:
     inputs:
       reason:
@@ -14,7 +15,7 @@ on:
 jobs:
   build-and-deploy:
     name: Build and deploy on self-hosted Windows runner
-    runs-on: [self-hosted, windows, x64, art-front-develop]
+    runs-on: [self-hosted, windows, x64, art-front-test]
     env:
       SITE_PATH: ${{ secrets.SITE_PATH }}
       SITE_NAME: ${{ secrets.SITE_NAME }}
@@ -40,10 +41,10 @@ jobs:
           $body = @{ text = $msg } | ConvertTo-Json
           Invoke-RestMethod -Uri $webhook -Method Post -Body $body -ContentType 'application/json'
 
-      - name: Use Node.js 20
+      - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Show node/npm versions and timestamp
