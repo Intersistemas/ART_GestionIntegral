@@ -201,6 +201,7 @@ function CuentaCorrienteComercializador() {
         { header: 'IVA', accessorKey: 'iva', cell: info => formatCurrency(info.getValue() as number), meta: { align: 'center'} },       
         { header: 'Total Sin IVA', accessorKey: 'totalSinIVA', cell: info => formatCurrency(info.getValue() as number), meta: { align: 'center'} },       
         { header: 'Total Con IVA', accessorKey: 'totalConIVA', cell: info => formatCurrency(info.getValue() as number), meta: { align: 'center'} },   
+        { header: 'Aplica IVA', id: 'aplicaIVA', cell: (info: any) => {const ivaVal = info.row?.original?.iva ?? info.getValue?.(); const num = Number(String(ivaVal ?? 0).replace(',', '.')); return (isNaN(num) || num === 0) ? 'No' : 'Si';}, meta: { align: 'center' } },
     ], []);
 
 
