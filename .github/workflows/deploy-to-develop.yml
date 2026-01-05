@@ -4,10 +4,12 @@ on:
   push:
     branches:
       - develop
-    paths-ignore:
-      - '**/*.yml'
-      - '**/*.yaml'
-      - 'ecosystem.config.js'
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Deploy manual'
+        required: true
+        default: 'Deploy manual'
 
 jobs:
   build-and-deploy:
