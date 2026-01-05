@@ -371,6 +371,12 @@ export type DenunciaGetAll = {
   empCuit: number;
   empPoliza: number;
   empRazonSocial: string;
+  conIniDomicilioCalle?: string;
+  conIniDomicilioNumero?: string;
+  conIniDomicilioPiso?: string;
+  conIniDomicilioDepartamento?: string;
+  conIniDomicilioEntreCalle?: string;
+  conIniDomicilioYCalle?: string;
 };
 
 export type DenunciaQueryParams = {
@@ -523,6 +529,12 @@ export type DenunciaPostRequest = {
   conIniCodLocalidad: number;
   conIniCodPostal: string;
   conIniLocalidad: string;
+  conIniDomicilioCalle: string;
+  conIniDomicilioNumero: string;
+  conIniDomicilioPiso: string;
+  conIniDomicilioDepartamento: string;
+  conIniDomicilioEntreCalle: string;
+  conIniDomicilioYCalle: string;
   estTrabEstaConsciente: string;
   estTrabColor: string;
   estTrabHabla: string;
@@ -632,6 +644,12 @@ export type DenunciaPutRequest = {
   conIniCodLocalidad: number;
   conIniCodPostal: string;
   conIniLocalidad: string;
+  conIniDomicilioCalle: string;
+  conIniDomicilioNumero: string;
+  conIniDomicilioPiso: string;
+  conIniDomicilioDepartamento: string;
+  conIniDomicilioEntreCalle: string;
+  conIniDomicilioYCalle: string;
   estTrabEstaConsciente: string;
   estTrabColor: string;
   estTrabHabla: string;

@@ -243,8 +243,7 @@ const buildBaseDenunciaPayload = (formData: DenunciaFormData, empresa?: any, emp
   const fechaHoraSiniestro = buildFechaHoraSiniestroIso(formData.fechaOcurrencia, formData.hora);
   const afiFechaNacimiento = buildAfiNacimientoYear(formData.fechaNac);
   const emp = empresa || {};
-  // Usar los datos del formulario
-  const empCuitNum = onlyDigits(formData.empCuit);
+  const empCuitNum = typeof empleadorCuit === 'number' ? empleadorCuit : onlyDigits(formData.empCuit);
 
   return {
     siniestroTipo: formData.tipoDenuncia,
@@ -262,7 +261,7 @@ const buildBaseDenunciaPayload = (formData: DenunciaFormData, empresa?: any, emp
     empCodPostal: Number(onlyDigits(formData.empCodPostal)),
     empTelefonos: String(formData.empTelefonos ?? ''),
     empeMail: String(formData.empEmail ?? ''),
-    empOcCuit: onlyDigits(formData.empCuit),
+    empOcCuit: empCuitNum,
     empOcRazonSocial: String(formData.empRazonSocial ?? ''),
     empOcEstablecimiento: String(formData.empRazonSocial ?? ''),
     empOcCiiu: 0,
@@ -336,6 +335,12 @@ const buildBaseDenunciaPayload = (formData: DenunciaFormData, empresa?: any, emp
     conIniCodLocalidad: onlyDigits(formData.codLocalidad),
     conIniCodPostal: String(formData.codPostal ?? ''),
     conIniLocalidad: String(formData.localidadAccidente ?? ''),
+    conIniDomicilioCalle: String(formData.calle ?? ''),
+    conIniDomicilioNumero: String(formData.nro ?? ''),
+    conIniDomicilioPiso: String(formData.piso ?? ''),
+    conIniDomicilioDepartamento: String(formData.dpto ?? ''),
+    conIniDomicilioEntreCalle: String(formData.entreCalle ?? ''),
+    conIniDomicilioYCalle: String(formData.entreCalleY ?? ''),
 
     estTrabEstaConsciente: mapSiNoToApi(formData.estaConsciente || ''),
     estTrabColor: mapColorToApiLetter(formData.color),
@@ -686,12 +691,12 @@ function DenunciasPage() {
           empCodPostal: api.empOcCodPostal != null ? String(api.empOcCodPostal) : initialDenunciaFormData.empCodPostal,
           empTelefonos: api.empOcTelefonos ?? initialDenunciaFormData.empTelefonos,
           empEmail: api.empOceMail ?? initialDenunciaFormData.empEmail,
-          calle: api.empDomicilioCalle ?? initialDenunciaFormData.calle,
-          nro: api.empDomicilioNro ?? initialDenunciaFormData.nro,
-          piso: api.empDomicilioPiso ?? initialDenunciaFormData.piso,
-          dpto: api.empDomicilioDpto ?? initialDenunciaFormData.dpto,
-          entreCalle: api.empDomicilioEntreCalle1 ?? initialDenunciaFormData.entreCalle,
-          entreCalleY: api.empDomicilioEntreCalle2 ?? initialDenunciaFormData.entreCalleY,
+          calle: sin?.conIniDomicilioCalle ?? api.conIniDomicilioCalle ?? api.empDomicilioCalle ?? initialDenunciaFormData.calle,
+          nro: sin?.conIniDomicilioNumero ?? api.conIniDomicilioNumero ?? api.empDomicilioNro ?? initialDenunciaFormData.nro,
+          piso: sin?.conIniDomicilioPiso ?? api.conIniDomicilioPiso ?? api.empDomicilioPiso ?? initialDenunciaFormData.piso,
+          dpto: sin?.conIniDomicilioDepartamento ?? api.conIniDomicilioDepartamento ?? api.empDomicilioDpto ?? initialDenunciaFormData.dpto,
+          entreCalle: sin?.conIniDomicilioEntreCalle ?? api.conIniDomicilioEntreCalle ?? api.empDomicilioEntreCalle1 ?? initialDenunciaFormData.entreCalle,
+          entreCalleY: sin?.conIniDomicilioYCalle ?? api.conIniDomicilioYCalle ?? api.empDomicilioEntreCalle2 ?? initialDenunciaFormData.entreCalleY,
           codLocalidad: String(api.conIniCodLocalidad ?? api.empCodLocalidad ?? initialDenunciaFormData.codLocalidad) || initialDenunciaFormData.codLocalidad,
           codPostal: String(api.conIniCodPostal ?? api.empCodPostal ?? '') || initialDenunciaFormData.codPostal,
           telefonos: api.conIniTelefono ?? api.empTelefonos ?? initialDenunciaFormData.telefonos,
