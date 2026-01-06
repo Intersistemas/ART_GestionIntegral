@@ -142,6 +142,8 @@ export interface DenunciaFormData {
   domicilioNro: string;
   domicilioPiso: string;
   domicilioDpto: string;
+  domicilioEntreCalle1: string;
+  domicilioEntreCalle2: string;
   telefono: string;
   email: string;
   localidad: string;
@@ -254,11 +256,10 @@ export const COLORES = [
 ];
 
 export const TIPOS_TRASLADO = [
-  { value: 'AMBULANCIA', label: 'Ambulancia' },
-  { value: 'VEHICULO_PARTICULAR', label: 'Vehículo Particular' },
-  { value: 'TRANSPORTE_PUBLICO', label: 'Transporte Público' },
-  { value: 'A_PIE', label: 'A Pie' },
-  { value: 'NO_REQUIERE', label: 'No Requiere Traslado' }
+  { value: 'AMBULANCIA_UTIM', label: 'Ambulancia UTIM' },
+  { value: 'AMBULANCIA_CSM', label: 'Ambulancia CSM' },
+  { value: 'REMIS', label: 'Remis' },
+  { value: 'PROPIO', label: 'Propio' }
 ];
 
 // Estado inicial del formulario
@@ -317,6 +318,8 @@ export const initialDenunciaFormData: DenunciaFormData = {
   domicilioNro: '',
   domicilioPiso: '',
   domicilioDpto: '',
+  domicilioEntreCalle1: '',
+  domicilioEntreCalle2: '',
   telefono: '',
   email: '',
   localidad: '',
@@ -368,6 +371,12 @@ export type DenunciaGetAll = {
   empCuit: number;
   empPoliza: number;
   empRazonSocial: string;
+  conIniDomicilioCalle?: string;
+  conIniDomicilioNumero?: string;
+  conIniDomicilioPiso?: string;
+  conIniDomicilioDepartamento?: string;
+  conIniDomicilioEntreCalle?: string;
+  conIniDomicilioYCalle?: string;
 };
 
 export type DenunciaQueryParams = {
@@ -425,12 +434,12 @@ export type PrestadorQueryParams = {
 
 export type PrestadorResponse = {
   cuit: number;
-  nombreFantasia: string;
+  razonSocial: string;
 };
 
 // Tipo para crear una nueva denuncia (POST /api/Denuncias)
 export type DenunciaPostRequest = {
-  // siniestroNro: number;
+  siniestroNro: number;
   siniestroTipo: string;
   empCuit: number;
   empPoliza: number;
@@ -498,11 +507,10 @@ export type DenunciaPostRequest = {
   comentario: string;
   origenIngreso: string;
   trasladoTipo: string;
-
   avisoTrabajadorFueraNomina: number;
-  avisoTrabajadorSinContratoVigente: boolean;
+  avisoEmpleadorSinContratoVigente: boolean;
   estado: number;
-  //denunciaCanalIngresoInterno: number;
+  denunciaCanalIngresoInterno: number;
   descripcion: string;
   fechaHoraSiniestro: string;
   enViaPublica: string;
@@ -521,9 +529,12 @@ export type DenunciaPostRequest = {
   conIniCodLocalidad: number;
   conIniCodPostal: string;
   conIniLocalidad: string;
-
-
-
+  conIniDomicilioCalle: string;
+  conIniDomicilioNumero: string;
+  conIniDomicilioPiso: string;
+  conIniDomicilioDepartamento: string;
+  conIniDomicilioEntreCalle: string;
+  conIniDomicilioYCalle: string;
   estTrabEstaConsciente: string;
   estTrabColor: string;
   estTrabHabla: string;
@@ -531,9 +542,15 @@ export type DenunciaPostRequest = {
   estTrabRespira: string;
   estTrabObservaciones: string;
   estTrabTieneHemorragia: string;
+  estTrabContextoDenuncia: string;
   estTrabVerificaContactoInicial: string;
   estTrabPrestadorTraslado: string;
-  contextoDenuncia: string;
+  denunciaInstanciaImagenes: Array<{
+    internoRefDenImgTipo: number;
+    tipoDocumentacion: string;
+    archivoNombre: string;
+    imagen: string;
+  }>;
 };
 
 // Tipo para actualizar una denuncia existente (PUT /api/Denuncias/{id})
@@ -585,7 +602,6 @@ export type DenunciaPutRequest = {
   empEstTelefonos: string;
   empEsteMail: string;
   prestadorCuit: number;
-  estado: number;
   afiCuil: number;
   afiDocTipo: string;
   afiDocNumero: number;
@@ -628,6 +644,12 @@ export type DenunciaPutRequest = {
   conIniCodLocalidad: number;
   conIniCodPostal: string;
   conIniLocalidad: string;
+  conIniDomicilioCalle: string;
+  conIniDomicilioNumero: string;
+  conIniDomicilioPiso: string;
+  conIniDomicilioDepartamento: string;
+  conIniDomicilioEntreCalle: string;
+  conIniDomicilioYCalle: string;
   estTrabEstaConsciente: string;
   estTrabColor: string;
   estTrabHabla: string;
@@ -638,6 +660,13 @@ export type DenunciaPutRequest = {
   estTrabContextoDenuncia: string;
   estTrabVerificaContactoInicial: string;
   estTrabPrestadorTraslado: string;
+  denunciaInstanciaImagenes: Array<{
+    interno: number;
+    internoRefDenImgTipo: number;
+    tipoDocumentacion: string;
+    archivoNombre: string;
+    imagen: string;
+  }>;
 };
 
 // Tipo para actualizar parcialmente una denuncia (PATCH /api/Denuncias)
@@ -681,6 +710,11 @@ export interface RefObraSocial {
   eMail: string;
   web: string;
   organismo: string;
+}
+
+export interface RefPrestadores {
+  cuit: number;
+  razonSocial: string;
 }
 
 export interface Roam {
@@ -734,6 +768,7 @@ export interface Props {
   onClose: () => void;
   onSubmit: (formData: DenunciaFormData, options?: { final?: boolean }) => void;
   initialData?: DenunciaFormData;
+  initialFiles?: File[];
   errorMsg?: string | null;
   method: RequestMethod;
   isSubmitting?: boolean;
@@ -843,3 +878,7 @@ export interface TouchedFields {
   empTelefonos?: boolean;
   empEmail?: boolean;
 }
+
+export type ParametersEmpleadorT = {
+  CUIL?: number;
+};
