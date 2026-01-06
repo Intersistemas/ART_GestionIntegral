@@ -90,8 +90,9 @@ function CuentaCorrientePage() {
         { header: 'Saldo Mensual', accessorKey: 'saldo', 
             cell: info => {
                 const saldo = info.getValue() as number;
-                const style = saldo < 0 ? { color: 'red', fontWeight: 'bold' } : {};
-                return <span style={style}>{formatCurrency(saldo)}</span>;
+                const mensual = -Number(saldo);
+                const style = mensual < 0 ? { color: 'red', fontWeight: 'bold' } : {};
+                return <span style={style}>{formatCurrency(mensual)}</span>;
             }
             , meta: { align: 'center'} },
         { header: 'Saldo Acumulado', accessorKey: 'saldoAcumulado', cell: info => formatCurrency(info.getValue() as number), meta: { align: 'center'} },
