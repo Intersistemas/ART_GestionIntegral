@@ -7,6 +7,7 @@ import NominasHandler from './Nomina/NominasHandler';
 import { SVCCPresentacionContextProvider } from './context';
 import IniciarHandler from './Iniciar/IniciarHandler';
 import FinalizarHandler from './Finalizar/FinalizarHandler';
+import ConstanciaHandler from './Constancia/ConstanciaHandler';
 
 export default function SVCCPage() {
   const [currentTab, setCurrentTab] = useState(0);// Queremos que inicie en la primera pestaña (0)
@@ -40,6 +41,11 @@ export default function SVCCPage() {
             label: 'Confirma',
             value: 4,
             content: <FinalizarHandler />,
+          },
+          {
+            label: 'Constancia',
+            value: 5,
+            content: <ConstanciaHandler />,
           },
         ]}
       />
