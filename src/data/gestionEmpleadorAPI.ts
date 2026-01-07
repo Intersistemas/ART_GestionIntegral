@@ -243,6 +243,14 @@ export type SVCCPresentacionFinalizaOptions = SWRMutationConfiguration<Presentac
   throwOnError?: boolean;
 }
 //#endregion Types SVCC/Presentacion/Finaliza
+
+//#region Types SVCC/Presentacion/Constancia
+export type SVCCPresentacionConstanciaParams = {
+  id: number;
+}
+export type SVCCPresentacionConstanciaSWRKey = [url: string, token: string, params: string];
+export type SVCCPresentacionConstanciaOptions = SWRConfiguration<File, AxiosError, Fetcher<File, SVCCPresentacionConstanciaSWRKey>>
+//#endregion Types SVCC/Presentacion/Constancia
 //#endregion Types SVCC/Presentacion
 
 //#region Types SVCC/EmpresaTercerizada
@@ -658,6 +666,29 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
   useSVCCPresentacionFinaliza = (options?: SVCCPresentacionFinalizaOptions) =>
     useSWRMutation(this.swrSVCCPresentacionFinaliza.key, this.swrSVCCPresentacionFinaliza.fetcher, options);
   //#endregion SVCC/Presentacion/Finaliza
+  
+  //#region SVCC/Presentacion/Constancia
+  readonly svccPresentacionConstanciaURL = ({ id }: SVCCPresentacionConstanciaParams) => this.getURL({ path: `/api/SVCC/Presentacion/Constancia/${id}` }).toString();
+  svccPresentacionConstancia = async (params: SVCCPresentacionConstanciaParams) => tokenizable.get<Blob>(
+    this.svccPresentacionConstanciaURL(params),
+    { responseType: "blob" }
+  ).then(({ data, headers }) => {
+    const header = headers['content-disposition'];
+    const fname = header.split('filename=')[1].split('.')[0];
+    const ext = header.split('.')[1].split(';')[0];
+    const filename = [fname.replace(`"`,``), ext.replace(`"`,``)].filter(e => e).join(".") || "constancia.pdf";
+    return new File([data], filename, { type: data.type });
+  });
+  swrSVCCPresentacionConstancia: {
+    key: (params: SVCCPresentacionConstanciaParams) => SVCCPresentacionConstanciaSWRKey,
+    fetcher: (key: SVCCPresentacionConstanciaSWRKey) => Promise<File>
+  } = Object.freeze({
+    key: (params) => [this.svccPresentacionConstanciaURL(params), token.getToken(), JSON.stringify(params)],
+    fetcher: ([_url, _token, params]) => this.svccPresentacionConstancia(JSON.parse(params)),
+  });
+  useSVCCPresentacionConstancia = (params?: SVCCPresentacionConstanciaParams, options?: SVCCPresentacionConstanciaOptions) =>
+    useSWR<File, AxiosError>(params ? this.swrSVCCPresentacionConstancia.key(params) : null, this.swrSVCCPresentacionConstancia.fetcher, options);
+  //#endregion SVCC/Presentacion/Constancia
   //#endregion SVCC/Presentacion
 
   //#region SVCC/EmpresaTercerizada
