@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       reason:
-        description: 'Deploy manual'
+        description: 'Comment for manual deploy'
         required: true
         default: 'Deploy manual'
 
