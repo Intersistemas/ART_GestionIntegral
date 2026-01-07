@@ -25,6 +25,12 @@ export type SVCCPresentacionContextType = {
     error?: AxiosError;
     trigger: (data: PresentacionDTO) => void;
   };
+  constancia: {
+    isLoading: boolean;
+    isValidating: boolean;
+    data?: File;
+    error?: AxiosError
+  };
   establecimientos: {
     isLoading: boolean;
     isValidating: boolean;
@@ -54,6 +60,7 @@ const {
   useSVCCPresentacionUltima,
   useSVCCPresentacionNueva,
   useSVCCPresentacionFinaliza,
+  useSVCCPresentacionConstancia,
 
   useSRTSiniestralidadCIUO88List,
   useRefCIIUList,
@@ -66,9 +73,22 @@ export function SVCCPresentacionContextProvider({ children }: { children: ReactN
   
   const ultima = useSVCCPresentacionUltima({ revalidateOnFocus: false });
 
-  const nueva = useSVCCPresentacionNueva({ onSuccess() { ultima.mutate() }});
+  const constancia = useSVCCPresentacionConstancia(
+    ultima.data?.interno != null && ultima.data.presentacionFecha != null
+      ? { id: ultima.data?.interno }
+      : undefined
+    , { revalidateOnFocus: false }
+  );
 
-  const finaliza = useSVCCPresentacionFinaliza({ onSuccess() { ultima.mutate() }});
+  const nueva = useSVCCPresentacionNueva({ onSuccess() {
+    ultima.mutate();
+    constancia.mutate();
+  }});
+
+  const finaliza = useSVCCPresentacionFinaliza({ onSuccess() {
+    ultima.mutate();
+    constancia.mutate();
+  }});
 
   const establecimientoList = useEstablecimientoList({ cuit: user?.cuit ?? 0 }, { revalidateOnFocus: false });
 
@@ -95,6 +115,7 @@ export function SVCCPresentacionContextProvider({ children }: { children: ReactN
         isMutating: nueva.isMutating || finaliza.isMutating,
         nueva: { isMutating: nueva.isMutating, data: nueva.data, error: nueva.error, trigger: nueva.trigger },
         finaliza: { isMutating: finaliza.isMutating, data: finaliza.data, error: finaliza.error, trigger: finaliza.trigger },
+        constancia: { isLoading: constancia.isLoading, isValidating: constancia.isValidating, data: constancia.data, error: constancia.error },
         establecimientos: {
           isLoading: establecimientoList.isLoading,
           isValidating: establecimientoList.isValidating,
