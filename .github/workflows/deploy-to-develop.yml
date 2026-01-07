@@ -13,6 +13,11 @@ on:
 
 jobs:
   build-and-deploy:
+    if: >
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/develop' &&
+      !contains(github.event.head_commit.message, 'Merge branch ''master''') &&
+      !contains(github.event.head_commit.message, 'Merge remote-tracking branch ''master''')
     name: Build and deploy on self-hosted Windows runner
     runs-on: [self-hosted, windows, x64, art-front-develop]
     env:
@@ -167,7 +172,8 @@ jobs:
           # Use PM2 to start or reload the app from ecosystem.config.js (idempotent)
           # This will start the process if not running, or reload it with zero-downtime when possible.
           $appName = if ([string]::IsNullOrEmpty($env:SITE_NAME)) { 'ArtFrontGestionIntegral' } else { $env:SITE_NAME }
-          pm2 startOrReload ecosystem.config.js --env production
+          pm2 delete $appName -s | Out-Null  # silently delete existing process if any
+          pm2 start ecosystem.config.js
           if ($LASTEXITCODE -ne 0) {
             Write-Host "pm2 startOrReload failed with code $LASTEXITCODE, attempting start then restart fallback"
             pm2 start ecosystem.config.js --env production
