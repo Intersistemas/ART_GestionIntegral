@@ -358,7 +358,7 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
 
                 <Grid>
                     <Card variant="outlined">
-                        <CardContent>
+                        <CardContent className={styles.checkboxGroup}>
                             <Typography className={styles.titulo}>Obras de Ingeniería Civil</Typography>
                             <Grid container spacing={1}>
                                 <Grid ><Control label="Caminos" name="ingCivCaminos" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
@@ -368,9 +368,9 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
                                 <Grid ><Control label="Túneles" name="ingCivTuneles" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
                                 <Grid ><Control label="Ferroviarias" name="ingCivObrFerroviarias" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
                                 <Grid ><Control label="Obras Hidráulicas" name="ingCivObrHidraulicas" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
+                                <Grid ><Control label="Aeropuertos" name="ingCivAeropuertos" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
                                 <Grid ><Control label="Alcantarillados/Trat. Aguas" name="ingCivAlcantarillas" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
                                 <Grid ><Control label="Puertos" name="ingCivPuertos" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
-                                <Grid ><Control label="Aeropuertos" name="ingCivAeropuertos" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
                                 <Grid ><Control label="Otras" name="ingCivOtros" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
                             </Grid>
                         </CardContent>
@@ -379,7 +379,7 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
 
                 <Grid >
                     <Card variant="outlined">
-                        <CardContent>
+                        <CardContent className={styles.checkboxGroup}>
                             <Typography align="left" className={styles.titulo}>Obras de Arquitectura</Typography>
                             <Grid container spacing={1}>
                                 <Grid ><Control label="Vivienda Unifamiliares" name="arqViviendas" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
