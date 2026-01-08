@@ -84,7 +84,6 @@ export type DenunciaCreate = {
   // Additional Information
   comentario: string;
   origenIngreso: string;
-  trasladoTipo: string;
   avisoTrabajadorFueraNomina: boolean | null;
   avisoEmpleadorSinContratoVigente: boolean | null;
   estado: number;
@@ -151,27 +150,6 @@ export interface DenunciaFormData {
 
   // Trabajadores relacionados (tabla)
   trabajadoresRelacionados: TrabajadorRelacionado[];
-
-  // Paso 3: Datos del Siniestro (Estado del Trabajador)
-  estaConsciente: 'Ignora' | 'Si' | 'No' | '';
-  color: string;
-  habla: 'Ignora' | 'Si' | 'No' | '';
-  gravedad: 'Ignora' | 'Leve' | 'Grave' | 'Critico' | '';
-  respira: 'Ignora' | 'Si' | 'No' | '';
-  observaciones: string;
-  tieneHemorragia: 'Ignora' | 'Si' | 'No' | '';
-  contextoDenuncia: 'Ignora' | 'Urgente' | 'Normal' | '';
-
-  // ROAM
-  roam: 'No' | 'Si' | '';
-  roamNro: string;
-  roamAno: string;
-  roamCodigo: string;
-  roamDescripcion: string;
-
-  // Tipo de Traslado
-  tipoTraslado: string;
-  prestadorTraslado: string;
 
   // Prestador Inicial
   prestadorInicialCuit: string;
@@ -327,21 +305,6 @@ export const initialDenunciaFormData: DenunciaFormData = {
   trabajadoresRelacionados: [],
 
   // Paso 3
-  estaConsciente: '',
-  color: '',
-  habla: '',
-  gravedad: '',
-  respira: '',
-  observaciones: '',
-  tieneHemorragia: '',
-  contextoDenuncia: '',
-  roam: '',
-  roamNro: '',
-  roamAno: '',
-  roamCodigo: '',
-  roamDescripcion: '',
-  tipoTraslado: '',
-  prestadorTraslado: '',
   prestadorInicialCuit: '',
   prestadorInicialRazonSocial: '',
   establecimientoCuit: '',
@@ -506,7 +469,6 @@ export type DenunciaPostRequest = {
   afiObraSocial: string;
   comentario: string;
   origenIngreso: string;
-  trasladoTipo: string;
   avisoTrabajadorFueraNomina: number;
   avisoEmpleadorSinContratoVigente: boolean;
   estado: number;
@@ -514,10 +476,6 @@ export type DenunciaPostRequest = {
   descripcion: string;
   fechaHoraSiniestro: string;
   enViaPublica: string;
-  roam: string;
-  roamNumero: number;
-  roamInterno: number;
-  roamAnio: number;
 
   tipoAccidente: string;
   conIniTelefono: string;
@@ -535,16 +493,6 @@ export type DenunciaPostRequest = {
   conIniDomicilioDepartamento: string;
   conIniDomicilioEntreCalle: string;
   conIniDomicilioYCalle: string;
-  estTrabEstaConsciente: string;
-  estTrabColor: string;
-  estTrabHabla: string;
-  estTrabGravedad: string;
-  estTrabRespira: string;
-  estTrabObservaciones: string;
-  estTrabTieneHemorragia: string;
-  estTrabContextoDenuncia: string;
-  estTrabVerificaContactoInicial: string;
-  estTrabPrestadorTraslado: string;
   denunciaInstanciaImagenes: Array<{
     internoRefDenImgTipo: number;
     tipoDocumentacion: string;
@@ -623,17 +571,12 @@ export type DenunciaPutRequest = {
   afiObraSocial: string;
   comentario: string;
   origenIngreso: string;
-  trasladoTipo: string;
   avisoTrabajadorFueraNomina: number;
   avisoEmpleadorSinContratoVigente: boolean;
   denunciaCanalIngresoInterno: number;
   descripcion: string;
   fechaHoraSiniestro: string;
   enViaPublica: string;
-  roam: string;
-  roamNumero: number;
-  roamInterno: number;
-  roamAnio: number;
   tipoAccidente: string;
   estadoDenunciaSiniestro: string;
   conIniTelefono: string;
@@ -650,16 +593,6 @@ export type DenunciaPutRequest = {
   conIniDomicilioDepartamento: string;
   conIniDomicilioEntreCalle: string;
   conIniDomicilioYCalle: string;
-  estTrabEstaConsciente: string;
-  estTrabColor: string;
-  estTrabHabla: string;
-  estTrabGravedad: string;
-  estTrabRespira: string;
-  estTrabObservaciones: string;
-  estTrabTieneHemorragia: string;
-  estTrabContextoDenuncia: string;
-  estTrabVerificaContactoInicial: string;
-  estTrabPrestadorTraslado: string;
   denunciaInstanciaImagenes: Array<{
     interno: number;
     internoRefDenImgTipo: number;
@@ -799,16 +732,8 @@ export interface ValidationErrors {
   telefono?: string;
   email?: string;
   // Accident data fields
-  estaConsciente?: string;
-  color?: string;
-  habla?: string;
-  gravedad?: string;
-  respira?: string;
-  tieneHemorragia?: string;
-  contextoDenuncia?: string;
   prestadorInicialCuit?: string;
   prestadorInicialRazonSocial?: string;
-  roamDescripcion?: string;
   // Employer fields
   empCuit?: string;
   empPoliza?: string;
@@ -851,16 +776,8 @@ export interface TouchedFields {
   telefono?: boolean;
   email?: boolean;
   // Accident data fields
-  estaConsciente?: boolean;
-  color?: boolean;
-  habla?: boolean;
-  gravedad?: boolean;
-  respira?: boolean;
-  tieneHemorragia?: boolean;
-  contextoDenuncia?: boolean;
   prestadorInicialCuit?: boolean;
   prestadorInicialRazonSocial?: boolean;
-  roamDescripcion?: boolean;
   // Confirmation fields
   aceptoTerminos?: boolean;
   // Employer fields

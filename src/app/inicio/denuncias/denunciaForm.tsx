@@ -67,7 +67,7 @@ export default function DenunciaForm({
         // Trabajador
         "cuil", "docNumero", "domicilioNro", "domicilioPiso", "codLocalidadTrabajador", "codPostalTrabajador",
         // Dat Siniestros
-        "roamNro", "roamAno", "roamCodigo", "prestadorInicialCuit",
+        "prestadorInicialCuit",
         "establecimientoCuit", "establecimientoNumero", "establecimientoCodLocalidad", "establecimientoCodPostal",
         // (Empleador)
         "empCuit", "empPoliza", "empDomicilioNro", "empDomicilioPiso", "empCodLocalidad", "empCodPostal",
@@ -317,25 +317,6 @@ export default function DenunciaForm({
         return validateRequired(value, "Teléfono");
       case "email":
         return validateRequired(value, "eMail");
-      // Accident data validation
-      case "estaConsciente":
-        return validateRequired(value, "¿Está Consciente?");
-      case "color":
-        return validateRequired(value, "Color");
-      case "habla":
-        return validateRequired(value, "¿Habla?");
-      case "gravedad":
-        return validateRequired(value, "Gravedad");
-      case "respira":
-        return validateRequired(value, "¿Respira?");
-      case "tieneHemorragia":
-        return validateRequired(value, "¿Tiene Hemorragia?");
-      case "contextoDenuncia":
-        return validateRequired(value, "Contexto de Denuncia");
-      case "prestadorInicialCuit":
-        return validateRequired(value, "CUIT Prestador Inicial");
-      case "prestadorInicialRazonSocial":
-        return validateRequired(value, "Razón Social Prestador");
       case "aceptoTerminos":
         if (!formData.aceptoTerminos) return "Debe aceptar los términos y condiciones";
         return undefined;
@@ -368,11 +349,6 @@ export default function DenunciaForm({
       fieldsToValidate = [
         "cuil", "docTipo", "docNumero", "nombre", "fechaNac", 
         "sexo", "estadoCivil", "nacionalidad", "domicilioCalle", "telefono", "email"
-      ];
-    } else if (currentTab === 2) {
-      fieldsToValidate = [
-        "estaConsciente", "color", "habla", "gravedad", "respira", 
-        "tieneHemorragia", "contextoDenuncia", "prestadorInicialCuit", "prestadorInicialRazonSocial"
       ];
     } else if (currentTab === 3) {
       fieldsToValidate = [
