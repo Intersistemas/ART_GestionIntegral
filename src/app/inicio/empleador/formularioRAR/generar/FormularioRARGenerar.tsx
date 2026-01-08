@@ -346,8 +346,10 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
 
     if (totalTrabajadoresRequeridos <= 0) return false;
 
+    // Si no se alcanzó el límite, puede cargar cualquier CUIL (nuevo o existente)
     if (trabajadoresCargados < totalTrabajadoresRequeridos) return true;
 
+    // Si ya se alcanzó el límite, solo puede cargar si el CUIL ya existe (repetir con diferente agente)
     return esCuilRepetido;
   }, [
     cantidadesCompletas,
@@ -733,27 +735,15 @@ React.useEffect(() => {
     }
 
     const cuilNum = normalizarCuil(cuil);
-
     const yaExisteCuil = filas.some((f) => normalizarCuil(f.CUIL) === cuilNum);
-    const existeNoExpuesto = filas.some((f) => normalizarCuil(f.CUIL) === cuilNum && Number(String(f.Exposicion || '0')) === 0);
 
-    // Si ya existe un registro NO expuesto con ese CUIL, no permitir repetirlo
-    if (existeNoExpuesto) {
+    // Si ya se alcanzó el límite de trabajadores únicos y el CUIL no existe, bloquear
+    if (trabajadoresCargados >= totalTrabajadoresRequeridos && !yaExisteCuil) {
       setModalMessageType('error');
-      setModalMessageText('No se puede agregar este CUIL: ya existe un trabajador marcado como NO expuesto con el mismo CUIL.');
+      setModalMessageText(`Ya se alcanzó el límite de ${totalTrabajadoresRequeridos} trabajadores únicos. Solo puede agregar trabajadores con CUILs ya cargados (con diferentes agentes causantes).`);
       setModalMessageOpen(true);
       return;
     }
-
-    // Si estamos intentando agregar este trabajador como NO expuesto y el CUIL ya existe en cualquier fila, bloquear
-    if (String(exposicion).trim() === '0' && yaExisteCuil) {
-      setModalMessageType('error');
-      setModalMessageText('No se puede marcar como NO expuesto: el CUIL ya fue cargado anteriormente.');
-      setModalMessageOpen(true);
-      return;
-    }
-
-    const cuilsUnicosAntes = cuilsUnicos.size;
 
 
 
@@ -809,28 +799,20 @@ React.useEffect(() => {
 
     if (editandoIndex < 0) return;
 
-    const cuilNum = cuil.replace(/\D/g, '');
-    // Verificar CUIL duplicado (excluyendo el que estamos editando)
-    const duplicado = filas.some((f, idx) =>
-      idx !== editandoIndex && f.CUIL?.replace(/\D/g, '') === cuilNum
+    const cuilNum = normalizarCuil(cuil);
+    const yaExisteCuil = filas.some((f, idx) => 
+      idx !== editandoIndex && normalizarCuil(f.CUIL) === cuilNum
     );
 
-    // Si existe otro registro NO expuesto con este CUIL (distinto del que editamos), bloquear
-    const existeOtroNoExpuesto = filas.some((f, idx) =>
-      idx !== editandoIndex && f.CUIL?.replace(/\D/g, '') === cuilNum && Number(String(f.Exposicion || '0')) === 0
-    );
+    // Obtener el CUIL del trabajador que estamos editando
+    const trabajadorEditando = filas[editandoIndex];
+    const cuilEditando = trabajadorEditando ? normalizarCuil(trabajadorEditando.CUIL) : null;
+    const cuilCambio = cuilNum !== cuilEditando;
 
-    if (existeOtroNoExpuesto) {
+    // Si estamos cambiando el CUIL y ya se alcanzó el límite, verificar que el nuevo CUIL ya exista
+    if (cuilCambio && trabajadoresCargados >= totalTrabajadoresRequeridos && !yaExisteCuil) {
       setModalMessageType('error');
-      setModalMessageText('No se puede guardar: ya existe otro trabajador marcado como NO expuesto con este CUIL.');
-      setModalMessageOpen(true);
-      return;
-    }
-
-    if (duplicado) {
-      // Mostrar mensaje de error usando modal en lugar de alert
-      setModalMessageType('error');
-      setModalMessageText('Este CUIL ya fue cargado por otro trabajador');
+      setModalMessageText(`Ya se alcanzó el límite de ${totalTrabajadoresRequeridos} trabajadores únicos. Solo puede usar CUILs ya cargados.`);
       setModalMessageOpen(true);
       return;
     }
@@ -1564,20 +1546,20 @@ React.useEffect(() => {
 
               {/* RESUMEN DE PROGRESO */}
               <div style={{
-                background: filas.length >= totalTrabajadoresRequeridos ? '#c8e6c9' : '#fff3cd',
+                background: trabajadoresCargados >= totalTrabajadoresRequeridos ? '#c8e6c9' : '#fff3cd',
                 padding: '10px',
                 borderRadius: '3px',
                 marginTop: '10px',
                 textAlign: 'center',
-                border: `1px solid ${filas.length >= totalTrabajadoresRequeridos ? '#4caf50' : '#ffc107'}`
+                border: `1px solid ${trabajadoresCargados >= totalTrabajadoresRequeridos ? '#4caf50' : '#ffc107'}`
               }}>
                 {trabajadoresCargados >= totalTrabajadoresRequeridos ? (
                   <span style={{ color: '#2e7d32', fontWeight: 'bold' }}>
-                    Has cargado todos los trabajadores expuestos requeridos
+                    Has cargado {trabajadoresCargados} trabajadores únicos (límite alcanzado). Puedes seguir agregando registros con CUILs ya cargados (con diferentes agentes causantes).
                   </span>
                 ) : (
                   <span style={{ color: '#f57f17', fontWeight: 'bold' }}>
-                    Faltan {faltanTrabajadores} trabajadores por cargar
+                    Faltan {faltanTrabajadores} trabajadores únicos por cargar ({trabajadoresCargados}/{totalTrabajadoresRequeridos})
                   </span>
                 )}
               </div>
