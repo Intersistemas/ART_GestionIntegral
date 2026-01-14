@@ -1,29 +1,47 @@
 // components/poliza/poliza.tsx
 "use client"; // Marca el componente como un Componente de Cliente
 
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styles from "./poliza.module.css";
 import { useAuth } from "@/data/AuthContext";
-import { TextField } from "@mui/material";
+import { TextField, Box } from "@mui/material";
 import Formato from "@/utils/Formato";
 import gestionEmpleadorAPI from "@/data/gestionEmpleadorAPI";
 import CustomButton from "@/utils/ui/button/CustomButton";
 import { BsDownload } from "react-icons/bs";
 import { saveAs } from "file-saver";
 import { getSession } from "next-auth/react";
+import { useEmpresasStore } from "@/data/empresasStore";
+import { Empresa } from "@/data/authAPI";
+import CustomSelectSearch from "@/utils/ui/form/CustomSelectSearch";
 
 const { useGetPoliza } = gestionEmpleadorAPI;
 
 const Poliza = () => {
-  const { user } = useAuth();
-  const { data: polizaRawData, isLoading: isPersonalLoading } = useGetPoliza();
+  const { empresas, isLoading: isLoadingEmpresas } = useEmpresasStore();
+  const [empresaSeleccionada, setEmpresaSeleccionada] = useState<Empresa | null>(null);
+  const seleccionAutomaticaRef = useRef(false);
+  
+  // Obtener la póliza usando el CUIT de la empresa seleccionada
+  const { data: polizaRawData, isLoading: isPersonalLoading } = useGetPoliza(
+    empresaSeleccionada ? { CUIT: empresaSeleccionada.cuit } : {}
+  );
 
-  if (!user) {
-    return <p>Error: Sesión no válida o no encontrada.</p>;
-  }
-
-  // Accede a las propiedades de la sesión con seguridad
-  const { email, empresaCUIT, empresaRazonSocial } = user as any;
+  // Seleccionar automáticamente si solo hay una empresa
+  useEffect(() => {
+    if (!isLoadingEmpresas) {
+      if (empresas.length === 1) {
+        // Si hay exactamente 1 empresa, seleccionarla automáticamente
+        setEmpresaSeleccionada(empresas[0]);
+        seleccionAutomaticaRef.current = true;
+      } else if (empresas.length !== 1 && seleccionAutomaticaRef.current) {
+        // Si hay más de 1 empresa o 0 empresas, y la selección fue automática,
+        // limpiar la selección
+        setEmpresaSeleccionada(null);
+        seleccionAutomaticaRef.current = false;
+      }
+    }
+  }, [empresas.length, isLoadingEmpresas]);
 
   const handleDownloadPDF = async () => {
     if (!polizaRawData?.archivo) {
@@ -71,8 +89,45 @@ const Poliza = () => {
     }
   };
 
+  const handleEmpresaChange = (
+    _event: React.SyntheticEvent,
+    newValue: Empresa | null
+  ) => {
+    setEmpresaSeleccionada(newValue);
+    // Marcar que la selección fue manual
+    seleccionAutomaticaRef.current = false;
+  };
+
+  const getEmpresaLabel = (empresa: Empresa | null): string => {
+    if (!empresa) return "";
+    const cuitFormateado = Formato.CUIP(empresa.cuit);
+    return `${empresa.razonSocial} - ${cuitFormateado}`;
+  };
+
   return (
     <div>
+      {/* Combo de selección de empresa en la parte superior izquierda */}
+      <Box className={styles.empresaSelectorContainer}>
+        <CustomSelectSearch<Empresa>
+          options={empresas}
+          getOptionLabel={getEmpresaLabel}
+          value={empresaSeleccionada}
+          onChange={handleEmpresaChange}
+          label="Seleccionar Empresa"
+          placeholder="Buscar empresa..."
+          loading={isLoadingEmpresas}
+          loadingText="Cargando empresas..."
+          noOptionsText={
+            isLoadingEmpresas
+              ? "Cargando..."
+              : empresas.length === 0
+              ? "No hay empresas disponibles"
+              : "No se encontraron empresas"
+          }
+          disabled={isLoadingEmpresas}
+        />
+      </Box>
+
       {/* Botón de descarga PDF */}
       <div style={{ marginBottom: "20px" }}>
         <CustomButton
@@ -89,7 +144,7 @@ const Poliza = () => {
       <div className={styles.sectionHeader}>
         <h2 className={styles.headerTitle}>Razón Social</h2>
         <p className={styles.headerData}>
-          {empresaRazonSocial ?? "Usuario sin Empresa"}
+          {polizaRawData?.empleador_Denominacion ?? "---"}
         </p>
       </div>
 

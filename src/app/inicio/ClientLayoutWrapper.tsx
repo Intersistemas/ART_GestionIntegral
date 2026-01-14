@@ -9,6 +9,7 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 import styles from './ClientLayoutWrapper.module.css';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/data/AuthContext'; // Importa el hook de contexto
+import { useEmpresasLoader } from '@/data/useEmpresasLoader';
 
 const formatTitleFromPath = (pathname: string): string => {
   if (pathname === '/inicio') {
@@ -42,6 +43,9 @@ const formatTitleFromPath = (pathname: string): string => {
 export default function ClientLayoutWrapper({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { status, session } = useAuth(); // Obtén el estado y la sesión del contexto
+  
+  // Cargar empresas automáticamente cuando el usuario esté autenticado
+  useEmpresasLoader();
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const pathname = usePathname();
