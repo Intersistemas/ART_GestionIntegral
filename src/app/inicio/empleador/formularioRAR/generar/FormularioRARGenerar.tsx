@@ -88,7 +88,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
   // Modal de mensajes (errores/alertas)
   const [modalMessageOpen, setModalMessageOpen] = React.useState<boolean>(false);
   const [modalMessageText, setModalMessageText] = React.useState<string>('');
-  const [modalMessageType, setModalMessageType] = React.useState<'success' | 'error' | 'alert'>('error');
+  const [modalMessageType, setModalMessageType] = React.useState<'success' | 'error' | 'warning'>('error');
 
   // Estados para edición
   const [editandoIndex, setEditandoIndex] = React.useState<number>(-1);

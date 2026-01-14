@@ -144,7 +144,7 @@ const GenerarFormularioRGRL: React.FC<{
   //ESTADOS PARA EL MODAL DE MENSAJE
   const [modalMsgOpen, setModalMsgOpen] = useState(false);
   const [modalMsg, setModalMsg] = useState('');
-  const [modalMsgType, setModalMsgType] = useState<MessageType>('alert');
+  const [modalMsgType, setModalMsgType] = useState<MessageType>('warning');
 
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -192,7 +192,7 @@ const GenerarFormularioRGRL: React.FC<{
 
       if (alertMessage) {
         setModalMsg(alertMessage);
-        setModalMsgType('alert');
+        setModalMsgType('warning');
         setModalMsgOpen(true);
       }
 
