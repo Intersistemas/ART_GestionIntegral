@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo, useState, SyntheticEvent } from 'react';
+import React, { useMemo, useState, SyntheticEvent, useEffect, useRef } from 'react';
 import DataTable from '@/utils/ui/table/DataTable'; 
 import { ColumnDef } from '@tanstack/react-table';
 import { Box, Typography } from '@mui/material';
@@ -8,6 +8,9 @@ import Formato from '@/utils/Formato';
 import gestionEmpleadorAPI from "@/data/gestionEmpleadorAPI";
 import type { CuentaCorrienteRegistro, DDJJRegistro } from './types/cuentaCorriente';
 import ExportButtons from './components/ExportButtons';
+import { useEmpresasStore } from "@/data/empresasStore";
+import { Empresa } from "@/data/authAPI";
+import CustomSelectSearch from "@/utils/ui/form/CustomSelectSearch";
 
 
 
@@ -29,12 +32,49 @@ const formatCurrency = (value: number | string) => {
 // 3. DEFINICIÓN DE COLUMNAS Y COMPONENTE
 // ----------------------------------------------------
 function CuentaCorrientePage() {
+    const { empresas, isLoading: isLoadingEmpresas } = useEmpresasStore();
+    const [empresaSeleccionada, setEmpresaSeleccionada] = useState<Empresa | null>(null);
+    const seleccionAutomaticaRef = useRef(false);
+    
+    // Seleccionar automáticamente si solo hay una empresa
+    useEffect(() => {
+        if (!isLoadingEmpresas) {
+            if (empresas.length === 1) {
+                setEmpresaSeleccionada(empresas[0]);
+                seleccionAutomaticaRef.current = true;
+            } else if (empresas.length !== 1 && seleccionAutomaticaRef.current) {
+                setEmpresaSeleccionada(null);
+                seleccionAutomaticaRef.current = false;
+            }
+        }
+    }, [empresas.length, isLoadingEmpresas]);
+
+    const handleEmpresaChange = (
+        _event: React.SyntheticEvent,
+        newValue: Empresa | null
+    ) => {
+        setEmpresaSeleccionada(newValue);
+        seleccionAutomaticaRef.current = false;
+    };
+
+    const getEmpresaLabel = (empresa: Empresa | null): string => {
+        if (!empresa) return "";
+        return `${empresa.razonSocial} - ${Formato.CUIP(empresa.cuit)}`;
+    };
     
     // Consultar datos con ordenamiento por periodo descendente desde el backend
-    const { data: CtaCteRawData, isLoading: isCtaCteLoading } = gestionEmpleadorAPI.useGetVEmpleadorDDJJ({ 
-        sort: '-Periodo',
-        page: '0,1000'
-    });
+    const { data: CtaCteRawData, isLoading: isCtaCteLoading } = gestionEmpleadorAPI.useGetVEmpleadorDDJJ(
+        empresaSeleccionada 
+            ? { 
+                CUIT: empresaSeleccionada.cuit,
+                sort: '-Periodo',
+                page: '0,1000'
+              }
+            : {
+                sort: '-Periodo',
+                page: '0,1000'
+              }
+    );
     
     // Usar los datos directamente sin ordenar en el frontend
     const sortedData = useMemo(() => {
@@ -150,6 +190,26 @@ function CuentaCorrientePage() {
 
     return (
         <div style={{ padding: '20px' }}>
+            <Box sx={{ maxWidth: 500, marginBottom: 2 }}>
+                <CustomSelectSearch<Empresa>
+                    options={empresas}
+                    getOptionLabel={getEmpresaLabel}
+                    value={empresaSeleccionada}
+                    onChange={handleEmpresaChange}
+                    label="Seleccionar Empresa"
+                    placeholder="Buscar empresa..."
+                    loading={isLoadingEmpresas}
+                    loadingText="Cargando empresas..."
+                    noOptionsText={
+                        isLoadingEmpresas
+                            ? "Cargando..."
+                            : empresas.length === 0
+                            ? "No hay empresas disponibles"
+                            : "No se encontraron empresas"
+                    }
+                    disabled={isLoadingEmpresas}
+                />
+            </Box>
             
             <CustomTab 
                 tabs={tabItems} 
