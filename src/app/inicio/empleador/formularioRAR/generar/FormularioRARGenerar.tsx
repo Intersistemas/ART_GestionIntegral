@@ -18,6 +18,8 @@ import CustomModalMessage from '@/utils/ui/message/CustomModalMessage';
 import ArtAPI from '@/data/artAPI';
 import styles from '../FormulariosRAR.module.css';
 
+import ExcelImportSection from './ExcelImportSection';
+
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -117,6 +119,9 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
     ultimoExamenMedico: '',
     codigoAgente: ''
   });
+
+    // Estado para mostrar errores
+  const [mensajeError, setMensajeError] = React.useState<string>('');
 
   const guardandoRef = React.useRef(false);
 
@@ -1087,7 +1092,11 @@ React.useEffect(() => {
           </div>
 
           {/* SECCIÓN 1: SELECTOR DE ESTABLECIMIENTO */}
-
+          <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '5px', marginBottom: '20px' }}>
+            <h4 style={{ margin: '0 0 15px 0', color: '#495057' }}>
+              Selección de Establecimiento
+              <span style={{ color: '#d32f2f', fontSize: '16px' }}>*</span>
+            </h4>
             <div className={styles.modalRow}>
               <FormControl fullWidth required className={styles.flex1}>
                 <InputLabel>Establecimiento</InputLabel>
@@ -1122,6 +1131,28 @@ React.useEffect(() => {
                 </Select>
               </FormControl>
             </div>
+            </div>
+
+                      {/* SECCIÓN 1.5: IMPORTACIÓN DE TRABAJADORES DESDE EXCEL */}
+          <ExcelImportSection
+            establecimientoSeleccionadoValido={establecimientoSeleccionadoValido}
+            agentesCausantes={agentesCausantes}
+            filas={filas}
+            cantExpuestos={cantExpuestos}
+            cantNoExpuestos={cantNoExpuestos}
+            onFilasActualizadas={setFilas}
+            onCantExpuestosActualizada={setCantExpuestos}
+            onCantNoExpuestosActualizada={setCantNoExpuestos}
+            onMensajeError={(mensaje) => {
+              setMensajeError(mensaje);
+              setModalMessageType('error');
+              setModalMessageText(mensaje);
+              setModalMessageOpen(true);
+            }}
+          />
+
+
+
 
           {/* SECCIÓN 2: CANTIDADES DE TRABAJADORES */}
             <div className={styles.modalRow}>
