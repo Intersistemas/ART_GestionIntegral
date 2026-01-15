@@ -7,6 +7,7 @@ import FormularioRAR, { ParametersFormularioRar, ParametersEmpresaByCUIT, Establ
 import { toURLSearch } from "@/utils/utils";
 import type { ApiFormularioRGRL, ApiEstablecimientoEmpresa } from "@/app/inicio/empleador/formularioRGRL/types/rgrl";
 import { ParametersLocalidad, ParametersLocalidadCodigo, ParametersLocalidadNombre, DenunciaQueryParams, DenunciasApiResponse, DenunciaPostRequest, DenunciaQueryParamsID, AfiQueryParams, AfiApiResponse, PrestadorQueryParams, PrestadorResponse, DenunciaPutRequest, DenunciaPatchRequest, RefPaises, RefObraSocial, Roam, ParametersEmpleadorT, RefPrestadores } from "@/app/inicio/denuncias/types/tDenuncias";
+import { ParametersPoliza, ParametersComercializador, OrganizadorComercializador, GrupoOrganizadorComercializador } from "@/app/inicio/comercializador/polizas/types/poliza";
 import Formato from "@/utils/Formato";
 import { AxiosError } from "axios";
 
@@ -541,7 +542,76 @@ export class ArtAPIClass extends ExternalAPI {
     }
   );
 
+
+
+   //#region Polizas Comercializador
+  readonly getpolizaComercializadorURL = (params: ParametersPoliza = {}) => {
+    return this.getURL({ path: "/api/SRTPolizas", search: toURLSearch(params) }).toString();
+  };
+  getPolizaComercializador = async (params: ParametersPoliza = {}) => tokenizable.get(
+    this.getpolizaComercializadorURL(params),
+  ).then(({ data }) => data);
+  useGetPolizaComercializadorURL = (params: ParametersPoliza = {}) => useSWR(
+    [this.getpolizaComercializadorURL(params), token.getToken()], () => this.getPolizaComercializador(params),
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    }
+  );
+
+
+
+  //#region Comercializador
+  readonly getComercializadorURL = (params: ParametersComercializador = {}) => {
+   return this.getURL({ path: "/api/SRTComercializadores", search: toURLSearch(params) }).toString();
+  };
+  getComercializador = async (params: ParametersComercializador = {}) => tokenizable.get(
+   this.getComercializadorURL(params),
+  ).then(({ data }) => data);
+  useGetComercializadorURL = (params: ParametersComercializador = {}) => useSWR(
+   [this.getComercializadorURL(params), token.getToken()], () => this.getComercializador(params),
+   {
+     revalidateOnFocus: false,
+     revalidateOnReconnect: false,
+   }
+  );
+
+    //#region Organizador Comercializador
+  readonly getOrganizadorURL = (params: OrganizadorComercializador = {}) => {
+   return this.getURL({ path: "/api/SRTComercializadoresOrganizadores", search: toURLSearch(params) }).toString();
+  };
+  getOrganizador = async (params: OrganizadorComercializador = {}) => tokenizable.get(
+   this.getOrganizadorURL(params),
+  ).then(({ data }) => data);
+  useGetOrganizadorURL = (params: OrganizadorComercializador = {}) => useSWR(
+   [this.getOrganizadorURL(params), token.getToken()], () => this.getOrganizador(params),
+   {
+     revalidateOnFocus: false,
+     revalidateOnReconnect: false,
+   }
+  );
+
+  
+      //#region Grupo Organizador Comercializador
+  readonly getGOrganizadorURL = (params: GrupoOrganizadorComercializador = {}) => {
+   return this.getURL({ path: "/api/SRTComercializadoresGOrganizadores", search: toURLSearch(params) }).toString();
+  };
+  getGOrganizador = async (params: GrupoOrganizadorComercializador = {}) => tokenizable.get(
+   this.getGOrganizadorURL(params),
+  ).then(({ data }) => data);
+  useGetGOrganizadorURL = (params: GrupoOrganizadorComercializador = {}) => useSWR(
+   [this.getGOrganizadorURL(params), token.getToken()], () => this.getGOrganizador(params),
+   {
+     revalidateOnFocus: false,
+     revalidateOnReconnect: false,
+   }
+  );
+
+
+
+
 }
+
 
 const ArtAPI = Object.seal(new ArtAPIClass()) as ArtAPIClass;
 

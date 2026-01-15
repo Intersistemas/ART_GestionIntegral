@@ -1,0 +1,24 @@
+/* Styles moved from inline styles in page.tsx */
+.container {
+  padding: 16px;
+}
+
+.toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.input {
+  height: 36px;
+  padding: 6px 10px;
+  border: 1px solid #c7c7c7;
+  border-radius: 6px;
+  width: 280px;
+}
+
+.expired {
+  color: red;
+  font-weight: 700;
+}
