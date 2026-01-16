@@ -142,6 +142,13 @@ jobs:
           Write-Host "robocopy finished with exit code $rc (treated as success)"
           exit 0
 
+      - name: Stop PM2 app before installing dependencies (Windows)
+        shell: powershell
+        run: |
+          $appName = if ([string]::IsNullOrEmpty($env:SITE_NAME)) { 'ArtFrontGestionIntegral' } else { $env:SITE_NAME }
+          pm2 stop $appName -s 2>&1 | Out-Null  # silently stop if running
+          Start-Sleep -Seconds 2  # wait for process to fully stop
+
       - name: Install production dependencies on deploy dir (Windows)
         shell: powershell
         run: |
