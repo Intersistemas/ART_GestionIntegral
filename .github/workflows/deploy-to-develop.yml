@@ -35,15 +35,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Notify Teams - Start
-        if: ${{ env.TEAMS_WEBHOOK_URL != '' }}
-        shell: powershell
-        run: |
-          $webhook = $env:TEAMS_WEBHOOK_URL
-          if ([string]::IsNullOrEmpty($webhook)) { Write-Host "No Teams webhook configured - skipping"; exit 0 }
-          $msg = "**Deployment started**`nRepository: $env:REPO`nBranch: $env:BRANCH`nCommit: $env:COMMIT`nActor: $env:ACTOR`nRun: $env:RUN_URL"
-          $body = @{ text = $msg } | ConvertTo-Json
-          Invoke-RestMethod -Uri $webhook -Method Post -Body $body -ContentType 'application/json'
+      # - name: Notify Teams - Start
+      #   if: ${{ env.TEAMS_WEBHOOK_URL != '' }}
+      #   shell: powershell
+      #   run: |
+      #     $webhook = $env:TEAMS_WEBHOOK_URL
+      #     if ([string]::IsNullOrEmpty($webhook)) { Write-Host "No Teams webhook configured - skipping"; exit 0 }
+      #     $msg = "**Deployment started**`nRepository: $env:REPO`nBranch: $env:BRANCH`nCommit: $env:COMMIT`nActor: $env:ACTOR`nRun: $env:RUN_URL"
+      #     $body = @{ text = $msg } | ConvertTo-Json
+      #     Invoke-RestMethod -Uri $webhook -Method Post -Body $body -ContentType 'application/json'
 
       - name: Use Node.js 20
         uses: actions/setup-node@v4
