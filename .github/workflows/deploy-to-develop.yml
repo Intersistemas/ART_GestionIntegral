@@ -149,12 +149,12 @@ jobs:
           Set-Location -Path $DEPLOY_DIR
           npm ci --omit=dev
 
-      - name: Upload robocopy logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: robocopy-logs
-          path: _deploy_logs/*.log
+      # - name: Upload robocopy logs
+      #   if: always()
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: robocopy-logs
+      #     path: _deploy_logs/*.log
 
       - name: Ensure PM2 is installed (Windows)
         shell: powershell
