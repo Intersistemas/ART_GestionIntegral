@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import CustomButton from '@/utils/ui/button/CustomButton';
 import { useAuth } from '@/data/AuthContext';
 import DataTable from '@/utils/ui/table/DataTable';
@@ -8,6 +8,10 @@ import type { ColumnDef } from '@tanstack/react-table';
 import ArtAPI from '@/data/artAPI';
 import Formato from '@/utils/Formato';
 import styles from './poliza.module.css';
+import { Box } from "@mui/material";
+import { useEmpresasStore } from "@/data/empresasStore";
+import type { Empresa } from "@/data/authAPI";
+import CustomSelectSearch from "@/utils/ui/form/CustomSelectSearch";
 
 type Poliza = {
   interno: string;
@@ -92,7 +96,7 @@ function mapPolizasToRows(apiData: any): Poliza[] {
       numero: String(item?.numero ?? ''),
       NroPoliza: numero,
       CUIT: String(item?.cuit),
-      Empleador_Denominacion: String(item?.empleadorDenominacion ),
+      Empleador_Denominacion: String(item?.empleadorDenominacion),
       Vigencia_Desde: String(item?.vigenciaDesde),
       Vigencia_Hasta: String(item?.vigenciaHasta),
       fecha: String(item?.movimientoFecha),
@@ -330,8 +334,15 @@ function PolizasGrupoOrganizador({ cuitConsulta }: { cuitConsulta?: number }) {
 }
 
 function PolizasPage() {
+
+  const { empresas, isLoading: isLoadingEmpresas } = useEmpresasStore();
+  const [empresaSeleccionada, setEmpresaSeleccionada] = useState<Empresa | null>(null);
+  const seleccionAutomaticaRef = useRef(false);
   const [cuitBusqueda, setCuitBusqueda] = useState<string>('');
   const [cuitConsulta, setCuitConsulta] = useState<number | undefined>(undefined);
+
+
+
   const { user } = useAuth();
   const empresaCUIT = Number((user as any)?.empresaCUIT ?? 0);
   const userRol = String((user as any)?.rol ?? '');
@@ -340,6 +351,50 @@ function PolizasPage() {
   const isComercializador = userRol.toLowerCase() === 'comercializador';
   const isOrganizadorComercializador = userRol.toLowerCase() === 'organizadorcomercializador';
   const isGrupoOrganizador = userRol.toLowerCase() === 'grupoorganizador';
+
+  // Seleccionar automáticamente si solo hay una empresa
+  useEffect(() => {
+    if (!isLoadingEmpresas) {
+      if (empresas.length === 1) {
+        setEmpresaSeleccionada(empresas[0]);
+        seleccionAutomaticaRef.current = true;
+      } else if (empresas.length !== 1 && seleccionAutomaticaRef.current) {
+        setEmpresaSeleccionada(null);
+        seleccionAutomaticaRef.current = false;
+      }
+    }
+  }, [empresas.length, isLoadingEmpresas]);
+
+  // Cuando cambia la empresa seleccionada, actualizo el CUIT de consulta y el input
+  useEffect(() => {
+    const cuit = empresaSeleccionada?.cuit;
+    const digits = normalizeDigits(cuit);
+    if (digits) {
+      const asNumber = Number(digits);
+      if (Number.isFinite(asNumber) && asNumber > 0) {
+        setCuitConsulta(asNumber);
+        setCuitBusqueda(digits);
+        return;
+      }
+    }
+    // Si no hay empresa seleccionada, no piso el comportamiento del admin / fallback,
+    // simplemente limpio la búsqueda explícita.
+    setCuitConsulta(undefined);
+  }, [empresaSeleccionada]);
+
+  const handleEmpresaChange = (_event: React.SyntheticEvent, newValue: Empresa | null) => {
+    setEmpresaSeleccionada(newValue);
+    seleccionAutomaticaRef.current = false;
+  };
+
+  const getEmpresaLabel = (empresa: Empresa | null): string => {
+    if (!empresa) return "";
+    return `${empresa.razonSocial} - ${Formato.CUIP(empresa.cuit)}`;
+  };
+
+
+
+
 
   const params = useMemo(() => {
     if (isAdmin) {
@@ -365,6 +420,30 @@ function PolizasPage() {
 
   return (
     <div className={styles.container}>
+
+     {/* Selector de empresa */}
+     <Box sx={{ maxWidth: 650, marginBottom: 2 }}>
+       <CustomSelectSearch<Empresa>
+         options={empresas}
+         getOptionLabel={getEmpresaLabel}
+         value={empresaSeleccionada}
+         onChange={handleEmpresaChange}
+         label="Seleccionar Empresa"
+         placeholder="Buscar empresa..."
+         loading={isLoadingEmpresas}
+         loadingText="Cargando empresas..."
+         noOptionsText={
+           isLoadingEmpresas
+             ? "Cargando..."
+             : empresas.length === 0
+             ? "No hay empresas disponibles"
+             : "No se encontraron empresas"
+         }
+         disabled={isLoadingEmpresas}
+       />
+     </Box>
+
+
       <div className={styles.toolbar}>
         <input
           type="text"

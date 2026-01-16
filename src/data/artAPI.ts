@@ -154,8 +154,11 @@ export class ArtAPIClass extends ExternalAPI {
   getFormulariosRAR = async (params: ParametersFormularioRar = {}) => tokenizable.get(
     this.getFormulariosRARURL(params),
   ).then(({ data }) => data);
-  useGetFormulariosRARURL = (params: ParametersFormularioRar = {}) => useSWR(
-    [this.getFormulariosRARURL(params), token.getToken()], () => this.getFormulariosRAR(params),
+  useGetFormulariosRARURL = (params?: ParametersFormularioRar) => useSWR(
+    params && params.CUIT && token.getToken()
+      ? [this.getFormulariosRARURL(params), token.getToken()]
+      : null,
+    () => this.getFormulariosRAR(params!),
     {
       // No volver a revalidar al volver al foco, reconectar o al montar si ya hay cache
       revalidateOnFocus: false,

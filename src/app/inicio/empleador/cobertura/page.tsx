@@ -13,13 +13,24 @@ import Image from 'next/image';
 import Formato from '@/utils/Formato';
 import Cobertura_PDF from './Cobertura_PDF';
 import ExcelJS from 'exceljs';
+import { useEmpresasStore } from "@/data/empresasStore";
+import { Empresa } from "@/data/authAPI";
+import CustomSelectSearch from "@/utils/ui/form/CustomSelectSearch";
 
 const { useGetPersonal, useGetPoliza } = gestionEmpleadorAPI;
 
 export default function CoberturaPage() {
+    const { empresas, isLoading: isLoadingEmpresas } = useEmpresasStore();
+    const [empresaSeleccionada, setEmpresaSeleccionada] = useState<Empresa | null>(null);
+    const seleccionAutomaticaRef = useRef(false);
    
-    const { data: personalRawData, isLoading: isPersonalLoading } = useGetPersonal(); 
-    const { data: polizaData, isLoading: isPolizaLoading } = useGetPoliza();
+    // Obtener personal y póliza usando el CUIT de la empresa seleccionada
+    const { data: personalRawData, isLoading: isPersonalLoading } = useGetPersonal(
+        empresaSeleccionada ? { CUIT: empresaSeleccionada.cuit } : {}
+    ); 
+    const { data: polizaData, isLoading: isPolizaLoading } = useGetPoliza(
+        empresaSeleccionada ? { CUIT: empresaSeleccionada.cuit } : {}
+    );
     
     // Estados para las dos tablas: Pendiente (Origen) y Cubierto (Destino)
     const [personalPendiente, setPersonalPendiente] = useState<Persona[]>([]);
@@ -44,6 +55,40 @@ export default function CoberturaPage() {
         setHora(now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })); // ej. "14:35"
     }, []);
 
+    // Seleccionar automáticamente si solo hay una empresa
+    useEffect(() => {
+        if (!isLoadingEmpresas) {
+            if (empresas.length === 1) {
+                setEmpresaSeleccionada(empresas[0]);
+                seleccionAutomaticaRef.current = true;
+            } else if (empresas.length !== 1 && seleccionAutomaticaRef.current) {
+                setEmpresaSeleccionada(null);
+                seleccionAutomaticaRef.current = false;
+            }
+        }
+    }, [empresas.length, isLoadingEmpresas]);
+
+    // Limpiar las tablas cuando cambia la empresa seleccionada
+    useEffect(() => {
+        setPersonalPendiente([]);
+        setPersonalCubierto([]);
+        setSelectedPendiente([]);
+        setSelectedCubierto([]);
+    }, [empresaSeleccionada?.cuit]);
+
+    const handleEmpresaChange = (
+        _event: React.SyntheticEvent,
+        newValue: Empresa | null
+    ) => {
+        setEmpresaSeleccionada(newValue);
+        seleccionAutomaticaRef.current = false;
+    };
+
+    const getEmpresaLabel = (empresa: Empresa | null): string => {
+        if (!empresa) return "";
+        return `${empresa.razonSocial} - ${Formato.CUIP(empresa.cuit)}`;
+    };
+
     // Estados para las selecciones de filas en cada tabla
     const [selectedPendiente, setSelectedPendiente] = useState<Persona[]>([]);
     const [selectedCubierto, setSelectedCubierto] = useState<Persona[]>([]);
@@ -66,6 +111,10 @@ export default function CoberturaPage() {
     useEffect(() => {
         if (personalRawData && personalRawData.length > 0) {
             setPersonalPendiente(personalRawData);
+        } else if (personalRawData && personalRawData.length === 0) {
+            // Si la respuesta es un array vacío, limpiar las tablas
+            setPersonalPendiente([]);
+            setPersonalCubierto([]);
         }
     }, [personalRawData]);
 
@@ -286,6 +335,27 @@ export default function CoberturaPage() {
             <div className={styles.header}>
                 <h1 className={styles.mainTitle}>Gestión de Cobertura de Personal</h1>
             </div>
+
+            <Box className={styles.empresaSelectorContainer}>
+                <CustomSelectSearch<Empresa>
+                    options={empresas}
+                    getOptionLabel={getEmpresaLabel}
+                    value={empresaSeleccionada}
+                    onChange={handleEmpresaChange}
+                    label="Seleccionar Empresa"
+                    placeholder="Buscar empresa..."
+                    loading={isLoadingEmpresas}
+                    loadingText="Cargando empresas..."
+                    noOptionsText={
+                        isLoadingEmpresas
+                            ? "Cargando..."
+                            : empresas.length === 0
+                            ? "No hay empresas disponibles"
+                            : "No se encontraron empresas"
+                    }
+                    disabled={isLoadingEmpresas}
+                />
+            </Box>
 
             <div className={styles.dualTableContainer}>
                 
