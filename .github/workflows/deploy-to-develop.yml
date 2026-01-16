@@ -105,7 +105,7 @@ jobs:
 
           # Mirror current deployment to temp excluding backups and large folders
           $robolog = Join-Path (Get-Location) ("robocopy_backup_$timestamp.log")
-          robocopy $DEPLOY_DIR $temp /MIR /XD .git .github\workflows node_modules backups /LOG:$robolog /TEE
+          robocopy $DEPLOY_DIR $temp /MIR /XD .git .github\workflows node_modules backups _deploy_logs /LOG:$robolog /TEE
           $rc = $LASTEXITCODE
           # robocopy exit codes: 0=no files copied, 1=some files copied, 2=some files mismatched, 3=some files copied and mismatched
           if ($rc -gt 3) { throw "robocopy failed with code $rc" }
