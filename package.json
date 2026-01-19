@@ -1,6 +1,6 @@
 {
   "name": "art_gestionintegral",
-  "version": "0.1.0",
+  "version": "1.4.0",
   "private": true,
   "scripts": {
     "dev": "set NODE_OPTIONS=--max-old-space-size=6144 && next dev --webpack",
