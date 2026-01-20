@@ -14,6 +14,7 @@ import { getSession } from "next-auth/react";
 import { useEmpresasStore } from "@/data/empresasStore";
 import { Empresa } from "@/data/authAPI";
 import CustomSelectSearch from "@/utils/ui/form/CustomSelectSearch";
+import { useSearchParams } from "next/navigation";
 
 const { useGetPoliza } = gestionEmpleadorAPI;
 
@@ -21,14 +22,20 @@ const Poliza = () => {
   const { empresas, isLoading: isLoadingEmpresas } = useEmpresasStore();
   const [empresaSeleccionada, setEmpresaSeleccionada] = useState<Empresa | null>(null);
   const seleccionAutomaticaRef = useRef(false);
+  const [bloquearBusquedaPorCuit, setBloquearBusquedaPorCuit] = useState(false);
+
+  const searchParams = useSearchParams();
+  const cuitQuery = searchParams.get("cuit") ?? searchParams.get("cuil");
+  const cuitForzado = cuitQuery ? Number(String(cuitQuery).replace(/\D/g, "")) : NaN;
   
-  // Obtener la póliza usando el CUIT de la empresa seleccionada
+  // Obtener la póliza priorizando el CUIT forzado por query param (viene desde comercializador)
   const { data: polizaRawData, isLoading: isPersonalLoading } = useGetPoliza(
-    empresaSeleccionada ? { CUIT: empresaSeleccionada.cuit } : {}
+    Number.isFinite(cuitForzado) && cuitForzado > 0 ? { CUIT: cuitForzado } : empresaSeleccionada ? { CUIT: empresaSeleccionada.cuit }: {}
   );
 
   // Seleccionar automáticamente si solo hay una empresa
   useEffect(() => {
+    if (Number.isFinite(cuitForzado) && cuitForzado > 0) return;
     if (!isLoadingEmpresas) {
       if (empresas.length === 1) {
         // Si hay exactamente 1 empresa, seleccionarla automáticamente
@@ -42,6 +49,34 @@ const Poliza = () => {
       }
     }
   }, [empresas.length, isLoadingEmpresas]);
+
+  // Si viene CUIT por query param, forzar selección por CUIT y bloquear el selector
+  useEffect(() => {
+    if (isLoadingEmpresas) return;
+
+    const hasCuitForzado = Number.isFinite(cuitForzado) && cuitForzado > 0;
+    setBloquearBusquedaPorCuit(hasCuitForzado);
+    if (!hasCuitForzado) return;
+
+    const match = empresas.find((e) => {
+      const digits = Number(String((e as any)?.cuit ?? "").replace(/\D/g, ""));
+      return Number.isFinite(digits) && digits === cuitForzado;
+    });
+
+    if (match) {
+      setEmpresaSeleccionada(match);
+      seleccionAutomaticaRef.current = true;
+    }
+  }, [cuitForzado, empresas, isLoadingEmpresas]);
+
+  // Si está bloqueado por CUIT y no hay match en el store, igual mostrar la Razón Social en el combo
+  useEffect(() => {
+    if (!bloquearBusquedaPorCuit) return;
+    if (empresaSeleccionada) return;
+    const razonSocial = polizaRawData?.empleador_Denominacion;
+    if (!razonSocial) return;
+    setEmpresaSeleccionada({ razonSocial: String(razonSocial) } as any);
+  }, [bloquearBusquedaPorCuit, empresaSeleccionada, polizaRawData?.empleador_Denominacion]);
 
   const handleDownloadPDF = async () => {
     if (!polizaRawData?.archivo) {
@@ -93,6 +128,7 @@ const Poliza = () => {
     _event: React.SyntheticEvent,
     newValue: Empresa | null
   ) => {
+    if (bloquearBusquedaPorCuit) return;
     setEmpresaSeleccionada(newValue);
     // Marcar que la selección fue manual
     seleccionAutomaticaRef.current = false;
@@ -100,8 +136,9 @@ const Poliza = () => {
 
   const getEmpresaLabel = (empresa: Empresa | null): string => {
     if (!empresa) return "";
-    const cuitFormateado = Formato.CUIP(empresa.cuit);
-    return `${empresa.razonSocial} - ${cuitFormateado}`;
+    if (bloquearBusquedaPorCuit) return String((empresa as any)?.razonSocial ?? "");
+    const cuitFormateado = Formato.CUIP((empresa as any)?.cuit);
+    return `${(empresa as any)?.razonSocial ?? ""} - ${cuitFormateado}`;
   };
 
   return (
@@ -124,7 +161,7 @@ const Poliza = () => {
               ? "No hay empresas disponibles"
               : "No se encontraron empresas"
           }
-          disabled={isLoadingEmpresas}
+          disabled={isLoadingEmpresas || bloquearBusquedaPorCuit}
         />
       </Box>
 
