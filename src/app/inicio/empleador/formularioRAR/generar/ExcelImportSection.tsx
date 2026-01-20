@@ -5,6 +5,7 @@ import CustomButton from '@/utils/ui/button/CustomButton';
 import CustomModal from '@/utils/ui/form/CustomModal';
 import { importarTrabajadoresDesdeExcel, descargarPlantillaExcel } from '@/utils/excelUtils';
 import type { ResultadoImportacion } from '@/utils/excelUtils';
+import styles from './ExcelImportSection.module.css';
 
 interface ExcelImportSectionProps {
   establecimientoSeleccionadoValido: boolean;
@@ -134,50 +135,24 @@ const ExcelImportSection: React.FC<ExcelImportSectionProps> = ({
   return (
     <>
       {/* SECCIÓN 1.5: IMPORTACIÓN DE TRABAJADORES DESDE EXCEL */}
-      <div style={{
-        background: establecimientoSeleccionadoValido ? '#f0f7ff' : '#f5f5f5',
-        padding: '18px',
-        borderRadius: '8px',
-        marginBottom: '20px',
-        border: `2px dashed ${establecimientoSeleccionadoValido ? '#1976d2' : '#ccc'}`,
-        opacity: establecimientoSeleccionadoValido ? 1 : 0.6
-      }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          marginBottom: '12px'
-        }}>
+      <div className={establecimientoSeleccionadoValido ? styles.excelImportContainer : styles.excelImportContainerDisabled}>
+        <div className={styles.excelImportHeader}>
           <CloudUploadIcon style={{ fontSize: '28px', color: establecimientoSeleccionadoValido ? '#1565c0' : '#ccc' }} />
-          <h4 style={{
-            margin: 0,
-            color: establecimientoSeleccionadoValido ? '#1565c0' : '#9e9e9e',
-            fontSize: '16px',
-            fontWeight: '600'
-          }}>
+          <h4 className={establecimientoSeleccionadoValido ? styles.excelImportTitle : styles.excelImportTitleDisabled}>
             Importar Trabajadores desde Excel
           </h4>
           {!establecimientoSeleccionadoValido && (
-            <span style={{ fontSize: '13px', fontWeight: 'normal', marginLeft: '10px', color: '#9e9e9e' }}>
+            <span className={styles.excelImportSubtitle}>
               (Seleccioná primero un establecimiento)
             </span>
           )}
         </div>
         
-        <p style={{
-          margin: '0 0 15px 0',
-          color: establecimientoSeleccionadoValido ? '#555' : '#bbb',
-          fontSize: '13px',
-          lineHeight: '1.5'
-        }}>
+        <p className={establecimientoSeleccionadoValido ? styles.excelImportDescription : styles.excelImportDescriptionDisabled}>
           Cargá un archivo Excel con los datos de los trabajadores para importarlos automáticamente. 
           Podés descargar la plantilla para ver el formato requerido.
         </p>
-        <p style={{
-          margin: '0 0 12px 0',
-          color: establecimientoSeleccionadoValido ? '#777' : '#bbb',
-          fontSize: '12px'
-        }}>
+        <p className={establecimientoSeleccionadoValido ? styles.excelImportNote : styles.excelImportNoteDisabled}>
           Nota: la plantilla incluye una fila 3 de ejemplo. Cargá tus datos reales a partir de la fila 4.
         </p>
 

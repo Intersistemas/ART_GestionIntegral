@@ -1,0 +1,227 @@
+/* ================ UTILIDADES DE LAYOUT ================ */
+.wrapperCol { display: flex; flex-direction: column; gap: 12px; }
+.row { display: flex; flex-direction: row; gap: 12px; }
+.row20 { display: flex; flex-direction: row; gap: 20px; }
+.col { display: flex; flex-direction: column; gap: 20px; }
+
+.flex { display: flex; }
+.flex1 { flex: 1; }
+.justifyCenter { justify-content: center; }
+.alignCenter { align-items: center; }
+.spaceBetween { justify-content: space-between; }
+
+.gap8 { gap: 8px; }
+.gap12 { gap: 12px; }
+.gap20 { gap: 20px; }
+
+.mb16 { margin-bottom: 16px; }
+.mb20 { margin-bottom: 20px; }
+.mt20 { margin-top: 20px; }
+.mt40 { margin-top: 40px; }
+.mt60 { margin-top: 60px; }
+
+.w100 { width: 100%; }
+.bold { font-weight: bold; }
+.fs20 { font-size: 20px; }
+.center { text-align: center; }
+.p24 { padding: 24px; }
+
+/* Centrado del texto del input de MUI */
+.centeredInput :global(.MuiInputBase-input) {
+  text-align: center;
+}
+
+/* ================ MODAL GRIDS ================ */
+.modalGridCol { display: flex; flex-direction: column; gap: 20px; }
+.modalRow { display: flex; flex-direction: row; gap: 20px; }
+
+/* ================ BOTONES ================ */
+.modalButtons { display: flex; gap: 12px; justify-content: center; margin-top: 20px; }
+
+/* Sección de información del empleador */
+.empleadorInfo {
+  background: #e3f2fd;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.empleadorInfoTitle {
+  margin: 0 0 15px 0;
+  color: #1976d2;
+}
+
+.empleadorInfoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  align-items: center;
+}
+
+.empleadorInfoItem {
+  font-size: 14px;
+}
+
+/* Sección de selección de establecimiento */
+.establecimientoSection {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.establecimientoTitle {
+  margin: 0 0 15px 0;
+  color: #495057;
+}
+
+.requiredAsterisk {
+  color: #d32f2f;
+  font-size: 16px;
+}
+
+/* Resumen de totales */
+.totalResumen {
+  background: #bbdefb;
+  padding: 10px;
+  border-radius: 3px;
+  margin-top: 10px;
+  text-align: center;
+}
+
+/* Sección de datos del trabajador */
+.trabajadorSection {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.trabajadorSectionDisabled {
+  background: #f5f5f5;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  opacity: 0.6;
+}
+
+.trabajadorTitle {
+  margin: 0 0 15px 0;
+  color: #495057;
+}
+
+.trabajadorTitleDisabled {
+  margin: 0 0 15px 0;
+  color: #9e9e9e;
+}
+
+.trabajadorSubtitle {
+  font-size: 14px;
+  font-weight: normal;
+  margin-left: 10px;
+}
+
+/* Filas de formulario con margin */
+.modalRowSpaced {
+  margin-bottom: 20px;
+}
+
+/* Tabla de trabajadores cargados */
+.tablaTrabajadoresContainer {
+  background: white;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  border: 1px solid #e0e0e0;
+}
+
+.tablaTrabajadoresTitle {
+  margin: 0 0 15px 0;
+  color: #333;
+}
+
+/* Estado de trabajadores */
+.estadoTrabajadores {
+  background: #e8f5e9;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  border: 1px solid #c8e6c9;
+}
+
+.estadoTrabajadoresIncompleto {
+  background: #fff3e0;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  border: 1px solid #ffe0b2;
+}
+
+.estadoContador {
+  color: #2e7d32;
+  font-weight: bold;
+}
+
+.estadoContadorAdvertencia {
+  color: #f57f17;
+  font-weight: bold;
+}
+
+/* Botones de acción */
+.botonesAccion {
+  background: white;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  border-top: 2px solid #e0e0e0;
+}
+
+.botonGuardar {
+  background: #4caf50;
+  color: white;
+}
+
+.botonGuardarDisabled {
+  background: #cccccc;
+  color: white;
+}
+
+.botonCancelar {
+  background: #f44336;
+  color: white;
+}
+
+/* Span de fecha sin especificar */
+.fechaNoEspecificada {
+  color: #888;
+  font-style: italic;
+}
+
+/* Contenedor de acciones en fila */
+.accionesContainer {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Validación de código de agente */
+.validacionAgente {
+  background: #fff3e0;
+  padding: 10px;
+  border-radius: 5px;
+  margin-top: 10px;
+  font-size: 13px;
+  color: #f57f17;
+  border-left: 4px solid #ff9800;
+}
+
+.validacionAgenteCompleto {
+  background: #e8f5e9;
+  padding: 10px;
+  border-radius: 5px;
+  margin-top: 10px;
+  font-size: 13px;
+  color: #2e7d32;
+  border-left: 4px solid #4caf50;
+}

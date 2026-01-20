@@ -1,115 +1,3 @@
-// import ExcelJS from 'exceljs';
-// import { saveAs } from 'file-saver';
-// import { pick } from './utils';
-
-// //#region types
-// export type TableRow = Record<string, any>;
-// export type TableColumn = Partial<ExcelJS.Column>;
-// export type TableRowFormatter = (value: any) => any;
-// export type TableColumnFormatter = (column: TableColumn, rowValue?: any) => any;
-// export type AddTableOptions = {
-//   formatters?: {
-//     column?: Record<string, TableColumnFormatter>,
-//     row?: Record<string, TableRowFormatter>,
-//   }
-// };
-// export type Sheet = ExcelJS.Worksheet;
-// export type SheetOptions = Partial<ExcelJS.AddWorksheetOptions>;
-// export type SaveTableOptions = {
-//   format?: "xlsx" | "csv",
-//   sheet?: {
-//     name?: string,
-//     options?: SheetOptions,
-//   },
-//   table?: AddTableOptions,
-// }
-// //#endregion types
-// //#region defaults
-// export const defaultTableColumnFormatter: TableColumnFormatter = Object.freeze((column, rowValue) => {
-//   if (column.width == null)
-//     column.width = calcWidth((Array.isArray(column.header))
-//       ? column.header.reduce((p, c) => c.length > p.length ? c : p)
-//       : column.header ?? "");
-//   if (rowValue == null) return rowValue;
-//   let width = calcWidth(rowValue);
-//   if (column.width < width) column.width = width;
-//   return rowValue;
-//   function calcWidth(value: string) { return value.length + 3 };
-// });
-// export const defaultTableRowFormatter: TableRowFormatter = Object.freeze((value) => value);
-// export const defaultKey = Object.freeze("");
-// export const defaultTableColumnFormatters: Record<string, TableColumnFormatter> = Object.freeze({ [defaultKey]: defaultTableColumnFormatter });
-// export const defaultTableRowFormatters: Record<string, TableRowFormatter> = Object.freeze({ [defaultKey]: defaultTableRowFormatter });
-// export const defaultTableOptions: AddTableOptions = Object.freeze({
-//   formatters: Object.freeze({ column: defaultTableColumnFormatters, row: defaultTableRowFormatters })
-// });
-// //#endregion defaults
-
-// export function addTable(
-//   sheet: Sheet,
-//   columns: Record<string, TableColumn>,
-//   rows: TableRow[],
-//   options?: AddTableOptions,
-// ) {
-//   options = { ...defaultTableOptions, ...options };
-//   const formatters = {
-//     column: { ...defaultTableColumnFormatters, ...options.formatters?.column },
-//     row: { ...defaultTableRowFormatters, ...options.formatters?.row },
-//   };
-
-//   const headers = Object.fromEntries(Object.entries(columns).map(([key, value]) => [key, { ...value }]));
-//   const lines = rows.map((row) => Object.fromEntries(Object.entries(pick(row, headers)).map(([key, value]) => {
-//     const columnFormatter = formatters.column[key] ?? formatters.column[defaultKey];
-//     const rowFormatter = formatters.row[key] ?? formatters.row[defaultKey];
-//     return [key, columnFormatter(headers[key], rowFormatter(value))];
-//   })));
-//   sheet.columns = Object.values(headers);
-
-//   // Estilos para encabezado
-//   sheet.getRow(1).eachCell((cell) => {
-//     cell.font = { bold: true };
-//     cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'A8D08D' } };
-//     cell.alignment = { horizontal: 'center', vertical: 'middle' };
-//   });
-
-//   sheet.addRows(lines);
-// }
-
-// export async function saveXlsx(workbook: ExcelJS.Workbook, fileName: string) {
-//   return await workbook.xlsx.writeBuffer().then((buffer) => saveAs(
-//     new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }),
-//     fileName
-//   ));
-// }
-
-// export async function saveCsv(workbook: ExcelJS.Workbook, fileName: string) {
-//   return await workbook.csv.writeBuffer().then((buffer) => saveAs(
-//     new Blob([buffer], { type: 'application/text' }),
-//     fileName
-//   ));
-// }
-
-// export async function saveTable(
-//   columns: Record<string, TableColumn>,
-//   rows: TableRow[],
-//   fileName: string,
-//   options?: SaveTableOptions,
-// ) {
-//   options ??= {};
-//   options.sheet ??= {};
-
-//   const workbook = new ExcelJS.Workbook();
-
-//   addTable(workbook.addWorksheet(options.sheet.name, options.sheet.options), columns, rows, options.table);
-
-//   switch (options.format ?? "xlsx") {
-//     case "xlsx": return await saveXlsx(workbook, fileName);
-//     case "csv": return await saveCsv(workbook, fileName);
-//   }
-// }
-
-
-
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { pick } from './utils';
@@ -369,10 +257,10 @@ export async function importarTrabajadoresDesdeExcel(file: File, maxTrabajadores
   let numFila = 0;
   let contadorExitosos = 0;
 
-  // Procesar filas (saltamos encabezado, leyenda y ejemplo: filas 1 a 3)
+  // Procesar filas (saltamos solo el encabezado: fila 1)
   worksheet.eachRow((row, rowNumber) => {
-    // Saltar encabezado (1), leyenda (2) y ejemplo (3)
-    if (rowNumber <= 3) return;
+    // Saltar encabezado (fila 1)
+    if (rowNumber <= 1) return;
 
     numFila = rowNumber;
     const erroresFila: string[] = [];
@@ -558,62 +446,39 @@ export async function descargarPlantillaExcel() {
   // Altura de encabezado
   worksheet.getRow(1).height = 45;
 
-  // Fila 2: Instrucciones/Leyenda
-  const rowInstrucciones = worksheet.addRow({
-    CUIL: '⚠️ FORMATO',
-    Nombre: '⚠️ TEXTO',
-    SectorTareas: '⚠️ DESCRIPCIÓN',
-    Ingreso: '⚠️ dd/mm/aaaa',
-    FechaInicio: '⚠️ dd/mm/aaaa',
-    Exposicion: '⚠️ NÚMERO',
-    FechaFinExposicion: '⚠️ dd/mm/aaaa (opcional)',
-    UltimoExamenMedico: '⚠️ dd/mm/aaaa',
-    CodigoAgente: '⚠️ NÚMERO'
-  });
+  // ✅ SOLO DEJAMOS LA CABECERA - Los ejemplos irán a la hoja de Instrucciones
 
-  rowInstrucciones.eachCell((cell) => {
-    cell.font = { bold: true, italic: true, color: { argb: 'FF9C6500' }, size: 9 };
-    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFCC99' } };
-    cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
-    cell.border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } };
-  });
-  worksheet.getRow(2).height = 35;
-
-  // Ejemplo único (fila 3)
-  const ejemploRow = worksheet.addRow({
-    CUIL: '20-12345678-9',
-    Nombre: 'Juan Carlos Pérez García',
-    SectorTareas: 'Operario de Producción',
-    Ingreso: '15/01/2023',
-    FechaInicio: '15/01/2023',
-    Exposicion: '8',
-    FechaFinExposicion: '',
-    UltimoExamenMedico: '30/06/2024',
-    CodigoAgente: '5'
-  });
-
-  ejemploRow.eachCell((cell) => {
-    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEBF5FB' } };
-    cell.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
-    cell.border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } };
-    cell.font = { size: 10 };
-  });
-  ejemploRow.height = 30;
-
-  // Separador visual
-  worksheet.addRow({});
-  worksheet.addRow({});
-
-  // Hoja 2: Instrucciones detalladas
+  // Hoja 2: Instrucciones detalladas con ejemplos
   const instruccionesSheet = workbook.addWorksheet('Instrucciones');
   instruccionesSheet.columns = [{ header: 'Información', key: 'info', width: 100 }];
 
   const instrucciones = [
     '📋 GUÍA DE CARGA DE TRABAJADORES',
     '',
-    'ℹ️ IMPORTANTE: La fila 3 del Excel es un ejemplo.',
-    '   • Ingrese sus datos reales a partir de la fila 4.',
+    'ℹ️ IMPORTANTE: Complete la hoja "Trabajadores" con sus datos reales.',
+    '   • La primera fila es la cabecera (no modifique).',
+    '   • Ingrese sus datos a partir de la fila 2.',
     '   • Si Excel cambia el código de agente a fecha, defina la columna "Código Agente" como Texto.',
+    '',
+    '✅ EJEMPLO COMPLETO DE CARGA:',
+    '',
+    '┌────────────────────────────────────────────────────────────────────────────────────────┐',
+    '│ CUIL             │ 20-12345678-9                                                       │',
+    '│ Nombre           │ Juan Carlos Pérez García                                            │',
+    '│ Sector/Tareas    │ Operario de Producción                                              │',
+    '│ Fecha Ingreso    │ 15/01/2023                                                          │',
+    '│ Fecha Inicio Exp │ 15/01/2023                                                          │',
+    '│ Horas Exposición │ 8                                                                   │',
+    '│ Fecha Fin Exp    │ (vacío o fecha si ya finalizó)                                      │',
+    '│ Último Examen    │ 30/06/2024                                                          │',
+    '│ Código Agente    │ 40005                                                               │',
+    '└────────────────────────────────────────────────────────────────────────────────────────┘',
+    '',
+    '🔸 EJEMPLO CON MÚLTIPLES EXPOSICIONES:',
+    '   Si un trabajador está expuesto a más de un agente, agregue UNA FILA por cada agente:',
+    '',
+    '   Fila 2: Juan Pérez | Operario | ... | Código Agente: 40005 (Ruido)',
+    '   Fila 3: Juan Pérez | Operario | ... | Código Agente: 40007 (Vibraciones)',
     '',
     '1️⃣  CUIL (Código Único de Identidad Laboral)',
     '   • Formato: XX-XXXXXXXX-X (ejemplo: 20-12345678-9)',
@@ -661,12 +526,13 @@ export async function descargarPlantillaExcel() {
     '   • Campo obligatorio',
     '',
     '9️⃣  CÓDIGO AGENTE',
-    '   • Código del agente causante o factor de riesgo',
+    '   • Código del agente causante o factor de riesgo (5 dígitos)',
     '   • Ejemplos comunes:',
     '      - 1 = Sin exposición (use cuando Horas = 0)',
-    '      - 5 = Ruido',
-    '      - 7 = Productos químicos',
-    '      - 12 = Radiaciones',
+    '      - 40005 = Ruido',
+    '      - 40007 = Vibraciones',
+    '      - 40012 = Radiaciones ionizantes',
+    '   • ⚠️  IMPORTANTE: Use el código COMPLETO de 5 dígitos',
     '   • Consulte su catálogo de agentes disponibles',
     '   • Campo obligatorio',
     '',
@@ -675,17 +541,7 @@ export async function descargarPlantillaExcel() {
     '   • Si un trabajador tiene múltiples factores, ingrese una fila por cada factor',
     '   • El sistema validará automáticamente todos los datos antes de cargarlos',
     '   • Los registros con errores se reportarán para que los corrija',
-    '',
-    '✅ EJEMPLO COMPLETO DE FILA:',
-    '   CUIL: 20-12345678-9',
-    '   Nombre: Juan Carlos Pérez García',
-    '   Sector: Operario de Producción',
-    '   Fecha Ingreso: 15/01/2023',
-    '   Fecha Inicio Exposición: 15/01/2023',
-    '   Horas Exposición: 8',
-    '   Fecha Fin Exposición: (vacío)',
-    '   Último Examen: 30/06/2024',
-    '   Código Agente: 5'
+    ''
   ];
 
   instrucciones.forEach((linea) => {
