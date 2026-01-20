@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
 
@@ -10,10 +10,15 @@ import type { Parameters } from '@/app/inicio/empleador/cobertura/types/persona'
 
 import DataTable from '@/utils/ui/table/DataTable';
 import type { ColumnDef } from '@tanstack/react-table';
-
+import { Box } from '@mui/material';
 
 import CondicionesTabla from './table';
 import type { SiniestroItem, InstanciaSiniestro } from './types/tipos';
+import { useEmpresasStore } from '@/data/empresasStore';
+import { Empresa } from '@/data/authAPI';
+import CustomSelectSearch from '@/utils/ui/form/CustomSelectSearch';
+import Formato from '@/utils/Formato';
+import styles from './siniestros.module.css';
 
 
 const fmtDateTime = (v?: string | null) => {
@@ -67,20 +72,64 @@ const cols: ColumnDef<SiniestroItem>[] = [
 
 
 export default function SiniestrosPage() {
+  const { empresas, isLoading: isLoadingEmpresas } = useEmpresasStore();
+  const [empresaSeleccionada, setEmpresaSeleccionada] = useState<Empresa | null>(null);
+  const seleccionAutomaticaRef = useRef(false);
   const [selectedDenuncia, setSelectedDenuncia] = useState<number | null>(null);
 
+  // Seleccionar automáticamente si solo hay una empresa
+  useEffect(() => {
+    if (!isLoadingEmpresas) {
+      if (empresas.length === 1) {
+        setEmpresaSeleccionada(empresas[0]);
+        seleccionAutomaticaRef.current = true;
+      } else if (empresas.length !== 1 && seleccionAutomaticaRef.current) {
+        setEmpresaSeleccionada(null);
+        seleccionAutomaticaRef.current = false;
+      }
+    }
+  }, [empresas.length, isLoadingEmpresas]);
 
-  const params: Parameters = {};
+  // Limpiar la denuncia seleccionada cuando cambia la empresa
+  useEffect(() => {
+    setSelectedDenuncia(null);
+  }, [empresaSeleccionada?.cuit]);
 
+  const handleEmpresaChange = (
+    _event: React.SyntheticEvent,
+    newValue: Empresa | null
+  ) => {
+    setEmpresaSeleccionada(newValue);
+    seleccionAutomaticaRef.current = false;
+  };
 
-  const { data, error, isLoading } =  gestionEmpleadorAPI.useGetVEmpleadorSiniestros(params);
+  const getEmpresaLabel = (empresa: Empresa | null): string => {
+    if (!empresa) return "";
+    return `${empresa.razonSocial} - ${Formato.CUIP(empresa.cuit)}`;
+  };
 
+  const params: Parameters = empresaSeleccionada ? { CUIT: empresaSeleccionada.cuit } : {};
+
+  // Solo hacer la llamada si hay una empresa seleccionada
+  const { data, error, isLoading } = gestionEmpleadorAPI.useGetVEmpleadorSiniestros(
+    empresaSeleccionada ? params : {}
+  );
+
+  const instanciasParams: Parameters = empresaSeleccionada 
+    ? { CUIT: empresaSeleccionada.cuit }
+    : {};
+  
+  if (selectedDenuncia != null && empresaSeleccionada) {
+    (instanciasParams as any).Denuncia = selectedDenuncia;
+  }
+
+  // Solo hacer la llamada si hay una empresa seleccionada y una denuncia seleccionada
   const {
     data: instanciasData,
     isLoading: isLoadingInst,
     error: errorInst,
   } = gestionEmpleadorAPI.useGetVEmpleadorSiniestrosInstancias(
-    selectedDenuncia != null ? ({ Denuncia: selectedDenuncia } as any) : ({} as any)
+    empresaSeleccionada && selectedDenuncia != null ? instanciasParams : {}
   );
 
   // Log con token enmascarado y URL (debug)
@@ -126,6 +175,18 @@ export default function SiniestrosPage() {
 
   return (
     <div style={{ padding: 16 }}>
+      <Box className={styles.empresaSelectorContainer}>
+        <CustomSelectSearch<Empresa>
+          label="Seleccionar Empresa"
+          options={empresas}
+          value={empresaSeleccionada}
+          onChange={handleEmpresaChange}
+          getOptionLabel={getEmpresaLabel}
+          isOptionEqualToValue={(option, value) => option.empresaId === value.empresaId}
+          loading={isLoadingEmpresas}
+          disabled={isLoadingEmpresas || empresas.length === 0}
+        />
+      </Box>
 
       {error && (
         <p style={{ color: 'crimson' }}>
