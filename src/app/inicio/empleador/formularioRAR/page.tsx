@@ -124,14 +124,14 @@ const FormulariosRAR: React.FC = () => {
   // Usamos el hook SWR del API (solo hace fetch si existe token y respeta las opciones de revalidate)
   // Solo hace fetch si hay una empresa seleccionada
   const apiPageIndex = PageIndex;
-  const { data: formulariosData, error: formulariosError, isValidating, mutate: mutateFormularios } =
+  const { data: formulariosData, error: formulariosError, isLoading: isLoadingSWR, isValidating, mutate: mutateFormularios } =
     ArtAPI.useGetFormulariosRARURL(
       empresaSeleccionada?.cuit 
         ? { CUIT: empresaSeleccionada.cuit, PageIndex: apiPageIndex, PageSize: PageSize, OrderBy: '-Interno' } 
         : undefined
     );
 
-  // Una sola vez: cuando llegan datos, los mapeamos al estado local
+  // Sincronizar el estado de loading con SWR
   useEffect(() => {
     // Si no hay empresa seleccionada, mantener tabla vacía y no mostrar loading
     if (!empresaSeleccionada?.cuit) {
@@ -141,16 +141,34 @@ const FormulariosRAR: React.FC = () => {
       return;
     }
 
-    // mantener spinner mientras llega la primera respuesta
-    if (!formulariosData && !formulariosError) {
-      setLoading(true);
+    // Usar el estado de loading de SWR directamente
+    setLoading(isLoadingSWR || isValidating);
+  }, [empresaSeleccionada?.cuit, isLoadingSWR, isValidating]);
+
+  // Una sola vez: cuando llegan datos, los mapeamos al estado local
+  useEffect(() => {
+    // Si no hay empresa seleccionada, no procesar datos
+    if (!empresaSeleccionada?.cuit) {
       return;
     }
 
+    // Si está cargando, no procesar aún
+    if (isLoadingSWR || isValidating) {
+      return;
+    }
+
+    // Si hay error, mostrar error
     if (formulariosError) {
       console.error('Error al cargar formularios (SWR):', formulariosError);
       setFormulariosRAR([]);
       setLoading(false);
+      return;
+    }
+
+    // Si no hay datos, mantener vacío
+    if (!formulariosData) {
+      setFormulariosRAR([]);
+      setPageCount(1);
       return;
     }
 
@@ -181,7 +199,7 @@ const FormulariosRAR: React.FC = () => {
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formulariosData, formulariosError, empresaSeleccionada?.cuit]);
+  }, [formulariosData, formulariosError, empresaSeleccionada?.cuit, isLoadingSWR, isValidating]);
 
   // Handler que se pasa al DataTable para solicitar otra página
   const handlePageChange = (newPageIndex: number) => {
