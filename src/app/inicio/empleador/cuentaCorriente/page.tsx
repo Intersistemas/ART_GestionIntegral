@@ -11,6 +11,7 @@ import ExportButtons from './components/ExportButtons';
 import { useEmpresasStore } from "@/data/empresasStore";
 import { Empresa } from "@/data/authAPI";
 import CustomSelectSearch from "@/utils/ui/form/CustomSelectSearch";
+import { useSearchParams } from 'next/navigation';
 
 
 
@@ -28,17 +29,33 @@ const formatCurrency = (value: number | string) => {
     }).format(num);
 };
 
+const normalizeDigits = (value: unknown) => String(value ?? '').replace(/\D/g, '');
+
 // ----------------------------------------------------
 // 3. DEFINICIÓN DE COLUMNAS Y COMPONENTE
 // ----------------------------------------------------
 function CuentaCorrientePage() {
     const { empresas, isLoading: isLoadingEmpresas } = useEmpresasStore();
+    const searchParams = useSearchParams();
     const [empresaSeleccionada, setEmpresaSeleccionada] = useState<Empresa | null>(null);
     const seleccionAutomaticaRef = useRef(false);
+
+    const cuitQuery = searchParams?.get('cuit') ?? '';
+    const cuitDesdeQuery = normalizeDigits(cuitQuery);
+    const bloquearBusquedaPorCuit = Boolean(cuitDesdeQuery);
     
-    // Seleccionar automáticamente si solo hay una empresa
+    // Seleccionar automáticamente si solo hay una empresa o fijar empresa por CUIT cuando viene desde comercializador
     useEffect(() => {
-        if (!isLoadingEmpresas) {
+        if (isLoadingEmpresas) return;
+
+        if (cuitDesdeQuery) {
+            const match = empresas.find((e) => normalizeDigits(e.cuit) === cuitDesdeQuery);
+            if (match) {
+                setEmpresaSeleccionada(match);
+                seleccionAutomaticaRef.current = true;
+            }
+            return;
+        }
             if (empresas.length === 1) {
                 setEmpresaSeleccionada(empresas[0]);
                 seleccionAutomaticaRef.current = true;
@@ -46,27 +63,34 @@ function CuentaCorrientePage() {
                 setEmpresaSeleccionada(null);
                 seleccionAutomaticaRef.current = false;
             }
-        }
-    }, [empresas.length, isLoadingEmpresas]);
+        
+    }, [empresas, isLoadingEmpresas, cuitDesdeQuery]);
 
     const handleEmpresaChange = (
         _event: React.SyntheticEvent,
         newValue: Empresa | null
     ) => {
+        if (bloquearBusquedaPorCuit) return;
         setEmpresaSeleccionada(newValue);
         seleccionAutomaticaRef.current = false;
     };
 
     const getEmpresaLabel = (empresa: Empresa | null): string => {
         if (!empresa) return "";
-        return `${empresa.razonSocial} - ${Formato.CUIP(empresa.cuit)}`;
+        return `${empresa.razonSocial}`;
     };
     
     // Consultar datos con ordenamiento por periodo descendente desde el backend
+    const cuitEmpresaSeleccionada = empresaSeleccionada?.cuit? normalizeDigits(empresaSeleccionada.cuit): '';
+    const cuitFinalStr = cuitDesdeQuery || cuitEmpresaSeleccionada;
+    const cuitFinal = cuitFinalStr ? Number(cuitFinalStr) : undefined;
+    const { data: polizaRawData } = gestionEmpleadorAPI.useGetPoliza(
+        cuitFinal ? { CUIT: cuitFinal } : {}
+    );
     const { data: CtaCteRawData, isLoading: isCtaCteLoading } = gestionEmpleadorAPI.useGetVEmpleadorDDJJ(
-        empresaSeleccionada 
+        cuitFinal
             ? { 
-                CUIT: empresaSeleccionada.cuit,
+                CUIT: cuitFinal,
                 sort: '-Periodo',
                 page: '0,1000'
               }
@@ -75,6 +99,15 @@ function CuentaCorrientePage() {
                 page: '0,1000'
               }
     );
+    useEffect(() => {
+        if (!bloquearBusquedaPorCuit) return;
+        if (empresaSeleccionada) return;
+
+        const razonSocial = (polizaRawData as any)?.empleador_Denominacion;
+        if (!razonSocial) return;
+
+        setEmpresaSeleccionada({ razonSocial: String(razonSocial) } as Empresa);
+    }, [bloquearBusquedaPorCuit, empresaSeleccionada, polizaRawData]);
     
     // Usar los datos directamente sin ordenar en el frontend
     const sortedData = useMemo(() => {
@@ -207,7 +240,7 @@ function CuentaCorrientePage() {
                             ? "No hay empresas disponibles"
                             : "No se encontraron empresas"
                     }
-                    disabled={isLoadingEmpresas}
+                            disabled={isLoadingEmpresas || bloquearBusquedaPorCuit}
                 />
             </Box>
             

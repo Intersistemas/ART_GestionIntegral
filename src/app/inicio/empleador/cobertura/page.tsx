@@ -16,6 +16,7 @@ import ExcelJS from 'exceljs';
 import { useEmpresasStore } from "@/data/empresasStore";
 import { Empresa } from "@/data/authAPI";
 import CustomSelectSearch from "@/utils/ui/form/CustomSelectSearch";
+import { useSearchParams } from "next/navigation";
 
 const { useGetPersonal, useGetPoliza } = gestionEmpleadorAPI;
 
@@ -23,14 +24,20 @@ export default function CoberturaPage() {
     const { empresas, isLoading: isLoadingEmpresas } = useEmpresasStore();
     const [empresaSeleccionada, setEmpresaSeleccionada] = useState<Empresa | null>(null);
     const seleccionAutomaticaRef = useRef(false);
+    const [bloquearBusquedaPorCuit, setBloquearBusquedaPorCuit] = useState(false);
+    const searchParams = useSearchParams();
+    const cuitQuery = searchParams.get("cuit") ?? searchParams.get("cuil");
+    const cuitDesdeQuery = cuitQuery ? Number(String(cuitQuery).replace(/\D/g, "")) : NaN;
    
-    // Obtener personal y póliza usando el CUIT de la empresa seleccionada
-    const { data: personalRawData, isLoading: isPersonalLoading } = useGetPersonal(
-        empresaSeleccionada ? { CUIT: empresaSeleccionada.cuit } : {}
-    ); 
-    const { data: polizaData, isLoading: isPolizaLoading } = useGetPoliza(
-        empresaSeleccionada ? { CUIT: empresaSeleccionada.cuit } : {}
-    );
+    // Obtener personal y póliza usando el CUIT de la empresa seleccionada o, si viene por query, ese CUIT
+    const paramsCUIT = Number.isFinite(cuitDesdeQuery) && cuitDesdeQuery > 0
+        ? { CUIT: cuitDesdeQuery }
+        : empresaSeleccionada
+            ? { CUIT: empresaSeleccionada.cuit }
+            : {};
+
+    const { data: personalRawData, isLoading: isPersonalLoading } = useGetPersonal(paramsCUIT); 
+    const { data: polizaData, isLoading: isPolizaLoading } = useGetPoliza(paramsCUIT);
     
     // Estados para las dos tablas: Pendiente (Origen) y Cubierto (Destino)
     const [personalPendiente, setPersonalPendiente] = useState<Persona[]>([]);
@@ -55,8 +62,9 @@ export default function CoberturaPage() {
         setHora(now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })); // ej. "14:35"
     }, []);
 
-    // Seleccionar automáticamente si solo hay una empresa
+    // Seleccionar automáticamente si solo hay una empresa (salvo que venga CUIT por query)
     useEffect(() => {
+        if (Number.isFinite(cuitDesdeQuery) && cuitDesdeQuery > 0) return;
         if (!isLoadingEmpresas) {
             if (empresas.length === 1) {
                 setEmpresaSeleccionada(empresas[0]);
@@ -66,7 +74,31 @@ export default function CoberturaPage() {
                 seleccionAutomaticaRef.current = false;
             }
         }
-    }, [empresas.length, isLoadingEmpresas]);
+    }, [empresas.length, isLoadingEmpresas, cuitDesdeQuery]);
+
+    // Si viene CUIT por query param, bloquear combo y seleccionar empresa (o al menos la razón social)
+    useEffect(() => {
+        if (!Number.isFinite(cuitDesdeQuery) || cuitDesdeQuery <= 0) return;
+
+        setBloquearBusquedaPorCuit(true);
+        if (isLoadingEmpresas || empresaSeleccionada) return;
+
+        const match = empresas.find((e) => {
+            const digits = Number(String((e as any)?.cuit ?? "").replace(/\D/g, ""));
+            return Number.isFinite(digits) && digits === cuitDesdeQuery;
+        });
+
+        if (match) {
+            setEmpresaSeleccionada(match);
+            seleccionAutomaticaRef.current = true;
+            return;
+        }
+
+        const razonSocial = (polizaData as any)?.empleador_Denominacion;
+        if (!razonSocial) return;
+
+        setEmpresaSeleccionada({ razonSocial: String(razonSocial) } as Empresa);
+    }, [cuitDesdeQuery, empresas, isLoadingEmpresas, empresaSeleccionada, polizaData]);
 
     // Limpiar las tablas cuando cambia la empresa seleccionada
     useEffect(() => {
@@ -80,13 +112,14 @@ export default function CoberturaPage() {
         _event: React.SyntheticEvent,
         newValue: Empresa | null
     ) => {
+        if (bloquearBusquedaPorCuit) return;
         setEmpresaSeleccionada(newValue);
         seleccionAutomaticaRef.current = false;
     };
 
     const getEmpresaLabel = (empresa: Empresa | null): string => {
         if (!empresa) return "";
-        return `${empresa.razonSocial} - ${Formato.CUIP(empresa.cuit)}`;
+        return String(empresa.razonSocial ?? "");
     };
 
     // Estados para las selecciones de filas en cada tabla
@@ -353,7 +386,7 @@ export default function CoberturaPage() {
                             ? "No hay empresas disponibles"
                             : "No se encontraron empresas"
                     }
-                    disabled={isLoadingEmpresas}
+                    disabled={isLoadingEmpresas || bloquearBusquedaPorCuit}
                 />
             </Box>
 

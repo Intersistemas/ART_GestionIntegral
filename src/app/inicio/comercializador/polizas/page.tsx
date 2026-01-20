@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useEffect, useRef } from "react";
-import CustomButton from '@/utils/ui/button/CustomButton';
+import React, { useMemo, useState } from "react";
 import { useAuth } from '@/data/AuthContext';
 import DataTable from '@/utils/ui/table/DataTable';
 import type { ColumnDef } from '@tanstack/react-table';
@@ -9,20 +8,10 @@ import ArtAPI from '@/data/artAPI';
 import Formato from '@/utils/Formato';
 import styles from './poliza.module.css';
 import { Box } from "@mui/material";
-import { useEmpresasStore } from "@/data/empresasStore";
-import type { Empresa } from "@/data/authAPI";
 import CustomSelectSearch from "@/utils/ui/form/CustomSelectSearch";
-
-type Poliza = {
-  interno: string;
-  numero: string;
-  NroPoliza: string;
-  CUIT: string;
-  Empleador_Denominacion: string;
-  Vigencia_Desde: string;
-  Vigencia_Hasta: string;
-  fecha: string;
-};
+import { BsFileText, BsCardChecklist, BsGraphUpArrow, BsCalendar2Plus } from 'react-icons/bs';
+import Link from 'next/link';
+import type { Poliza, EmpresaOption } from "./types/poliza";
 
 const columns: ColumnDef<Poliza>[] = [
   { accessorKey: 'numero', header: 'Nro. Poliza', meta: { align: 'left' } },
@@ -32,8 +21,8 @@ const columns: ColumnDef<Poliza>[] = [
     meta: { align: 'left' },
     cell: (info: any) => {
       const v = info.getValue();
-      const digits = normalizeDigits(v);
-      return Formato.CUIP(digits) || String(v ?? '');
+      const vDigits = digits(v);
+      return Formato.CUIP(vDigits) || String(v ?? '');
     },
   },
   { accessorKey: 'Empleador_Denominacion', header: 'Empleador', meta: { align: 'left' } },
@@ -73,10 +62,78 @@ const columns: ColumnDef<Poliza>[] = [
       );
     },
   },
+
+  {
+    id: 'accion',
+    header: 'Acción',
+    meta: { align: 'center' },
+    cell: ({ row }: any) => {
+      const cuitDigits = digits(row?.original?.CUIT);
+      return (
+        <div className={styles.iconActions}>
+          <Link
+            href={{ pathname: '/inicio/empleador/poliza', query: { cuit: cuitDigits } }}
+            onClick={(e) => e.stopPropagation()}
+            aria-label="Ver póliza del empleador"
+          >
+            <BsFileText title="Poliza" className={styles.iconButton} />
+          </Link>
+
+          <Link
+            href={{ pathname: '/inicio/empleador/cobertura', query: { cuit: cuitDigits } }}
+            onClick={(e) => e.stopPropagation()}
+            aria-label="Ver coberturas del empleador"
+          >
+          <BsCardChecklist title="Cobertura" className={styles.iconButton} />
+          </Link>
+
+          <Link
+            href={{ pathname: '/inicio/empleador/cuentaCorriente', query: { cuit: cuitDigits } }}
+            onClick={(e) => e.stopPropagation()}
+            aria-label="Ver CtaCte del empleador"
+          >
+          <BsGraphUpArrow title="CuentaCorriente" className={styles.iconButton} />
+          </Link>
+
+          <Link
+            href={{ pathname: '/inicio/empleador/siniestros', query: { cuit: cuitDigits } }}
+            onClick={(e) => e.stopPropagation()}
+            aria-label="Ver póliza del empleador"
+          >
+          <BsCalendar2Plus title="Siniestros" className={styles.iconButton} />
+          </Link>
+
+
+        </div>
+      );
+    },
+    enableHiding: true,
+  },
 ];
 
-function normalizeDigits(value: unknown) {
+function digits(value: unknown) {
   return String(value ?? '').replace(/\D/g, '');
+}
+
+function arr(data: any): any[] {
+  if (Array.isArray(data?.DATA)) return data.DATA;
+  if (Array.isArray(data?.data)) return data.data;
+  return Array.isArray(data) ? data : [];
+}
+
+function firstInterno(data: any): number | undefined {
+  const first = arr(data)[0];
+  const n = Number(first?.interno ?? first?.Interno);
+  return Number.isFinite(n) && n > 0 ? n : undefined;
+}
+
+function uniqueInternosCsv(data: any): string | undefined {
+  const set = new Set<number>();
+  for (const x of arr(data)) {
+    const n = Number(x?.interno ?? x?.Interno);
+    if (Number.isFinite(n) && n > 0) set.add(n);
+  }
+  return set.size ? Array.from(set).join(',') : undefined;
 }
 
 function mapPolizasToRows(apiData: any): Poliza[] {
@@ -104,9 +161,32 @@ function mapPolizasToRows(apiData: any): Poliza[] {
   });
 }
 
-function PolizasTable({ params }: { params: any }) {
+function PolizasListado({ params }: { params: any }) {
   const { data: apiData, error, isLoading } = ArtAPI.useGetPolizaComercializadorURL(params);
   const rows = useMemo(() => mapPolizasToRows(apiData), [apiData]);
+
+  const empresas = useMemo(() => {
+    const map = new Map<string, EmpresaOption>();
+    for (const r of rows) {
+      const razon = String(r?.Empleador_Denominacion ?? '').trim();
+      const cuit = digits(r?.CUIT);
+      const key = cuit || razon.toLowerCase();
+      if (!key) continue;
+      if (!map.has(key)) map.set(key, { razonSocial: razon || cuit, cuit: cuit || undefined });
+    }
+    return Array.from(map.values()).sort((a, b) =>
+      a.razonSocial.localeCompare(b.razonSocial, 'es', { sensitivity: 'base' })
+    );
+  }, [rows]);
+
+  const [empresa, setEmpresa] = useState<EmpresaOption | null>(null);
+
+  const filteredRows = useMemo(() => {
+    if (!empresa) return rows;
+    if (empresa.cuit) return rows.filter((r) => digits(r?.CUIT) === empresa.cuit);
+    const rs = empresa.razonSocial.trim().toLowerCase();
+    return rows.filter((r) => String(r?.Empleador_Denominacion ?? '').trim().toLowerCase() === rs);
+  }, [rows, empresa]);
 
   if (error) {
     return (
@@ -117,21 +197,40 @@ function PolizasTable({ params }: { params: any }) {
   }
 
   return (
-    <DataTable
-      columns={columns}
-      data={rows}
-      pageSizeOptions={[5, 10, 20]}
-      isLoading={isLoading}
-    />
+    <div className={styles.container}>
+      <Box sx={{ maxWidth: 650, marginBottom: 2 }}>
+        <CustomSelectSearch<EmpresaOption>
+          options={empresas}
+          getOptionLabel={(e) => String(e?.razonSocial ?? '')}
+          value={empresa}
+          onChange={(_event, newValue) => {
+            setEmpresa(newValue);
+          }}
+          label="Empresa"
+          placeholder="Filtrar por razón social..."
+          loading={isLoading}
+          loadingText="Cargando..."
+          noOptionsText={isLoading ? "Cargando..." : "No se encontraron empresas"}
+          disabled={isLoading || empresas.length === 0}
+        />
+      </Box>
+
+      <DataTable
+        columns={columns}
+        data={filteredRows}
+        pageSizeOptions={[5, 10, 20]}
+        isLoading={isLoading}
+      />
+    </div>
   );
 }
 
-function PolizasComercializador({ cuitConsulta }: { cuitConsulta?: number }) {
+function PolizasComercializador() {
   const { user } = useAuth();
   const userRol = String((user as any)?.rol ?? '');
   const isComercializador = userRol.toLowerCase() === 'comercializador';
   const userCUIL = Number(
-    normalizeDigits((user as any)?.cuit ?? (user as any)?.CUIL ?? (user as any)?.cuil ?? 0)
+    digits((user as any)?.cuit ?? (user as any)?.CUIL ?? (user as any)?.cuil ?? 0)
   );
 
   const {
@@ -145,17 +244,7 @@ function PolizasComercializador({ cuitConsulta }: { cuitConsulta?: number }) {
   );
 
   const comercializadorInterno = useMemo(() => {
-    const arr = Array.isArray(comercializadorData?.DATA)
-      ? comercializadorData.DATA
-      : Array.isArray(comercializadorData?.data)
-        ? comercializadorData.data
-        : Array.isArray(comercializadorData)
-          ? comercializadorData
-          : [];
-    const first = (arr as any[])[0];
-    const interno = first?.interno ?? first?.Interno;
-    const n = Number(interno);
-    return Number.isFinite(n) && n > 0 ? n : undefined;
+    return firstInterno(comercializadorData);
   }, [comercializadorData]);
 
   if (comercializadorError) {
@@ -186,287 +275,132 @@ function PolizasComercializador({ cuitConsulta }: { cuitConsulta?: number }) {
   }
 
   return (
-    <PolizasTable
+    <PolizasListado
       params={{
-        ComercializadorInterno: comercializadorInterno,
-        ...(cuitConsulta ? ({ CUIT: cuitConsulta } as any) : {}),
+        ComercializadoresInternos: String(comercializadorInterno),
       } as any}
     />
   );
 }
 
-function PolizasOrganizadorComercializador({ cuitConsulta }: { cuitConsulta?: number }) {
+function PolizasOrganizadorComercializador() {
   const { user } = useAuth();
-  const userRol = String((user as any)?.rol ?? '');
-  const isOrganizadorComercializador = userRol.toLowerCase() === 'organizadorcomercializador';
-  const userCUIL = Number(
-    normalizeDigits((user as any)?.cuit ?? (user as any)?.CUIL ?? (user as any)?.cuil ?? 0)
+  const userCUIL = Number(digits((user as any)?.cuit ?? (user as any)?.CUIL ?? (user as any)?.cuil ?? 0));
+  const userCUILValid = Number.isFinite(userCUIL) && userCUIL > 0 ? userCUIL : undefined;
+
+  const { data: organizadorData, error: organizadorError, isLoading: isLoadingOrganizador } =
+    ArtAPI.useGetOrganizadorURL(userCUILValid ? ({ CUIL: userCUILValid } as any) : ({} as any));
+
+  const organizadorInterno = useMemo(() => firstInterno(organizadorData), [organizadorData]);
+
+  const { data: comercializadoresData, error: comercializadoresError, isLoading: isLoadingComercializadores } =
+    ArtAPI.useGetComercializadorURL(
+      organizadorInterno
+        ? ({ ComercializadoresOrganizadoresInternos: organizadorInterno } as any)
+        : ({} as any)
+    );
+
+  const comercializadoresInternos = useMemo(
+    () => uniqueInternosCsv(comercializadoresData),
+    [comercializadoresData]
   );
 
-  const {
-    data: organizadorData,
-    error: organizadorError,
-    isLoading: isLoadingOrganizador,
-  } = ArtAPI.useGetOrganizadorURL(
-    isOrganizadorComercializador && Number.isFinite(userCUIL) && userCUIL > 0
-      ? ({ CUIL: userCUIL } as any)
-      : ({} as any)
-  );
+  if (!userCUILValid) return <div className={styles.container}><p>Falta el CUIL del usuario.</p></div>;
 
-  const organizadorInterno = useMemo(() => {
-    const arr = Array.isArray(organizadorData?.DATA)
-      ? organizadorData.DATA
-      : Array.isArray(organizadorData?.data)
-        ? organizadorData.data
-        : Array.isArray(organizadorData)
-          ? organizadorData
-          : [];
-    const first = (arr as any[])[0];
-    const interno = first?.interno ?? first?.Interno;
-    const n = Number(interno);
-    return Number.isFinite(n) && n > 0 ? n : undefined;
-  }, [organizadorData]);
-
-  if (organizadorError) {
-    return (
-      <div className={styles.container}>
-        <p>No se pudo cargar el organizador comercializador.</p>
-      </div>
-    );
+  if (isLoadingOrganizador || isLoadingComercializadores) {
+    return <DataTable columns={columns} data={[]} pageSizeOptions={[5, 10, 20]} isLoading={true} />;
   }
 
-  if (isLoadingOrganizador) {
-    return (
-      <DataTable
-        columns={columns}
-        data={[]}
-        pageSizeOptions={[5, 10, 20]}
-        isLoading={true}
-      />
-    );
-  }
-
-  if (!organizadorInterno) {
-    return (
-      <div className={styles.container}>
-        <p>No se encontró el organizador comercializador asociado al usuario.</p>
-      </div>
-    );
+  if (organizadorError || comercializadoresError || !organizadorInterno || !comercializadoresInternos) {
+    return <div className={styles.container}><p>No se pudieron resolver las pólizas del organizador.</p></div>;
   }
 
   return (
-    <PolizasTable
+    <PolizasListado
       params={{
-        OrganizadorComercializadorInterno: organizadorInterno,
-        ...(cuitConsulta ? ({ CUIT: cuitConsulta } as any) : {}),
+        ComercializadoresInternos: comercializadoresInternos,
       } as any}
     />
   );
 }
 
-function PolizasGrupoOrganizador({ cuitConsulta }: { cuitConsulta?: number }) {
+
+function PolizasGrupoOrganizador() {
   const { user } = useAuth();
-  const userRol = String((user as any)?.rol ?? '');
-  const isGrupoOrganizador = userRol.toLowerCase() === 'grupoorganizador';
-  const userCUIL = Number(
-    normalizeDigits((user as any)?.cuit ?? (user as any)?.CUIL ?? (user as any)?.cuil ?? 0)
+  const userCUIL = Number(digits((user as any)?.cuit ?? (user as any)?.CUIL ?? (user as any)?.cuil ?? 0));
+  const userCUILValid = Number.isFinite(userCUIL) && userCUIL > 0 ? userCUIL : undefined;
+
+  const { data: gOrgData, error: gOrgError, isLoading: isLoadingGOrg } =
+    ArtAPI.useGetGOrganizadorURL(userCUILValid ? ({ CUIL: userCUILValid } as any) : ({} as any));
+
+  const gOrganizadorInterno = useMemo(() => firstInterno(gOrgData), [gOrgData]);
+
+  const { data: organizadoresData, error: organizadoresError, isLoading: isLoadingOrganizadores } =
+    ArtAPI.useGetOrganizadorURL(
+      gOrganizadorInterno
+        ? ({ SRTComercializadorGOrganizadorInterno: gOrganizadorInterno } as any)
+        : ({} as any)
+    );
+
+  const organizadoresInternos = useMemo(() => uniqueInternosCsv(organizadoresData), [organizadoresData]);
+
+  const { data: comercializadoresData, error: comercializadoresError, isLoading: isLoadingComercializadores } =
+    ArtAPI.useGetComercializadorURL(
+      organizadoresInternos
+        ? ({ ComercializadoresOrganizadoresInternos: organizadoresInternos } as any)
+        : ({} as any)
+    );
+
+  const comercializadoresInternos = useMemo(
+    () => uniqueInternosCsv(comercializadoresData),
+    [comercializadoresData]
   );
 
-  const {
-    data: gOrganizadorData,
-    error: gOrganizadorError,
-    isLoading: isLoadingGOrganizador,
-  } = ArtAPI.useGetGOrganizadorURL(
-    isGrupoOrganizador && Number.isFinite(userCUIL) && userCUIL > 0
-      ? ({ CUIL: userCUIL } as any)
-      : ({} as any)
-  );
+  if (!userCUILValid) return <div className={styles.container}><p>Falta el CUIL del usuario.</p></div>;
 
-  const grupoOrganizadorInterno = useMemo(() => {
-    const arr = Array.isArray(gOrganizadorData?.DATA)
-      ? gOrganizadorData.DATA
-      : Array.isArray(gOrganizadorData?.data)
-        ? gOrganizadorData.data
-        : Array.isArray(gOrganizadorData)
-          ? gOrganizadorData
-          : [];
-    const first = (arr as any[])[0];
-    const interno = first?.interno ?? first?.Interno;
-    const n = Number(interno);
-    return Number.isFinite(n) && n > 0 ? n : undefined;
-  }, [gOrganizadorData]);
-
-  if (gOrganizadorError) {
-    return (
-      <div className={styles.container}>
-        <p>No se pudo cargar el grupo organizador.</p>
-      </div>
-    );
+  if (isLoadingGOrg || isLoadingOrganizadores || isLoadingComercializadores) {
+    return <DataTable columns={columns} data={[]} pageSizeOptions={[5, 10, 20]} isLoading={true} />;
   }
 
-  if (isLoadingGOrganizador) {
-    return (
-      <DataTable
-        columns={columns}
-        data={[]}
-        pageSizeOptions={[5, 10, 20]}
-        isLoading={true}
-      />
-    );
-  }
-
-  if (!grupoOrganizadorInterno) {
-    return (
-      <div className={styles.container}>
-        <p>No se encontró el grupo organizador asociado al usuario.</p>
-      </div>
-    );
+  if (gOrgError || organizadoresError || comercializadoresError || !gOrganizadorInterno || !comercializadoresInternos) {
+    return <div className={styles.container}><p>No se pudieron resolver las pólizas del Grupo Organizador.</p></div>;
   }
 
   return (
-    <PolizasTable
+    <PolizasListado
       params={{
-        GrupoOrganizadorInterno: grupoOrganizadorInterno,
-        ...(cuitConsulta ? ({ CUIT: cuitConsulta } as any) : {}),
+        ComercializadoresInternos: comercializadoresInternos,
       } as any}
     />
   );
+}
+
+function PolizasDefault() {
+  const { user } = useAuth();
+  const role = String((user as any)?.rol ?? '').toLowerCase();
+  const isAdmin = role === 'administrador';
+
+  const userEmpresaCuit = Number(digits((user as any)?.empresaCUIT ?? (user as any)?.cuit ?? 0));
+  const params = useMemo(() => {
+    if (isAdmin) return {} as any;
+    return Number.isFinite(userEmpresaCuit) && userEmpresaCuit > 0 ? ({ CUIT: userEmpresaCuit } as any) : ({} as any);
+  }, [isAdmin, userEmpresaCuit]);
+
+  return <PolizasListado params={params} />;
 }
 
 function PolizasPage() {
-
-  const { empresas, isLoading: isLoadingEmpresas } = useEmpresasStore();
-  const [empresaSeleccionada, setEmpresaSeleccionada] = useState<Empresa | null>(null);
-  const seleccionAutomaticaRef = useRef(false);
-  const [cuitBusqueda, setCuitBusqueda] = useState<string>('');
-  const [cuitConsulta, setCuitConsulta] = useState<number | undefined>(undefined);
-
-
-
   const { user } = useAuth();
-  const empresaCUIT = Number((user as any)?.empresaCUIT ?? 0);
-  const userRol = String((user as any)?.rol ?? '');
-  const isAdmin = userRol.toLowerCase() === 'administrador';
+  const userRol = String((user as any)?.rol ?? '').toLowerCase();
+  const isComercializador = userRol === 'comercializador';
+  const isOrganizadorComercializador = userRol === 'organizadorcomercializador';
+  const isGrupoOrganizador = userRol === 'grupoorganizador';
 
-  const isComercializador = userRol.toLowerCase() === 'comercializador';
-  const isOrganizadorComercializador = userRol.toLowerCase() === 'organizadorcomercializador';
-  const isGrupoOrganizador = userRol.toLowerCase() === 'grupoorganizador';
+  if (isComercializador) return <PolizasComercializador />;
+  if (isOrganizadorComercializador) return <PolizasOrganizadorComercializador />;
+  if (isGrupoOrganizador) return <PolizasGrupoOrganizador />;
 
-  // Seleccionar automáticamente si solo hay una empresa
-  useEffect(() => {
-    if (!isLoadingEmpresas) {
-      if (empresas.length === 1) {
-        setEmpresaSeleccionada(empresas[0]);
-        seleccionAutomaticaRef.current = true;
-      } else if (empresas.length !== 1 && seleccionAutomaticaRef.current) {
-        setEmpresaSeleccionada(null);
-        seleccionAutomaticaRef.current = false;
-      }
-    }
-  }, [empresas.length, isLoadingEmpresas]);
-
-  // Cuando cambia la empresa seleccionada, actualizo el CUIT de consulta y el input
-  useEffect(() => {
-    const cuit = empresaSeleccionada?.cuit;
-    const digits = normalizeDigits(cuit);
-    if (digits) {
-      const asNumber = Number(digits);
-      if (Number.isFinite(asNumber) && asNumber > 0) {
-        setCuitConsulta(asNumber);
-        setCuitBusqueda(digits);
-        return;
-      }
-    }
-    // Si no hay empresa seleccionada, no piso el comportamiento del admin / fallback,
-    // simplemente limpio la búsqueda explícita.
-    setCuitConsulta(undefined);
-  }, [empresaSeleccionada]);
-
-  const handleEmpresaChange = (_event: React.SyntheticEvent, newValue: Empresa | null) => {
-    setEmpresaSeleccionada(newValue);
-    seleccionAutomaticaRef.current = false;
-  };
-
-  const getEmpresaLabel = (empresa: Empresa | null): string => {
-    if (!empresa) return "";
-    return `${empresa.razonSocial} - ${Formato.CUIP(empresa.cuit)}`;
-  };
-
-
-
-
-
-  const params = useMemo(() => {
-    if (isAdmin) {
-      return cuitConsulta ? ({ CUIT: cuitConsulta } as any) : ({} as any);
-    }
-
-    const cuitPorDefecto = Number.isFinite(empresaCUIT) && empresaCUIT > 0 ? empresaCUIT : undefined;
-    const cuitFinal = cuitConsulta ?? cuitPorDefecto;
-    return cuitFinal ? ({ CUIT: cuitFinal } as any) : ({} as any);
-  }, [cuitConsulta, empresaCUIT, isAdmin]);
-
-  const onBuscar = () => {
-    const q = normalizeDigits(cuitBusqueda);
-    if (!q) {
-      setCuitConsulta(undefined);
-      return;
-    }
-    const asNumber = Number(q);
-    if (Number.isFinite(asNumber) && asNumber > 0) {
-      setCuitConsulta(asNumber);
-    }
-  };
-
-  return (
-    <div className={styles.container}>
-
-     {/* Selector de empresa */}
-     <Box sx={{ maxWidth: 650, marginBottom: 2 }}>
-       <CustomSelectSearch<Empresa>
-         options={empresas}
-         getOptionLabel={getEmpresaLabel}
-         value={empresaSeleccionada}
-         onChange={handleEmpresaChange}
-         label="Seleccionar Empresa"
-         placeholder="Buscar empresa..."
-         loading={isLoadingEmpresas}
-         loadingText="Cargando empresas..."
-         noOptionsText={
-           isLoadingEmpresas
-             ? "Cargando..."
-             : empresas.length === 0
-             ? "No hay empresas disponibles"
-             : "No se encontraron empresas"
-         }
-         disabled={isLoadingEmpresas}
-       />
-     </Box>
-
-
-      <div className={styles.toolbar}>
-        <input
-          type="text"
-          placeholder="Ingresá CUIT/CUIL (solo números)"
-          value={cuitBusqueda}
-          onChange={(e) => setCuitBusqueda(e.target.value.replace(/[^\d]/g, ''))}
-          onKeyDown={(e) => e.key === 'Enter' && onBuscar()}
-          className={styles.input}
-        />
-        <CustomButton onClick={onBuscar}>BUSCAR</CustomButton>
-      </div>
-
-      {isComercializador ? (
-        <PolizasComercializador cuitConsulta={cuitConsulta} />
-      ) : isOrganizadorComercializador ? (
-        <PolizasOrganizadorComercializador cuitConsulta={cuitConsulta} />
-      ) : isGrupoOrganizador ? (
-        <PolizasGrupoOrganizador cuitConsulta={cuitConsulta} />
-      ) : (
-        <PolizasTable params={params} />
-      )}
-    </div>
-  );
+  return <PolizasDefault />;
 }
 
 export default PolizasPage;
