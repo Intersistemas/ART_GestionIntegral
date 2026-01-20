@@ -89,6 +89,10 @@ export default function SiniestrosPage() {
   const cuitFinalStr = cuitDesdeQuery || cuitEmpresaSeleccionada;
   const cuitFinal = cuitFinalStr ? Number(cuitFinalStr) : undefined;
 
+  const { data: polizaRawData } = gestionEmpleadorAPI.useGetPoliza(
+    cuitDesdeQuery ? { CUIT: Number(cuitDesdeQuery) } : {}
+  );
+
   // Si viene CUIT por query param, forzar selección por CUIT y bloquear el selector
   useEffect(() => {
     if (isLoadingEmpresas) return;
@@ -100,6 +104,16 @@ export default function SiniestrosPage() {
       seleccionAutomaticaRef.current = true;
     }
   }, [cuitDesdeQuery, empresas, isLoadingEmpresas]);
+
+  // Si está bloqueado por CUIT y no hay match en el store, igual mostrar la Razón Social en el combo
+  useEffect(() => {
+    if (!cuitDesdeQuery) return;
+    if (empresaSeleccionada) return;
+
+    const razonSocial = (polizaRawData as any)?.empleador_Denominacion;
+    if (!razonSocial) return;
+    setEmpresaSeleccionada({ razonSocial: String(razonSocial) } as any);
+  }, [cuitDesdeQuery, empresaSeleccionada, polizaRawData]);
 
   // Seleccionar automáticamente si solo hay una empresa (salvo que venga CUIT por query)
   useEffect(() => {
