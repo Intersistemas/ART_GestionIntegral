@@ -35,15 +35,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Notify Teams - Start
-        if: ${{ env.TEAMS_WEBHOOK_URL != '' }}
-        shell: powershell
-        run: |
-          $webhook = $env:TEAMS_WEBHOOK_URL
-          if ([string]::IsNullOrEmpty($webhook)) { Write-Host "No Teams webhook configured - skipping"; exit 0 }
-          $msg = "**Deployment started**`nRepository: $env:REPO`nBranch: $env:BRANCH`nCommit: $env:COMMIT`nActor: $env:ACTOR`nRun: $env:RUN_URL"
-          $body = @{ text = $msg } | ConvertTo-Json
-          Invoke-RestMethod -Uri $webhook -Method Post -Body $body -ContentType 'application/json'
+      # - name: Notify Teams - Start
+      #   if: ${{ env.TEAMS_WEBHOOK_URL != '' }}
+      #   shell: powershell
+      #   run: |
+      #     $webhook = $env:TEAMS_WEBHOOK_URL
+      #     if ([string]::IsNullOrEmpty($webhook)) { Write-Host "No Teams webhook configured - skipping"; exit 0 }
+      #     $msg = "**Deployment started**`nRepository: $env:REPO`nBranch: $env:BRANCH`nCommit: $env:COMMIT`nActor: $env:ACTOR`nRun: $env:RUN_URL"
+      #     $body = @{ text = $msg } | ConvertTo-Json
+      #     Invoke-RestMethod -Uri $webhook -Method Post -Body $body -ContentType 'application/json'
 
       - name: Use Node.js 20
         uses: actions/setup-node@v4
@@ -105,7 +105,7 @@ jobs:
 
           # Mirror current deployment to temp excluding backups and large folders
           $robolog = Join-Path (Get-Location) ("robocopy_backup_$timestamp.log")
-          robocopy $DEPLOY_DIR $temp /MIR /XD .git .github\workflows node_modules backups /LOG:$robolog /TEE
+          robocopy $DEPLOY_DIR $temp /MIR /XD .git .github\workflows node_modules backups _deploy_logs /LOG:$robolog /TEE
           $rc = $LASTEXITCODE
           # robocopy exit codes: 0=no files copied, 1=some files copied, 2=some files mismatched, 3=some files copied and mismatched
           if ($rc -gt 3) { throw "robocopy failed with code $rc" }
@@ -142,6 +142,13 @@ jobs:
           Write-Host "robocopy finished with exit code $rc (treated as success)"
           exit 0
 
+      - name: Stop PM2 app before installing dependencies (Windows)
+        shell: powershell
+        run: |
+          $appName = if ([string]::IsNullOrEmpty($env:SITE_NAME)) { 'ArtFrontGestionIntegral' } else { $env:SITE_NAME }
+          pm2 stop $appName -s 2>&1 | Out-Null  # silently stop if running
+          Start-Sleep -Seconds 2  # wait for process to fully stop
+
       - name: Install production dependencies on deploy dir (Windows)
         shell: powershell
         run: |
@@ -149,12 +156,12 @@ jobs:
           Set-Location -Path $DEPLOY_DIR
           npm ci --omit=dev
 
-      - name: Upload robocopy logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: robocopy-logs
-          path: _deploy_logs/*.log
+      # - name: Upload robocopy logs
+      #   if: always()
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: robocopy-logs
+      #     path: _deploy_logs/*.log
 
       - name: Ensure PM2 is installed (Windows)
         shell: powershell

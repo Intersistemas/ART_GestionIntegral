@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useState, SyntheticEvent } from 'react';
+import React, { useCallback, useEffect, useState, SyntheticEvent, useRef } from 'react';
 import { IconButton, Box, Tooltip } from "@mui/material";
 import { useAuth } from '@/data/AuthContext';
 import Formato from '@/utils/Formato';
@@ -14,6 +14,9 @@ import styles from './FormulariosRAR.module.css';
 import { BsFileEarmarkPdfFill, BsPencilFill, BsFront } from "react-icons/bs";
 import FormularioRAR from './types/TformularioRar';
 import ArtAPI from "@/data/artAPI";
+import { useEmpresasStore } from "@/data/empresasStore";
+import { Empresa } from "@/data/authAPI";
+import CustomSelectSearch from "@/utils/ui/form/CustomSelectSearch";
 
 
 // Hijos
@@ -43,7 +46,11 @@ const FormulariosRAR: React.FC = () => {
   // Accede a las propiedades de la sesión con seguridad
   const { empresaCUIT, cuit } = user as any;
 
-  const [loading, setLoading] = useState<boolean>(true);
+  const { empresas, isLoading: isLoadingEmpresas } = useEmpresasStore();
+  const [empresaSeleccionada, setEmpresaSeleccionada] = useState<Empresa | null>(null);
+  const seleccionAutomaticaRef = useRef(false);
+
+  const [loading, setLoading] = useState<boolean>(false);
   const [internoFormularioRAR, setInternoFormularioRAR] = useState<number>(0);
   const [internoEstablecimiento, setInternoEstablecimiento] = useState<number>(0);
   const [estado, setEstado] = useState<string>('');
@@ -78,24 +85,90 @@ const FormulariosRAR: React.FC = () => {
     setActiveTabIndex(newTabValue);
   };
 
-  // Usamos el hook SWR del API (solo hace fetch si existe token y respeta las opciones de revalidate)
-  // Pasamos PageIndex y PageSize al hook (cambia la clave de SWR y dispara fetch)
-  const apiPageIndex = PageIndex;
-  const { data: formulariosData, error: formulariosError, isValidating, mutate: mutateFormularios } =
-    ArtAPI.useGetFormulariosRARURL(empresaCUIT ? { CUIT: empresaCUIT, PageIndex: apiPageIndex, PageSize: PageSize, OrderBy: '-Interno' } : { PageIndex: apiPageIndex, PageSize: PageSize, OrderBy: '-Interno' });
-
-  // Una sola vez: cuando llegan datos, los mapeamos al estado local
+  // Seleccionar automáticamente si solo hay una empresa
   useEffect(() => {
-    // mantener spinner mientras llega la primera respuesta
-    if (!formulariosData && !formulariosError) {
-      setLoading(true);
+    if (!isLoadingEmpresas) {
+      if (empresas.length === 1) {
+        setEmpresaSeleccionada(empresas[0]);
+        seleccionAutomaticaRef.current = true;
+      } else if (empresas.length !== 1 && seleccionAutomaticaRef.current) {
+        setEmpresaSeleccionada(null);
+        seleccionAutomaticaRef.current = false;
+      }
+    }
+  }, [empresas.length, isLoadingEmpresas]);
+
+  // Limpiar formularios cuando cambia la empresa seleccionada
+  useEffect(() => {
+    setFormulariosRAR([]);
+    setIdFormularioSeleccionado(0);
+    setRegistroSeleccionado(null);
+    setDetallesInterno([]);
+    setErrorDetalles('');
+    setPageIndex(0);
+  }, [empresaSeleccionada?.cuit]);
+
+  const handleEmpresaChange = (
+    _event: React.SyntheticEvent,
+    newValue: Empresa | null
+  ) => {
+    setEmpresaSeleccionada(newValue);
+    seleccionAutomaticaRef.current = false;
+  };
+
+  const getEmpresaLabel = (empresa: Empresa | null): string => {
+    if (!empresa) return "";
+    return `${empresa.razonSocial} - ${Formato.CUIP(empresa.cuit)}`;
+  };
+
+  // Usamos el hook SWR del API (solo hace fetch si existe token y respeta las opciones de revalidate)
+  // Solo hace fetch si hay una empresa seleccionada
+  const apiPageIndex = PageIndex;
+  const { data: formulariosData, error: formulariosError, isLoading: isLoadingSWR, isValidating, mutate: mutateFormularios } =
+    ArtAPI.useGetFormulariosRARURL(
+      empresaSeleccionada?.cuit 
+        ? { CUIT: empresaSeleccionada.cuit, PageIndex: apiPageIndex, PageSize: PageSize, OrderBy: '-Interno' } 
+        : undefined
+    );
+
+  // Sincronizar el estado de loading con SWR
+  useEffect(() => {
+    // Si no hay empresa seleccionada, mantener tabla vacía y no mostrar loading
+    if (!empresaSeleccionada?.cuit) {
+      setFormulariosRAR([]);
+      setLoading(false);
+      setPageCount(1);
       return;
     }
 
+    // Usar el estado de loading de SWR directamente
+    setLoading(isLoadingSWR || isValidating);
+  }, [empresaSeleccionada?.cuit, isLoadingSWR, isValidating]);
+
+  // Una sola vez: cuando llegan datos, los mapeamos al estado local
+  useEffect(() => {
+    // Si no hay empresa seleccionada, no procesar datos
+    if (!empresaSeleccionada?.cuit) {
+      return;
+    }
+
+    // Si está cargando, no procesar aún
+    if (isLoadingSWR || isValidating) {
+      return;
+    }
+
+    // Si hay error, mostrar error
     if (formulariosError) {
       console.error('Error al cargar formularios (SWR):', formulariosError);
       setFormulariosRAR([]);
       setLoading(false);
+      return;
+    }
+
+    // Si no hay datos, mantener vacío
+    if (!formulariosData) {
+      setFormulariosRAR([]);
+      setPageCount(1);
       return;
     }
 
@@ -126,7 +199,7 @@ const FormulariosRAR: React.FC = () => {
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formulariosData, formulariosError]);
+  }, [formulariosData, formulariosError, empresaSeleccionada?.cuit, isLoadingSWR, isValidating]);
 
   // Handler que se pasa al DataTable para solicitar otra página
   const handlePageChange = (newPageIndex: number) => {
@@ -946,6 +1019,28 @@ const FormulariosRAR: React.FC = () => {
     <div>
       {viewMode === 'list' ? (
         <div>
+          {/* Selector de empresa */}
+          <Box sx={{ maxWidth: 500, marginBottom: 2 }}>
+            <CustomSelectSearch<Empresa>
+              options={empresas}
+              getOptionLabel={getEmpresaLabel}
+              value={empresaSeleccionada}
+              onChange={handleEmpresaChange}
+              label="Seleccionar Empresa"
+              placeholder="Buscar empresa..."
+              loading={isLoadingEmpresas}
+              loadingText="Cargando empresas..."
+              noOptionsText={
+                isLoadingEmpresas
+                  ? "Cargando..."
+                  : empresas.length === 0
+                  ? "No hay empresas disponibles"
+                  : "No se encontraron empresas"
+              }
+              disabled={isLoadingEmpresas}
+            />
+          </Box>
+
           <CustomTab
             tabs={tabItems}
             currentTab={activeTabIndex} // Usamos el estado

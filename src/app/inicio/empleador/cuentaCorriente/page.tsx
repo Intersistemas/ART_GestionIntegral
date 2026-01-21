@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo, useState, SyntheticEvent } from 'react';
+import React, { useMemo, useState, SyntheticEvent, useEffect, useRef } from 'react';
 import DataTable from '@/utils/ui/table/DataTable'; 
 import { ColumnDef } from '@tanstack/react-table';
 import { Box, Typography } from '@mui/material';
@@ -8,6 +8,10 @@ import Formato from '@/utils/Formato';
 import gestionEmpleadorAPI from "@/data/gestionEmpleadorAPI";
 import type { CuentaCorrienteRegistro, DDJJRegistro } from './types/cuentaCorriente';
 import ExportButtons from './components/ExportButtons';
+import { useEmpresasStore } from "@/data/empresasStore";
+import { Empresa } from "@/data/authAPI";
+import CustomSelectSearch from "@/utils/ui/form/CustomSelectSearch";
+import { useSearchParams } from 'next/navigation';
 
 
 
@@ -25,16 +29,85 @@ const formatCurrency = (value: number | string) => {
     }).format(num);
 };
 
+const normalizeDigits = (value: unknown) => String(value ?? '').replace(/\D/g, '');
+
 // ----------------------------------------------------
 // 3. DEFINICIÓN DE COLUMNAS Y COMPONENTE
 // ----------------------------------------------------
 function CuentaCorrientePage() {
+    const { empresas, isLoading: isLoadingEmpresas } = useEmpresasStore();
+    const searchParams = useSearchParams();
+    const [empresaSeleccionada, setEmpresaSeleccionada] = useState<Empresa | null>(null);
+    const seleccionAutomaticaRef = useRef(false);
+
+    const cuitQuery = searchParams?.get('cuit') ?? '';
+    const cuitDesdeQuery = normalizeDigits(cuitQuery);
+    const bloquearBusquedaPorCuit = Boolean(cuitDesdeQuery);
+    
+    // Seleccionar automáticamente si solo hay una empresa o fijar empresa por CUIT cuando viene desde comercializador
+    useEffect(() => {
+        if (isLoadingEmpresas) return;
+
+        if (cuitDesdeQuery) {
+            const match = empresas.find((e) => normalizeDigits(e.cuit) === cuitDesdeQuery);
+            if (match) {
+                setEmpresaSeleccionada(match);
+                seleccionAutomaticaRef.current = true;
+            }
+            return;
+        }
+            if (empresas.length === 1) {
+                setEmpresaSeleccionada(empresas[0]);
+                seleccionAutomaticaRef.current = true;
+            } else if (empresas.length !== 1 && seleccionAutomaticaRef.current) {
+                setEmpresaSeleccionada(null);
+                seleccionAutomaticaRef.current = false;
+            }
+        
+    }, [empresas, isLoadingEmpresas, cuitDesdeQuery]);
+
+    const handleEmpresaChange = (
+        _event: React.SyntheticEvent,
+        newValue: Empresa | null
+    ) => {
+        if (bloquearBusquedaPorCuit) return;
+        setEmpresaSeleccionada(newValue);
+        seleccionAutomaticaRef.current = false;
+    };
+
+    const getEmpresaLabel = (empresa: Empresa | null): string => {
+        if (!empresa) return "";
+        return `${empresa.razonSocial}`;
+    };
     
     // Consultar datos con ordenamiento por periodo descendente desde el backend
-    const { data: CtaCteRawData, isLoading: isCtaCteLoading } = gestionEmpleadorAPI.useGetVEmpleadorDDJJ({ 
-        sort: '-Periodo',
-        page: '0,1000'
-    });
+    const cuitEmpresaSeleccionada = empresaSeleccionada?.cuit? normalizeDigits(empresaSeleccionada.cuit): '';
+    const cuitFinalStr = cuitDesdeQuery || cuitEmpresaSeleccionada;
+    const cuitFinal = cuitFinalStr ? Number(cuitFinalStr) : undefined;
+    const { data: polizaRawData } = gestionEmpleadorAPI.useGetPoliza(
+        cuitFinal ? { CUIT: cuitFinal } : {}
+    );
+    const { data: CtaCteRawData, isLoading: isCtaCteLoading } = gestionEmpleadorAPI.useGetVEmpleadorDDJJ(
+        cuitFinal
+            ? { 
+                CUIT: cuitFinal,
+                sort: '-Periodo',
+                page: '0,1000'
+              }
+            : {
+                sort: '-Periodo',
+                page: '0,1000'
+              }
+    );
+    useEffect(() => {
+        if (!bloquearBusquedaPorCuit) return;
+        if (empresaSeleccionada) return;
+
+        const razonSocial = (polizaRawData as any)?.empleador_Denominacion;
+        if (!razonSocial) return;
+
+        setEmpresaSeleccionada({ razonSocial: String(razonSocial) } as Empresa);
+    }, [bloquearBusquedaPorCuit, empresaSeleccionada, polizaRawData]);
     
     // Usar los datos directamente sin ordenar en el frontend
     const sortedData = useMemo(() => {
@@ -150,6 +223,26 @@ function CuentaCorrientePage() {
 
     return (
         <div style={{ padding: '20px' }}>
+            <Box sx={{ maxWidth: 500, marginBottom: 2 }}>
+                <CustomSelectSearch<Empresa>
+                    options={empresas}
+                    getOptionLabel={getEmpresaLabel}
+                    value={empresaSeleccionada}
+                    onChange={handleEmpresaChange}
+                    label="Seleccionar Empresa"
+                    placeholder="Buscar empresa..."
+                    loading={isLoadingEmpresas}
+                    loadingText="Cargando empresas..."
+                    noOptionsText={
+                        isLoadingEmpresas
+                            ? "Cargando..."
+                            : empresas.length === 0
+                            ? "No hay empresas disponibles"
+                            : "No se encontraron empresas"
+                    }
+                            disabled={isLoadingEmpresas || bloquearBusquedaPorCuit}
+                />
+            </Box>
             
             <CustomTab 
                 tabs={tabItems} 

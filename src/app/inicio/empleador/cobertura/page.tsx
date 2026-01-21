@@ -18,9 +18,23 @@ import CustomModalMessage, { MessageType } from '@/utils/ui/message/CustomModalM
 const { useGetPersonal, useGetPoliza } = gestionEmpleadorAPI;
 
 export default function CoberturaPage() {
+    const { empresas, isLoading: isLoadingEmpresas } = useEmpresasStore();
+    const [empresaSeleccionada, setEmpresaSeleccionada] = useState<Empresa | null>(null);
+    const seleccionAutomaticaRef = useRef(false);
+    const [bloquearBusquedaPorCuit, setBloquearBusquedaPorCuit] = useState(false);
+    const searchParams = useSearchParams();
+    const cuitQuery = searchParams.get("cuit") ?? searchParams.get("cuil");
+    const cuitDesdeQuery = cuitQuery ? Number(String(cuitQuery).replace(/\D/g, "")) : NaN;
    
-    const { data: personalRawData, isLoading: isPersonalLoading } = useGetPersonal(); 
-    const { data: polizaData, isLoading: isPolizaLoading } = useGetPoliza();
+    // Obtener personal y póliza usando el CUIT de la empresa seleccionada o, si viene por query, ese CUIT
+    const paramsCUIT = Number.isFinite(cuitDesdeQuery) && cuitDesdeQuery > 0
+        ? { CUIT: cuitDesdeQuery }
+        : empresaSeleccionada
+            ? { CUIT: empresaSeleccionada.cuit }
+            : {};
+
+    const { data: personalRawData, isLoading: isPersonalLoading } = useGetPersonal(paramsCUIT); 
+    const { data: polizaData, isLoading: isPolizaLoading } = useGetPoliza(paramsCUIT);
     
     // Estados para las dos tablas: Pendiente (Origen) y Cubierto (Destino)
     const [personalPendiente, setPersonalPendiente] = useState<Persona[]>([]);
@@ -58,6 +72,66 @@ export default function CoberturaPage() {
         setHora(now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })); // ej. "14:35"
     }, []);
 
+    // Seleccionar automáticamente si solo hay una empresa (salvo que venga CUIT por query)
+    useEffect(() => {
+        if (Number.isFinite(cuitDesdeQuery) && cuitDesdeQuery > 0) return;
+        if (!isLoadingEmpresas) {
+            if (empresas.length === 1) {
+                setEmpresaSeleccionada(empresas[0]);
+                seleccionAutomaticaRef.current = true;
+            } else if (empresas.length !== 1 && seleccionAutomaticaRef.current) {
+                setEmpresaSeleccionada(null);
+                seleccionAutomaticaRef.current = false;
+            }
+        }
+    }, [empresas.length, isLoadingEmpresas, cuitDesdeQuery]);
+
+    // Si viene CUIT por query param, bloquear combo y seleccionar empresa (o al menos la razón social)
+    useEffect(() => {
+        if (!Number.isFinite(cuitDesdeQuery) || cuitDesdeQuery <= 0) return;
+
+        setBloquearBusquedaPorCuit(true);
+        if (isLoadingEmpresas || empresaSeleccionada) return;
+
+        const match = empresas.find((e) => {
+            const digits = Number(String((e as any)?.cuit ?? "").replace(/\D/g, ""));
+            return Number.isFinite(digits) && digits === cuitDesdeQuery;
+        });
+
+        if (match) {
+            setEmpresaSeleccionada(match);
+            seleccionAutomaticaRef.current = true;
+            return;
+        }
+
+        const razonSocial = (polizaData as any)?.empleador_Denominacion;
+        if (!razonSocial) return;
+
+        setEmpresaSeleccionada({ razonSocial: String(razonSocial) } as Empresa);
+    }, [cuitDesdeQuery, empresas, isLoadingEmpresas, empresaSeleccionada, polizaData]);
+
+    // Limpiar las tablas cuando cambia la empresa seleccionada
+    useEffect(() => {
+        setPersonalPendiente([]);
+        setPersonalCubierto([]);
+        setSelectedPendiente([]);
+        setSelectedCubierto([]);
+    }, [empresaSeleccionada?.cuit]);
+
+    const handleEmpresaChange = (
+        _event: React.SyntheticEvent,
+        newValue: Empresa | null
+    ) => {
+        if (bloquearBusquedaPorCuit) return;
+        setEmpresaSeleccionada(newValue);
+        seleccionAutomaticaRef.current = false;
+    };
+
+    const getEmpresaLabel = (empresa: Empresa | null): string => {
+        if (!empresa) return "";
+        return String(empresa.razonSocial ?? "");
+    };
+
     // Estados para las selecciones de filas en cada tabla
     const [selectedPendiente, setSelectedPendiente] = useState<Persona[]>([]);
     const [selectedCubierto, setSelectedCubierto] = useState<Persona[]>([]);
@@ -80,6 +154,10 @@ export default function CoberturaPage() {
     useEffect(() => {
         if (personalRawData && personalRawData.length > 0) {
             setPersonalPendiente(personalRawData);
+        } else if (personalRawData && personalRawData.length === 0) {
+            // Si la respuesta es un array vacío, limpiar las tablas
+            setPersonalPendiente([]);
+            setPersonalCubierto([]);
         }
     }, [personalRawData]);
 
@@ -300,6 +378,27 @@ export default function CoberturaPage() {
             <div className={styles.header}>
                 <h1 className={styles.mainTitle}>Gestión de Cobertura de Personal</h1>
             </div>
+
+            <Box className={styles.empresaSelectorContainer}>
+                <CustomSelectSearch<Empresa>
+                    options={empresas}
+                    getOptionLabel={getEmpresaLabel}
+                    value={empresaSeleccionada}
+                    onChange={handleEmpresaChange}
+                    label="Seleccionar Empresa"
+                    placeholder="Buscar empresa..."
+                    loading={isLoadingEmpresas}
+                    loadingText="Cargando empresas..."
+                    noOptionsText={
+                        isLoadingEmpresas
+                            ? "Cargando..."
+                            : empresas.length === 0
+                            ? "No hay empresas disponibles"
+                            : "No se encontraron empresas"
+                    }
+                    disabled={isLoadingEmpresas || bloquearBusquedaPorCuit}
+                />
+            </Box>
 
             <div className={styles.dualTableContainer}>
                 

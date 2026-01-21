@@ -88,7 +88,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
   // Modal de mensajes (errores/alertas)
   const [modalMessageOpen, setModalMessageOpen] = React.useState<boolean>(false);
   const [modalMessageText, setModalMessageText] = React.useState<string>('');
-  const [modalMessageType, setModalMessageType] = React.useState<'success' | 'error' | 'alert'>('error');
+  const [modalMessageType, setModalMessageType] = React.useState<'success' | 'error' | 'warning'>('error');
 
   // Estados para edición
   const [editandoIndex, setEditandoIndex] = React.useState<number>(-1);
@@ -340,23 +340,39 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
     return filas.some((f) => normalizarCuil(f.CUIL) === cuilNum);
   }, [cuil, filas]);
 
+  // Verificar si el CUIL ya existe con exposición = 0
+  const cuilExisteConExposicionCero = React.useMemo(() => {
+    const cuilNum = normalizarCuil(cuil);
+    if (!cuilNum) return false;
+    return filas.some((f) => {
+      const cuilFila = normalizarCuil(f.CUIL);
+      const exposicionFila = Number(f.Exposicion || 0);
+      return cuilFila === cuilNum && exposicionFila === 0;
+    });
+  }, [cuil, filas]);
+
   const puedeCargarTrabajador = React.useMemo(() => {
 
     if (!cantidadesCompletas || !trabajadorCompleto) return false;
 
     if (totalTrabajadoresRequeridos <= 0) return false;
 
-    // Si no se alcanzó el límite, puede cargar cualquier CUIL (nuevo o existente)
+    // Si el CUIL ya existe con exposición = 0, no se puede volver a cargar
+    if (cuilExisteConExposicionCero) return false;
+
+    // Si no se alcanzó el límite, puede cargar cualquier CUIL (nuevo o existente, excepto los que ya tienen exposición 0)
     if (trabajadoresCargados < totalTrabajadoresRequeridos) return true;
 
     // Si ya se alcanzó el límite, solo puede cargar si el CUIL ya existe (repetir con diferente agente)
-    return esCuilRepetido;
+    // Pero no si ya tiene exposición = 0
+    return esCuilRepetido && !cuilExisteConExposicionCero;
   }, [
     cantidadesCompletas,
     trabajadorCompleto,
     totalTrabajadoresRequeridos,
     trabajadoresCargados,
     esCuilRepetido,
+    cuilExisteConExposicionCero,
   ]);
 
 
@@ -737,6 +753,21 @@ React.useEffect(() => {
     const cuilNum = normalizarCuil(cuil);
     const yaExisteCuil = filas.some((f) => normalizarCuil(f.CUIL) === cuilNum);
 
+    // Verificar si el CUIL ya existe con exposición = 0
+    const existeConExposicionCero = filas.some((f) => {
+      const cuilFila = normalizarCuil(f.CUIL);
+      const exposicionFila = Number(f.Exposicion || 0);
+      return cuilFila === cuilNum && exposicionFila === 0;
+    });
+
+    // Si el trabajador ya existe con exposición = 0, no se puede volver a cargar
+    if (existeConExposicionCero) {
+      setModalMessageType('error');
+      setModalMessageText(`Este trabajador (CUIL: ${cuil}) ya fue cargado con horas de exposición = 0. No se puede volver a cargar un trabajador con exposición 0.`);
+      setModalMessageOpen(true);
+      return;
+    }
+
     // Si ya se alcanzó el límite de trabajadores únicos y el CUIL no existe, bloquear
     if (trabajadoresCargados >= totalTrabajadoresRequeridos && !yaExisteCuil) {
       setModalMessageType('error');
@@ -808,8 +839,42 @@ React.useEffect(() => {
     const trabajadorEditando = filas[editandoIndex];
     const cuilEditando = trabajadorEditando ? normalizarCuil(trabajadorEditando.CUIL) : null;
     const cuilCambio = cuilNum !== cuilEditando;
+    const exposicionActual = Number(exposicion || 0);
 
-    // Si estamos cambiando el CUIL y ya se alcanzó el límite, verificar que el nuevo CUIL ya exista
+    // Verificar si el CUIL ya existe con exposición = 0 (excluyendo el trabajador que estamos editando)
+    const existeConExposicionCero = filas.some((f, idx) => {
+      if (idx === editandoIndex) return false; // Excluir el trabajador que estamos editando
+      const cuilFila = normalizarCuil(f.CUIL);
+      const exposicionFila = Number(f.Exposicion || 0);
+      return cuilFila === cuilNum && exposicionFila === 0;
+    });
+
+    // Si estamos intentando cambiar a un CUIL que ya tiene exposición = 0, bloquear
+    if (existeConExposicionCero) {
+      setModalMessageType('error');
+      setModalMessageText(`Este trabajador (CUIL: ${cuil}) ya fue cargado con horas de exposición = 0. No se puede editar para usar este CUIL.`);
+      setModalMessageOpen(true);
+      return;
+    }
+
+    // Si estamos intentando cambiar la exposición a 0 y el CUIL ya existe con exposición = 0, bloquear
+    if (exposicionActual === 0 && yaExisteCuil) {
+      const otroTrabajadorConExposicionCero = filas.some((f, idx) => {
+        if (idx === editandoIndex) return false;
+        const cuilFila = normalizarCuil(f.CUIL);
+        const exposicionFila = Number(f.Exposicion || 0);
+        return cuilFila === cuilNum && exposicionFila === 0;
+      });
+      
+      if (otroTrabajadorConExposicionCero) {
+        setModalMessageType('error');
+        setModalMessageText(`Ya existe otro trabajador con este CUIL (${cuil}) y horas de exposición = 0. No se puede editar para tener exposición 0.`);
+        setModalMessageOpen(true);
+        return;
+      }
+    }
+
+    // Si estamos cambiando el CUIL y ya se alcanzó el límite, verificar que el nuevo CUIT ya exista
     if (cuilCambio && trabajadoresCargados >= totalTrabajadoresRequeridos && !yaExisteCuil) {
       setModalMessageType('error');
       setModalMessageText(`Ya se alcanzó el límite de ${totalTrabajadoresRequeridos} trabajadores únicos. Solo puede usar CUILs ya cargados.`);

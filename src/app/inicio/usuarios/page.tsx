@@ -8,7 +8,7 @@ import Tareas from "./Tareas";
 import useUsuarios from "./useUsuarios";
 import styles from "./Usuario.module.css";
 import CustomButton from "@/utils/ui/button/CustomButton";
-import CustomModalMessage from "@/utils/ui/form/CustomModalMessage";
+import CustomModalMessage from "@/utils/ui/message/CustomModalMessage";
 import UsuarioRow from "./interfaces/UsuarioRow";
 import { useAuth } from "@/data/AuthContext";
 import IUsuarioDarDeBajaReactivar from "./interfaces/IUsuarioDarDeBajaReactivar";
