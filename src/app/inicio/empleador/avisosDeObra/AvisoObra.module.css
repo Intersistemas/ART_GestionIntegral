@@ -4,8 +4,14 @@
     margin-bottom: 1rem;
 }
 
+.subtitulo {
+    font-weight: bold !important;
+    font-size: 1.3rem !important;
+    margin-bottom: 0.5rem;
+}
+
 .checkboxGroup {
-  --checkbox-font-size: 1.7rem;
+  --checkbox-font-size: 1.5rem;
 }
 
 /* Tamaño de la label dentro de FormControlLabel */
