@@ -397,11 +397,11 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
 
                 <Grid >
                     <Card variant="outlined">
-                        <CardContent>
+                        <CardContent className={styles.checkboxGroup}>
                             <Typography align="left" className={styles.titulo}>Montajes y Otras Construcciones</Typography>
                             <Grid container spacing={2}>
                                 <Grid sx={{mt: 2}}>
-                                    <Grid ><Typography>Montaje Industrial</Typography></Grid>
+                                    <Grid ><Typography className={styles.subtitulo}>Montaje Industrial</Typography></Grid>
                                     <Grid ><Control label="Destilería/Petroquímicas" name="monIndDestileria" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
                                     <Grid ><Control label="Generación Eléctrica" name="monIndGenElectrica" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
                                     <Grid ><Control label="Minería" name="monIndMineria" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
@@ -409,7 +409,7 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
                                     <Grid ><Control label="Demás Montajes Industriales" name="monIndOtros" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
                                 </Grid>
                                 <Grid sx={{mt: 2}}>
-                                    <Grid ><Typography>Otras Construcciones</Typography></Grid>
+                                    <Grid ><Typography className={styles.subtitulo}>Otras Construcciones</Typography></Grid>
                                     <Grid ><Control label="Excavaciones Subterráneas" name="otrasConstExcavaciones" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
                                     <Grid ><Control label="Instalaciones Electromecánicas" name="otrasConstInstElectro" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
                                     <Grid ><Control label="Inst. Hidráulicas/Gas" name="otrasConstInstHidrGas" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
@@ -429,8 +429,8 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
                             <Grid container spacing={2}>
                                 <Grid>
                                     <Card variant="outlined">
-                                        <CardContent>
-                                            <Control label="Excavación" name="actExcavacion" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} />
+                                            <CardContent className={styles.checkboxGroup}>
+                                                <Control label="Excavación" name="actExcavacion" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} />
                                             <Grid container spacing={2}>
                                                 <Grid ><Control label="Inicio" name="excavacionInicioFecha" type="date" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
                                                 <Grid ><Control label="Fin" name="excavacionFinFecha" type="date" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
@@ -441,7 +441,7 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
 
                                 <Grid>
                                     <Card variant="outlined">
-                                        <CardContent>
+                                        <CardContent className={styles.checkboxGroup}>
                                             <Control label="Demolición" name="actDemolicion" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} />
                                             <Grid container spacing={2}>
                                                 <Grid ><Control label="Inicio" name="demolicionInicioFecha" type="date" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
@@ -451,7 +451,7 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
                                     </Card>
                                 </Grid>
                             </Grid>
-                            <Grid container spacing={2} sx={{mt: 1}}>
+                            <Grid container spacing={2} sx={{mt: 1}} className={styles.checkboxGroup}>
                                 <Grid ><Control label="Albañilería" name="actAlbanileria" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
                                 <Grid ><Control label="H A" name="actHA" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
                                 <Grid ><Control label="Montajes electromecánicos" name="actMontajesElectro" type="checkbox" onChange={handleChange} data={data} disabled={isReadOnly} /></Grid>
@@ -472,7 +472,7 @@ const AvisoObraForm: FC<AvisoObraFormProps> = ({
                 </Grid>
 
                 <Grid >
-                    <div style={{ textAlign: "left", marginTop: 10 }}>
+                    <div style={{ textAlign: "left", marginTop: 10 }} className={styles.checkboxGroup}>
                         <Control
                             label="Formulario listo para envío"
                             name="confirmacionFecha"
