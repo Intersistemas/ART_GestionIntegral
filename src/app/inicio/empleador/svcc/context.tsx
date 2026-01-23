@@ -68,13 +68,25 @@ const {
 
 const { useEstablecimientoList } = ArtAPI;
 
-export function SVCCPresentacionContextProvider({ children }: { children: ReactNode }) {
+export function SVCCPresentacionContextProvider({ 
+  children,
+  empresaCUIT 
+}: { 
+  children: ReactNode;
+  empresaCUIT?: number;
+}) {
   const { user } = useAuth();
   
-  const ultima = useSVCCPresentacionUltima({ revalidateOnFocus: false });
+  // Solo hacer fetch si hay empresa seleccionada (empresaCUIT debe ser válido y diferente de 0)
+  const cuitParaUsar = empresaCUIT && empresaCUIT !== 0 ? empresaCUIT : undefined;
+  
+  const ultima = useSVCCPresentacionUltima({
+    revalidateOnFocus: false,
+    empresaCUIT: cuitParaUsar
+  });
 
   const constancia = useSVCCPresentacionConstancia(
-    ultima.data?.interno != null && ultima.data.presentacionFecha != null
+    cuitParaUsar && ultima.data?.interno != null && ultima.data.presentacionFecha != null
       ? { id: ultima.data?.interno }
       : undefined
     , { revalidateOnFocus: false }
@@ -90,7 +102,11 @@ export function SVCCPresentacionContextProvider({ children }: { children: ReactN
     constancia.mutate();
   }});
 
-  const establecimientoList = useEstablecimientoList({ cuit: user?.cuit ?? 0 }, { revalidateOnFocus: false });
+  // Solo hacer fetch de establecimientos si hay empresa seleccionada
+  const establecimientoList = useEstablecimientoList(
+    cuitParaUsar ? { cuit: cuitParaUsar } : undefined,
+    { revalidateOnFocus: false }
+  );
 
   const establecimientoMap = useMemo(() => (
     arrayToRecord(establecimientoList.data ?? [], (e) => [e.codEstabEmpresa, EstablecimientoVmDescripcion(e)])

@@ -143,8 +143,20 @@ export class ArtAPIClass extends ExternalAPI {
     key: (params) => [this.establecimientoListURL(params), token.getToken(), JSON.stringify(params)],
     fetcher: ([_url, _token, params]) => this.establecimientoList(JSON.parse(params)),
   });
-  useEstablecimientoList = (params?: EstablecimientoListParams, options?: EstablecimientoListOptions) =>
-    useSWR<EstablecimientoVm[], AxiosError>(params ? this.swrEstablecimientoList.key(params) : null, this.swrEstablecimientoList.fetcher, options);
+  useEstablecimientoList = (params?: EstablecimientoListParams, options?: EstablecimientoListOptions) => {
+    // Solo hacer fetch si hay CUIT válido (diferente de 0 y no undefined/null)
+    const hasValidCUIT = params?.cuit != null && params.cuit !== 0;
+    const swrKey = hasValidCUIT ? this.swrEstablecimientoList.key(params) : null;
+    return useSWR<EstablecimientoVm[], AxiosError>(
+      swrKey,
+      this.swrEstablecimientoList.fetcher,
+      {
+        revalidateOnFocus: false,
+        revalidateOnReconnect: false,
+        ...options
+      }
+    );
+  };
   //#endregion Establecimiento
 
   //#region FormulariosRAR

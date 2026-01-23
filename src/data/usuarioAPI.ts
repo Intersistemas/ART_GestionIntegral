@@ -154,7 +154,7 @@ const tokenizable = token.configure();
 
 export class UsuarioAPIClass extends ExternalAPI {
   readonly basePath =
-    process.env.NEXT_PUBLIC_API_SEGURIDAD_URL || "http://fallback-prod.url";
+    process.env.NEXT_PUBLIC_API_AUTH_URL || "http://fallback-prod.url";
   //#region login
   readonly loginURL = () =>
     this.getURL({ path: "/api/Usuario/Login" }).toString();
