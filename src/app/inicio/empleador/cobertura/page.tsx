@@ -13,6 +13,7 @@ import Image from 'next/image';
 import Formato from '@/utils/Formato';
 import Cobertura_PDF from './Cobertura_PDF';
 import ExcelJS from 'exceljs';
+import CustomModalMessage, { MessageType } from '@/utils/ui/message/CustomModalMessage';
 import { useEmpresasStore } from "@/data/empresasStore";
 import { Empresa } from "@/data/authAPI";
 import CustomSelectSearch from "@/utils/ui/form/CustomSelectSearch";
@@ -48,6 +49,19 @@ export default function CoberturaPage() {
     const [presentadoA, setPresentadoA] = useState<string>('');
     const [abrirPDF, setAbrirPDF] = useState<boolean>(false);
     const [clausula, setClausula] = useState<boolean>(false);
+
+    // Estado para mensajes (formato unificado como en RGRL)
+    const [msgOpen, setMsgOpen] = useState<boolean>(false);
+    const [msgText, setMsgText] = useState<string>('');
+    const [msgType, setMsgType] = useState<MessageType>('warning');
+    const [msgTitle, setMsgTitle] = useState<string | undefined>(undefined);
+
+    const showMessage = useCallback((message: string, type: MessageType = 'warning', title?: string) => {
+        setMsgText(message);
+        setMsgType(type);
+        setMsgTitle(title);
+        setMsgOpen(true);
+    }, []);
 
     // Fecha y hora actuales (formato local es-AR) - Solo se calcula en el cliente para evitar errores de hidratación
     const [dia, setDia] = useState<string>('');
@@ -242,7 +256,7 @@ export default function CoberturaPage() {
     // FUNCIÓN PARA AGREGAR FILA A LA TABLA CUBIERTO
     const handleAddFila = () => {
         if (newCuil === null || !newNombre.trim()) {
-            alert("Por favor, ingrese CUIT/CUIL y Nombre válidos.");
+            showMessage('Por favor, ingrese CUIT/CUIL y Nombre válidos.', 'warning', 'Datos faltantes');
             return;
         }
 
@@ -250,7 +264,7 @@ export default function CoberturaPage() {
         const isDuplicate = personalCubierto.some(p => p.cuil === newCuil) || personalPendiente.some(p => p.cuil === newCuil);
         
         if (isDuplicate) {
-            alert(`El CUIT/CUIL ${newCuil} ya existe en las listas.`);
+            showMessage(`El CUIT/CUIL ${newCuil} ya existe en las listas.`, 'warning', 'Registro duplicado');
             return;
         }
 
@@ -282,7 +296,7 @@ export default function CoberturaPage() {
             
             const worksheet = workbook.worksheets[0];
             if (!worksheet) {
-                alert('El archivo Excel está vacío');
+                showMessage('El archivo Excel está vacío.', 'warning', 'Importación de Excel');
                 return;
             }
 
@@ -322,14 +336,14 @@ export default function CoberturaPage() {
 
             if (importedData.length > 0) {
                 setPersonalCubierto(prev => [...prev, ...importedData]);
-                alert(`Se importaron ${importedData.length} registros exitosamente.${duplicados.length > 0 ? `\n${duplicados.length} duplicados omitidos.` : ''}`);
+                showMessage(`Se importaron ${importedData.length} registros exitosamente.${duplicados.length > 0 ? `\n${duplicados.length} duplicados omitidos.` : ''}`, 'success', 'Importación exitosa');
             } else {
-                alert('No se encontraron datos válidos en el archivo.');
+                showMessage('No se encontraron datos válidos en el archivo.', 'warning', 'Importación de Excel');
             }
 
         } catch (error) {
             console.error('Error al importar Excel:', error);
-            alert('Error al leer el archivo Excel. Asegúrese de que tenga el formato correcto (Columna 1: CUIL, Columna 2: Nombre).');
+            showMessage('Error al leer el archivo Excel. Asegúrese de que tenga el formato correcto (Columna 1: CUIL, Columna 2: Nombre).', 'error', 'Error de importación');
         }
 
         // Limpiar el input para permitir reimportar el mismo archivo
@@ -625,6 +639,14 @@ export default function CoberturaPage() {
                 />
                 ) : null}
           </div>
-        </div>
+                {/* Modal de mensajes estandarizado (formato RGRL) */}
+                <CustomModalMessage
+                        open={msgOpen}
+                        onClose={() => setMsgOpen(false)}
+                        message={msgText}
+                        type={msgType}
+                        title={msgTitle}
+                />
+                </div>
     );
 }
