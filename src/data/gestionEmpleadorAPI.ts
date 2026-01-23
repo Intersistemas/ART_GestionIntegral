@@ -550,9 +550,19 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
   getVEmpleadorSiniestros = async (params: Parameters = {}) => tokenizable.get(
     this.getVEmpleadorSiniestrosURL(params),
   ).then(({ data }) => data);
-  useGetVEmpleadorSiniestros = (params: Parameters = {}) => useSWR(
-    [this.getVEmpleadorSiniestrosURL(params), token.getToken()], () => this.getVEmpleadorSiniestros(params) 
-  );
+  useGetVEmpleadorSiniestros = (params: Parameters = {}) => {
+    // Solo hacer fetch si hay CUIT en los parámetros
+    const hasCUIT = params?.CUIT != null && params.CUIT !== 0;
+    const swrKey = hasCUIT ? [this.getVEmpleadorSiniestrosURL(params), token.getToken()] : null;
+    return useSWR(
+      swrKey, 
+      () => this.getVEmpleadorSiniestros(params),
+      {
+        revalidateOnFocus: false,
+        revalidateOnReconnect: false,
+      }
+    );
+  };
   //#endregion
 
   //#region CtaCTe y DDJJ
@@ -584,18 +594,20 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
   getVEmpleadorSiniestrosInstancias = async (params: Parameters = {}) => tokenizable.get(
     this.getVEmpleadorSiniestrosInstanciasURL(params),
   ).then(({ data }) => data);
-  useGetVEmpleadorSiniestrosInstancias = (params: Parameters = {}) => useSWR(
-    [this.getVEmpleadorSiniestrosInstanciasURL(params), token.getToken()], () => this.getVEmpleadorSiniestrosInstancias(params),
-    {
-      // No volver a revalidar al volver al foco, reconectar o al montar si ya hay cache
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      
-      //revalidateOnMount: false,
-      //dedupingInterval: 1000 * 60 * 60, // 1 hora (ajusta si hace falta) // Tiempo en ms durante el cual SWR deduplica solicitudes iguales (evita re-fetch frecuente)
-      // Si quieres que la clave no dispare fetch hasta que exista token, puedes usar: (token.getToken() ? key : null)
-    }  
-  );
+  useGetVEmpleadorSiniestrosInstancias = (params: Parameters = {}) => {
+    // Solo hacer fetch si hay CUIT en los parámetros
+    const hasCUIT = params?.CUIT != null && params.CUIT !== 0;
+    const swrKey = hasCUIT ? [this.getVEmpleadorSiniestrosInstanciasURL(params), token.getToken()] : null;
+    return useSWR(
+      swrKey,
+      () => this.getVEmpleadorSiniestrosInstancias(params),
+      {
+        // No volver a revalidar al volver al foco, reconectar o al montar si ya hay cache
+        revalidateOnFocus: false,
+        revalidateOnReconnect: false,
+      }
+    );
+  };
   //#endregion
 
   //#region AvisoObra

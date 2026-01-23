@@ -151,10 +151,8 @@ export default function SiniestrosPage() {
 
   const params: Parameters = cuitFinal ? { CUIT: cuitFinal } : {};
 
-  // Solo hacer la llamada si hay una empresa seleccionada
-  const { data, error, isLoading } = gestionEmpleadorAPI.useGetVEmpleadorSiniestros(
-    cuitFinal ? params : {}
-  );
+  // El hook solo hará fetch si hay CUIT en los parámetros
+  const { data, error, isLoading } = gestionEmpleadorAPI.useGetVEmpleadorSiniestros(params);
 
   const instanciasParams: Parameters = cuitFinal ? { CUIT: cuitFinal } : {};
   
@@ -162,14 +160,12 @@ export default function SiniestrosPage() {
     (instanciasParams as any).Denuncia = selectedDenuncia;
   }
 
-  // Solo hacer la llamada si hay una empresa seleccionada y una denuncia seleccionada
+  // El hook solo hará fetch si hay CUIT y Denuncia en los parámetros
   const {
     data: instanciasData,
     isLoading: isLoadingInst,
     error: errorInst,
-  } = gestionEmpleadorAPI.useGetVEmpleadorSiniestrosInstancias(
-    cuitFinal && selectedDenuncia != null ? instanciasParams : {}
-  );
+  } = gestionEmpleadorAPI.useGetVEmpleadorSiniestrosInstancias(instanciasParams);
 
   // Log con token enmascarado y URL (debug)
   const url = useMemo(
