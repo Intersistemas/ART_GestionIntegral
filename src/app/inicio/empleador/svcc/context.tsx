@@ -77,10 +77,16 @@ export function SVCCPresentacionContextProvider({
 }) {
   const { user } = useAuth();
   
-  const ultima = useSVCCPresentacionUltima({ revalidateOnFocus: false });
+  // Solo hacer fetch si hay empresa seleccionada
+  const cuitParaUsar = empresaCUIT ?? user?.cuit ?? 0;
+  
+  const ultima = useSVCCPresentacionUltima({
+    revalidateOnFocus: false,
+    empresaCUIT: cuitParaUsar
+  });
 
   const constancia = useSVCCPresentacionConstancia(
-    ultima.data?.interno != null && ultima.data.presentacionFecha != null
+    cuitParaUsar && ultima.data?.interno != null && ultima.data.presentacionFecha != null
       ? { id: ultima.data?.interno }
       : undefined
     , { revalidateOnFocus: false }

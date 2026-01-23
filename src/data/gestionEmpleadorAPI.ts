@@ -643,8 +643,17 @@ export class GestionEmpleadorAPIClass extends ExternalAPI {
     key: [this.svccPresentacionUltimaURL, token.getToken()],
     fetcher: (_key) => this.svccPresentacionUltima(),
   });
-  useSVCCPresentacionUltima = (options?: SVCCPresentacionUltimaOptions) =>
-    useSWR<PresentacionDTO, AxiosError>(this.swrSVCCPresentacionUltima.key, this.swrSVCCPresentacionUltima.fetcher, options);
+  useSVCCPresentacionUltima = (options?: SVCCPresentacionUltimaOptions & { empresaCUIT?: number }) => {
+    // Solo hacer fetch si hay empresa seleccionada (empresaCUIT proporcionado y diferente de 0)
+    const tieneEmpresa = options?.empresaCUIT != null && options.empresaCUIT !== 0;
+    const swrKey = tieneEmpresa ? this.swrSVCCPresentacionUltima.key : null;
+    const { empresaCUIT, ...swrOptions } = options || {};
+    return useSWR<PresentacionDTO, AxiosError>(
+      swrKey,
+      this.swrSVCCPresentacionUltima.fetcher,
+      { revalidateOnFocus: false, revalidateOnReconnect: false, ...swrOptions }
+    );
+  };
   //#endregion SVCC/Presentacion/Ultima
 
   //#region SVCC/Presentacion/Nueva
