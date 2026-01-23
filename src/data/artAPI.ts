@@ -1,5 +1,6 @@
 import useSWR, { Fetcher, SWRConfiguration } from "swr";
 import useSWRMutation from "swr/mutation";
+import { useSession } from "next-auth/react";
 import { ExternalAPI } from "./api";
 import { token } from "./usuarioAPI";
 import RefEmpleador from "@/app/inicio/usuarios/interfaces/RefEmpleador";
@@ -154,20 +155,47 @@ export class ArtAPIClass extends ExternalAPI {
   getFormulariosRAR = async (params: ParametersFormularioRar = {}) => tokenizable.get(
     this.getFormulariosRARURL(params),
   ).then(({ data }) => data);
-  useGetFormulariosRARURL = (params?: ParametersFormularioRar) => useSWR(
-    params && params.CUIT && token.getToken()
-      ? [this.getFormulariosRARURL(params), token.getToken()]
-      : null,
-    () => this.getFormulariosRAR(params!),
-    {
-      // No volver a revalidar al volver al foco, reconectar o al montar si ya hay cache
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      //revalidateOnMount: false,
-      //dedupingInterval: 1000 * 60 * 60, // 1 hora (ajusta si hace falta) // Tiempo en ms durante el cual SWR deduplica solicitudes iguales (evita re-fetch frecuente)
-      // Si quieres que la clave no dispare fetch hasta que exista token, puedes usar: (token.getToken() ? key : null)
+  useGetFormulariosRARURL = (params?: ParametersFormularioRar) => {
+    // Obtener el token de la sesión de forma confiable
+    const { data: session } = useSession();
+    const accessToken = session?.accessToken;
+    
+    // Construir la clave SWR de forma estable
+    // La clave debe cambiar cuando cambia el CUIT para que SWR detecte el cambio automáticamente
+    // SWR detectará el cambio en la clave y ejecutará el query automáticamente
+    const key = params && params.CUIT && params.CUIT > 0 && accessToken
+      ? [this.getFormulariosRARURL(params), accessToken, params.CUIT, params.PageIndex ?? 0, params.PageSize ?? 10]
+      : null;
+    
+    // Log para debug en desarrollo
+    if (process.env.NODE_ENV === 'development') {
+      if (key) {
+        console.log('[useGetFormulariosRARURL] Clave SWR:', key);
+        console.log('[useGetFormulariosRARURL] CUIT:', params?.CUIT);
+      } else {
+        console.log('[useGetFormulariosRARURL] Clave SWR es null - params:', params, 'accessToken:', !!accessToken);
+      }
     }
-  );
+    
+    return useSWR(
+      key,
+      key ? () => {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[useGetFormulariosRARURL] Ejecutando fetcher con CUIT:', params?.CUIT);
+        }
+        return this.getFormulariosRAR(params!);
+      } : null,
+      {
+        // No volver a revalidar al volver al foco o reconectar
+        revalidateOnFocus: false,
+        revalidateOnReconnect: false,
+        // SWR detectará automáticamente cuando cambia la clave (que incluye el CUIT)
+        // y ejecutará el query automáticamente
+        revalidateOnMount: true,
+        keepPreviousData: false,
+      }
+    );
+  };
 
   //  Formulario RAR por interno (/api/FormulariosRAR/{id})
   readonly getFormularioRARByIdURL = (interno: FormularioRAR['InternoFormularioRAR']) =>

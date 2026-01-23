@@ -18,7 +18,6 @@ import { useEmpresasStore } from "@/data/empresasStore";
 import { Empresa } from "@/data/authAPI";
 import CustomSelectSearch from "@/utils/ui/form/CustomSelectSearch";
 
-
 // Hijos
 import FormularioRARGenerar from './generar/FormularioRARGenerar';
 // import FormularioRAREditor from './editar/FormularioRAREditor'; // Ya no se usa, reutilizamos el modal de generar para edición
@@ -123,13 +122,14 @@ const FormulariosRAR: React.FC = () => {
 
   // Usamos el hook SWR del API (solo hace fetch si existe token y respeta las opciones de revalidate)
   // Solo hace fetch si hay una empresa seleccionada
+  // SWR detectará automáticamente cuando cambia el CUIT porque está en la clave
   const apiPageIndex = PageIndex;
+  const paramsFormularios = empresaSeleccionada?.cuit 
+    ? { CUIT: empresaSeleccionada.cuit, PageIndex: apiPageIndex, PageSize: PageSize, OrderBy: '-Interno' } 
+    : undefined;
+  
   const { data: formulariosData, error: formulariosError, isLoading: isLoadingSWR, isValidating, mutate: mutateFormularios } =
-    ArtAPI.useGetFormulariosRARURL(
-      empresaSeleccionada?.cuit 
-        ? { CUIT: empresaSeleccionada.cuit, PageIndex: apiPageIndex, PageSize: PageSize, OrderBy: '-Interno' } 
-        : undefined
-    );
+    ArtAPI.useGetFormulariosRARURL(paramsFormularios);
 
   // Sincronizar el estado de loading con SWR
   useEffect(() => {
@@ -221,9 +221,7 @@ const FormulariosRAR: React.FC = () => {
     setLoadingDetalles(true);
     setErrorDetalles('');
     try {
-      const response = await fetch(`http://arttest.intersistemas.ar:8302/api/FormulariosRAR/${internoId}`);
-      if (!response.ok) throw new Error(`Error al consultar detalles: ${response.status} - ${response.statusText}`);
-      const data = await response.json();
+      const data = await ArtAPI.getFormularioRARById(internoId);
 
       if (data?.formularioRARDetalle && Array.isArray(data.formularioRARDetalle)) {
         const detallesFormateados = data.formularioRARDetalle.map((detalle: any, index: number) => ({
