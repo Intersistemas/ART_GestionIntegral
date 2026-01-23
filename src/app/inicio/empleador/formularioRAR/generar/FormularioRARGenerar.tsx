@@ -29,6 +29,7 @@ const normalizarCuil = (v: string) => (v || '').replace(/\D/g, '');
 
 interface CrearProps {
   cuit: number;
+  razonSocial?: string; // razón social de la empresa seleccionada
   internoEstablecimiento?: number; // opcional en creación
   referenteDatos?: unknown;
   finalizaCarga: (ret?: boolean) => void;
@@ -42,6 +43,7 @@ type OpcionAgente = { interno: number; codigo: number; agenteCausante: string; a
 
 const FormularioRARCrear: React.FC<CrearProps> = ({
   cuit,
+  razonSocial,
   internoEstablecimiento = 0,
   finalizaCarga,
   formulariosRAR = [],
@@ -50,7 +52,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
 }) => {
   // encabezado
   const [cuitActual, setCuitActual] = React.useState<string>(String(cuit || ''));
-  const [razonSocialActual, setRazonSocialActual] = React.useState<string>('');
+  const [razonSocialActual, setRazonSocialActual] = React.useState<string>(razonSocial || '');
 
   // establecimientos y agentes
   const [opcionesEstablecimientos, setOpcionesEstablecimientos] = React.useState<OpcionEstablecimiento[]>([]);
@@ -396,15 +398,10 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
 
   // ===== Carga inicial: encabezado + selects =====
   React.useEffect(() => {
-    // Encabezado: si tenés datos en el listado padre, tomamos el CUIT/Razón Social de ahí
-    const fila = formulariosRAR.find((f) => (f.cuit || f.CUIT) && (f.razonSocial || f.RazonSocial));
-    if (fila) {
-      setCuitActual(String(fila.cuit || fila.CUIT || cuit || ''));
-      setRazonSocialActual(String(fila.razonSocial || fila.RazonSocial || ''));
-    } else {
-      setCuitActual(String(cuit || ''));
-    }
-  }, [cuit, formulariosRAR]);
+    // Usar el CUIT y razón social de las props (empresa seleccionada)
+    setCuitActual(String(cuit || ''));
+    setRazonSocialActual(razonSocial || '');
+  }, [cuit, razonSocial]);
 
   React.useEffect(() => {
     let cancel = false;
