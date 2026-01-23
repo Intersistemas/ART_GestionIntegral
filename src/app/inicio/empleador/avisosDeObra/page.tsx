@@ -1,8 +1,8 @@
 // src/app/inicio/empleador/avisosDeObra/page.tsx
 "use client"
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import axios, { AxiosError } from "axios"; 
-import {Button,Card,CardContent,Dialog,DialogActions, DialogContent,DialogTitle, Grid,CircularProgress } from "@mui/material";
+import {Button,Card,CardContent,Dialog,DialogActions, DialogContent,DialogTitle, Grid,CircularProgress, Box } from "@mui/material";
 import { AddCircleOutline } from "@mui/icons-material";
 // Importaciones de módulos y tipos locales
 import AvisosObraList from "./AvisosObraList";
@@ -10,19 +10,58 @@ import AvisoObraForm from "./AvisoObraForm";
 import {AvisoObraRecord,Request,Response,ApiQueryState,ApiError,FormDataState } from "./types/types";
 import gestionEmpleadorAPI from "@/data/gestionEmpleadorAPI";
 import CustomButton from "@/utils/ui/button/CustomButton";
+import CustomSelectSearch from "@/utils/ui/form/CustomSelectSearch";
+import Formato from "@/utils/Formato";
 import { useAuth } from "@/data/AuthContext";
+import { useEmpresasStore } from "@/data/empresasStore";
+import { Empresa } from "@/data/authAPI";
 const { useGetAvisoObra } = gestionEmpleadorAPI;
 import { getDefaultAvisoObra } from "./data/defaultAvisoObra";
 import AvisosObraPdfGenerator from "./AvisoObraPdfGenerator";
 
 const AvisosObraHandler: React.FC = () => {
+    const { empresas, isLoading: isLoadingEmpresas } = useEmpresasStore();
+    const [empresaSeleccionada, setEmpresaSeleccionada] = useState<Empresa | null>(null);
+    const seleccionAutomaticaRef = useRef(false);
+
+    // Seleccionar automáticamente si solo hay una empresa
+    useEffect(() => {
+        if (!isLoadingEmpresas) {
+            if (empresas.length === 1) {
+                setEmpresaSeleccionada(empresas[0]);
+                seleccionAutomaticaRef.current = true;
+            } else if (empresas.length !== 1 && seleccionAutomaticaRef.current) {
+                setEmpresaSeleccionada(null);
+                seleccionAutomaticaRef.current = false;
+            }
+        }
+    }, [empresas.length, isLoadingEmpresas]);
+
+    const handleEmpresaChange = (
+        _event: React.SyntheticEvent,
+        newValue: Empresa | null
+    ) => {
+        setEmpresaSeleccionada(newValue);
+        seleccionAutomaticaRef.current = false;
+    };
+
+    const getEmpresaLabel = (empresa: Empresa | null): string => {
+        if (!empresa) return "";
+        return `${empresa.razonSocial} - ${Formato.CUIP(empresa.cuit)}`;
+    };
+
+    // Parámetros para la consulta de avisos de obra
+    const paramsAvisoObra = useMemo(() => {
+        return empresaSeleccionada?.cuit ? { CUIT: empresaSeleccionada.cuit } : {};
+    }, [empresaSeleccionada?.cuit]);
+
     // Obtención de datos con SWR
     const { 
         data: avisoObraRawData, 
         isLoading: isDataLoading, 
         error: fetchError,
         mutate: refetchAvisos // Función de SWR para forzar la recarga
-    } = useGetAvisoObra(); 
+    } = useGetAvisoObra(paramsAvisoObra); 
 
     const { user } = useAuth(); 
     const empresaCUIT = user?.empresaCUIT;
@@ -164,8 +203,10 @@ const AvisosObraHandler: React.FC = () => {
         }
 
         // Rellenar datos estáticos del empleador (si no existen)
-        currentRecord.empleadorCUIT = empresaCUIT ?? currentRecord.empleadorCUIT ?? null;
-        currentRecord.empleadorRazonSocial = empresaRazonSocial ?? currentRecord.empleadorRazonSocial ?? null;
+        const cuitParaUsar = empresaSeleccionada?.cuit ?? empresaCUIT;
+        const razonSocialParaUsar = empresaSeleccionada?.razonSocial ?? empresaRazonSocial;
+        currentRecord.empleadorCUIT = cuitParaUsar ?? currentRecord.empleadorCUIT ?? null;
+        currentRecord.empleadorRazonSocial = razonSocialParaUsar ?? currentRecord.empleadorRazonSocial ?? null;
         
         setFormData({ request: request, data: currentRecord });
     };
@@ -232,13 +273,35 @@ const AvisosObraHandler: React.FC = () => {
         <Card variant="outlined">
             <CardContent>
                 <Grid container direction="column" rowSpacing={2}>
+                    <Grid style={{ marginBottom: '16px' }}>
+                        <Box sx={{ maxWidth: 500, marginBottom: 2 }}>
+                            <CustomSelectSearch<Empresa>
+                                options={empresas}
+                                getOptionLabel={getEmpresaLabel}
+                                value={empresaSeleccionada}
+                                onChange={handleEmpresaChange}
+                                label="Seleccionar Empresa"
+                                placeholder="Buscar empresa..."
+                                loading={isLoadingEmpresas}
+                                loadingText="Cargando empresas..."
+                                noOptionsText={
+                                    isLoadingEmpresas
+                                        ? "Cargando..."
+                                        : empresas.length === 0
+                                        ? "No hay empresas disponibles"
+                                        : "No se encontraron empresas"
+                                }
+                                disabled={isLoadingEmpresas}
+                            />
+                        </Box>
+                    </Grid>
                     <Grid  style={{ marginBottom: '16px' }}>
                         <CustomButton
                             variant="contained"
                             color="primary"
                             startIcon={<AddCircleOutline />}
                             onClick={() => handleFormOpen(Request.Insert, getDefaultAvisoObra())}
-                            disabled={isDataLoading} 
+                            disabled={isDataLoading || !empresaSeleccionada} 
                         >
                             Agregar Aviso
                         </CustomButton>

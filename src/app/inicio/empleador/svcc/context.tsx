@@ -68,7 +68,13 @@ const {
 
 const { useEstablecimientoList } = ArtAPI;
 
-export function SVCCPresentacionContextProvider({ children }: { children: ReactNode }) {
+export function SVCCPresentacionContextProvider({ 
+  children,
+  empresaCUIT 
+}: { 
+  children: ReactNode;
+  empresaCUIT?: number;
+}) {
   const { user } = useAuth();
   
   const ultima = useSVCCPresentacionUltima({ revalidateOnFocus: false });
@@ -90,7 +96,11 @@ export function SVCCPresentacionContextProvider({ children }: { children: ReactN
     constancia.mutate();
   }});
 
-  const establecimientoList = useEstablecimientoList({ cuit: user?.cuit ?? 0 }, { revalidateOnFocus: false });
+  const cuitParaUsar = empresaCUIT ?? user?.cuit ?? 0;
+  const establecimientoList = useEstablecimientoList(
+    cuitParaUsar ? { cuit: cuitParaUsar } : undefined,
+    { revalidateOnFocus: false }
+  );
 
   const establecimientoMap = useMemo(() => (
     arrayToRecord(establecimientoList.data ?? [], (e) => [e.codEstabEmpresa, EstablecimientoVmDescripcion(e)])
