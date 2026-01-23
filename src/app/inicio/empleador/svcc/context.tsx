@@ -77,8 +77,8 @@ export function SVCCPresentacionContextProvider({
 }) {
   const { user } = useAuth();
   
-  // Solo hacer fetch si hay empresa seleccionada
-  const cuitParaUsar = empresaCUIT ?? user?.cuit ?? 0;
+  // Solo hacer fetch si hay empresa seleccionada (empresaCUIT debe ser válido y diferente de 0)
+  const cuitParaUsar = empresaCUIT && empresaCUIT !== 0 ? empresaCUIT : undefined;
   
   const ultima = useSVCCPresentacionUltima({
     revalidateOnFocus: false,
@@ -102,7 +102,7 @@ export function SVCCPresentacionContextProvider({
     constancia.mutate();
   }});
 
-  const cuitParaUsar = empresaCUIT ?? user?.cuit ?? 0;
+  // Solo hacer fetch de establecimientos si hay empresa seleccionada
   const establecimientoList = useEstablecimientoList(
     cuitParaUsar ? { cuit: cuitParaUsar } : undefined,
     { revalidateOnFocus: false }
