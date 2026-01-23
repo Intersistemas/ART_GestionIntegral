@@ -1,18 +1,18 @@
 /* Contenedor principal de importación Excel */
 .excelImportContainer {
-  background: #f0f7ff;
+  background: var(--verdeClaroClaro);
   padding: 18px;
   border-radius: 8px;
   margin-bottom: 20px;
-  border: 2px dashed #1976d2;
+  border: 2px dashed var(--verde);
 }
 
 .excelImportContainerDisabled {
-  background: #f5f5f5;
+  background: var(--grisClaroClaro);
   padding: 18px;
   border-radius: 8px;
   margin-bottom: 20px;
-  border: 2px dashed #ccc;
+  border: 2px dashed var(--grisClaro);
   opacity: 0.6;
 }
 
@@ -26,14 +26,14 @@
 
 .excelImportTitle {
   margin: 0;
-  color: #1565c0;
+  color: var(--verdeOscuro);
   font-size: 16px;
   font-weight: 600;
 }
 
 .excelImportTitleDisabled {
   margin: 0;
-  color: #9e9e9e;
+  color: var(--gris);
   font-size: 16px;
   font-weight: 600;
 }
@@ -42,33 +42,33 @@
   font-size: 13px;
   font-weight: normal;
   margin-left: 10px;
-  color: #9e9e9e;
+  color: var(--gris);
 }
 
 /* Descripción */
 .excelImportDescription {
   margin: 0 0 15px 0;
-  color: #555;
+  color: var(--grisOscuro);
   font-size: 13px;
   line-height: 1.5;
 }
 
 .excelImportDescriptionDisabled {
   margin: 0 0 15px 0;
-  color: #bbb;
+  color: var(--grisClaro);
   font-size: 13px;
   line-height: 1.5;
 }
 
 .excelImportNote {
   margin: 0 0 12px 0;
-  color: #777;
+  color: var(--gris);
   font-size: 12px;
 }
 
 .excelImportNoteDisabled {
   margin: 0 0 12px 0;
-  color: #bbb;
+  color: var(--grisClaro);
   font-size: 12px;
 }
 
@@ -85,8 +85,8 @@
 }
 
 .excelImportButton {
-  background: #1976d2;
-  color: white;
+  background: var(--verde);
+  color: var(--blanco);
   padding: 10px 20px;
   border-radius: 5px;
   font-weight: 500;
@@ -98,13 +98,13 @@
 }
 
 .excelImportButtonDisabled {
-  background: #e0e0e0;
-  color: #9e9e9e;
+  background: var(--grisClaro);
+  color: var(--gris);
   cursor: not-allowed;
 }
 
 .excelImportButtonSecondary {
-  background: #388e3c;
+  background: var(--verdeOscuro);
 }
 
 /* Modal de confirmación */
@@ -113,7 +113,7 @@
 }
 
 .modalHeader {
-  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+  background: linear-gradient(135deg, var(--verde) 0%, var(--verdeOscuro) 100%);
   padding: 20px;
   border-radius: 5px 5px 0 0;
   margin-bottom: 20px;
@@ -132,39 +132,39 @@
 }
 
 .resumenCard {
-  background: #e3f2fd;
+  background: var(--verdeClaroClaro);
   padding: 10px;
   border-radius: 3px;
 }
 
 .resumenCardLabel {
   font-size: 12px;
-  color: #1565c0;
+  color: var(--verdeOscuro);
 }
 
 .resumenCardValue {
   font-size: 28px;
   font-weight: bold;
-  color: #1565c0;
+  color: var(--verdeOscuro);
 }
 
 .resumenCardExpuestos {
-  background: #bbdefb;
+  background: var(--verdeClaro);
 }
 
 .resumenCardNoExpuestos {
-  background: #ffe0b2;
+  background: var(--naranjaClaroClaro);
 }
 
 .resumenCardNoExpuestosLabel {
   font-size: 12px;
-  color: #e65100;
+  color: var(--naranjaOscuro);
 }
 
 .resumenCardNoExpuestosValue {
   font-size: 28px;
   font-weight: bold;
-  color: #e65100;
+  color: var(--naranjaOscuro);
 }
 
 /* Secciones de éxito y errores */
@@ -174,13 +174,13 @@
 
 .seccionExitososTitle {
   margin: 0 0 10px 0;
-  color: #2e7d32;
+  color: var(--verdeOscuro);
 }
 
 .listaExitosos {
   max-height: 200px;
   overflow-y: auto;
-  background: #f1f8e9;
+  background: var(--verdeClaroClaro);
   padding: 10px;
   border-radius: 3px;
 }
@@ -192,7 +192,7 @@
 
 .itemExitoso {
   margin-bottom: 5px;
-  color: #333;
+  color: var(--grisOscuro);
 }
 
 /* Errores */
@@ -202,34 +202,34 @@
 
 .seccionErroresTitle {
   margin: 0 0 10px 0;
-  color: #d32f2f;
+  color: var(--rojo);
 }
 
 .listaErrores {
   max-height: 300px;
   overflow-y: auto;
-  background: #ffebee;
+  background: var(--naranjaClaroClaro);
   padding: 10px;
   border-radius: 3px;
 }
 
 .itemError {
-  background: white;
+  background: var(--blanco);
   padding: 10px;
   border-radius: 3px;
   margin-bottom: 10px;
-  border-left: 4px solid #d32f2f;
+  border-left: 4px solid var(--rojo);
 }
 
 .itemErrorTitle {
   font-weight: bold;
-  color: #d32f2f;
+  color: var(--rojo);
 }
 
 .itemErrorLista {
   margin: 5px 0 0 0;
   padding-left: 20px;
-  color: #c62828;
+  color: var(--rojoOscuro);
 }
 
 .itemErrorDetalle {
@@ -244,11 +244,11 @@
 }
 
 .modalButtonConfirmar {
-  background: #4caf50;
-  color: white;
+  background: var(--verde);
+  color: var(--blanco);
 }
 
 .modalButtonCancelar {
-  background: #757575;
-  color: white;
+  background: var(--gris);
+  color: var(--blanco);
 }
