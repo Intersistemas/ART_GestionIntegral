@@ -16,7 +16,9 @@ import DataTableImport from '@/utils/ui/table/DataTable';
 import CustomModal from '@/utils/ui/form/CustomModal';
 import CustomModalMessage from '@/utils/ui/message/CustomModalMessage';
 import ArtAPI from '@/data/artAPI';
-import styles from '../FormulariosRAR.module.css';
+import styles from './FormularioRARGenerar.module.css';
+
+import ExcelImportSection from './ExcelImportSection';
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
@@ -118,6 +120,9 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
     codigoAgente: ''
   });
 
+    // Estado para mostrar errores
+  const [mensajeError, setMensajeError] = React.useState<string>('');
+
   const guardandoRef = React.useRef(false);
 
   // ===== Funciones para manejo de trabajadores =====
@@ -187,7 +192,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
         const fecha = getValue();
         return fecha && fecha.trim() !== ''
           ? fecha
-          : <span style={{ color: '#888', fontStyle: 'italic' }}>No especif.</span>;
+          : <span className={styles.fechaNoEspecificada}>No especif.</span>;
       }
     },
     {
@@ -211,7 +216,7 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
         );
 
         return (
-          <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', alignItems: 'center' }}>
+          <div className={styles.accionesContainer}>
             <EditIcon
               onClick={() => handleEditarTrabajador(index)}
               style={{
@@ -953,13 +958,18 @@ React.useEffect(() => {
         filasCargadas: filas
       });
 
+      console.log('🔍 CRÍTICO - Estado de filas antes de map:', {
+        filasLength: filas.length,
+        filasCompletas: JSON.stringify(filas, null, 2)
+      });
+
       // USAR TODOS LOS TRABAJADORES DE LA TABLA, NO SOLO LOS CAMPOS DEL MODAL
       const formularioRARDetalle = filas.map((f, index) => {
         const rawHoras = String(f.Exposicion ?? '').replace(/[^\d]/g, '').trim();
         const nHoras = Number(rawHoras);
         const horasParsed = rawHoras === '' ? 0 : (Number.isFinite(nHoras) ? nHoras : 0);
 
-        const trabajador: any = {
+        const trabajador = {
           internoFormulariosRar: 0,
           cuil: Number(String(f.CUIL || '').replace(/\D/g, '') || 0),
           nombre: f.Nombre || '',
@@ -970,10 +980,10 @@ React.useEffect(() => {
           fechaInicioExposicion: dayjs(f.FechaInicio || fechaActual).toISOString(),
           fechaFinExposicion: f.FechaFinExposicion && f.FechaFinExposicion.trim() !== ''
             ? dayjs(f.FechaFinExposicion).toISOString()
-            : dayjs('2099-01-01').toISOString(), // Fecha por defecto: 01/01/2099 para indicar "no especificada"
+            : dayjs('2099-01-01').toISOString(),
+          horasExposicion: horasParsed
         };
 
-        trabajador.horasExposicion = horasParsed;
         console.log(`👤 DEBUG - Trabajador ${index + 1}:`, trabajador);
         return trabajador;
       });
@@ -990,6 +1000,11 @@ React.useEffect(() => {
       };
 
       console.log(' Payload completo:', JSON.stringify(payload, null, 2));
+
+      console.log('📤 CRÍTICO - Payload final antes de fetch:', {
+        formularioRARDetalle_length: payload.formularioRARDetalle.length,
+        payload_completo: JSON.stringify(payload, null, 2)
+      });
 
       console.log(' Enviando POST request...');
 
@@ -1139,20 +1154,24 @@ React.useEffect(() => {
       >
         <div className={styles.modalGridCol}>
           {/* SECCIÓN 0: INFORMACIÓN DEL EMPLEADOR */}
-          <div style={{ background: '#e3f2fd', padding: '15px', borderRadius: '5px', marginBottom: '20px' }}>
-            <h4 style={{ margin: '0 0 15px 0', color: '#1976d2' }}>Datos del Empleador</h4>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', alignItems: 'center' }}>
-              <div style={{ fontSize: '14px' }}>
+          <div className={styles.empleadorInfo}>
+            <h4 className={styles.empleadorInfoTitle}>Datos del Empleador</h4>
+            <div className={styles.empleadorInfoGrid}>
+              <div className={styles.empleadorInfoItem}>
                 <strong>CUIT:</strong> {cuipFormatter(cuitActual) || 'No disponible'}
               </div>
-              <div style={{ fontSize: '14px' }}>
+              <div className={styles.empleadorInfoItem}>
                 <strong>Razón Social:</strong> {razonSocialActual || 'No disponible'}
               </div>
             </div>
           </div>
 
           {/* SECCIÓN 1: SELECTOR DE ESTABLECIMIENTO */}
-
+          <div className={styles.establecimientoSection}>
+            <h4 className={styles.establecimientoTitle}>
+              Selección de Establecimiento
+              <span className={styles.requiredAsterisk}>*</span>
+            </h4>
             <div className={styles.modalRow}>
               <FormControl fullWidth required className={styles.flex1}>
                 <InputLabel>Establecimiento</InputLabel>
@@ -1187,6 +1206,28 @@ React.useEffect(() => {
                 </Select>
               </FormControl>
             </div>
+            </div>
+
+                      {/* SECCIÓN 1.5: IMPORTACIÓN DE TRABAJADORES DESDE EXCEL */}
+          <ExcelImportSection
+            establecimientoSeleccionadoValido={establecimientoSeleccionadoValido}
+            agentesCausantes={agentesCausantes}
+            filas={filas}
+            cantExpuestos={cantExpuestos}
+            cantNoExpuestos={cantNoExpuestos}
+            onFilasActualizadas={setFilas}
+            onCantExpuestosActualizada={setCantExpuestos}
+            onCantNoExpuestosActualizada={setCantNoExpuestos}
+            onMensajeError={(mensaje) => {
+              setMensajeError(mensaje);
+              setModalMessageType('error');
+              setModalMessageText(mensaje);
+              setModalMessageOpen(true);
+            }}
+          />
+
+
+
 
           {/* SECCIÓN 2: CANTIDADES DE TRABAJADORES */}
             <div className={styles.modalRow}>
@@ -1218,32 +1259,23 @@ React.useEffect(() => {
               />
             </div>
             {(cantExpuestos || cantNoExpuestos) && (
-              <div style={{ background: '#bbdefb', padding: '10px', borderRadius: '3px', marginTop: '10px', textAlign: 'center' }}>
+              <div className={styles.totalResumen}>
                 <strong>Total de Trabajadores: {(Number(cantExpuestos) || 0) + (Number(cantNoExpuestos) || 0)}</strong>
               </div>
             )}
 
           {/* SECCIÓN 3: DATOS DEL TRABAJADOR */}
-          <div style={{
-            background: cantidadesCompletas ? '#f8f9fa' : '#f5f5f5',
-            padding: '15px',
-            borderRadius: '5px',
-            marginBottom: '20px',
-            opacity: cantidadesCompletas ? 1 : 0.6
-          }}>
-            <h4 style={{
-              margin: '0 0 15px 0',
-              color: cantidadesCompletas ? '#495057' : '#9e9e9e'
-            }}>
+          <div className={cantidadesCompletas ? styles.trabajadorSection : styles.trabajadorSectionDisabled}>
+            <h4 className={cantidadesCompletas ? styles.trabajadorTitle : styles.trabajadorTitleDisabled}>
               Datos del Trabajador
               {!cantidadesCompletas && (
-                <span style={{ fontSize: '14px', fontWeight: 'normal', marginLeft: '10px' }}>
+                <span className={styles.trabajadorSubtitle}>
                   (Completá primero las cantidades de trabajadores)
                 </span>
               )}
             </h4>
             {/* FILA 1: CUIL y Nombre */}
-            <div className={styles.modalRow} style={{ marginBottom: '20px' }}>
+            <div className={`${styles.modalRow} ${styles.modalRowSpaced}`}>
               <TextField
                 label="CUIL"
                 name="cuil"
@@ -1314,7 +1346,7 @@ React.useEffect(() => {
             </div>
 
             {/* FILA 2: Sector y Fecha de Ingreso */}
-            <div className={styles.modalRow} style={{ marginBottom: '20px' }}>
+            <div className={`${styles.modalRow} ${styles.modalRowSpaced}`}>
               <TextField
                 label="Sector/Tareas"
                 name="sector"
@@ -1362,7 +1394,7 @@ React.useEffect(() => {
             </div>
 
             {/* FILA 3: Fecha Inicio Exposición y Tipo de Exposición */}
-            <div className={styles.modalRow} style={{ marginBottom: '20px' }}>
+            <div className={`${styles.modalRow} ${styles.modalRowSpaced}`}>
               <TextField
                 label="Fecha Inicio Exposición"
                 name="fechaInicio"
@@ -1419,7 +1451,7 @@ React.useEffect(() => {
             </div>
 
             {/* FILA 4: Fecha Fin Exposición y Último Examen Médico */}
-            <div className={styles.modalRow} style={{ marginBottom: '20px' }}>
+            <div className={`${styles.modalRow} ${styles.modalRowSpaced}`}>
               <TextField
                 label="Fecha Fin Exposición (Opcional)"
                 name="fechaFinExposicion"
@@ -1458,7 +1490,7 @@ React.useEffect(() => {
             </div>
 
             {/* FILA 5: Agente Causante (ocupa todo el ancho) */}
-            <div className={styles.modalRow} style={{ marginBottom: '20px' }}>
+            <div className={`${styles.modalRow} ${styles.modalRowSpaced}`}>
               <FormControl fullWidth required className={styles.flex1} error={!!erroresCampos.codigoAgente}>
                 <InputLabel id="lbl-agente">
                   {!cantidadesCompletas
@@ -1585,8 +1617,8 @@ React.useEffect(() => {
 
           {/* TABLA DE TRABAJADORES CARGADOS */}
           {filas.length > 0 && (
-            <div style={{ background: 'white', padding: '15px', borderRadius: '5px', marginBottom: '20px', border: '1px solid #e0e0e0' }}>
-              <h4 style={{ margin: '0 0 15px 0', color: '#333' }}>
+            <div className={styles.tablaTrabajadoresContainer}>
+              <h4 className={styles.tablaTrabajadoresTitle}>
                 Trabajadores Cargados
               </h4>
 
