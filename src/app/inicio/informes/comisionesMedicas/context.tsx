@@ -200,7 +200,7 @@ export function CCMMContextProvider({ children }: { children: ReactNode }) {
       columns.push({
         accessorKey: name,
         header: label ?? name,
-        cell: formatter ? (info) => formatter(info.getValue()) : undefined
+        cell: formatter ? (info) => formatter(info.getValue()) : (info) => info.getValue()
       });
       headers.columns[name] = { key: name, header: label ?? name };
       if (formatter) headers.options.formatters!.row![name] = formatter;
