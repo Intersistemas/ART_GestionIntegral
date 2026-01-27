@@ -37,6 +37,7 @@ interface CrearProps {
   formulariosRAR?: any[]; // opcional
   editarId?: number; // interno del formulario a editar (si existe)
   replicaDe?: number; // interno del formulario a replicar (si existe)
+  razonSocial?: string; // razón social de la empresa seleccionada
 }
 
 type OpcionEstablecimiento = { interno: string; domicilioCalle: string; displayText: string };
@@ -49,10 +50,11 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
   formulariosRAR = [],
   editarId = 0,
   replicaDe = 0,
+  razonSocial,
 }) => {
   // encabezado
   const [cuitActual, setCuitActual] = React.useState<string>(String(cuit || ''));
-  const [razonSocialActual, setRazonSocialActual] = React.useState<string>('');
+  const [razonSocialActual, setRazonSocialActual] = React.useState<string>(razonSocial || '');
 
   // establecimientos y agentes
   const [opcionesEstablecimientos, setOpcionesEstablecimientos] = React.useState<OpcionEstablecimiento[]>([]);
@@ -401,15 +403,24 @@ const FormularioRARCrear: React.FC<CrearProps> = ({
 
   // ===== Carga inicial: encabezado + selects =====
   React.useEffect(() => {
-    // Encabezado: si tenés datos en el listado padre, tomamos el CUIT/Razón Social de ahí
-    const fila = formulariosRAR.find((f) => (f.cuit || f.CUIT) && (f.razonSocial || f.RazonSocial));
-    if (fila) {
-      setCuitActual(String(fila.cuit || fila.CUIT || cuit || ''));
-      setRazonSocialActual(String(fila.razonSocial || fila.RazonSocial || ''));
-    } else {
-      setCuitActual(String(cuit || ''));
+    // Prioridad 1: Si viene razonSocial como prop (empresa seleccionada), usarla
+    if (razonSocial) {
+      setRazonSocialActual(razonSocial);
     }
-  }, [cuit, formulariosRAR]);
+    
+    // Actualizar CUIT con el valor del prop (que puede venir de empresa seleccionada)
+    setCuitActual(String(cuit || ''));
+    
+    // Encabezado: si tenés datos en el listado padre, tomamos el CUIT/Razón Social de ahí
+    // (solo si no hay empresa seleccionada explícitamente)
+    if (!razonSocial) {
+      const fila = formulariosRAR.find((f) => (f.cuit || f.CUIT) && (f.razonSocial || f.RazonSocial));
+      if (fila) {
+        setCuitActual(String(fila.cuit || fila.CUIT || cuit || ''));
+        setRazonSocialActual(String(fila.razonSocial || fila.RazonSocial || ''));
+      }
+    }
+  }, [cuit, formulariosRAR, razonSocial]);
 
   React.useEffect(() => {
     let cancel = false;
